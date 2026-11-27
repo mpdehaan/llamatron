@@ -65,7 +65,6 @@ pub const MSG_CLIP_CAPTION_WORD: &str = "clip";
 pub const MSG_CLIP_CAPTION_NAME: &str = "({scene}, {track})";
 pub const MSG_SET_CRUMB: &str = "set: {file}";
 pub const MSG_SONG_CRUMB: &str = "song: {song}";
-pub static MSG_HELP_PANELS: &[&str] = &["keys", "about this page"];
 pub const MSG_CLIP_CRUMB: &str = "clip: ({scene}, {track})";
 pub const MSG_SCENE_CRUMB: &str = "scene: {name}";
 pub const MSG_TRACK_CRUMB: &str = "track: {name}";

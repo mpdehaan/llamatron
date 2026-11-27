@@ -286,8 +286,7 @@ These are the things a reader will notice everywhere, and they're deliberate:
   another's fields, and the classes that hold musical values, like `Note`,
   `Chord` and `Scale`, can't be changed at all after they're made.
 - **Every word the program shows is a constant.** Error messages are in one
-  file, the tracker's words in another, and each page's help text in a third,
-  so wording can be read and edited in one place and a typo in a file key
+  file and the tracker's words in others, so wording can be read and edited in one place and a typo in a file key
   can't happen. The same goes for numbers with a meaning, like the limits of a
   range.
 - **Time is exact.** Lengths and positions are fractions, never decimals, so a

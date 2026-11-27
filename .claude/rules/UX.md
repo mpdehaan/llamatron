@@ -11,8 +11,8 @@ changes it too. A new thing looks like the existing thing it is most like.
   anywhere with no question, closing FluidSynth and the sender. Quit is
   plain `Q` on the main screen alone; Textual's Ctrl+Q is off. A page's footer shows only its own keys; the F1 dialog lists all,
   the everywhere ones in capitals (SAVE, OPEN, HELP).
-- **F1** lists the everywhere keys, a blank line, then the page's keys, in two columns; Tab, Left and Right turn to a panel about
-  the page; ENTER, ESC or F1 closes it. F1 and F3 do nothing inside a dialog.
+- **F1** lists the everywhere keys, a blank line, then the page's keys, in two columns, and nothing else: no page has a help
+  text; ENTER, ESC or F1 closes it. F1 and F3 do nothing inside a dialog.
 - **One letter, one action**: `N` rename, `C` copy, `M` move, `S` sort, `Bksp` delete, `A` add, ENTER open or choose. Every
   page listing named things has all of them, except the Patterns and Generators pages (grouped and always sorted: no move, no
   sort); a new item is added with `A` and placed with `M`, so list pages have no `I`, which inserts on Arrange and in the step
@@ -39,13 +39,13 @@ changes it too. A new thing looks like the existing thing it is most like.
   selected row; every key is shown in the legend or, if left off it, in F1. Each screen lists its keys once. Home and End, and the piano roll's `X` (Split) and `G`, are off the legend.
 - **Cursors stop at every edge** and MUST NOT wrap without asking the user.
   Stepping a short fixed cycle MAY wrap, but a chord's quality, tensions and scale, and any new long list, stop at both ends.
-  Tab through F1's panels, the Chord dialog's lists and a grid picker's pages MAY wrap.
+  Tab through the Chord dialog's lists and a grid picker's pages MAY wrap.
 - **Reverse video is for things that act**: key labels, buttons. An edited or chosen value is marked only with `▶`. Exception:
   a visualizer mode's name, shown for eight seconds near the bottom.
 - **Every cursor motion is `move`** in the legend, whichever arrows do it; where Up and Down and Left and Right all move, the
   footer shows one `←↑↓→ move`. Move mode's arrows `carry`, since they move a thing, not the cursor.
 - **Legend order**: ESC, the arrows, the keys the page has in all modes, then the rest. A key acting on a step says so in full:
-  `insert step`, `remove step`, `insert cell`, `remove cell`. Every legend and help fits 80x24.
+  `insert step`, `remove step`, `insert cell`, `remove cell`. Every legend and F1's list of keys fits 80x24.
 - **Space on Arrange** plays and stops while the Real Time switch is on; ENTER stays edit. On the corner over the scene names:
   the song from the top, or stop all; on a scene's name: from that scene, or stop all; on a clip: that clip, or stop its track.
   The mark under the cursor, `▶` or `■`, and the legend say which. A song played from Arrange plays on through every page; edits
@@ -125,7 +125,7 @@ changes it too. A new thing looks like the existing thing it is most like.
 - A picker opens on the current choice and leaves out what would mean nothing, like the pattern itself in Load over.
 - A picker searches as you type: `search: ba`, Bksp erases, Tab completes as far as all agree, ENTER picks, ESC cancels.
 - A list page searches with `/`: status shows `/ba`, Bksp, Tab completes, ENTER keeps the cursor and shows all again, ESC puts it
-  back. Every page's help mentions it.
+  back, and F1 lists it.
 
 ## Names the tracker makes
 

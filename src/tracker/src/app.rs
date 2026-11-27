@@ -224,19 +224,13 @@ impl Tracker {
     }
 
     /// The keys that work on every page, before the page's own.
-    /// The F1 dialog of the page on top: where it is, the everywhere keys but F1 itself, the page's own keys, and its help.
+    /// The F1 dialog of the page on top: where it is, the everywhere keys but F1 itself, and the page's own keys.
     fn help_of_top(&self) -> crate::screens::dialogs::HelpDialog {
         let page = self.top();
         let place = page.crumbs(&self.app).join(llamatron_strings::marks::MSG_CRUMB_SEPARATOR);
         // F1 isn't listed in its own dialog: it closes the dialog, and leaving it out puts Undo and Redo in one column.
         let everywhere: Vec<KeyItem> = self.everywhere_keys().into_iter().filter(|item| !item.is(&PageKeys::HELP)).collect();
-        let about = page.help().unwrap_or_else(|| {
-            crate::generated::tables::HELP_OF_PAGE
-                .iter()
-                .find(|(name, _)| *name == page.name())
-                .map_or(Vec::new(), |(_, lines)| lines.iter().map(|line| line.to_string()).collect())
-        });
-        crate::screens::dialogs::HelpDialog::new(&place, everywhere, page.page_key_table(&self.app), about)
+        crate::screens::dialogs::HelpDialog::new(&place, everywhere, page.page_key_table(&self.app))
     }
 
     fn everywhere_keys(&self) -> Vec<KeyItem> {

@@ -40,5 +40,4 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 20. UX_IDEAS: Listening to a drum-track pattern.
 21. UX_IDEAS: Drawing only what changed; Smoother gauges; Cheaper visualizers.
 22. SYNTH_IDEAS: Bitcrush rebuilt as an 8-bit converter; Bitcrush's Jitter and mu-law converter.
-23. UX_IDEAS: F1 shows the keys alone.
-24. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+23. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.

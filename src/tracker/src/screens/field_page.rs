@@ -53,11 +53,6 @@ pub trait Form {
     }
 
     /// What the theme's stripe says, where that is more than the page's own crumb in capitals.
-    /// The page's help, the F1 dialog's panel about it, a line each, where it is the page's own rather than its kind's.
-    fn help(&self) -> Option<Vec<String>> {
-        None
-    }
-
     fn caption(&self, _app: &App) -> Option<String> {
         None
     }
@@ -648,10 +643,6 @@ impl<F: Form> Page for FieldPage<F> {
 
     fn still_exists(&self, app: &App) -> bool {
         self.form.still_exists(app)
-    }
-
-    fn help(&self) -> Option<Vec<String>> {
-        self.form.help()
     }
 
     fn answered(&mut self, app: &mut App, answer: crate::screens::dialogs::Answer) {

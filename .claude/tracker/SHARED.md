@@ -27,7 +27,6 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
 - `interface/tracker/keys.py`: every physical key's name. `interface/tracker/keybindings.py`: every key binding, one class
   for each page, dialog and component. `interface/tracker/key_table.py`: `KeyBinding`, `BindsKeys`, `bound()`,
   `pressed_key()`, and the forms' `moves.moved()` (`interface/forms/moves.py`).
-- `user_strings/help.py`: every page's help text, one `HELP_` constant each.
 - `interface/tracker/drawing.py`: the styles, the box characters, the selected row's mark (`SELECTED_MARK`,
   `cursor_mark(selected)`), `Canvas` and the text-fitting helpers.
 - `interface/tracker/status_line.py`: `StatusLine`.
@@ -133,9 +132,7 @@ A page asks for one of some values with `Page.pick(title=, values=, then=, curre
   `Page.show_help` leaves F1 out of the everywhere keys it lists, so that the seven left fill two
   columns downwards over four lines, Silence last in the first column, with Undo still above
   Redo in the second, the user's choice.
-- Each page names its `HELP_` constant from `user_strings/help.py` as `HELP`. `tests/interface/tracker/test_tui_help_keys.py`
-  checks that every key a help text names is bound on that page, and `tests/interface/tracker/test_tui_help.py`
-  that the help fits an 80 by 24 console.
+- No page has a help text: F1 shows the keys alone.
 - `AboutDialog` (`interface/tracker/dialogs/about_dialog.py`, `Page.show_about`) draws the cowsay cow in code
   (`cow_saying`), `VERSION`, `BUILD_DATE` and `BUILD_TIME` from `model/file/version.py`, the links, a
   quote and the license with `build_year()`.

@@ -177,7 +177,7 @@ the place. The keys that work everywhere are listed once:
 
 ## HelpDialog
 
-- **anywhere**: `ENTER/ESC` close · `Tab/←→` other panel
+- **anywhere**: `ENTER/ESC` close
 
 
 ## InstrumentEditor

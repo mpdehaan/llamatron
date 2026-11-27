@@ -111,12 +111,11 @@ pub struct ColumnView {
     pub under: bool,
 }
 
-/// A generator's page: its columns, the setting that chooses its mode, where it has one, and its help, a line each.
+/// A generator's page: its columns, and the setting that chooses its mode, where it has one.
 #[derive(Debug)]
 pub struct GeneratorView {
     pub columns: &'static [ColumnView],
     pub mode: Option<&'static SettingView>,
-    pub help: &'static [&'static str],
 }
 
 pub static ARP: GeneratorView = GeneratorView {
@@ -165,13 +164,6 @@ pub static ARP: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Step: how long each note of the chord plays, the pattern's step size unless set.",
-        "Order: which way it goes through the chord. Random uses the seed.",
-        "Octave range: plays the chord again in up to 4 octaves. Octave jump: up after the whole chord, or after each note.",
-        "Offsets: the arp's own steps, like a groovebox's. Each moves its note along the scale, and a blank step is silent.",
-        "ENTER on Offsets opens them, and Bksp removes them.",
-    ],
 };
 pub static CHORDS: GeneratorView = GeneratorView {
     columns: &[
@@ -279,14 +271,6 @@ pub static CHORDS: GeneratorView = GeneratorView {
             (Plain::Text("auto_chord"), "AutoChord"),
         ]),
     }),
-    help: &[
-        "Mode: Voicing voices a part's chords alone; Progression moves the part through chords, each lasting Every, a bar unless set,",
-        "the part taken as written over chord I, ENTER on Chords opening the chord editor; Follow Progression moves it along the chords",
-        "the track named in Chords from plays in the same scene; AutoChord turns each single note into a chord, From scale the triad",
-        "the scale builds on it, or Major, Minor, Augmented, Diminished or Power, the note on top if asked, a chord left as it is.",
-        "Voice leading voices each chord nearest the one before, within the",
-        "octaves, the root kept in the bass if asked; it is on in Voicing mode and off in the others unless set.",
-    ],
 };
 pub static DRIFT: GeneratorView = GeneratorView {
     columns: &[ColumnView {
@@ -318,13 +302,6 @@ pub static DRIFT: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Every: how often it triggers and picks new amounts. Steps to B: how many triggers it takes to reach the second version.",
-        "Direction: forward stays at the second, loop starts again at the first, pendulum goes back and forth, brownian wanders.",
-        "Below, each value has two versions side by side. Left and Right move between them, [ and ] change one, ENTER types or picks,",
-        "Bksp clears. Vel+= and Prob are added to every note's; Degree + moves notes along the scale, and Degree random by a random",
-        "amount. Scale and Root take over the clip's scale with their prob. AX+= to DX+= add to the registers at each trigger.",
-    ],
 };
 pub static GUITARIFY: GeneratorView = GeneratorView {
     columns: &[
@@ -541,14 +518,6 @@ pub static GUITARIFY: GeneratorView = GeneratorView {
         default: Plain::Text("guitar"),
         names: Some(&[(Plain::Text("guitar"), "Guitar"), (Plain::Text("strum"), "Strum")]),
     }),
-    help: &[
-        "Mode: Guitar plays a clip's chords and notes as a guitar does; Strum plays them as written and strums each chord at the very end.",
-        "Strum mode: Direction, by the beat, down, up or down up, and the Spread, Fade, Loose timing and Upstroke strings below.",
-        "Guitar mode, Left Hand: a chord is held as a hand holds it, one note a string, in the tuning, within four frets of the position,",
-        "above the capo. Single notes: leave, power chord or scale chord. Right Hand: the bar of strokes is played on whatever sounds;",
-        "ENTER on Bar edits it. Let ring: a string sounds until struck again. Each hand can be switched off.",
-        "Spread, Fade and Loose timing: the time between a strum's strings, how much quieter each is, and how uneven the gaps are.",
-    ],
 };
 pub static HOCKET: GeneratorView = GeneratorView {
     columns: &[ColumnView {
@@ -564,13 +533,6 @@ pub static HOCKET: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Source track: the track of the current song whose notes the hocketing tracks take turns at. Renaming that track renames",
-        "it here too. A track the song lacks hands out nothing.",
-        "Restart: every clip starts the turns again with the first track at each clip the source plays; on new scene and whole",
-        "song carry them on.",
-        "Each track still plays its own pattern's notes besides those it is handed.",
-    ],
 };
 pub static MUSICIAN: GeneratorView = GeneratorView {
     columns: &[
@@ -708,14 +670,6 @@ pub static MUSICIAN: GeneratorView = GeneratorView {
         },
     ],
     mode: None,
-    help: &[
-        "Plays a clip as a player of the band would. Every note is one the clip wrote: moved, left out, held or made softer.",
-        "Chords from: the track whose chords the notes follow. Tune from: the track with the tune, which the musician plays round.",
-        "Activity: fewer of the notes, or long notes struck again. Loudness and Looseness: how loud, and how evenly.",
-        "Gives way: softer under the tune, or silent until the tune rests. Accents: the notes of the bar leaned on.",
-        "Notes: as written, each held until the next, or short. Range: an octave lower or higher, inside the instrument.",
-        "Sections: a row for each kind of section the song's scenes have: whether the musician plays there, and how.",
-    ],
 };
 pub static PHRASING: GeneratorView = GeneratorView {
     columns: &[ColumnView {
@@ -754,13 +708,6 @@ pub static PHRASING: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Plays a tune as a singer would deliver it, in lines. The pattern stays as written, and no note is left out.",
-        "Line: how long a line of the tune is, a sentence of it.",
-        "Breath: the silence after each line, taken from the line's last note: none, quick or deep.",
-        "Rise and fall: each line grows louder toward its main note, a long note late in the line, and falls away.",
-        "Notes: choppy, each note short with space after; as written; or flowing, each note held until the next.",
-    ],
 };
 pub static SHAPES: GeneratorView = GeneratorView {
     columns: &[ColumnView {
@@ -782,11 +729,6 @@ pub static SHAPES: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Shapes a section over time: Density, how many notes play; Swell, how loud; Articulate, how long each sounds.",
-        "Each runs from its Start to its End, in percent, over its Over, then holds, repeats or bounces back by Then.",
-        "A shape whose Start and End are both blank does nothing. Swell accent makes the strong beats louder.",
-    ],
 };
 pub static TIMING: GeneratorView = GeneratorView {
     columns: &[ColumnView {
@@ -900,11 +842,6 @@ pub static TIMING: GeneratorView = GeneratorView {
         under: false,
     }],
     mode: None,
-    help: &[
-        "Rush plays notes early and Drag plays them late, by a share of a step; Shorten plays them short; Glide runs them into the next.",
-        "Each is a row of steps from each clip's start, at its own Step, the pattern's step size unless set; a note starting on a",
-        "step that is on is changed. ENTER on Steps opens the row. A part with no step on does nothing.",
-    ],
 };
 
 /// Each plugin's view by the plugin's name.

@@ -130,7 +130,6 @@ impl What {
     pub const YES: &'static str = "YES";
     pub const NO: &'static str = "NO";
     pub const OTHER_PAGE: &'static str = "other page";
-    pub const OTHER_PANEL: &'static str = "other panel";
     pub const ANSWER: &'static str = "answer";
     pub const ADD: &'static str = "add";
     pub const INSERT: &'static str = "insert";

@@ -5041,13 +5041,8 @@ pub mod HelpDialog {
         name: "ENTER/ESC",
         what: "close",
     };
-    pub static OTHER_PANEL: Binding = Binding {
-        keys: Keys::Many(&["tab", "left", "right"]),
-        name: "Tab/←→",
-        what: "other panel",
-    };
-    pub static IN_HELP: &[&Binding] = &[&CLOSE, &OTHER_PANEL];
-    pub static IN_LEGEND: &[&Binding] = &[&CLOSE, &OTHER_PANEL];
+    pub static IN_HELP: &[&Binding] = &[&CLOSE];
+    pub static IN_LEGEND: &[&Binding] = &[&CLOSE];
     pub static CLASS: KeyClass = KeyClass {
         name: "HelpDialog",
         in_help: IN_HELP,

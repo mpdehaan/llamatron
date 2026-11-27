@@ -55,7 +55,7 @@ plain code, comments that explain why, tests that read clearly.
 ## Text and keys
 
 - **Every shown or raised text is a template constant** in `src/strings/src/texts/`, filled by name: `ERR_` for anything saying
-  what went wrong, dialog titles too, in `errors.rs`; `HELP_` in `help.rs`, one text per page, line for line as shown; `MSG_`
+  what went wrong, dialog titles too, in `errors.rs`; `MSG_`
   for all else, in the module of how it is used (labels, legends, messages, marks, names, the command line). Comments and
   documentation stay where they are.
 - **Every name used as a value is a named constant**: file keys, settings, kinds, modes, note names, chord symbols, key names,

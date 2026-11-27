@@ -1214,43 +1214,34 @@ pub(crate) fn completed_from(labels: &[String], typed: &str) -> String {
 const HELP_COLUMNS: usize = 2;
 
 /// The F1 dialog (the Python HelpDialog): every key that works on a page, the everywhere keys above the page's own, laid out
-/// in two columns, with Tab, Left and Right turning to what the page is about.
+/// in two columns.
 pub struct HelpDialog {
     place: String,
     everywhere: Vec<KeyItem>,
     own: Vec<KeyItem>,
-    about: Vec<String>,
-    /// The panel showing: the keys first, then what the page is about.
-    panel: usize,
 }
 
 impl HelpDialog {
-    /// The help of a page: where it is, the everywhere keys, its own keys and its help's lines.
-    pub fn new(place: &str, everywhere: Vec<KeyItem>, own: Vec<KeyItem>, about: Vec<String>) -> HelpDialog {
+    /// The keys of a page: where it is, the everywhere keys and its own keys.
+    pub fn new(place: &str, everywhere: Vec<KeyItem>, own: Vec<KeyItem>) -> HelpDialog {
         HelpDialog {
             place: place.to_string(),
             everywhere,
             own,
-            about,
-            panel: 0,
         }
     }
 
-    /// The heading: the page and the panel showing.
+    /// The heading: the page whose keys these are.
     fn title(&self) -> String {
-        let panel = labels::MSG_HELP_PANELS[self.panel];
-        named(messages::MSG_HELP_TITLE, &[("where", self.place.as_str().into()), ("panel", panel.into())])
+        named(messages::MSG_HELP_TITLE, &[("where", self.place.as_str().into())])
     }
 
-    /// The panel's lines: the everywhere keys, a blank line and the page's own keys, or the page's help wrapped to the width.
+    /// The everywhere keys, a blank line and the page's own keys.
     fn lines(&self, width: usize) -> Vec<Text> {
-        if self.panel == 0 {
-            let mut lines = key_columns(&self.everywhere, width, HELP_COLUMNS);
-            lines.push(Text::default());
-            lines.extend(key_columns(&self.own, width, HELP_COLUMNS));
-            return lines;
-        }
-        self.about.iter().flat_map(|line| crate::drawing::wrapped(line, width)).collect()
+        let mut lines = key_columns(&self.everywhere, width, HELP_COLUMNS);
+        lines.push(Text::default());
+        lines.extend(key_columns(&self.own, width, HELP_COLUMNS));
+        lines
     }
 
     fn bind(binding: &'static crate::keybindings::Binding) -> KeyItem {
@@ -1272,14 +1263,12 @@ impl Page for HelpDialog {
     }
 
     fn keys(&self, _app: &App) -> Vec<KeyItem> {
-        vec![Self::bind(&HelpKeys::CLOSE), Self::bind(&HelpKeys::OTHER_PANEL)]
+        vec![Self::bind(&HelpKeys::CLOSE)]
     }
 
     fn press(&mut self, app: &mut App, item: &KeyItem, _key: &str) {
         if item.is(&HelpKeys::CLOSE) {
             app.go_back();
-        } else if item.is(&HelpKeys::OTHER_PANEL) {
-            self.panel = (self.panel + 1) % labels::MSG_HELP_PANELS.len();
         }
     }
 

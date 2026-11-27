@@ -13,8 +13,6 @@ pub mod cli;
 #[rustfmt::skip]
 pub mod errors;
 #[rustfmt::skip]
-pub mod help;
-#[rustfmt::skip]
 pub mod importing;
 #[rustfmt::skip]
 pub mod labels;

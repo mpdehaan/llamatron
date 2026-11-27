@@ -62,7 +62,7 @@ Every screen is laid out the same way, from top to bottom:
 | `Ctrl+X` | Exports the current song, as [Exporting](EXPORTING.md) describes. |
 | `Ctrl+T` | The emergency stop for real-time playback: stops whatever plays and sends note offs, all notes off and all sound off on every channel the set's instruments use, on every connected device, whether or not anything is known to be playing. The status line says what was silenced. |
 | `Ctrl+Z`, `Ctrl+Y` | Undo and redo. Only changes to the set count, never moving around: typing into a cell is one change until the cursor moves, a munge is one change, and the notes count when their Save button is pressed. If an undo renames the thing a page shows, the page stays and shows it under its other name; if an undo takes the thing away, the tracker goes back to the page it was opened from and says so. |
-| `F1` | Every key that works on the page, the keys that work everywhere above the page's own; `Tab` turns to a panel saying what the page is for. Keys left off the legend to keep it short, such as `Home`, `End` and `/`, are listed here. |
+| `F1` | Every key that works on the page, the keys that work everywhere above the page's own. Keys left off the legend to keep it short, such as `Home`, `End` and `/`, are listed here. |
 | `Ctrl+C` | Quits at once, from any page or dialog, without asking about unsaved changes, and closes FluidSynth and the MIDI connections as quitting does. |
 | `F2` | Renames what the page shows or what the cursor is on, as `N` does. |
 | `F3` | About llamatron: its version, when it was built, where it lives and its license. |

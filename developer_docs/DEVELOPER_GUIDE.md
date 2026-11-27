@@ -140,8 +140,7 @@ bindings. After changing a key, `internal_tools/key_map.sh` writes
 
 Every text the program shows is a constant in `src/strings/src/texts/`, by how
 it is used: `errors.rs` for what went wrong, `labels.rs` for names on screen,
-`legends.rs` for keys, `messages.rs` for the status line and dialogs, `help.rs`
-for each page's help. A text with blanks is filled by name with `named`, so
+`legends.rs` for keys, and `messages.rs` for the status line and dialogs. A text with blanks is filled by name with `named`, so
 that `"no pattern called ({name})"` reads the same in the code and on screen.
 
 ## Rules of the Code
