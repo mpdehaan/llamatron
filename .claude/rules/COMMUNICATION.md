@@ -25,6 +25,10 @@
   then has that conversation, pausing for it, rather than going on along the chain of work.
   When the user answers questions and asks in the same message for a discussion, the discussion comes now, before any of the
   work the answers agree: the answers are recorded, and the work waits until the discussion is done.
+- **An explanation asked for is a separate discussion.** When the user asks for an explanation of something ("I need an
+  explanation", "explain", "I don't understand"), the reply about it is a separate discussion: a long explanation for a
+  reader new to it, in the tracker's words, with examples and pictures, asking no question about it, and the reply stops
+  after it for the user to discuss.
 - **A question from the user stops the work.** When the user asks a question, Claude answers it and stops, so that the user can weigh in on the answer and say whether to go on; Claude MUST NOT act on its own on what the question raises, without exception.
 - **Asking is pausing.** A reply that asks is the last thing of its turn: no commands run after it. When only unresolved questions
   remain, reply once with them and wait.
