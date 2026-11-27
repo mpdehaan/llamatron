@@ -19,6 +19,11 @@ use std::f64::consts::PI;
 /// The taps, and the longest time a tap reaches, in seconds: a bar of 4/4 at 60 quarter notes a minute.
 pub const TAP_COUNT: usize = 4;
 const LONGEST_DELAY_SECONDS: f64 = 4.0;
+/// An echo counts as gone once it has fallen 120 dB; a tail is never followed past this many repeats; and the filters and
+/// the interpolation are given this much more to settle.
+const TAIL_FLOOR: f64 = 1e-6;
+const MOST_TAIL_REPEATS: f64 = 200.0;
+const TAIL_MARGIN_SECONDS: f64 = 0.05;
 /// The most feedback, short of a repeat as loud as the last, so that it can never run away.
 const MOST_FEEDBACK: f64 = 0.9;
 /// The tempo synced taps follow until the song says, and seconds to a minute.
@@ -288,6 +293,24 @@ impl MultiTap {
             }
         }
         wet
+    }
+
+    /// How many samples the delay keeps sounding after its input falls silent: its longest sounding tap, repeated through
+    /// the feedback until the echoes have fallen 120 dB, never past the line's length a few times over.
+    pub fn tail_samples(&self) -> usize {
+        let longest = self
+            .taps
+            .iter()
+            .filter(|tap| tap.on)
+            .map(|tap| tap.target.max(tap.behind))
+            .fold(0.0f64, f64::max);
+        let repeats = if self.feedback > 0.0 {
+            (TAIL_FLOOR.ln() / self.feedback.ln()).ceil()
+        } else {
+            0.0
+        };
+        let samples = longest * (1.0 + repeats.min(MOST_TAIL_REPEATS)) + self.rate * TAIL_MARGIN_SECONDS;
+        samples.min(self.line.len() as f64 * MOST_TAIL_REPEATS) as usize
     }
 
     /// Back to rest: the line and the loop's filters silent.

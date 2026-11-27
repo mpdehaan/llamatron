@@ -201,6 +201,8 @@ pub struct Patch {
     pub lfos: LfoBank,
     pub buffer: Vec<f32>,
     pub used: bool,
+    /// How many more samples the effects keep sounding after the last voice ended, so that a delay's echoes ring out.
+    pub tail_left: usize,
     /// Each MIDI CC's last value, from 0 to 1, which the Mod Matrix's CC sources read.
     pub controls: [f64; CONTROL_COUNT],
     /// The coarse part of a tempo being sent, waiting for its fine part (engine/mod.rs, TEMPO_COARSE).
@@ -241,6 +243,7 @@ impl Patch {
             lfos: LfoBank::compiled(list(spec, "lfos"), rate).with_rate_routes(modulation::rate_routes(list(spec, "matrix"))),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
+            tail_left: 0,
             controls: [0.0; CONTROL_COUNT],
             tempo_coarse: 0.0,
             rate,
@@ -546,6 +549,17 @@ impl Patch {
         for effect in self.effects.iter_mut() {
             effect.apply(&mut self.buffer[..frames]);
         }
+        // A chunk a voice played starts the effects' tail afresh; a chunk of their tail alone counts it down.
+        if self.used {
+            self.tail_left = self.effects.iter().map(Effect::tail_samples).max().unwrap_or(0);
+        } else {
+            self.tail_left = self.tail_left.saturating_sub(frames);
+        }
+    }
+
+    /// Whether the effects are still sounding after the last voice ended, and so must still run.
+    pub fn rings(&self) -> bool {
+        self.tail_left > 0
     }
 }
 

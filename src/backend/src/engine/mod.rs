@@ -350,7 +350,8 @@ impl Engine {
         let frames = mix.len();
         for number in 0..self.instruments.len() {
             let Some(patch) = self.instruments[number].as_mut() else { continue };
-            if !patch.used {
+            // An instrument with no voice playing still runs while its effects ring, so that a delay's echoes are heard.
+            if !patch.used && !patch.rings() {
                 continue;
             }
             if safety::is_runaway(&patch.buffer[..frames]) {
@@ -668,6 +669,59 @@ mod tests {
         let disconnected = swept(full_amount, true);
         assert_eq!(disconnected, swept(0.0, false));
         assert_ne!(disconnected, swept(full_amount, false));
+    }
+
+    /// A delay's echoes ring out after the last note ends: a short note through a half-second echo is heard again half a
+    /// second later, when no voice plays any more.
+    #[test]
+    fn a_delays_echoes_ring_out_after_the_last_note() {
+        let mut spec = Value::Map(Vec::new());
+        let oscillators = Value::Map(vec![
+            ("type".into(), "basic".into()),
+            ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
+        ]);
+        let envelope = Value::Map(vec![
+            ("type".into(), "adsr".into()),
+            ("attack".into(), 0.001.into()),
+            ("release".into(), 0.01.into()),
+        ]);
+        let half_second_tap = Value::Map(vec![("seconds".into(), 0.5.into()), ("level".into(), 1.0.into()), ("on".into(), true.into())]);
+        let silent_tap = Value::Map(vec![("on".into(), false.into())]);
+        let delay = Value::Map(vec![
+            ("effect".into(), "multitap".into()),
+            ("sync".into(), false.into()),
+            (
+                "taps".into(),
+                Value::Array(vec![half_second_tap, silent_tap.clone(), silent_tap.clone(), silent_tap]),
+            ),
+            ("feedback".into(), 0.5.into()),
+            ("mix".into(), 1.0.into()),
+        ]);
+        if let Value::Map(pairs) = &mut spec {
+            pairs.push(("oscillators".into(), oscillators));
+            pairs.push(("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])));
+            pairs.push(("effects".into(), Value::Array(vec![delay])));
+        }
+        let rate = 48000.0;
+        let mut engine = Engine::new(rate, None);
+        engine.set_instrument(0, Box::new(Patch::compiled(&spec, rate)));
+        let note_ends = (0.1 * rate) as i64;
+        engine.schedule(note(0, NOTE_ON, 60.0));
+        engine.schedule(note(note_ends, NOTE_OFF, 60.0));
+        let chunk = 512;
+        let (mut left, mut right) = (vec![0.0; chunk], vec![0.0; chunk]);
+        let mut loudest_echo = 0.0f32;
+        let echo_from = (0.5 * rate) as i64;
+        let echo_to = (0.6 * rate) as i64;
+        let mut start = 0;
+        while start < (1.0 * rate) as i64 {
+            engine.render(start, &mut left, &mut right);
+            if start >= echo_from && start < echo_to {
+                loudest_echo = left.iter().fold(loudest_echo, |most, sample| most.max(sample.abs()));
+            }
+            start += chunk as i64;
+        }
+        assert!(loudest_echo > 0.01, "the echo is heard: {loudest_echo}");
     }
 
     #[test]

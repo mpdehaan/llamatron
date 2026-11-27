@@ -184,7 +184,19 @@ fn drive(spec: &Value) -> Kind {
     Kind::Drive(Box::new(Drive::new(curve, number(spec, "amount", 0.0))))
 }
 
+/// What an effect with no memory of its own keeps sounding after its input falls silent: its oversampler's and filters'
+/// settling, in samples.
+const SHORT_TAIL_SAMPLES: usize = 4096;
+
 impl Effect {
+    /// How many samples the effect keeps sounding after its input falls silent.
+    pub fn tail_samples(&self) -> usize {
+        match &self.kind {
+            Kind::MultiTap(delay) => delay.tail_samples(),
+            _ => SHORT_TAIL_SAMPLES,
+        }
+    }
+
     /// Shape a chunk of the instrument's mix in place.
     pub fn apply(&mut self, buffer: &mut [f32]) {
         let mix = self.mix;
