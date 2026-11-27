@@ -27,6 +27,16 @@ Wanted changes to how the tracker looks and is used: what each is, never its sta
 - **Solo a track, and mute from Arrange**: soloing a track plays it alone, live and in Listen, every other track silent
   until the solo is lifted, several tracks soloed together where wanted; a track's Mute, today on its track editor, and
   its solo reached directly from Arrange, each shown on the track's heading.
+- **Drawing only what changed**: the screen kept as a grid of cells, each its character and style, and each frame compared
+  with the last so that only the cells that changed are sent to the terminal, the cursor moved only where the next changed
+  cell does not follow the last and a style sent only where it changes, after the open-source Ratatui's buffer (MIT,
+  credited where its approach is followed); the pages unchanged, every screen identical, the time and output measured
+  before and after.
+- **Smoother gauges**: every horizontal gauge filled in eighths of a cell, whole cells then one of `▏▎▍▌▋▊▉`, so that a gauge
+  shows eight times the steps at the same width, its value and width unchanged.
+- **Cheaper visualizers**: drawn through the grid of cells so that only what changed is sent, at a steady frame rate set by
+  the clock that drops a frame rather than queue it, with fewer distinct colours where that leaves more cells unchanged, the
+  anti-strobe limit kept; timed before and after.
 - **Batch pattern editing** on a group: a discussion, then building.
 - **Transpose** by scale degrees, semitones or octaves, with a mockup; Grab track removed, each Grab step choosing the track
   it grabs from; drop chords and smarter voice leading on the object tabs.

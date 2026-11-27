@@ -37,4 +37,5 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 18. DEMO_IDEAS: Other Demos, the homages and mashups last.
 19. OTHER_IDEAS: The Documents and the Tools.
 20. UX_IDEAS: Listening to a drum-track pattern; Solo a track, and mute from Arrange.
-21. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+21. UX_IDEAS: Drawing only what changed; Smoother gauges; Cheaper visualizers.
+22. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
