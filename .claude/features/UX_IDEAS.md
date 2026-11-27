@@ -411,3 +411,12 @@ In the order of their priority, the highest first.
   does, and whether an editor opened from a clip on Arrange may step at all, since the clip would still play the pattern it
   names. What it would mean for the code: `PatternEditor` swapping the pattern it edits in place, with
   `Setlist.patterns_in_group` for the order, the undo history treating the step as navigation.
+- **J for Jump, everywhere**: `J` (Jump) is the one key that jumps from a field to the page of what it names, reserved
+  for that across the program: on the Track page, with the cursor on the Instrument field, `J` opens that instrument's
+  Instrument page; the clip page's list of patterns already jumps to a pattern with it; every field naming a thing that
+  has a page of its own (a scale, a groove, a chain, a pattern, an instrument) offers it the same way, and no page binds
+  `J` to anything else.
+- **Real time without a switch**: the Real Time switch goes; a song plays in real time whenever any track of it plays
+  through an instrument that can sound, a FluidSynth instrument, an outside MIDI instrument or a LlamaSynth instrument,
+  whether or not the track has clips; the play marks on Arrange (the corner's `▶`, each scene's and clip's) are what
+  show that it can play, and with no such instrument they are not drawn.
