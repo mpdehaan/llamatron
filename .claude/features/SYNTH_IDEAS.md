@@ -297,6 +297,6 @@ In the order of their priority, the highest first.
   shrieks and crunches, sounding broken in a musical way), Buzz (unbuffered CMOS inverters as an SVF, buzzy and raspy
   with strong even harmonics), Sizzle (a bright, sizzling diode ladder, never self-oscillating, for safety), Vowel (three
   to five resonant band-passes morphing between vowels) and Comb (a delay tuned to the note, with damping and saturation
-  in its loop); and Pole Mix, a Mode of the OTA and the Ladder mixing their stages' outputs into high-pass, band-pass,
-  notch and the responses between.
+  in its loop); and a Pole Mix option on the OTA and the Ladder, mixing their stages' outputs, its choices the
+  responses the mixes make: high-pass, band-pass, notch and those between.
 
