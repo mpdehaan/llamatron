@@ -67,6 +67,10 @@ internal_tools/check_before_commit.sh                              # before comm
   One shared screen reader in the test support does the reading, and a test starts from a scenario helper there. The same
   holds for the screenshots.
 - Keys are pressed by binding, never as letters; text the program shows is checked through its constant.
+- **Layout is checked without baselines**: at every place the key tour reaches, at 80x24 and 160x50, no line overflows,
+  every box joint meets its neighbours' arms, a focused layer has one cursor, a column's values start in line, a table's
+  widths hold as its values step, and the legend and F1 fit 80x24; each low-level widget has unit tests of its widths,
+  joints, scrolling and search.
 - A test asserts on a named part (the set's data, the status line, a field's shown value), never on a whole screen.
 - Keep the suite small: test a behaviour once, at the layer a person meets it. Nothing the compiler guarantees is tested.
 - Tests use the program's contract, its public types, functions and the document's methods, never a type's private parts.

@@ -7,7 +7,8 @@ plain code, comments that explain why, tests that read clearly.
 
 ## Readability
 
-- **Bounds for stepping**: moving through a list goes through the one stepping helper, which handles an empty list.
+- **Bounds for stepping**: moving through a list goes through the one stepping helper, which handles an empty list. A
+  direction is a value, such as up or left, never a key's name compared as text.
 - **Readable over clever.** Explicit, simple, flat; errors never pass silently. Code a reader must stop to work out is allowed
   only for measured speed, with a comment saying why.
 - **Timing comes first where it matters.** The synthesis and every timing-sensitive path (the audio callback, the sender, the

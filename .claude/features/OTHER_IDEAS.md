@@ -58,7 +58,24 @@ built.
 
 ## The Documents and the Tools
 
-- **Page tests that read the page**: one screen reader in a shared test-support module, which draws the tracker's screen
+- **Page tests that read the page**, built on shared widgets and a layout map, in this order:
+  1. The widgets consolidated, needing no design decision: one cell-width measure, with `fit`, padding, slicing and the
+     canvas in cells and one way of centring; one stepping helper taking a direction value, replacing every comparison
+     of a key's name; one search (typed text, matches, settle, complete, its keys and status) for the list pages, the
+     pickers, the sound dialog and the Patterns and Generators pages; one viewport with a centred and a least-scroll
+     policy for every scrolled list; a boxes module whose junction function works each box character out from the arms
+     that meet, and one frame for every rectangle; one step grid for the pattern grid, the one-row editors, the Draws
+     strip and the statement table; a button that changes its name (Listen and Stop listening) sized to its widest
+     state and acted on by id; table widths worked out by the drawing from each column's widest possible value, with no
+     padding in a field's value; a value from above (`(from scene)`) as one field kind giving its shown value, its
+     `Bksp` wording and its picker's first entry from one source, and one builder of the ramp fields; two-column choices
+     in the picker; one dialog of fields drawn as a settings page draws them, for New pattern, Import and the keyswitch
+     dialogs; and the Patterns and Generators pages as list pages, with tabs or groups.
+  2. After a design with drawings is agreed, which also settles which box edges are dim: styles as named roles mapped in
+     one theme table; and one layout pass returning the lines with a map of every label, value, button and cursor and
+     where each is drawn, which the keys read too, so that no page keeps what it drew, and the pattern editor lays out
+     in the area it is given.
+  3. One screen reader in a shared test-support module, which draws the tracker's screen
   at 80x24 and answers as a person reading it (the cursor's line, where a label is drawn, the value beside it, the legend,
   the status line, a dialog's title and choices, the tabs, Arrange's headings and boxed cell), with verbs that act as a
   person does (go to a label by the arrows, open a tab, choose a listed choice, press a key through the tracker); every
@@ -66,6 +83,13 @@ built.
   comparison and its baselines removed, its crash sweep and the key map's walk kept, the song wizard alone still held to
   the Python's frozen screens; the renders' and exports' answers committed in git and changed with
   `--record-approved-export-change`, every example changed since the freeze given llamatron's own (`.claude/rules/TESTING.md`).
+  The screen reader reads the layout map and checks that each thing is drawn where the map says. Layout checks run at
+  every place the key tour reaches, at 80x24 and 160x50, with no baselines: no line overflows (none cut silently), every
+  box joint meets its neighbours' arms, one cursor in a focused layer, a column's values start in line, a table's widths
+  hold as its values step, and the legend and F1 fit 80x24; each low-level widget has unit tests of its widths, joints,
+  scrolling and search. Every test's set is a data file read by a shared scenario helper.
+  4. Action tables for Arrange, the pattern editor and the main screen, so that the keys a page shows and the keys it
+     answers come from one list; and `.claude/tracker/` rewritten to describe the Rust's widgets and paths.
   With it, the tests the review found thin: the engine's, the exporters' and the importers' behaviour tested at their own
   layer, the command line's tests through constants and a working folder of their own, and `synth_controls` made faster.
 - **The coverage report**: a tool in `internal_tools/`, run by the commit check as a warning, listing every setting of

@@ -177,6 +177,26 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 ## Drawing
 
+- **Shared widgets draw everything they can**: a setting line, a row of cells, a table row, a heading, a tab box, a
+  button row, a list row, a picker's list, a dialog's frame, a legend, a step grid, a frame or rule and a search are
+  drawn only by their widget. A page says what to show and the widget how; a page MUST NOT pad, centre, measure or cut
+  text for layout, nor write a box character, outside a widget.
+- **Widths are terminal cells**, measured by the one cell-width function, never by a count of characters or a format
+  width.
+- **Box joints are worked out, never chosen**: every box character comes from the junction function, a frame or a grid
+  builder.
+- **A bespoke layout needs the user's yes**: a page draws its body by hand on the canvas only where no widget can show it
+  and the user agreed, today Arrange's grid, the pattern editor's grids, the main screen's cells, the visualizers and the
+  title card. Its file says why at the top, and it still reports where each thing that takes the cursor is drawn.
+- **A new widget, or a new kind of one, is proposed first**, with a drawing, the existing widget nearest to it and why
+  that one cannot grow to it; it is built with unit tests of its widths and joints before a page uses it.
+- **Two near-copies make a widget**: where a second page draws the same shape of thing as another, such as a button that
+  changes its name or a value from above, the first is moved into a shared widget rather than copied.
+- **A page draws only inside the area it is given**, never reading the screen's, the header's or the legend's height,
+  and drawing stores nothing the keys read: what the keys need of the layout is worked out by the layout and kept until
+  the width or what is shown changes.
+- **Every page passes the layout checks** at 80x24 and 160x50 (`.claude/rules/TESTING.md`); a page that fails is fixed,
+  never exempted without the user's yes.
 - Bold, dim, reverse video, box characters and `▶`, because terminal backgrounds differ; everything fits 80x24. Colour only where
   `.claude/tracker/SHARED.md` lists it; the visualizer never strobes or flashes.
 - Where lines cross or meet, the joint is the box character joining them with the right arms, breaking neither line (a plain beat

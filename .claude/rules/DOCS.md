@@ -10,6 +10,8 @@ them, the screenshots or the website.
 - Claude MAY edit them as it judges best and report what changed.
 - Every reply after a change to them gives a synopsis of what changed, grouped by document.
 - `CLAUDE.md` and `.claude/` are Claude's, to keep consistent and correct.
+- `.claude/tracker/` describes the Rust's pages and widgets by their Rust paths; a widget added, moved or renamed updates
+  it in the same change.
 
 ## The guide
 
