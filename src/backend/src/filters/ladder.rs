@@ -47,7 +47,9 @@ const FULL_SCALE: f64 = 0.35;
 /// The input level Drive at full reaches, in the same units: a fierce, square-edged growl that still stays clean at
 /// eight times the rate; Drive's knob climbs to it exponentially, so that each step of the knob sounds as large as the
 /// last.
-const MOST_DRIVEN_LEVEL: f64 = 14.3;
+const MOST_DRIVEN_LEVEL: f64 = 17.9;
+/// How the knob's turn is bent before it climbs, under one so that the grit comes on sooner in the knob's travel.
+const DRIVE_BEND: f64 = 0.75;
 /// The output's coupling capacitor, whose corner keeps the transistors' offsets from leaving a steady level.
 const COUPLING_HERTZ: f64 = 5.0;
 /// How far each stage's capacitor is off its value, and each pair's offset, at most, as shares.
@@ -206,7 +208,7 @@ impl LadderState {
     /// the rate through two halfbands, then the coupling capacitor.
     #[inline]
     pub fn process(&mut self, settings: &LadderSettings, input: f64, rate: f64) -> f64 {
-        let drive_gain = (MOST_DRIVEN_LEVEL / FULL_SCALE).powf(settings.drive);
+        let drive_gain = (MOST_DRIVEN_LEVEL / FULL_SCALE).powf(settings.drive.powf(DRIVE_BEND));
         // The tanh's scale moves with the thermal voltage, as the cutoff does.
         let thermal = 1.0 + self.drift;
         let fed = input * FULL_SCALE * drive_gain / thermal;

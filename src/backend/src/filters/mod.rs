@@ -652,13 +652,14 @@ mod tests {
         harmonic_decibels(&out, 48_000, hertz, 3)
     }
 
-    /// Drive's grit grows evenly along its knob: each quarter turn adds more of the third harmonic than the last did
-    /// below the top, from nearly clean at 0 to a fierce growl at full.
+    /// Drive's grit comes on early and keeps rising: nearly clean at 0, more of the third harmonic at every quarter turn,
+    /// well under way by the middle of the knob, and a fierce growl at full.
     #[test]
-    fn ladder_drive_grows_evenly_along_its_knob() {
+    fn ladder_drive_comes_on_early_and_keeps_rising() {
         let grits: Vec<f64> = [0.0, 0.25, 0.5, 0.75, 1.0].iter().map(|drive| ladder_grit(*drive)).collect();
         assert!(grits[0] < -60.0, "clean at 0: {:.1}", grits[0]);
-        assert!(grits.windows(2).all(|pair| pair[1] > pair[0] + 2.0), "{grits:?}");
+        assert!(grits.windows(2).all(|pair| pair[1] > pair[0]), "{grits:?}");
+        assert!(grits[2] > -25.0, "under way by the middle: {:.1}", grits[2]);
         assert!(grits[4] > -15.0, "fierce at full: {:.1}", grits[4]);
     }
 
