@@ -139,9 +139,10 @@ The professor's research is in `.claude/notes/synthesis/`.
   tracks sharing an instrument are panned and levelled apart. A track playing an instrument is its own instance of it,
   sharing the instrument's settings, not one sound shared by every track. Everything is stereo, FluidSynth included,
   each FluidSynth instrument played into a stereo pair of its own where the library allows (FluidSynth through the
-  effects, below), which opens the way to panning and chorus effects; Pan is a destination of the mod matrix. How the
-  instrument's own Pan, which FluidSynth and the General MIDI export use today, meets the track's is settled with the
-  design.
+  effects, below), which opens the way to panning and chorus effects; Pan is a destination of the mod matrix. A
+  FluidSynth instrument is panned by the mixer too, never by General MIDI's pan, wherever FluidSynth's output allows, so
+  that the effects move its place smoothly as they move a built-in synth's. How the instrument's own Pan, which the
+  General MIDI export uses today, meets the track's is settled with the design.
 - **FluidSynth through the effects**: FluidSynth playing each MIDI channel into a stereo pair of its own, so that each
   FluidSynth instrument gets the effect blocks, pan and the buses as a built-in synth does; FluidSynth's own reverb and
   chorus stay outside the chains.
