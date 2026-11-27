@@ -132,9 +132,9 @@ impl Document {
     }
 
     /// Add a track of no clips to the current song, before the track at a place or after the last.
-    pub fn add_track(&mut self, name: &str, place: Option<usize>) -> Result<(), String> {
+    pub fn add_track(&mut self, name: &str, place: Option<usize>, drum: bool) -> Result<(), String> {
         let song = self.get_current_song_name().to_string();
-        self.edit_data(|data| edits::added_track(data, &song, name, place))
+        self.edit_data(|data| edits::added_track(data, &song, name, place, drum))
     }
 
     /// Put a clip, as its data, on a track in a scene of the current song, in place of any there.

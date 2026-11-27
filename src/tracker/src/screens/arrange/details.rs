@@ -348,8 +348,9 @@ pub struct Rooms {
 pub fn details_layout(app: &App, rooms: &Rooms) -> DetailsLayout {
     let setlist = app.document.get_setlist();
     let song = app.document.song();
-    let names: Vec<String> = song.tracks().iter().map(|(name, _)| name.clone()).collect();
-    let in_tracks: Vec<Vec<DetailLine>> = song.tracks().iter().map(|(_, track)| or_stock(track_lines(track))).collect();
+    // In Arrange's order, the melodic tracks first and then the drum tracks.
+    let names: Vec<String> = song.shown_tracks().iter().map(|(name, _)| name.clone()).collect();
+    let in_tracks: Vec<Vec<DetailLine>> = song.shown_tracks().iter().map(|(_, track)| or_stock(track_lines(track))).collect();
     let in_scenes: Vec<Vec<DetailLine>> = song.scenes().iter().map(|scene| or_stock(scene_lines(song, scene))).collect();
     let longest = |lines: &[DetailLine]| lines.iter().map(|line| line.text.chars().count() + rooms.detail_room).max().unwrap_or(0);
     let mut cells = HashMap::new();

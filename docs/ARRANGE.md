@@ -17,10 +17,18 @@ with its repeat count and length. Scenes play from top to bottom. A new song
 starts with `track-1` and `scene-1`, and new tracks and scenes are numbered
 the same way until they are renamed on their own pages.
 
+The melodic tracks come first, then a heavy line, then the drum tracks, each
+group in the order the set keeps them, and each ending in a `+` that adds a
+track of its kind. A track is a melodic track or a drum track from when it is
+made, and never changes, so a clip on a drum track only ever plays a drum
+pattern: choosing a pattern for an empty cell offers only patterns of its
+track's kind, and a new pattern made there is already the right kind.
+
 Light blue lines run between the tracks and under each scene, so that the grid
 is easy to follow. A double-lined box inside a cell marks whatever the cursor
 is on: a clip, a scene, a track name, or one of the `+` places, including the
-`+` after the last track. The arrows move the box around the grid. When there
+two `+` after each group of tracks. Under the track names the `+` between the
+groups holds nothing, so the arrows pass over it. The arrows move the box around the grid. When there
 are more tracks or scenes than fit, the clips scroll while the track names and
 the scene column stay in place. An empty cell is blank until the cursor
 reaches it, when it shows `+` and `add`.
@@ -37,11 +45,12 @@ The keys depend on what is under the cursor:
 | Where | Key | What it does |
 | --- | --- | --- |
 | A track's name | `ENTER` | Open the track editor, as [Tracks](TRACKS.md) describes |
-| A track's name | `I` | Insert a blank track before it |
+| A track's name | `I` | Insert a blank track of its kind before it |
 | A track's name | `C` | Copy the track and its clips to its right, asking whether the copy plays the same patterns or copies of them |
-| A track's name | `T` | Cut the track: `P` on another track's name pastes it before that track, and `ESC` lets go |
+| A track's name | `T` | Cut the track: `P` on another track of its kind pastes it before that track, `P` on its group's `+` at the end of the group, and `ESC` lets go |
 | A track's name | `Bksp` | Delete the track and its clips, after asking; the last track can't be deleted |
-| The `+` after the last track, or any track's name | `ENTER` or `A` | Add a track at the end |
+| The `+` after the melodic tracks, or a melodic track's name | `ENTER` or `A` | Add a melodic track at the end of the melodic tracks |
+| The `+` after the drum tracks, or a drum track's name | `ENTER` or `A` | Add a drum track at the end of the drum tracks |
 | A scene's name | `ENTER` | Open the Scene page, as [Scenes](SCENES.md) describes |
 | A scene's row | `I` | Insert a blank scene above it |
 | A scene's row | `C` | Copy the scene and all its clips below it, asking whether the copy plays the same patterns or copies of them |

@@ -43,15 +43,24 @@ impl ArrangePage {
         } else if item.is(&Keys::DELETE_SCENE) {
             self.delete_scene(app);
         } else if item.is(&Keys::ADD_TRACK) || item.is(&Keys::ADD_TRACK_HERE) {
+            // On a + column, a track of that column's kind; on a track, one of that track's kind, at the end of its group.
+            let drum = self
+                .plus_here(app)
+                .unwrap_or_else(|| self.cursor_track(app).is_some_and(|track| Self::is_drum_track(app, &track)));
             let name = Self::new_track_name(app);
-            if Self::edited(app, |document| document.add_track(&name, None)) {
+            if Self::edited(app, |document| document.add_track(&name, None, drum)) {
                 self.row.set(HEADER_ROW);
-                self.column.set(Self::tracks(app).len() - 1 + FIRST_TRACK_COLUMN);
+                if let Some(place) = Self::place_of(app, &name) {
+                    self.column.set(place + FIRST_TRACK_COLUMN);
+                }
             }
         } else if item.is(&Keys::INSERT_TRACK) {
+            // A track of the cursor's track's kind, just before it.
+            let Some(track) = self.cursor_track(app) else { return true };
+            let drum = Self::is_drum_track(app, &track);
+            let place = app.document.song().tracks().iter().position(|(name, _)| *name == track);
             let name = Self::new_track_name(app);
-            let place = self.track_place();
-            Self::edited(app, |document| document.add_track(&name, Some(place)));
+            Self::edited(app, |document| document.add_track(&name, place, drum));
         } else if item.is(&Keys::COPY_TRACK) {
             self.copy_track(app);
         } else if item.is(&Keys::DELETE_TRACK) {
@@ -59,7 +68,8 @@ impl ArrangePage {
         } else if item.is(&Keys::ADD_CLIP) {
             self.add_clip(app);
         } else if item.is(&Keys::BLANK_PATTERN) {
-            let (row, track) = (self.row.get().max(0) as usize, Self::tracks(app)[self.track_place()].clone());
+            let Some(track) = self.cursor_track(app) else { return true };
+            let row = self.row.get().max(0) as usize;
             let crumbs = self.crumbs(app);
             blank_pattern(app, row, &track, crumbs);
         } else if item.is(&Keys::PASTE) {
@@ -185,7 +195,7 @@ impl ArrangePage {
     /// Ask whether a copy of the cursor's track shares its patterns or gets copies of them, then put the copy to its right
     /// with its clips and move onto it.
     fn copy_track(&self, app: &mut App) {
-        let name = Self::tracks(app)[self.track_place()].clone();
+        let Some(name) = self.cursor_track(app) else { return };
         let title = named(messages::MSG_COPY_TRACK_TITLE, &[("name", name.as_str().into())]);
         let (row, column) = (self.row.get(), self.column.get());
         ask_how_patterns_copy(
@@ -222,7 +232,7 @@ impl ArrangePage {
             app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
             return;
         }
-        let name = tracks[self.track_place()].clone();
+        let Some(name) = self.cursor_track(app) else { return };
         let song = app.document.song();
         let clips = song.scenes().iter().filter(|scene| scene.get_clip_slot(&name).is_some()).count();
         let grabbing = song
@@ -250,12 +260,15 @@ impl ArrangePage {
     /// Ask what the empty cell's clip plays: a new blank pattern first, or one of the set's patterns.
     fn add_clip(&self, app: &mut App) {
         let row = self.row.get().max(0) as usize;
-        let track = Self::tracks(app)[self.track_place()].clone();
+        let Some(track) = self.cursor_track(app) else { return };
+        // A clip holds only a pattern of its track's kind.
+        let drum = Self::is_drum_track(app, &track);
         let patterns = sorted_names(
             &app.document
                 .get_setlist()
                 .items(Section::PATTERNS)
                 .iter()
+                .filter(|(_, item)| matches!(item, llamatron_model::objects::setlist::Item::Pattern(pattern) if pattern.is_drum() == drum))
                 .map(|(name, _)| name.clone())
                 .collect::<Vec<_>>(),
         );
@@ -280,7 +293,16 @@ impl ArrangePage {
     fn paste_clip(&self, app: &mut App) {
         let Some(copied) = &self.copied else { return };
         let row = self.row.get().max(0) as usize;
-        let track = Self::tracks(app)[self.track_place()].clone();
+        let Some(track) = self.cursor_track(app) else { return };
+        let copied_drum = app.document.get_setlist().get_item(Section::PATTERNS, &copied.get_pattern_name());
+        let fits = match copied_drum {
+            Some(llamatron_model::objects::setlist::Item::Pattern(pattern)) => pattern.is_drum() == Self::is_drum_track(app, &track),
+            _ => true,
+        };
+        if !fits {
+            app.refuse(messages::MSG_PASTE_CLIP_AMONG_ITS_KIND);
+            return;
+        }
         let mut clip = copied.clone();
         let grab = clip.get_written(ClipSlotSetting::GRAB_TRACK).and_then(Data::as_str).map(str::to_string);
         let dropped = grab.filter(|other| *other == track || Self::grab_circles(app, row, &track, other));
@@ -297,7 +319,7 @@ impl ArrangePage {
     /// Delete the cursor's clip after asking.
     fn delete_clip(&self, app: &mut App) {
         let row = self.row.get().max(0) as usize;
-        let track = Self::tracks(app)[self.track_place()].clone();
+        let Some(track) = self.cursor_track(app) else { return };
         let question = named(messages::MSG_DELETE_CLIP_QUESTION, &[("track", track.as_str().into())]);
         confirm_delete(
             app,

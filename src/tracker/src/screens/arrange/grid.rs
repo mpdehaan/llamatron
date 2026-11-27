@@ -47,17 +47,20 @@ pub enum Piece {
         text: String,
         kind: Kind,
     },
-    /// The grid's dividers: the scene column's double bar and a bar before each track, faint under a visualizer.
+    /// The grid's dividers: the scene column's double bar and a bar before each track, the one before the drum tracks
+    /// heavy, faint under a visualizer.
     Dividers {
         double_at: usize,
         columns: Vec<usize>,
+        heavy_at: Option<usize>,
         faint: bool,
     },
-    /// A rule across the grid, crossing the dividers, to its end.
+    /// A rule across the grid, crossing the dividers, the heavy one in a heavy joint, to its end.
     Rule {
         end: usize,
         double_at: usize,
         crosses: Vec<usize>,
+        heavy_at: Option<usize>,
     },
     /// The mark that more tracks are off to the right.
     More {
@@ -107,20 +110,33 @@ pub fn arrange_lines(lines: &[Vec<Piece>], width: usize, frames: &[CellFrame]) -
 fn draw_piece(canvas: &mut Canvas, piece: &Piece) {
     match piece {
         Piece::Text { column, text, kind } => canvas.write(*column as i64, text, kind.style()),
-        Piece::Dividers { double_at, columns, faint } => {
+        Piece::Dividers {
+            double_at,
+            columns,
+            heavy_at,
+            faint,
+        } => {
             let style = if *faint { Style::DIM } else { Style::DETAILS_DIVIDER };
             canvas.write(*double_at as i64, if *faint { Box::BAR } else { Box::DOUBLE_BAR }, style);
             for column in columns {
-                canvas.write(*column as i64, Box::BAR, style);
+                let bar = if Some(*column) == *heavy_at { Box::HEAVY_BAR } else { Box::BAR };
+                canvas.write(*column as i64, bar, style);
             }
         }
-        Piece::Rule { end, double_at, crosses } => {
+        Piece::Rule {
+            end,
+            double_at,
+            crosses,
+            heavy_at,
+        } => {
             canvas.write(0, &Box::RULE.repeat(*end), Style::DETAILS_DIVIDER);
             canvas.write(*double_at as i64, Box::DOUBLE_CROSS, Style::DETAILS_DIVIDER);
             for column in crosses {
-                canvas.write(*column as i64, Box::CROSS, Style::DETAILS_DIVIDER);
+                let cross = if Some(*column) == *heavy_at { Box::HEAVY_CROSS } else { Box::CROSS };
+                canvas.write(*column as i64, cross, Style::DETAILS_DIVIDER);
             }
-            canvas.write(*end as i64, Box::RIGHT_TEE, Style::DETAILS_DIVIDER);
+            let tee = if Some(*end) == *heavy_at { Box::HEAVY_RIGHT_TEE } else { Box::RIGHT_TEE };
+            canvas.write(*end as i64, tee, Style::DETAILS_DIVIDER);
         }
         Piece::More { column } => canvas.write(*column as i64, Box::MORE, Style::DIM),
         Piece::Detail {

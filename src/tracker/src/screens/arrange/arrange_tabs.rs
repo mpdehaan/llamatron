@@ -356,6 +356,13 @@ pub fn ask_name_or_above(app: &mut App, title: &str, above: &str, names: Vec<Str
     ask_choice(app, title, options, choices, current.unwrap_or(FROM_ABOVE));
 }
 
+/// Ask for a name among some, with nothing from above to take: a track's instrument, which is changed but never taken
+/// away.
+pub fn ask_name(app: &mut App, title: &str, names: Vec<String>, current: Option<&str>) {
+    let first = names.first().cloned().unwrap_or_default();
+    ask_choice(app, title, names.clone(), names, current.unwrap_or(&first));
+}
+
 /// The value a picker's answer stores: the name chosen, or None for the first choice.
 pub fn chosen_name(chosen: &str) -> Option<Data> {
     (chosen != FROM_ABOVE).then(|| Data::text(chosen))

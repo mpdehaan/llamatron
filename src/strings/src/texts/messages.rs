@@ -329,6 +329,8 @@ pub const MSG_CUT_SCENE: &str = "cut scene ({name}): P pastes it before the scen
 pub const MSG_CUT_TRACK: &str = "cut track ({name}): P pastes it before the track under the cursor, ESC lets go";
 pub const MSG_CUT_CLIP: &str = "cut clip ({name}): P pastes it into the empty cell under the cursor, ESC lets go";
 pub const MSG_PASTE_NEEDS_AN_EMPTY_CELL: &str = "a clip pastes only into an empty cell";
+pub const MSG_PASTE_TRACK_AMONG_ITS_KIND: &str = "a track pastes only among tracks of its kind";
+pub const MSG_PASTE_CLIP_AMONG_ITS_KIND: &str = "a clip pastes only onto a track of its pattern's kind";
 /// What a list page's M picked up, carried by the arrows.
 pub const MSG_MOVING: &str = "moving {what}: the arrows carry it, ENTER drops it";
 /// ESC letting go of what T cut, nothing moved.

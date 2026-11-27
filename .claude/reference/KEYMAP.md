@@ -28,6 +28,7 @@ the place. The keys that work everywhere are listed once:
 - **track**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` track settings · `C` copy track · `I` insert track · `T` cut track · `Bksp` delete track · `M` mute · `S` solo · `D` details · `Tab` cell details · `Z` visualizer · `F` fracture
 - **empty**: `ESC` back · `←↑↓→` move · `A` add scene · `ENTER` add clip · `B` blank pattern · `M` mute · `S` solo · `I` insert scene · `D` details · `Z` visualizer · `F` fracture
 - **track plus**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer · `F` fracture
+- **drum track plus**: `ESC` back · `←↑↓→` move · `A` add track · `ENTER` add track · `D` details · `Z` visualizer · `F` fracture
 
 
 ## ChainEditor
@@ -372,8 +373,8 @@ the place. The keys that work everywhere are listed once:
 
 - **Name**: `ESC` back · `↑↓` move · `ENTER` rename · `Tab` to tabs · `F2` rename
 - **Tabs**: `ESC` back · `↑↓` move · `←→` move · `Tab` into tab · `F2` rename
-- **Instrument**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
-- **Drum**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Instrument**: `ESC` back · `↑↓` move · `←→` move · `ENTER` choose · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
+- **Kind**: `ESC` back · `↑↓` move · `←→` move · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Transpose**: `ESC` back · `↑↓` move · `←→` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` 0 · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **CC 2**: `ESC` back · `↑↓` move · `[` dec · `]` inc · `ENTER` edit · `Bksp` (none) · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename
 - **Mute**: `ESC` back · `↑↓` move · `←→` move · `Space/ENTER` toggle · `PgUp/PgDn` next tab · `Tab` to tabs · `F2` rename

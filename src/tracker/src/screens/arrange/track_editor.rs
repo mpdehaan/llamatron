@@ -35,9 +35,9 @@ fn whole(value: Option<&Data>) -> Option<i64> {
     value.and_then(Data::as_whole).map(|whole| whole as i64)
 }
 
-/// The ids of the Settings tab's fields, in the order the tab makes them, and the first of the MIDI CC lanes'.
+/// The ids of the Settings tab's fields, in the order the tab makes them, and the first of the MIDI CC lanes'; the Kind
+/// line between Instrument and Mute only shows, and takes no key.
 const INSTRUMENT: usize = FIRST_OWN + 1;
-const DRUM: usize = FIRST_OWN + 2;
 const MUTE: usize = FIRST_OWN + 3;
 const GROOVE: usize = FIRST_OWN + 4;
 const TRANSPOSE: usize = FIRST_OWN + 5;
@@ -83,24 +83,15 @@ impl TrackEditor {
             _ => None,
         };
         match (id, edit) {
-            (DRUM | MUTE, Edit::Toggle(on)) => {
-                let setting = if id == DRUM { TrackSetting::DRUM } else { TrackSetting::MUTE };
-                if id == DRUM {
-                    if let Some(refusal) = self.drum_refusal(app, *on) {
-                        app.refuse(&refusal);
-                        return true;
-                    }
-                }
-                self.write(app, setting, on.then_some(Data::Bool(true)));
-            }
-            (INSTRUMENT, Edit::Clear) => self.write(app, TrackSetting::INSTRUMENT, None),
+            (MUTE, Edit::Toggle(on)) => self.write(app, TrackSetting::MUTE, on.then_some(Data::Bool(true))),
+            // A track's instrument is changed, never taken away: its picker offers only the instruments of its kind.
             (INSTRUMENT, Edit::Enter) => {
                 let role = if track.is_drum() { "percussion" } else { "normal" };
                 let instruments = crate::settings::sorted_names(&instruments_of_role(app, role));
                 let current = track.get_instrument_name();
-                arrange_tabs::ask_name_or_above(app, labels::MSG_INSTRUMENT_LABEL, marks::MSG_NONE_SHOWN, instruments, current.as_deref());
+                arrange_tabs::ask_name(app, labels::MSG_INSTRUMENT_LABEL, instruments, current.as_deref());
             }
-            (INSTRUMENT, Edit::Choice(chosen)) => self.write(app, TrackSetting::INSTRUMENT, arrange_tabs::chosen_name(chosen)),
+            (INSTRUMENT, Edit::Choice(chosen)) => self.write(app, TrackSetting::INSTRUMENT, Some(Data::text(chosen))),
             (GROOVE, Edit::Enter) => {
                 let current = track.get_written(TrackSetting::GROOVE).filter(|value| !value.is_null()).cloned();
                 arrange_tabs::ask_groove(app, messages::MSG_TRACK_GROOVE_TITLE, marks::MSG_SCENE_OR_SONG_GROOVE_SHOWN, current.as_ref());
@@ -157,27 +148,6 @@ impl TrackEditor {
     }
 
     /// Why the track cannot be made a drum track, or the other way, where its instrument is of the other role.
-    fn drum_refusal(&self, app: &App, on: bool) -> Option<String> {
-        use llamatron_model::objects::setlist::Item;
-        let track = self.track(app)?;
-        let instrument = track.get_instrument_name()?;
-        let Some(Item::Instrument(held)) = app.document.get_setlist().get_item(Section::INSTRUMENTS, &instrument) else {
-            return None;
-        };
-        let role = held
-            .get_written(llamatron_model::schema::generated::file_format::InstrumentSetting::ROLE)
-            .and_then(Data::as_str)
-            .unwrap_or("normal");
-        let wanted = if on { "percussion" } else { "normal" };
-        (role != wanted).then(|| {
-            let role = named_in(labels::MSG_ROLE_NAMES, role).to_lowercase();
-            named(
-                llamatron_strings::errors::ERR_INSTRUMENT_DOES_NOT_FIT,
-                &[("instrument", instrument.as_str().into()), ("role", role.as_str().into())],
-            )
-        })
-    }
-
     fn track<'a>(&self, app: &'a App) -> Option<&'a Track> {
         app.document.song().get_track(&self.name)
     }
@@ -219,10 +189,13 @@ impl TrackEditor {
             legends::MSG_FROM_SONG_WHAT
         };
         let routing = vec![
-            Field::custom(next(), labels::MSG_INSTRUMENT_LABEL, &instrument)
-                .with_enter(legends::What::CHOOSE)
-                .with_clear(marks::MSG_NONE_SHOWN),
-            Field::toggle(next(), labels::MSG_DRUM_LABEL, drum),
+            Field::custom(next(), labels::MSG_INSTRUMENT_LABEL, &instrument).with_enter(legends::What::CHOOSE),
+            // A track is a drum track or a melodic one from when it is made, and never changes.
+            Field::custom(
+                next(),
+                labels::MSG_KIND_LABEL,
+                if drum { labels::MSG_DRUM_TRACK_KIND } else { labels::MSG_MELODIC_TRACK_KIND },
+            ),
             Field::toggle(next(), labels::MSG_MUTE_LABEL, mute),
             Field::custom(next(), labels::MSG_GROOVE_LABEL, &groove)
                 .with_adjust()

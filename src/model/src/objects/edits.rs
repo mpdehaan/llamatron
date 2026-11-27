@@ -7,6 +7,7 @@
 
 use crate::file::data::Data;
 use crate::objects::naming::name_order;
+use crate::schema::generated::file_format::TrackSetting;
 use crate::schema::generated::plugins::PLUGINS;
 
 /// The sections whose items a list of generators names: every plugin's, and the chains.
@@ -423,8 +424,9 @@ pub fn removed_scene(set: &Data, song: &str, index: usize) -> Data {
     set
 }
 
-/// A set's data with a new track of no settings and no clips added to a song, at a place among its tracks or at the end.
-pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>) -> Data {
+/// A set's data with a new track of no clips added to a song, a drum track or a melodic one, at a place among its tracks
+/// in the file's order or at the end.
+pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>, drum: bool) -> Data {
     let mut set = set.clone();
     let Some(held) = song_mut(&mut set, song) else { return set };
     if held.get(TRACKS).is_none() {
@@ -432,7 +434,12 @@ pub fn added_track(set: &Data, song: &str, name: &str, place: Option<usize>) -> 
     }
     if let Some(Data::Map(tracks)) = entry_mut(held, TRACKS) {
         let at = place.unwrap_or(tracks.len()).min(tracks.len());
-        tracks.insert(at, (Data::text(name), Data::Map(Vec::new())));
+        let settings = if drum {
+            vec![(Data::text(TrackSetting::DRUM), Data::Bool(true))]
+        } else {
+            Vec::new()
+        };
+        tracks.insert(at, (Data::text(name), Data::Map(settings)));
     }
     set
 }

@@ -1076,8 +1076,8 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
             add("move", song, first, with_tracks(moved_in_section(&tracks, 0, 1)));
         }
         add("sort", song, first, with_tracks(Some(sorted_section(&tracks))));
-        add("add_track", song, ADDED, added_track(&data, song, ADDED, None));
-        add("add_track", song, ADDED, added_track(&data, song, ADDED, Some(0)));
+        add("add_track", song, ADDED, added_track(&data, song, ADDED, None, false));
+        add("add_track", song, ADDED, added_track(&data, song, ADDED, Some(0), false));
         add("fracture", song, "", fractured(&data, song).0);
         let scenes = setlist.get_song(song).map_or(Vec::new(), |held| held.scenes().to_vec());
         let Some(scene) = scenes.first() else { continue };

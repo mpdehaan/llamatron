@@ -486,6 +486,33 @@ impl Song {
         self.tracks.as_deref().unwrap_or(&[])
     }
 
+    /// The tracks as Arrange shows them: the melodic tracks in the file's order, then the drum tracks in the file's order.
+    /// The file keeps its own order, which the exports follow.
+    pub fn shown_tracks(&self) -> Vec<&(String, Track)> {
+        let (melodic, drums): (Vec<_>, Vec<_>) = self.tracks().iter().partition(|(_, track)| !track.is_drum());
+        melodic.into_iter().chain(drums).collect()
+    }
+
+    /// How many of the tracks are melodic, the first group Arrange shows.
+    pub fn melodic_count(&self) -> usize {
+        self.tracks().iter().filter(|(_, track)| !track.is_drum()).count()
+    }
+
+    /// Move a track to just before another in the file's order, or to the end of the file when there is none to go before,
+    /// as a paste on Arrange places it; false when the track is not found.
+    pub fn move_track_before(&mut self, name: &str, before: Option<&str>) -> bool {
+        let Some(tracks) = self.tracks.as_mut() else { return false };
+        let Some(from) = tracks.iter().position(|(found, _)| found == name) else {
+            return false;
+        };
+        let moved = tracks.remove(from);
+        let to = before
+            .and_then(|other| tracks.iter().position(|(found, _)| found == other))
+            .unwrap_or(tracks.len());
+        tracks.insert(to, moved);
+        true
+    }
+
     pub fn draws(&self) -> &[(String, Draw)] {
         self.draws.as_deref().unwrap_or(&[])
     }
