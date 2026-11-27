@@ -262,3 +262,75 @@ mod tests {
         assert!((level - 1.0).abs() < 0.01, "{level}");
     }
 }
+
+/// The steep decimator's length, odd so that its centre falls on a sample; where its pass band ends and its stop band
+/// begins, as shares of the doubled rate; and its window's shape, some 80 dB down.
+const STEEP_TAPS: usize = 121;
+const STEEP_PASS_SHARE: f64 = 20.0 / 96.0;
+const STEEP_STOP_SHARE: f64 = 24.0 / 96.0;
+const STEEP_KAISER_BETA: f64 = 7.9;
+
+/// The steep decimator's taps: a windowed sinc cut midway between its pass and stop bands, scaled to unity gain.
+fn steep_taps() -> [f64; STEEP_TAPS] {
+    let cut = (STEEP_PASS_SHARE + STEEP_STOP_SHARE) / 2.0;
+    let middle = (STEEP_TAPS / 2) as f64;
+    let mut taps: [f64; STEEP_TAPS] = std::array::from_fn(|place| {
+        let distance = place as f64 - middle;
+        let sinc = if distance == 0.0 {
+            2.0 * cut
+        } else {
+            (2.0 * PI * cut * distance).sin() / (PI * distance)
+        };
+        let x = distance / middle;
+        sinc * bessel_i0(STEEP_KAISER_BETA * (1.0 - x * x).max(0.0).sqrt()) / bessel_i0(STEEP_KAISER_BETA)
+    });
+    let sum: f64 = taps.iter().sum();
+    for tap in taps.iter_mut() {
+        *tap /= sum;
+    }
+    taps
+}
+
+/// Two samples at twice the rate made one by a linear-phase low pass whose stop band begins at the lower rate's half,
+/// rather than straddling it as a halfband's does, so that nothing above that half folds back down into the top octave.
+/// It is longer than a halfband and every tap counts, so it is kept for the last step down of a curve that makes strong
+/// harmonics up there, such as Drive's. Textbook Kaiser-window design, our own implementation.
+#[derive(Clone, Copy, Debug)]
+pub struct SteepDecimator {
+    taps: [f64; STEEP_TAPS],
+    /// The last samples at the doubled rate, written twice over so that reading needs no wrapping.
+    ring: [f64; 2 * STEEP_TAPS],
+    /// Where the newest sample sits.
+    place: usize,
+}
+
+impl Default for SteepDecimator {
+    fn default() -> Self {
+        SteepDecimator {
+            taps: steep_taps(),
+            ring: [0.0; 2 * STEEP_TAPS],
+            place: 0,
+        }
+    }
+}
+
+impl SteepDecimator {
+    /// A sample at the doubled rate kept, flushed of a value too small to matter.
+    #[inline]
+    fn push(&mut self, value: f64) {
+        self.place = (self.place + 1) % STEEP_TAPS;
+        let value = crate::dsp::flushed(value);
+        self.ring[self.place] = value;
+        self.ring[self.place + STEEP_TAPS] = value;
+    }
+
+    /// Two samples at twice the rate, in order of time, made one at the rate.
+    #[inline]
+    pub fn down(&mut self, first: f64, second: f64) -> f64 {
+        self.push(first);
+        self.push(second);
+        // The newest sample sits at place + STEEP_TAPS, so the window of the last STEEP_TAPS reads straight from place + 1.
+        let window = &self.ring[self.place + 1..self.place + 1 + STEEP_TAPS];
+        window.iter().zip(self.taps.iter()).map(|(sample, tap)| sample * tap).sum()
+    }
+}

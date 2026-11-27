@@ -9,7 +9,9 @@ none.
 Cutoff is where the filter starts cutting, in hertz. Env 2 opens it on each
 note by its Env amount, a share of several octaves; below zero, Env 2 closes
 it instead. Key track moves the cutoff with the note, so that a high note is
-as bright as a low one. Drive pushes the sound into the filter for grit. The
+as bright as a low one. Drive pushes the sound into the filter for grit; any
+driven filter runs its Drive at twice the sample rate or more, smoothed so that
+a high note driven hard stays clean rather than whistling. The
 cutoff is moved in octaves, by all of these and the [Mod
 Matrix](MOD_MATRIX.md) together, sample by sample.
 

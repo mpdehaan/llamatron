@@ -15,6 +15,7 @@
 //! already band-limited.
 
 use crate::dsp::{flushed, Biquad, BUTTERWORTH_Q};
+use crate::voice::drive::SmoothTanh;
 use std::f64::consts::PI;
 
 /// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a
@@ -188,6 +189,8 @@ pub struct AcidFilterState {
     highpass: OnePoleHighpass,
     notch: Biquad,
     last_input: f64,
+    /// Drive's curve, anti-aliased, at the fast rate.
+    drive_curve: SmoothTanh,
 }
 
 impl AcidFilterState {
@@ -206,6 +209,7 @@ impl AcidFilterState {
             highpass: OnePoleHighpass::new(AFTER_HIGHPASS_HZ, rate),
             notch: band_reject(AFTER_NOTCH_HZ, AFTER_NOTCH_OCTAVES, rate),
             last_input: 0.0,
+            drive_curve: SmoothTanh::default(),
         }
     }
 
@@ -231,14 +235,18 @@ impl AcidFilterState {
 
     /// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: the order and the sample rates of
     /// `Open303::getSample`, the filter at four times the rate, then the all-pass, high-pass and notch.
-    /// One sample through the filter: run OVERSAMPLING steps up from the last input to this one, decimate, and pass the
+    /// One sample through the filter, pushed by Drive's curve at the fast rate: run OVERSAMPLING steps up from the last
+    /// input to this one, decimate, and pass the
     /// result through the filters after it.
     #[inline]
-    pub fn process(&mut self, input: f64) -> f64 {
+    pub fn process(&mut self, input: f64, push: f64) -> f64 {
         let mut out = 0.0;
         for step in 1..=OVERSAMPLING {
             let share = step as f64 / OVERSAMPLING as f64;
-            let fed = self.last_input + (input - self.last_input) * share;
+            let mut fed = self.last_input + (input - self.last_input) * share;
+            if push != 1.0 {
+                fed = self.drive_curve.process(fed * push) / push.tanh();
+            }
             let mut sample = self.ladder_step(fed);
             for section in &mut self.decimation {
                 sample = section.process(sample);
@@ -286,7 +294,7 @@ mod tests {
         let mut loudest: f64 = 0.0;
         for place in 0..(rate * seconds) as usize {
             let saw = 2.0 * ((place as f64 * frequency / rate) % 1.0) - 1.0;
-            let out = state.process(saw);
+            let out = state.process(saw, 1.0);
             assert!(out.is_finite());
             loudest = loudest.max(out.abs());
         }

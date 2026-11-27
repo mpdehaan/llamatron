@@ -20,6 +20,7 @@
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::{number, word};
 use crate::voice::acid::{self, AcidFilterState};
+use crate::voice::drive::SmoothTanh;
 use crate::voice::oversample::Halfband;
 use crate::voice::sallen_key::{self, SallenKeyState};
 use rmpv::Value;
@@ -102,6 +103,8 @@ pub struct FilterState {
     sallen_key: SallenKeyState,
     /// Twice the rate for a saturating filter pushed hard (FilterPart::oversampled).
     halfband: Halfband,
+    /// Drive's curve, anti-aliased, at the rate the filter runs at.
+    drive_curve: SmoothTanh,
     /// The ladder's stages' last outputs, from which each stage's saturation is worked out for the next sample.
     outputs: [f64; 4],
 }
@@ -171,7 +174,9 @@ impl FilterPart {
         }
         let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
         let saturates = matches!(kind, FilterKind::Ladder | FilterKind::Ota | FilterKind::SallenKey);
-        let oversampled = saturates && (number(spec, "drive", 0.0) > 0.0 || resonance > OVERSAMPLED_FROM_RESONANCE);
+        let driven = number(spec, "drive", 0.0) > 0.0;
+        // Drive's curve makes harmonics far above the note, so any driven filter runs it at twice the rate or more.
+        let oversampled = (saturates && resonance > OVERSAMPLED_FROM_RESONANCE) || (driven && kind != FilterKind::Diode);
         Some(FilterPart {
             kind,
             mode,
@@ -231,28 +236,42 @@ impl FilterPart {
             state.countdown = self.coefficient_step();
         }
         state.countdown -= 1;
-        let driven = if self.push != 1.0 {
-            (input * self.push).tanh() / self.push.tanh()
+        let out = if self.oversampled {
+            // Twice the rate, so that Drive's curve and the saturating stages do not fold their harmonics back down.
+            let (first, second) = state.halfband.up(input);
+            let first = self.driven(state, first);
+            let first = self.core(state, first);
+            let second = self.driven(state, second);
+            let second = self.core(state, second);
+            state.halfband.down(first, second)
         } else {
-            input
-        };
-        let out = if self.is_ladder() {
-            if self.oversampled {
-                // Twice the rate, so that the saturating stages do not fold their harmonics back down.
-                let (first, second) = state.halfband.up(driven);
-                let first = self.ladder(state, first);
-                let second = self.ladder(state, second);
-                state.halfband.down(first, second)
-            } else {
-                self.ladder(state, driven)
-            }
-        } else {
-            self.state_variable(state, driven)
+            let driven = self.driven(state, input);
+            self.core(state, driven)
         };
         for stage in state.stages.iter_mut().chain(state.outputs.iter_mut()) {
             *stage = flushed(*stage);
         }
         self.finished(out, resonance_moved)
+    }
+
+    /// A sample pushed through Drive's curve, kept at full scale; untouched without Drive.
+    #[inline]
+    fn driven(&self, state: &mut FilterState, input: f64) -> f64 {
+        if self.push != 1.0 {
+            state.drive_curve.process(input * self.push) / self.push.tanh()
+        } else {
+            input
+        }
+    }
+
+    /// A sample through the ladder or the state-variable filter, at the rate the filter runs at.
+    #[inline]
+    fn core(&self, state: &mut FilterState, input: f64) -> f64 {
+        if self.is_ladder() {
+            self.ladder(state, input)
+        } else {
+            self.state_variable(state, input)
+        }
     }
 
     /// The Diode filter: the acid bass's own circuit after Open303 (acid.rs), its input pushed by Drive, its coefficients
@@ -268,12 +287,8 @@ impl FilterPart {
             state.countdown = self.coefficient_step();
         }
         state.countdown -= 1;
-        let driven = if self.push != 1.0 {
-            (input * self.push).tanh() / self.push.tanh()
-        } else {
-            input
-        };
-        acid.process(driven)
+        // Drive's curve runs inside the circuit's own four times the rate, so that its harmonics are filtered away.
+        acid.process(input, self.push)
     }
 
     /// The Sallen-Key: the resonant two-pole circuit (sallen_key.rs), Drive pushing its loop's saturation rather than its input, as
@@ -529,5 +544,23 @@ mod tests {
         let (quiet, loud) = (0.01, 1.0);
         assert!(peak(quiet) / quiet > 2.0, "a quiet sine still rings up");
         assert!(peak(loud) < 4.0, "{}", peak(loud));
+    }
+
+    /// Drive's curve runs inside each filter's oversampling and is anti-aliased: a loud 5 kHz sine through a fully driven
+    /// filter comes out with its stray tones well under its harmonics, where before they were 7 to 21 dB under. The
+    /// Sallen-Key, whose Drive pushes its loop, is held by its own rebuild.
+    #[test]
+    fn a_driven_filter_folds_little_back_on_a_high_note() {
+        use crate::dsp::spectrum::stray_decibels;
+        let hertz = 5_003;
+        let rate = 48_000;
+        for (kind, most_stray) in [("ladder", -40.0), ("ota", -40.0), ("multimode", -40.0), ("diode", -30.0)] {
+            let filter = part_at(kind, 0.6, 1.0, 9000.0);
+            let mut state = FilterState::default();
+            let tone = |place: usize| 0.9 * (2.0 * PI * hertz as f64 * place as f64 / rate as f64).sin();
+            let out: Vec<f32> = (0..2 * rate).map(|place| filter.process(&mut state, tone(place), 0.0, 0.0) as f32).collect();
+            let stray = stray_decibels(&out, rate, hertz);
+            assert!(stray < most_stray, "{kind}: {stray:.1} dB");
+        }
     }
 }
