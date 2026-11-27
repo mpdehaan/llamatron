@@ -12,6 +12,7 @@ pub mod error;
 pub mod generators;
 pub mod grab_source;
 pub mod groove;
+pub mod keyswitch;
 pub mod morph;
 pub mod order;
 pub mod pattern_player;

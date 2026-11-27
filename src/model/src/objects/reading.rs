@@ -12,7 +12,7 @@ use crate::objects::song::{ClipSlot, Scene, Song, Track};
 use crate::schema::checking::{time_signature, written_length};
 use crate::schema::generated::defaults;
 use crate::schema::generated::file_format::{
-    ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting,
+    ClipSlotSetting, InstrumentSetting, PatternSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE,
 };
 use crate::schema::generated::limits::{MAX_PAN, MAX_STEP_SIZE, MIN_STEPS};
 use crate::values::note::Note;
@@ -296,6 +296,24 @@ impl Instrument {
         whole(self.get_written(InstrumentSetting::PAN)).map(pan_control_of)
     }
 
+    /// The MIDI note of each of its keyswitch slots, by slot from 0, None for a slot with no note.
+    pub fn keyswitch_notes(&self) -> Vec<Option<i64>> {
+        let Some(slots) = self.get_written(InstrumentSetting::KEYSWITCHES).and_then(Data::as_list) else {
+            return Vec::new();
+        };
+        slots.iter().map(|slot| whole(slot.get(KEYSWITCH_NOTE))).collect()
+    }
+
+    /// How many milliseconds before its note a keyswitch is sent, 0 for at the same moment.
+    pub fn keyswitch_lead(&self) -> i64 {
+        whole(self.get_written(InstrumentSetting::KEYSWITCH_LEAD)).unwrap_or(defaults::DEFAULT_KEYSWITCH_LEAD)
+    }
+
+    /// Whether it plays through FluidSynth, which would sound a keyswitch as a note, rather than through a MIDI port.
+    pub fn uses_fluidsynth(&self) -> bool {
+        self.get_written(InstrumentSetting::DEVICE).and_then(Data::as_str) == Some(FLUIDSYNTH_DEVICE)
+    }
+
     /// The value of the pan CC that places the instrument where its Pan stands, set or not, 64 in the middle.
     pub fn pan_control_in_effect(&self) -> i64 {
         pan_control_of(self.get_pan())
@@ -306,6 +324,9 @@ impl Instrument {
 fn pan_control_of(percent: i64) -> i64 {
     (percent * HIGHEST_CONTROL_VALUE + PAN_HALF_STEP) / MAX_PAN
 }
+
+/// The key of a keyswitch slot's MIDI note in the file.
+const KEYSWITCH_NOTE: &str = "note";
 
 /// The highest value a MIDI CC carries, and half of one percent's share of it, rounding a pan to its nearest CC value.
 const HIGHEST_CONTROL_VALUE: i64 = 127;

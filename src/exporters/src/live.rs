@@ -10,7 +10,7 @@ use crate::xml::{parse, Element};
 use llamatron_engine::clip::Clip;
 use llamatron_engine::error::{RenderError, Rendered};
 use llamatron_engine::realizer::{Grid, GridRow};
-use llamatron_engine::timing::timed_events;
+use llamatron_engine::timing::{keyswitch_events, timed_events};
 use llamatron_math::Rational;
 use llamatron_model::values::time_signature::TimeSignature;
 use std::io::Read;
@@ -439,9 +439,15 @@ fn build_clip(
     let Some(notes_element) = element.find_mut("Notes") else {
         return refused("the Live template's clip has no notes");
     };
+    // A plugin in Live needs the keyswitch notes in the clip, beside the notes they change.
+    let switches = keyswitch_events(clip, length);
     write_notes(
         notes_element,
-        notes.iter().map(|note| (note.start, note.end, note.midi_number, note.velocity)).collect(),
+        switches
+            .iter()
+            .chain(&notes)
+            .map(|note| (note.start, note.end, note.midi_number, note.velocity))
+            .collect(),
     )?;
     let Some(envelopes) = element.find_mut("Envelopes/Envelopes") else {
         return refused("the Live template's clip has no envelopes");

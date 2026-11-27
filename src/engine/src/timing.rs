@@ -9,6 +9,7 @@ use crate::clip::Clip;
 use crate::error::{RenderError, Rendered};
 use crate::sound::{scale_sound, NoteSound, Sound};
 use llamatron_math::Rational;
+use llamatron_model::schema::generated::defaults::KEYSWITCH_VELOCITY;
 use llamatron_model::schema::generated::midi::MAX_VELOCITY;
 use llamatron_model::values::scale::Scale;
 
@@ -231,4 +232,57 @@ fn sounding_notes(position: &Sound) -> Vec<(i64, NoteSound)> {
         }
         _ => Vec::new(),
     }
+}
+
+/// The keyswitch notes a clip sends as NoteEvents, in time order, for the exports and the playback that reach a plugin.
+///
+/// Each moves with the note it belongs to, by the clip's groove and its rushes and drags, keeps its length, starts earlier
+/// by the clip's keyswitch lead where the instrument has one, never before the clip, and is cut at the clip's end, or where
+/// the same keyswitch starts again. Its velocity is always the same. They are kept apart from timed_events, so that nothing
+/// that reads a clip's music, a grab, a Hocket, Scene View or a visualizer, ever meets one.
+pub fn keyswitch_events(clip: &Clip, clip_length: Rational) -> Vec<NoteEvent> {
+    let mut events = Vec::new();
+    for note in &clip.keyswitches {
+        let mut onset = match &clip.groove {
+            Some(groove) => groove.moved(note.start),
+            None => note.start,
+        };
+        if let Some(nudge) = &clip.nudge {
+            onset = (onset + nudge.moved(note.start)).max(Rational::ZERO);
+        }
+        let end = (onset + (note.end - note.start)).min(clip_length);
+        let sent = match clip.keyswitch_lead {
+            Some(lead) => (onset - lead).max(Rational::ZERO),
+            None => onset,
+        };
+        let start = sent.min(clip_length);
+        if end > start {
+            events.push(NoteEvent {
+                start,
+                end,
+                midi_number: note.midi_number,
+                velocity: KEYSWITCH_VELOCITY,
+            });
+        }
+    }
+    // A stable sort keeps keyswitches that start together in the clip's order.
+    events.sort_by_key(|event| event.start);
+    without_overlaps(events)
+}
+
+/// Keyswitch notes in time order with each cut where the same note starts again, as a lead can make it, so that the
+/// earlier one's end never silences the later.
+fn without_overlaps(mut events: Vec<NoteEvent>) -> Vec<NoteEvent> {
+    let mut last: std::collections::HashMap<i64, usize> = std::collections::HashMap::new();
+    for place in 0..events.len() {
+        let event = events[place];
+        if let Some(before) = last.get(&event.midi_number).copied() {
+            if events[before].end > event.start {
+                events[before].end = event.start;
+            }
+        }
+        last.insert(event.midi_number, place);
+    }
+    events.retain(|event| event.end > event.start);
+    events
 }

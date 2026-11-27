@@ -11,7 +11,7 @@ use crate::realtime::row_clock::RowClock;
 use llamatron_engine::clip::Clip;
 use llamatron_engine::error::Rendered;
 use llamatron_engine::realizer::{Grid, GridRow};
-use llamatron_engine::timing::timed_events;
+use llamatron_engine::timing::{keyswitch_events, timed_events};
 use llamatron_math::Rational;
 
 /// The kinds of event, as the status byte without its channel.
@@ -176,6 +176,20 @@ pub fn clip_timeline(clip: &Clip, route: &Route, tag: &ClipTag, scene_start: Rat
             let (coarse, fine) = tempo_parts(*tempo);
             events.push(at(start, CONTROL_CHANGE, TEMPO_COARSE, coarse));
             events.push(at(start, CONTROL_CHANGE, TEMPO_FINE, fine));
+        }
+    }
+    // Keyswitches go to a plugin through a MIDI port, never to FluidSynth, which would sound each as a note, and come
+    // before the notes they change at the same instant.
+    if route.keyswitches {
+        for switch in keyswitch_events(clip, clip_length) {
+            events.push(Playing {
+                switch: true,
+                ..at(switch.start, NOTE_ON, switch.midi_number, switch.velocity)
+            });
+            events.push(Playing {
+                switch: true,
+                ..at(switch.end, NOTE_OFF, switch.midi_number, NO_VELOCITY)
+            });
         }
     }
     for note in notes {

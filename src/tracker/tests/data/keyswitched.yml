@@ -1,0 +1,38 @@
+# llamatron: a set for the keyswitch tests. A violin's slots are sustain (C0, MIDI 24), staccato (C#0, 25) and legato,
+# which has no note. The tune's first note is tied over the second step under sustain, its third note asks for staccato,
+# and its fourth for legato. The lead track plays the violin through a MIDI port, early plays one that sends each
+# keyswitch ten milliseconds before its note, and sampled plays one through FluidSynth.
+step_size: 1/4
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - name: tune
+    steps: 4
+    degree: [1, null, 1, 1]
+    tie: [false, true, false, false]
+    keyswitch: [[0], [], [1], [2]]
+instruments:
+  - name: violin
+    device: a port
+    keyswitches: [{ name: sustain, note: 24 }, { name: staccato, note: 25 }, { name: legato }, null, null, null, null, null, null, null]
+  - name: early violin
+    device: a port
+    keyswitch_lead: 10
+    keyswitches: [{ name: sustain, note: 24 }, { name: staccato, note: 25 }, { name: legato }, null, null, null, null, null, null, null]
+  - name: sampled violin
+    device: "*FluidSynth"
+    keyswitches: [{ name: sustain, note: 24 }, { name: staccato, note: 25 }, { name: legato }, null, null, null, null, null, null, null]
+songs:
+  - name: song
+    tempo: 120
+    scale: c_major
+    tracks:
+      - { name: lead, instrument: violin }
+      - { name: early, instrument: early violin }
+      - { name: sampled, instrument: sampled violin }
+    scenes:
+      - name: one
+        clips:
+          - { track: lead, pattern: tune }
+          - { track: early, pattern: tune }
+          - { track: sampled, pattern: tune }

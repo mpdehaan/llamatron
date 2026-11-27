@@ -13,6 +13,7 @@ use crate::clip::Control;
 use crate::drift::{DriftPlay, StepEffects};
 use crate::error::{RenderError, Rendered};
 use crate::grab_source::GrabSource;
+use crate::keyswitch::SwitchedSlots;
 use crate::order::{DrawnWhenAsked, StepOrder};
 use crate::registers::{holds, Registers};
 use crate::sound::{along_scale, scale_sound, NoteSound, OutOfRange, Sound};
@@ -26,7 +27,7 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::{Song, Track};
 use llamatron_model::schema::checking::written_length;
 use llamatron_model::schema::generated::defaults::{DEFAULT_PROBABILITY, DEFAULT_RATCHET};
-use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, BASS_NOTES, CC_ROWS, OMITTED_ROLES, PATTERN_ROWS, SCALE_CHORDS, TENSIONS};
+use llamatron_model::schema::generated::file_format::{Direction, Row, ACCIDENTALS, BASS_NOTES, CC_ROWS, OMITTED_ROLES, SCALE_CHORDS, TENSIONS};
 use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_PROBABILITY, MIN_PROBABILITY};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
 use llamatron_model::values::generated::note::SHARP_NAMES;
@@ -40,7 +41,7 @@ use std::rc::Rc;
 /// How many octaves away a moved note may go to find one that fits the MIDI range.
 const MAX_OCTAVE_CHANGE: i64 = 10;
 
-/// The rows the port plays so far; a pattern holding anything on another row is not ported yet.
+/// The rows a pass plays; the draws' rows are read apart.
 const PLAYED_ROWS: &[&str] = &[
     Row::DEGREE,
     Row::GATE,
@@ -60,6 +61,7 @@ const PLAYED_ROWS: &[&str] = &[
     Row::INVERSION,
     Row::DOUBLE,
     Row::BASS,
+    Row::KEYSWITCH,
     Row::BASS_OCTAVE,
     Row::CHORD_SCALE,
     Row::CC1,
@@ -111,11 +113,6 @@ const STOP: usize = 0;
 const RESTART: usize = 1;
 const MUTE: usize = 2;
 
-/// Whether a row is one the draws' code reads, apart from the rows a step plays from.
-fn is_draw_row(row: &str) -> bool {
-    NOTE_ROWS.contains(&row) || VELOCITY_ROWS.contains(&row) || RESET_ROWS.contains(&row) || STATEMENT_ROWS.iter().any(|rows| rows.contains(&row))
-}
-
 /// What one step does to the song's draws, before its statements read the values: the draws it resets, then those it takes.
 #[derive(Clone, Debug, Default)]
 struct StepDraws {
@@ -131,6 +128,8 @@ pub struct Pass {
     pub length: Rational,
     pub done: bool,
     pub controls: Vec<Control>,
+    /// The keyswitch slots its steps' notes are played with, in time order, which no morph or generator touches.
+    pub keyswitches: Vec<SwitchedSlots>,
 }
 
 /// What one step holds on the rows a pass plays.
@@ -155,6 +154,7 @@ struct StepValues {
     double: Option<String>,
     bass: Option<String>,
     bass_octave: bool,
+    keyswitch: Vec<i64>,
     chord_scale: Option<String>,
     cc: [Option<i64>; 4],
     slide: bool,
@@ -206,13 +206,8 @@ fn text(value: &Data) -> Option<String> {
     (!value.is_null()).then(|| value.python_str())
 }
 
-/// Every step's values, or the row the port does not play yet that a step of the pattern holds something on.
+/// Every step's values on the rows a pass plays.
 fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
-    for row in PATTERN_ROWS {
-        if !PLAYED_ROWS.contains(row) && !is_draw_row(row) && pattern.row(row).is_some_and(|values| values.iter().any(truthy)) {
-            return Err(RenderError::NotPorted(format!("the {row} row")));
-        }
-    }
     let mut steps = vec![StepValues::default(); pattern.get_steps() as usize];
     let column = |row: &str| pattern.row(row).map(<[Data]>::to_vec);
     for (row, values) in PLAYED_ROWS.iter().filter_map(|row| column(row).map(|values| (*row, values))) {
@@ -237,6 +232,7 @@ fn every_step_values(pattern: &Pattern) -> Rendered<Vec<StepValues>> {
                 Row::DOUBLE => step.double = text(value).filter(|double| !double.is_empty()),
                 Row::BASS => step.bass = text(value).filter(|bass| !bass.is_empty()),
                 Row::BASS_OCTAVE => step.bass_octave = truthy(value),
+                Row::KEYSWITCH => step.keyswitch = value.as_list().unwrap_or(&[]).iter().filter_map(whole).collect(),
                 Row::CHORD_SCALE => step.chord_scale = text(value).filter(|kind| !kind.is_empty()),
                 Row::SLIDE => step.slide = truthy(value),
                 Row::GRAB => step.grab = truthy(value),
@@ -413,6 +409,9 @@ impl<'a> PatternPlayer<'a> {
         let mut controls = Vec::new();
         let mut tied_to: Option<usize> = None;
         let mut leading_ties = 0;
+        // The keyswitch slots of the steps that play, and which of them the last step left for a tie to lengthen, if any.
+        let mut keyswitches: Vec<SwitchedSlots> = Vec::new();
+        let mut switch_tied_to: Option<usize> = None;
         for (slot, step) in steps.iter().enumerate() {
             let time = step_length * Rational::whole(slot as i128);
             let moment = start + time;
@@ -456,6 +455,9 @@ impl<'a> PatternPlayer<'a> {
             if values.tie {
                 if let Some(place) = tied_to {
                     sounding[place] = tied(&sounding[place], time + step_length);
+                    if let Some(switch) = switch_tied_to {
+                        keyswitches[switch].end = time + step_length;
+                    }
                 } else if slot == leading_ties {
                     leading_ties += 1;
                 }
@@ -488,6 +490,16 @@ impl<'a> PatternPlayer<'a> {
                 *self.effects.borrow_mut() = effects;
             }
             let gate = gate_of(values, step_length).min(pass_length - time);
+            switch_tied_to = None;
+            if !values.keyswitch.is_empty() {
+                // A keyswitch lasts as long as its note is written, whatever the note's probability or conditions decide.
+                switch_tied_to = Some(keyswitches.len());
+                keyswitches.push(SwitchedSlots {
+                    start: time,
+                    end: time + gate,
+                    slots: values.keyswitch.clone(),
+                });
+            }
             let step_sound = self.step(values, gate, drum, &where_, (velocity_added, note_moved), rolls, grabbed, (!muted, counting))?;
             sounding.push((time, step_sound));
         }
@@ -500,6 +512,7 @@ impl<'a> PatternPlayer<'a> {
                 length: pass_length,
                 done: false,
                 controls,
+                keyswitches,
             });
         };
         // What the pass played before its statement cut it, a note still sounding cut there.
@@ -511,6 +524,7 @@ impl<'a> PatternPlayer<'a> {
                 length: Rational::ZERO,
                 done,
                 controls: Vec::new(),
+                keyswitches: Vec::new(),
             });
         }
         let cut = crate::clip::Clip::of(sounds, None).section(Rational::ZERO, end)?;
@@ -520,6 +534,14 @@ impl<'a> PatternPlayer<'a> {
             length: end,
             done,
             controls: controls.into_iter().filter(|control| control.time < end).collect(),
+            keyswitches: keyswitches
+                .into_iter()
+                .filter(|slots| slots.start < end)
+                .map(|slots| SwitchedSlots {
+                    end: slots.end.min(end),
+                    ..slots
+                })
+                .collect(),
         })
     }
 

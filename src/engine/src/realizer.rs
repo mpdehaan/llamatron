@@ -110,6 +110,17 @@ pub fn tempo_in(scene: &Scene, song: &Song) -> Rational {
     own_tempo(scene, song).or_else(|| exact(&song.get_tempo())).unwrap_or(Rational::whole(120))
 }
 
+/// The tempo a song with none written plays at, and the milliseconds a whole note lasts at one beat a minute, four beats
+/// of sixty thousand; a tempo is read to a thousandth of a beat a minute.
+const DEFAULT_TEMPO: i128 = 120;
+const MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE: i128 = 240_000;
+const TEMPO_DENOMINATOR: i128 = 1000;
+
+/// A time in milliseconds as a share of a whole note at a tempo, a whole note lasting four beats.
+fn milliseconds_as_whole_notes(milliseconds: i64, tempo: Rational) -> Rational {
+    Rational::whole(milliseconds as i128) * tempo.limit_denominator(TEMPO_DENOMINATOR) / Rational::whole(MILLISECONDS_PER_WHOLE_NOTE_AT_ONE_BEAT_A_MINUTE)
+}
+
 /// A number rounded to some decimal places, as Python's round(number, places) rounds a float.
 fn rounded(value: f64, places: usize) -> f64 {
     format!("{value:.places$}").parse().unwrap_or(value)
@@ -352,6 +363,9 @@ impl<'a> SongRealizer<'a> {
                     self.chord_counts.borrow_mut().insert((scene.number, track.clone()), chords_in(&clip));
                     clip.nudge = self.nudge_plan(scene, track)?;
                     clip.handed = self.handed_notes(scene, track)?;
+                    if !clip.keyswitches.is_empty() {
+                        clip.keyswitch_lead = self.keyswitch_lead(scene, track)?;
+                    }
                     clips.push((track.clone(), clip));
                 }
             }
@@ -539,8 +553,8 @@ impl<'a> SongRealizer<'a> {
         let Some(((direction, spread, fade, loose_timing, upstroke_count), restart)) = found else {
             return Ok(None);
         };
-        let tempo = scene.tempo.or_else(|| exact(&self.song.get_tempo())).unwrap_or(Rational::whole(120));
-        let gap = Rational::whole(spread as i128) * tempo.limit_denominator(1000) / Rational::whole(240_000);
+        let tempo = scene.tempo.or_else(|| exact(&self.song.get_tempo())).unwrap_or(Rational::whole(DEFAULT_TEMPO));
+        let gap = milliseconds_as_whole_notes(spread, tempo);
         let start = self.run_start(scene, restart.as_deref());
         let chords_before = self.scenes[start..(scene.number - 1) as usize]
             .iter()
@@ -570,6 +584,18 @@ impl<'a> SongRealizer<'a> {
 
     /// How a clip's notes are rushed and dragged, from every lit Rush and Drag of the Timing generators its chains name, or
     /// None where there is none.
+    /// How much earlier than its note a track's instrument wants each keyswitch, in whole notes at the scene's tempo, or
+    /// None for at the same moment.
+    fn keyswitch_lead(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<Rational>> {
+        let track = self.track(track)?;
+        let milliseconds = self.song.instrument_of(track, self.setlist).map_or(0, |instrument| instrument.keyswitch_lead());
+        if milliseconds == 0 {
+            return Ok(None);
+        }
+        let tempo = scene.tempo.or_else(|| exact(&self.song.get_tempo())).unwrap_or(Rational::whole(DEFAULT_TEMPO));
+        Ok(Some(milliseconds_as_whole_notes(milliseconds, tempo)))
+    }
+
     fn nudge_plan(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<NudgePlan>> {
         let mut rows = Vec::new();
         let bar = self.song.get_time_signature().bar_length();

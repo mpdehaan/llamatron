@@ -13,6 +13,7 @@ use crate::generators::musician::{Musician, Surroundings};
 use crate::generators::phrasing::Phrasing;
 use crate::generators::timing::TimingGenerator;
 use crate::generators::Generator;
+use crate::keyswitch::{switch_notes, SwitchNote, SwitchedSlots};
 use crate::morph::{morph_controls, Blend};
 use crate::order::{ordered_patterns, DrawnWhenAsked, StepOrder};
 use crate::pattern_player::{Pass, PatternPlayer};
@@ -93,7 +94,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         // A looping clip that a step of its pattern can stop is never cut to its scene nor made to fill it.
         let looping = self.realizer.fills_its_scene(self.scene, self.track_name);
         let fill = if looping { Some(self.realizer.get_scene_length(self.scene)?) } else { None };
-        let clip = self.play_passes(&player, scale, fill)?;
+        let (clip, switched) = self.play_passes(&player, scale, fill)?;
         let controls = clip.controls.clone();
         let clip = if counting { clip } else { self.shaped(self.through_chain(clip)?)? };
         let sounds = finished_sounds(&clip, looping, fill)?;
@@ -103,6 +104,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             None => clip.total_length()?,
         };
         let controls = self.sent_controls(&controls, end)?;
+        let keyswitches = self.switch_notes(&switched, end)?;
         // A clip carries its pattern's own time signature, if it has one, for the bars a DAW draws.
         let signature = player.pattern(&self.clip_slot.get_pattern_name())?.get_time_signature();
         Ok(Clip {
@@ -118,6 +120,23 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             nudge: None,
             strum: None,
             handed: Vec::new(),
+            keyswitches,
+            keyswitch_lead: None,
+        })
+    }
+
+    /// The keyswitch notes the clip sends before it ends, in time order: each slot's note in the track's instrument, cut at
+    /// the clip's end. A track with no instrument, or one playing through FluidSynth, which would sound each as a note,
+    /// sends none; the notes are the instrument's as written, which no scale, transposing or generator reaches.
+    fn switch_notes(&self, switched: &[SwitchedSlots], end: Rational) -> Rendered<Vec<SwitchNote>> {
+        if switched.is_empty() {
+            return Ok(Vec::new());
+        }
+        let track = self.realizer.track(self.track_name)?;
+        let instrument = self.realizer.song().instrument_of(track, self.realizer.setlist());
+        Ok(match instrument {
+            Some(instrument) if !instrument.uses_fluidsynth() => switch_notes(switched, &instrument.keyswitch_notes(), end),
+            _ => Vec::new(),
         })
     }
 
@@ -392,7 +411,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
     }
 
     /// What the clip plays before any chains: its repeats, or enough passes to fill a length, cut there.
-    fn play_passes(&self, player: &PatternPlayer, scale: Option<Scale>, fill: Option<Rational>) -> Rendered<Clip> {
+    fn play_passes(&self, player: &PatternPlayer, scale: Option<Scale>, fill: Option<Rational>) -> Rendered<(Clip, Vec<SwitchedSlots>)> {
         let mut rolls = DrawnWhenAsked::new(self.seed_for(PROBABILITY_SEED));
         let mut order = StepOrder::new(DrawnWhenAsked::new(self.seed_for(DIRECTION_SEED)));
         let mut pattern_rolls = DrawnWhenAsked::new(self.seed_for(PATTERN_ORDER_SEED));
@@ -403,6 +422,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let most = if fill.is_none() && self.clip_slot.loops() { MAX_CLIP_REPEAT } else { repeat };
         let mut sounds: Vec<Sound> = Vec::new();
         let mut controls = Vec::new();
+        let mut switched: Vec<SwitchedSlots> = Vec::new();
         let mut total = Rational::ZERO;
         let mut place = 0;
         loop {
@@ -427,9 +447,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             // Ties at the start of this pass hold the note the passes so far ended with.
             if played.tied_from_before > Rational::ZERO {
                 sounds = tied_on(sounds, played.tied_from_before);
+                held_on(&mut switched, total, played.tied_from_before);
             }
             sounds.extend(played.sounds);
             controls.extend(played.controls.iter().map(|control| control.moved_by(total)));
+            switched.extend(played.keyswitches.iter().map(|slots| slots.moved_by(total)));
             total = total + played.length;
             place += 1;
             if played.done {
@@ -437,10 +459,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             }
         }
         let clip = Clip::of(sounds, scale).with_controls(controls);
-        match fill {
-            Some(fill) if fill != Rational::ZERO => clip.section(Rational::ZERO, fill),
-            _ => Ok(clip),
-        }
+        let clip = match fill {
+            Some(fill) if fill != Rational::ZERO => clip.section(Rational::ZERO, fill)?,
+            _ => clip,
+        };
+        Ok((clip, switched))
     }
 
     /// A pass part way through the clip's morph into its target: the target, played in the clip's direction or its own and
@@ -500,6 +523,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         }
         let mut sounds = Vec::new();
         let mut controls = Vec::new();
+        let mut switched: Vec<SwitchedSlots> = Vec::new();
         let mut total = Rational::ZERO;
         let mut tied_from_before = Rational::ZERO;
         let mut done = false;
@@ -509,9 +533,11 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                 tied_from_before = played.tied_from_before;
             } else if played.tied_from_before > Rational::ZERO {
                 sounds = tied_on(sounds, played.tied_from_before);
+                held_on(&mut switched, total, played.tied_from_before);
             }
             sounds.extend(played.sounds);
             controls.extend(played.controls.iter().map(|control| control.moved_by(total)));
+            switched.extend(played.keyswitches.iter().map(|slots| slots.moved_by(total)));
             total = total + played.length;
             if played.done || played.length != player.pattern_length(player.pattern(name)?) {
                 done = played.done;
@@ -524,6 +550,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             length: total,
             done,
             controls,
+            keyswitches: switched,
         })
     }
 }
@@ -587,4 +614,11 @@ pub fn draws_named(names: &llamatron_model::file::data::Data) -> Vec<usize> {
     places.sort();
     places.dedup();
     places
+}
+
+/// A keyswitch still held where the passes so far ended, lengthened by the ties a new pass starts with, as its note is.
+fn held_on(switched: &mut [SwitchedSlots], end: Rational, tied: Rational) {
+    if let Some(last) = switched.last_mut().filter(|last| last.end == end) {
+        last.end = end + tied;
+    }
 }

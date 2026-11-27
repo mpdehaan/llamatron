@@ -7,6 +7,7 @@
 use crate::error::{RenderError, Rendered};
 use crate::generators::timing::NudgePlan;
 use crate::groove::Groove;
+use crate::keyswitch::SwitchNote;
 use crate::positions::{fit_to_length, piece_of};
 use crate::sound::{NoteSound, Sound};
 use crate::timing::{NoteEvent, StrumPlan};
@@ -52,6 +53,11 @@ pub struct Clip {
     pub strum: Option<StrumPlan>,
     /// The notes a Hocket hands the clip from another track, which the timing plays with its own.
     pub handed: Vec<NoteEvent>,
+    /// The keyswitch notes the clip sends, in time order, which only the timing of what reaches a plugin reads.
+    pub keyswitches: Vec<SwitchNote>,
+    /// How much earlier than its note each keyswitch is sent, in whole notes, which the Realizer works out from the
+    /// instrument's milliseconds at the clip's tempo, or None for at the same moment.
+    pub keyswitch_lead: Option<Rational>,
 }
 
 impl Clip {
@@ -70,6 +76,8 @@ impl Clip {
             nudge: None,
             strum: None,
             handed: Vec::new(),
+            keyswitches: Vec::new(),
+            keyswitch_lead: None,
         }
     }
 
@@ -182,6 +190,8 @@ impl Clip {
             nudge: None,
             strum: None,
             handed: Vec::new(),
+            keyswitches: Vec::new(),
+            keyswitch_lead: None,
             controls: self
                 .controls
                 .iter()

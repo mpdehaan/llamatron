@@ -12,7 +12,7 @@
 use llamatron_engine::clip::Clip;
 use llamatron_engine::error::Rendered;
 use llamatron_engine::realizer::{Grid, GridColumn, GridRow};
-use llamatron_engine::timing::timed_events;
+use llamatron_engine::timing::{keyswitch_events, timed_events};
 use llamatron_math::Rational;
 use llamatron_model::values::time_signature::TimeSignature;
 
@@ -25,6 +25,8 @@ const TIME_SIGNATURE: u8 = 0;
 const SET_TEMPO: u8 = 1;
 const NOTE_OFF: u8 = 2;
 const CONTROL_CHANGE: u8 = 3;
+/// A keyswitch's note on, which a plugin has to hear before the note it changes at the same tick.
+const KEYSWITCH_ON: u8 = 4;
 const NOTE_ON: u8 = 5;
 /// The velocity mido gives a note off that names none.
 const NOTE_OFF_VELOCITY: u8 = 64;
@@ -270,10 +272,29 @@ pub fn control_events(clip: &Clip, length: Rational) -> Vec<(Rational, i64, i64)
     events
 }
 
-/// A clip's notes and CC values as events from a start tick.
-fn clip_events(clip: &Clip, start: i128) -> Rendered<Vec<MidiEvent>> {
+/// A clip's notes, its keyswitch notes where asked, and its CC values as events from a start tick. A file a General MIDI
+/// player plays leaves the keyswitch notes out, since it would sound each as a note.
+fn clip_events(clip: &Clip, start: i128, keyswitches: bool) -> Rendered<Vec<MidiEvent>> {
     let (notes, clip_length) = timed_events(clip, clip.scale.as_ref())?;
     let mut events = Vec::new();
+    let switches = if keyswitches { keyswitch_events(clip, clip_length) } else { Vec::new() };
+    for note in switches {
+        let (note_start, note_end) = (start + ticks(note.start), start + ticks(note.end));
+        if note_end > note_start {
+            events.push(MidiEvent {
+                tick: note_start,
+                kind: KEYSWITCH_ON,
+                number: note.midi_number,
+                value: note.velocity,
+            });
+            events.push(MidiEvent {
+                tick: note_end,
+                kind: NOTE_OFF,
+                number: note.midi_number,
+                value: 0,
+            });
+        }
+    }
     for note in notes {
         let (note_start, note_end) = (start + ticks(note.start), start + ticks(note.end));
         if note_end > note_start {
@@ -355,7 +376,7 @@ pub fn clip_tree(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
                     events.push(tempo_event(ticks(time), tempo));
                 }
             }
-            events.extend(clip_events(clip, 0)?);
+            events.extend(clip_events(clip, 0, true)?);
             let track = Track::of(filename.trim_end_matches(".mid"), events, ticks(clip_length), 0, Opening::default());
             files.push((filename, midi_file(SINGLE_TRACK_FILE, vec![track])));
         }
@@ -378,12 +399,12 @@ fn conductor_events(grid: &Grid, starts: &[Rational]) -> Vec<MidiEvent> {
     events
 }
 
-/// A track's notes and CC values across the whole song, each clip at its scene's start.
-fn track_events(grid: &Grid, column: &GridColumn, starts: &[Rational]) -> Rendered<Vec<MidiEvent>> {
+/// A track's notes, its keyswitch notes where asked, and its CC values across the whole song, each clip at its scene's start.
+fn track_events(grid: &Grid, column: &GridColumn, starts: &[Rational], keyswitches: bool) -> Rendered<Vec<MidiEvent>> {
     let mut events = Vec::new();
     for (row, start) in grid.rows.iter().zip(starts) {
         if let Some(clip) = clip_of(row, column) {
-            events.extend(clip_events(clip, ticks(*start))?);
+            events.extend(clip_events(clip, ticks(*start), keyswitches)?);
         }
     }
     Ok(events)
@@ -419,7 +440,13 @@ pub fn song_file_of(grid: &Grid, name: &str, general_midi: bool, kept: &dyn Fn(&
             (channel, column.gm_sound.map(|sound| (sound - 1) as u8))
         };
         let opening = Opening { program, pan };
-        tracks.push(Track::of(&column.name, track_events(grid, column, &starts)?, end, channel, opening));
+        tracks.push(Track::of(
+            &column.name,
+            track_events(grid, column, &starts, !general_midi)?,
+            end,
+            channel,
+            opening,
+        ));
     }
     let filename = if general_midi { format!("{name}_gm.mid") } else { format!("{name}.mid") };
     Ok((filename, midi_file(MULTI_TRACK_FILE, tracks)))
@@ -437,7 +464,7 @@ pub fn stems(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
             format!("{name}_stem_{:03}-{}.mid", number + 1, safe_file_name(&column.name))
         };
         let mut events = conductor_events(grid, &starts);
-        events.extend(track_events(grid, column, &starts)?);
+        events.extend(track_events(grid, column, &starts, true)?);
         files.push((
             filename,
             midi_file(SINGLE_TRACK_FILE, vec![Track::of(&column.name, events, end, 0, Opening::default())]),
@@ -470,7 +497,8 @@ pub fn timed_track(grid: &Grid, track: &str) -> Rendered<Option<TimedTrack>> {
     };
     let starts = row_starts(grid)?;
     let tempo_map = TempoMap::of(&conductor_events(grid, &starts));
-    let mut events = track_events(grid, column, &starts)?;
+    // What a track sounds leaves out its keyswitches, which sound nothing.
+    let mut events = track_events(grid, column, &starts, false)?;
     events.sort();
     let mut timed = TimedTrack {
         notes: Vec::new(),
