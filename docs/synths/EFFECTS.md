@@ -44,7 +44,10 @@ and the bottom of a bass line, and Treble everything over about 10 kHz, the
 air and sizzle of cymbals and bright synths, each from -15 dB to +15 dB, 0 dB
 unless set. The shelves are gentle, 6 dB an octave, as on the circuit, so even
 turned far the sound stays natural: a little Bass warms a thin lead, a cut of
-Treble tames a harsh one. At 0 dB both pass the sound untouched. `Bksp` brings
+Treble tames a harsh one. Each shelf follows the circuit's own curve to within
+a third of a decibel at its deepest, right up to the top of the hearing range,
+where a plainer digital design would lift too much. At 0 dB both pass the sound
+untouched. `Bksp` brings
 a gauge back to 0 dB, and Mix blends the shaped sound with the plain one.
 
 ## MultiTap
