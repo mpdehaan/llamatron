@@ -17,8 +17,9 @@ These come before every other rule, whatever the task, mode or tool permits.
   - `/tmp/claude/llamatron` (the same as `/private/tmp/claude/llamatron`): every temporary file of Claude's work MUST go here,
     in subfolders by purpose, such as demo sets for the user in `/tmp/claude/llamatron/demos`.
   - The folders under `/private/tmp` whose names start with `claude`, where Claude Code keeps session scratch files.
-  - `~/.claude/projects/-Users-michaeldehaan-Devel-llamatron/`, this project's session transcripts: read only, to recover
-    what a summary dropped, such as an agreed mockup.
+  - `~/.claude/`, on any computer: read anything there, such as this project's session transcripts and saved tool
+    results, to recover what a summary dropped or an agent's report too large to arrive (the user's allowance); never
+    written but through the memory and the tools that own it.
   - `~/.llamatron/`, where the native backend, `llamatron-backend`, keeps its rotating logs: read only, to debug it (the user's allowance).
   - FluidSynth's program, `/opt/homebrew/bin/fluidsynth` or `/usr/local/bin/fluidsynth`, and its SoundFont,
     `~/soundfonts/GeneralUser-GS.sf2`: run and read, for the WAV export and its checks (the user's allowance).
