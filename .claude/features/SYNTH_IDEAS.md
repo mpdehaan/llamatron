@@ -295,7 +295,7 @@ In the order of their priority, the highest first.
 - **New filter characters**, named for how they sound: Bite (a two-pole diode-bridge filter with low, band and high
   inputs, gritty, unstable and vocal, biting hard when driven), Break (an overloaded-integrator filter whose resonance
   shrieks and crunches, sounding broken in a musical way), Buzz (unbuffered CMOS inverters as an SVF, buzzy and raspy
-  with strong even harmonics), Sizzle (a bright, sizzling diode ladder, never self-oscillating, for safety), Vowel (three
+  with strong even harmonics), Sizzle (a bright, sizzling diode ladder), Vowel (three
   to five resonant band-passes morphing between vowels) and Comb (a delay tuned to the note, with damping and saturation
   in its loop); and a Pole Mix option on the OTA and the Ladder, mixing their stages' outputs, its choices the
   responses the mixes make: high-pass, band-pass, notch and those between.

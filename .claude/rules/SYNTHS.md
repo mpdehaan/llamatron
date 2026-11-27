@@ -23,3 +23,6 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
   test that measures how far apart they are.
 - The synthesis notes hold a chapter for each kind of device (each filter, each drum, each effect), with its full
   mathematics and coefficients.
+- No filter self-oscillates or runs away into feedback, at any setting: full Resonance and full Drive give a peak that
+  rings when the sound excites it and always dies away, never a tone of its own; a test holds every filter to it, its
+  ringing from an impulse decaying within a set time and silence staying silent.
