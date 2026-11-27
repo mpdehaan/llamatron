@@ -64,3 +64,20 @@ fn each_refused_set_says_why_it_does_not_open() {
         }
     }
 }
+
+/// A set refused only for values that have an allowed value near them opens corrected, each correction listed: a row's
+/// steps brought within its limits at once, counted.
+#[test]
+fn a_set_with_values_out_of_range_opens_corrected() {
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/refused");
+    let text = std::fs::read_to_string(folder.join("velocity_out_of_range.yml")).expect("the set is there");
+    let (setlist, corrections) = Setlist::read_text_corrected(&text, None).expect("the set opens corrected");
+    let pattern = setlist.get_pattern("tune").expect("the pattern");
+    let loudest = llamatron_model::file::data::Data::Whole(midi::MAX_VELOCITY as i128);
+    assert_eq!(pattern.row("velocity").and_then(|steps| steps.first()), Some(&loudest));
+    let changed_steps = 1;
+    assert_eq!(corrections.len(), 1);
+    assert_eq!(corrections[0].count, Some(changed_steps));
+    let unfixable = std::fs::read_to_string(folder.join("degree_not_a_degree.yml")).expect("the set is there");
+    assert!(Setlist::read_text_corrected(&unfixable, None).is_err());
+}

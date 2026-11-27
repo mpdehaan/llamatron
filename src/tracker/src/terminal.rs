@@ -33,12 +33,16 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
         .map(|config| crate::preferences::Preferences::read(&config))
         .unwrap_or_default();
     let fluidsynth_installed = crate::wav::fluidsynth_installed();
-    let document = match path {
-        Some(path) => Document::open(path).map_err(|error| format!("{}: {error}", path.display()))?,
-        None => {
-            let instrument = |drum: bool| crate::track_instrument::for_new_track(&preferences, fluidsynth_installed, drum);
-            Document::new_set(instrument(false), instrument(true))?
-        }
+    let instrument = |drum: bool| crate::track_instrument::for_new_track(&preferences, fluidsynth_installed, drum);
+    let opened = match path {
+        Some(path) => Some(Document::open_corrected(path).map_err(|error| format!("{}: {error}", path.display()))?),
+        None => None,
+    };
+    // A set whose file's values had to be corrected opens only once the Corrections dialog is answered YES, over a new set.
+    let (document, offered) = match opened {
+        Some((document, corrections)) if corrections.is_empty() => (document, None),
+        Some((document, corrections)) => (Document::new_set(instrument(false), instrument(true))?, Some((document, corrections))),
+        None => (Document::new_set(instrument(false), instrument(true))?, None),
     };
     if launch.for_recording && !launch.interactive {
         refuse_endless(&document)?;
@@ -46,6 +50,9 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     let mut tracker = Tracker::new(document);
     tracker.app.fluidsynth_installed = fluidsynth_installed;
     tracker.app.preferences = preferences;
+    if let Some((document, corrections)) = offered {
+        crate::screens::set::open_page::offer_corrected(&mut tracker.app, document, &corrections);
+    }
     start_terminal()?;
     tracker.app.session.recording = launch.for_recording;
     // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.

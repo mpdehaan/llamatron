@@ -12,7 +12,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 4. OTHER_IDEAS: No YAML in strings.
 5. OTHER_IDEAS: One source for each rule of the code; Undo recorded only when the set changed.
 6. OTHER_IDEAS: Checked writes and a lock-free sender; Dead code and comments.
-7. OTHER_IDEAS: The command line's `--force`; Settings pages by field.
+7. OTHER_IDEAS: Settings pages by field.
 8. UX_IDEAS: New names without a dash.
 9. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
 10. UX_IDEAS: Space on an empty drum Note step.

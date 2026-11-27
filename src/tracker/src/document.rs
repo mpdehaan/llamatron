@@ -5,6 +5,7 @@
 //! and the current song.
 
 use crate::history::{describe_change, History, Snapshot};
+use llamatron_model::file::corrections::Correction;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
@@ -137,6 +138,19 @@ impl Document {
             return false;
         }
         self.file_now() != self.saved
+    }
+
+    /// The set a file holds with each value that cannot be used but has an allowed value near it changed to that value,
+    /// and the corrections made; a set that took any is unsaved, since its file still holds what it did.
+    pub fn open_corrected(path: &Path) -> Result<(Document, Vec<Correction>), String> {
+        let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
+        let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
+        let (setlist, corrections) = Setlist::read_text_corrected(&text, stem).map_err(|error| error.message)?;
+        let mut document = Document::new(setlist, Some(path.to_path_buf()));
+        if !corrections.is_empty() {
+            document.dirty = true;
+        }
+        Ok((document, corrections))
     }
 
     /// The set a file holds, opened as the tracker opens it.

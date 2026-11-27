@@ -169,7 +169,17 @@ pub fn check(setting: &Setting, value: &Data, context: Option<&dyn Context>) -> 
             if value.is_null() && blank_allowed {
                 return Ok(());
             }
-            written_length(value, Rational::new(most.0 as i128, most.1 as i128)).map(|_| ())
+            let longest = Rational::new(most.0 as i128, most.1 as i128);
+            // A length too long has the longest allowed nearest it; anything else that is not a length has none.
+            written_length(value, longest).map(|_| ()).map_err(|refusal| {
+                let too_long = positive_length(value).is_ok_and(|length| length > longest);
+                let nearest = if too_long {
+                    NearestValue::Value(fraction_data(longest))
+                } else {
+                    NearestValue::None
+                };
+                InvalidValue { nearest, ..refusal }
+            })
         }
         Described::Checked {
             check: function,

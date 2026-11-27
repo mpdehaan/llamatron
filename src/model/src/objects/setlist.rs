@@ -6,6 +6,7 @@
 //! the order of the plugins' names, the chains, grooves, instruments, and the songs last. Each section is read in that
 //! order, so that each can name what the ones before it hold.
 
+use crate::file::corrections::{corrected, Correction};
 use crate::file::data::Data;
 use crate::file::layout::{as_object_layout, GENERATORS_WITHOUT_PLUGIN};
 use crate::file::migrations::migrated;
@@ -181,6 +182,24 @@ impl Setlist {
         let (moved, _) = migrated(data, file_stem);
         let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
         Setlist::from_data(&laid_out)
+    }
+
+    /// A set from a file's text, with each value that cannot be used but has an allowed value near it changed to that value,
+    /// and the corrections made: none where the file reads as it is. A problem with no allowed value near it still refuses
+    /// the file. The file itself is not changed.
+    pub fn read_text_corrected(text: &str, file_stem: Option<String>) -> Result<(Setlist, Vec<Correction>), SongFileError> {
+        let data = crate::file::data::load(text).map_err(|problem| SongFileError::plain(problem.0))?;
+        let (moved, _) = migrated(data, file_stem);
+        let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
+        let refusal = match Setlist::from_data(&laid_out) {
+            Ok(setlist) => return Ok((setlist, Vec::new())),
+            Err(refusal) => refusal,
+        };
+        let (fixed, corrections) = corrected(&laid_out);
+        if corrections.is_empty() {
+            return Err(refusal);
+        }
+        Ok((Setlist::from_data(&fixed)?, corrections))
     }
 
     pub fn from_data(data: &Data) -> Result<Setlist, SongFileError> {

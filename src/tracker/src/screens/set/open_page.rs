@@ -14,6 +14,7 @@ use crate::page::Duration;
 use crate::screens::list_page::{ListColumn, ListPage, Listing, Row};
 use crate::text::Text;
 use crate::themes::{self, Colour};
+use llamatron_model::file::corrections::Correction;
 use llamatron_strings::{labels, marks, messages, named};
 use std::path::{Path, PathBuf};
 
@@ -128,11 +129,14 @@ impl OpenPage {
     /// Open a set file in place of the set open now, and say so; a file that cannot be opened is told in a dialog, saying
     /// why.
     fn open_file(app: &mut App, path: &Path) {
-        match Document::open(path) {
-            Ok(document) => {
-                app.document = document;
+        match Document::open_corrected(path) {
+            Ok((document, corrections)) if corrections.is_empty() => {
                 app.go_back();
-                app.say(&named(messages::MSG_OPENED, &[("path", path.display().to_string().as_str().into())]));
+                take_up(app, document);
+            }
+            Ok((document, corrections)) => {
+                app.go_back();
+                offer_corrected(app, document, &corrections);
             }
             Err(error) => {
                 let told = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_CANT_OPEN_TITLE, vec![error]);
@@ -140,6 +144,38 @@ impl OpenPage {
             }
         }
     }
+}
+
+/// The most corrections the Corrections dialog lists, the rest counted, so that it always fits.
+const MOST_CORRECTIONS_SHOWN: usize = 5;
+
+/// Open a set in place of the set open now, and say so.
+fn take_up(app: &mut App, document: Document) {
+    let path = document.get_path().map(|path| path.display().to_string()).unwrap_or_default();
+    app.document = document;
+    app.say(&named(messages::MSG_OPENED, &[("path", path.as_str().into())]));
+}
+
+/// Ask whether to open a set whose file's values had to be corrected, listing the corrections, and open it on YES; on NO
+/// nothing opens.
+pub fn offer_corrected(app: &mut App, document: Document, corrections: &[Correction]) {
+    let file = document.get_file_name().unwrap_or_default();
+    let shown = corrections.len().min(MOST_CORRECTIONS_SHOWN);
+    let mut lines = vec![named(messages::MSG_CORRECTIONS_INTRO, &[("file", file.as_str().into())])];
+    lines.extend(corrections[..shown].iter().map(Correction::described));
+    if corrections.len() > shown {
+        lines.push(named(messages::MSG_CORRECTIONS_MORE, &[("count", ((corrections.len() - shown) as i64).into())]));
+    }
+    lines.push(messages::MSG_CORRECTIONS_WARNING.to_string());
+    let offered = std::cell::RefCell::new(Some(document));
+    let dialog = crate::screens::dialogs::ConfirmDialog::new(messages::MSG_CORRECTIONS_TITLE, lines, false, false).then(Box::new(
+        move |app: &mut App, _: &crate::screens::dialogs::Answer| {
+            if let Some(document) = offered.borrow_mut().take() {
+                take_up(app, document);
+            }
+        },
+    ));
+    app.show_page(Box::new(dialog));
 }
 
 impl Listing for OpenPage {
@@ -227,5 +263,32 @@ impl Listing for OpenPage {
             Self::open_file(app, &path);
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod corrections_tests {
+    use super::*;
+    use crate::app::Tracker;
+    use crate::keybindings::ConfirmDialog as ConfirmKeys;
+    use crate::keys::first_key;
+    use crate::preferences::TrackInstrumentDefault;
+
+    /// A set whose file needed corrections opens only after the Corrections dialog, listing them, is answered YES, and
+    /// then opens unsaved.
+    #[test]
+    fn a_corrected_set_opens_unsaved_after_yes() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/velocity_too_loud.yml");
+        let (document, corrections) = Document::open_corrected(&path).expect("the set opens corrected");
+        let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
+        let mut tracker = Tracker::new(Document::new_set(synth(false), synth(true)).expect("a new set"));
+        offer_corrected(&mut tracker.app, document, &corrections);
+        tracker.settle();
+        let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
+        assert!(screen.iter().any(|line| line.contains(messages::MSG_CORRECTIONS_TITLE)), "{screen:#?}");
+        assert!(tracker.app.document.get_path().is_none(), "nothing opens before the answer");
+        tracker.press(first_key(&ConfirmKeys::ANSWER));
+        assert_eq!(tracker.app.document.get_path(), Some(path.as_path()));
+        assert!(tracker.app.document.is_dirty());
     }
 }

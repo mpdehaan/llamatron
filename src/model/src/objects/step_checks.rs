@@ -9,7 +9,7 @@
 //! except on an on or off row.
 
 use crate::file::data::Data;
-use crate::schema::checking::{listed, plain_data, written_length, InvalidValue};
+use crate::schema::checking::{listed, plain_data, positive_length, written_length, InvalidValue};
 use crate::schema::generated::file_format::{
     Row, BASS_NOTES, CC_ROWS, CHORD_SYMBOLS, DOUBLINGS, DRAW_NOTE_ROWS, DRAW_RESET_ROWS, DRAW_VELOCITY_ROWS, KEYSWITCH_SLOTS, NOTE_LETTERS, OMISSIONS,
     STATEMENT_OF_ROW, TENSIONS, VALUE_NAMES,
@@ -218,6 +218,36 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
             &[("row", row.into()), ("problem", problem.into()), ("value", value.into())],
         ))),
         None => Ok(()),
+    }
+}
+
+/// The allowed value nearest a step's value that cannot be used, or None where it has none: a number brought to the
+/// nearer end of its row's limits, a degree below the lowest raised to it, and a gate too long cut to the longest.
+pub fn nearest_step(row: &str, value: &Data, drum: bool) -> Option<Data> {
+    let description = described(row);
+    let lowest = description.and_then(|description| description.lowest);
+    let highest = description.and_then(|description| description.highest);
+    let clamped = |whole: i128| {
+        let mut nearest = whole;
+        if let Some(lowest) = lowest {
+            nearest = nearest.max(lowest as i128);
+        }
+        if let Some(highest) = highest {
+            nearest = nearest.min(highest as i128);
+        }
+        Data::Whole(nearest)
+    };
+    match check_of(row) {
+        StepCheck::Number | StepCheck::Octave => value.as_whole().map(clamped),
+        StepCheck::Degree if !drum => value.as_whole().map(|degree| Data::Whole(degree.max(MIN_DEGREE as i128))),
+        StepCheck::Gate => {
+            let longest = Rational::whole(MAX_GATE as i128);
+            positive_length(value)
+                .ok()
+                .filter(|length| *length > longest)
+                .map(|_| Data::Whole(MAX_GATE as i128))
+        }
+        _ => None,
     }
 }
 

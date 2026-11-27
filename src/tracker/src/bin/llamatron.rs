@@ -16,6 +16,8 @@ struct Asked {
     song: Option<String>,
     out: Option<PathBuf>,
     replace: bool,
+    /// Export a set holding values that cannot be used, each changed to the nearest allowed value.
+    force: bool,
     /// What the tracker does by itself once it opens.
     launch: Launch,
     /// List this computer's MIDI output ports, or the visualizer modes, one a line, and do nothing else: the recorder asks.
@@ -33,7 +35,7 @@ const LAUNCH_OPTIONS: [&str; 7] = [
     "--launch-for-recording",
     "--interactive",
 ];
-const EXPORT_OPTIONS: [&str; 3] = ["--song", "--out", "--replace"];
+const EXPORT_OPTIONS: [&str; 4] = ["--song", "--out", "--replace", "--force"];
 const OPTION_SEPARATOR: &str = ", ";
 
 /// Open the tracker on the set named, or write the exports asked for, saying why where neither can be done.
@@ -81,6 +83,7 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
         song: None,
         out: None,
         replace: false,
+        force: false,
         launch: Launch::default(),
         lists_ports: false,
         lists_visualizers: false,
@@ -94,6 +97,7 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
             "--song" => asked.song = value_after(&mut words),
             "--out" => asked.out = value_after(&mut words).map(PathBuf::from),
             "--replace" => asked.replace = true,
+            "--force" => asked.force = true,
             "--autoplay" => asked.launch.autoplay = true,
             "--autoplay-quit-when-finished" => asked.launch.quit_when_finished = true,
             "--details" => asked.launch.details = true,
@@ -161,6 +165,22 @@ fn seconds_named(value: Option<String>) -> Result<f64, String> {
         .ok_or_else(|| named(cli::ERR_CLI_NEEDS_SECONDS, &[("value", value.as_str().into())]))
 }
 
+/// The set a file holds for an export. A file holding values that cannot be used, each with an allowed value near it, is
+/// read with those values in their place, each listed; without --force that is all, and the export is refused, saying to
+/// pass it. The file is never changed.
+fn corrected_for_export(path: &std::path::Path, force: bool) -> Result<llamatron_tracker::document::Document, String> {
+    let (document, corrections) = llamatron_tracker::document::Document::open_corrected(path)?;
+    let line = if force { cli::MSG_CLI_CHANGED } else { cli::MSG_CLI_WOULD_CHANGE };
+    for correction in &corrections {
+        eprintln!("{}", named(line, &[("change", correction.described().as_str().into())]));
+    }
+    if !force && !corrections.is_empty() {
+        let shown = path.display().to_string();
+        return Err(named(llamatron_strings::errors::ERR_NEEDS_FORCE, &[("path", shown.as_str().into())]));
+    }
+    Ok(document)
+}
+
 /// Write the songs of the set asked for, or the one song named, as a kind of export, each beside the set or in the
 /// directory asked for, saying where each went; an earlier export is replaced only when asked to.
 fn export(asked: &Asked, kind: &str) -> Result<(), String> {
@@ -172,7 +192,7 @@ fn export(asked: &Asked, kind: &str) -> Result<(), String> {
         ));
     }
     let path = asked.set.as_ref().ok_or_else(|| cli::ERR_CLI_NEEDS_A_SET.to_string())?;
-    let mut document = llamatron_tracker::document::Document::open(path)?;
+    let mut document = corrected_for_export(path, asked.force)?;
     let songs: Vec<String> = document.get_setlist().song_names().into_iter().map(str::to_string).collect();
     // A song is named without regard to case, as every name is.
     let chosen: Vec<String> = match &asked.song {

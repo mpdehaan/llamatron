@@ -129,8 +129,6 @@ built.
 - **Dead code and comments**: unused text and schema constants removed, the wizard's kept until its port; modules
   `pub(crate)` and the file-wide `allow(dead_code)` dropped, and every function given its comment, crate by crate with
   the lints turned on as each is clean (`.claude/rules/RUST.md`).
-- **The command line's `--force`**: exporting a file with values out of range refused unless `--force` is given, as the
-  documents describe.
 - **Settings pages by field**: each settings page's fields an enumeration rather than numbered ids, and the instrument
   editor split into a module a tab; functions over a hundred lines divided where a reader would name the parts.
 

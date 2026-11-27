@@ -1,0 +1,13 @@
+# llamatron: a set for the command line's tests, whose one pattern's first step has a Velocity louder than MIDI allows,
+# which the nearest allowed value, 127, corrects.
+scales:
+  - { name: c_major, root: C, type: major }
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4], velocity: [500, null, null, null] }
+songs:
+  - name: song
+    scale: c_major
+    tracks: [{ name: lead }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

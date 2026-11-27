@@ -130,3 +130,28 @@ fn a_tracks_octave_range_exports() {
         .expect("llamatron runs");
     assert!(run.status.success(), "{}", String::from_utf8_lossy(&run.stderr));
 }
+
+/// A set holding a value that cannot be used is refused for export, the change it would make listed, until --force
+/// exports it with the nearest allowed value in its place; the set file is not changed.
+#[test]
+fn a_set_with_a_value_out_of_range_exports_only_with_force() {
+    let folder = fresh_folder("force");
+    let set = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/velocity_too_loud.yml");
+    let before = std::fs::read_to_string(&set).expect("the set reads");
+    let export = |force: bool| {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_llamatron"));
+        command.arg(&set).args(["--to", "midi", "--replace", "--out"]).arg(&folder);
+        if force {
+            command.arg("--force");
+        }
+        command.output().expect("llamatron runs")
+    };
+    let refused = export(false);
+    assert!(!refused.status.success());
+    let said = String::from_utf8_lossy(&refused.stderr);
+    let would = llamatron_strings::cli::MSG_CLI_WOULD_CHANGE.split('{').next().expect("the line's start");
+    assert!(said.contains(would) && said.contains("--force"), "{said}");
+    let forced = export(true);
+    assert!(forced.status.success(), "{}", String::from_utf8_lossy(&forced.stderr));
+    assert_eq!(std::fs::read_to_string(&set).expect("the set reads"), before);
+}
