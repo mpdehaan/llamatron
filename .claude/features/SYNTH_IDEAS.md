@@ -83,12 +83,28 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
   contours either paraphonic or per voice.
 - **The table oscillators' level and bands**: the band-limited tables Pocket, SID and Oh3 read made right: one gain a
-  waveform, taken from its full-band table, in place of each octave's own peak, so that high notes no longer play 2 to
-  5 dB louder than low ones nor step in level at each octave; two bands an octave, or neighbouring bands crossfaded, so
-  that a note just above a band's bottom keeps its top octave; a phase precise enough for low notes, a four-point read
-  under about 100 Hz, and guard samples so that a read never wraps. Each change measured by spectrum and level and timed
-  before and after (`.claude/rules/SYNTHS.md`), its sound changing the engines that use the tables. The research is in
-  `.claude/notes/synthesis/WAVETABLES.md`.
+  waveform, taken from its full-band table (or the largest peak across its bands, for headroom), in place of each
+  band's own peak, so that a narrow pulse no longer plays 5 to 11 dB louder above 4 kHz nor steps in level at each
+  octave; two bands an octave, or neighbouring bands crossfaded, so that a note just above a band's bottom keeps its top
+  octave; the tables cached by cycle and rate and shared, rather than built again at each compile; a phase precise
+  enough for low notes, a four-point read under about 100 Hz, and guard samples so that a read never wraps. A shared
+  band-limited step module, after SameBoy's kernel (MIT), for the chips' noise and steps. Each change measured by
+  spectrum and level and timed before and after (`.claude/rules/SYNTHS.md`). The research is in
+  `.claude/notes/synthesis/WAVETABLES.md` and `CHIP_TABLES.md`.
+- **SID closer to its chip**: its noise clocked 16 shifts a tone cycle, as the chip's is, two octaves lower than today,
+  band-limited; the converter's test held to the ladder's own weights and the dip at mid-cycle, the leakage dropped or
+  kept only with the saturation curve; the combined waveforms from reSIDfp's model (GPL-2.0-or-later), with a choice of
+  the chip's two revisions and the envelope's 8-bit converter; later, the filter, the later revision's linear cutoff
+  first (`.claude/notes/synthesis/CHIP_TABLES.md`).
+- **Pocket closer to its chip**: the wave channel on its own clock, an octave under the pulses' for one register value,
+  and notes under 64 Hz played as the chip plays them; the noise on the chip's grid of divisors and shifts,
+  band-limited; and, as a faithful mode, levels from silence to full with the console's 28 Hz high-pass, which gives
+  its soft ticks and thumps, with the sweep's step of 0 checked against SameBoy (`CHIP_TABLES.md`).
+- **DustCart from the open tables**: DustCart built from Mesen2's tables (GPL-3.0), cross-checked against
+  Game_Music_Emu (LGPL-2.1-or-later): the duty sequences, the stepped triangle, the noise periods and the short mode's
+  loop, the sample channel's rates, the sweep's two complements, the console's mixer folded into each channel's levels
+  and its output filters; the triangle's buzz kept as its own sound, silenced at periods that would alias
+  (`CHIP_TABLES.md`).
 - **Durham**: A homage to the classic analog bass pedal synth, on its modern descendant's panel, exposing only what that panel
   has; the filter very nearly perfect (the D'Angelo-Välimäki ladder). Research in `MONOSYNTHS.md`, "Durham"; mockup first.
 - **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1 opening it, as

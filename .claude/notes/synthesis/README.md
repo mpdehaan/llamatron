@@ -39,3 +39,4 @@ reference of any kind.
   long ensemble tables, integrated wavetables, building tables off the callback, tables as LFOs, drums, chip, organ
   and waveshaper voices, the published measurements of a 1990s seven-saw oscillator, denser stacks, unison in open
   synthesizers, detune distributions, phase at note-on, and the costs and loudness of a stack.
+- `CHIP_TABLES.md`: the measured and derived data of three sound chips (the 1982 home computer's chip in both revisions, the 1989 handheld console, the 1983 home console) from the open emulators, with their licences: oscillators, ladder converters, combined waveforms, shift registers, envelopes, filters, period, duty, length and mixer tables, high-pass corners, wave memory at power-on, which aliasing is the chip's own, and band-limiting by tables, band-limited steps and polyBLEP.

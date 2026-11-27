@@ -6,7 +6,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. SYNTH_IDEAS: The table oscillators' level and bands.
+1. SYNTH_IDEAS: The table oscillators' level and bands; SID closer to its chip; Pocket closer to its chip.
 2. UX_IDEAS: Space on an empty drum Note step.
 3. OTHER_IDEAS: The screens comparison in Rust.
 4. DEMO_IDEAS: Engines and effects under each synth demo.
