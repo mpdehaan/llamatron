@@ -343,6 +343,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc1_wave", Preset::Text("saw")),
             ("osc1_shape", Preset::Whole(33)),
             ("osc1_tune", Preset::Whole(0)),
+            ("osc1_fine", Preset::Whole(0)),
             ("osc1_mix", Preset::Whole(8)),
             ("osc1_sub", Preset::Text("off")),
             ("osc1_on", Preset::Flag(true)),
@@ -352,6 +353,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc2_wave", Preset::Text("saw")),
             ("osc2_shape", Preset::Whole(33)),
             ("osc2_tune", Preset::Whole(8)),
+            ("osc2_fine", Preset::Whole(0)),
             ("osc2_mix", Preset::Whole(6)),
             ("osc2_sub", Preset::Text("off")),
             ("osc2_on", Preset::Flag(true)),
@@ -361,6 +363,7 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("osc3_wave", Preset::Text("square")),
             ("osc3_shape", Preset::Whole(33)),
             ("osc3_tune", Preset::Whole(-5)),
+            ("osc3_fine", Preset::Whole(0)),
             ("osc3_mix", Preset::Whole(5)),
             ("osc3_sub", Preset::Text("off")),
             ("osc3_on", Preset::Flag(true)),
@@ -571,7 +574,12 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         ]),
     ),
 ];
-pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[("waveform", Preset::Text("off")), ("detune", Preset::Whole(0)), ("level", Preset::Whole(100))]);
+pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[
+    ("waveform", Preset::Text("off")),
+    ("detune", Preset::Whole(0)),
+    ("fine", Preset::Whole(0)),
+    ("level", Preset::Whole(100)),
+]);
 pub static LFO_DEFAULTS: Preset = Preset::Map(&[
     ("on", Preset::Flag(false)),
     ("type", Preset::Text("lfo")),
@@ -655,6 +663,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc1_wave",
             "osc1_shape",
             "osc1_tune",
+            "osc1_fine",
             "osc1_mix",
             "osc1_sub",
             "osc1_on",
@@ -664,6 +673,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc2_wave",
             "osc2_shape",
             "osc2_tune",
+            "osc2_fine",
             "osc2_mix",
             "osc2_sub",
             "osc2_on",
@@ -673,6 +683,7 @@ pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
             "osc3_wave",
             "osc3_shape",
             "osc3_tune",
+            "osc3_fine",
             "osc3_mix",
             "osc3_sub",
             "osc3_on",
@@ -862,6 +873,30 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             lowest: 0,
             highest: 100,
             what: "percent",
+        },
+    ),
+    (
+        "osc1_fine",
+        SettingKind::Gauge {
+            lowest: -100,
+            highest: 100,
+            what: "tenth_cents",
+        },
+    ),
+    (
+        "osc2_fine",
+        SettingKind::Gauge {
+            lowest: -100,
+            highest: 100,
+            what: "tenth_cents",
+        },
+    ),
+    (
+        "osc3_fine",
+        SettingKind::Gauge {
+            lowest: -100,
+            highest: 100,
+            what: "tenth_cents",
         },
     ),
     (

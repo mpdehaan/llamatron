@@ -22,6 +22,7 @@ Each of the three oscillators has its own column:
 | Wave | Triangle, Shark tooth, Saw, Square, Wide pulse, Narrow pulse (Osc 3 Reverse saw in the Shark tooth's place) | The panel's six waves, on the Classic model |
 | Shape | 0 to 100% | On the Continuous model, one sweep from triangle at 0 through saw and square to a narrow pulse at 100%, in the Wave's place |
 | Tune | −2400 to +2400 cents | The oscillator's tuning against the note, a few cents for the beating that makes it fat, a fifth or an octave for a chord on one key |
+| Fine | −10.0 to +10.0 cents | A tenth of a cent at a time on top of Tune, for slow, lush beating on high notes |
 | Mix | 0 to 10 | Its level in the mixer |
 | Sub | Off, −1 octave, −2 octaves | A square under the oscillator, one or two octaves down, for weight; off unless chosen |
 | On | on or off | Whether it sounds; switched off, it still runs, so that the Mod Matrix can read it as a source |
@@ -35,7 +36,7 @@ And the panel's own settings:
 | Noise | 0 to 10 | White noise in the mixer, for breath, wind and the hiss under a snare-like hit |
 | Ring | 0 to 10 | A ring modulator, Osc 1 times Osc 2, mixed in at this level: the clangorous, bell-like sum and difference tones; heard whether or not the two sound themselves |
 | Snap | on or off | Pulls each Tune toward unison, fifths and octaves, so that a chord tuned by ear lands in tune |
-| Drift | 0 to 10 | How far each oscillator's tuning wanders, slowly and in its own way |
+| Drift | 0 to 10 | How analog the oscillators are, all at once: each sits a few cents off its tuning for good, as its parts put it, a set of its own on every instrument; each wanders slowly on its own over minutes, across notes; and each jitters very slightly from cycle to cycle, so that three oscillators in tune beat and thicken rather than sounding as one |
 | Feedback | on or off, with its amount 0 to 10 | Loops the mixer's output back into it, the classic patch of the output into the external input, for a thicker, overdriven growl |
 
 Each oscillator is also a source in the Mod Matrix, Osc 1, Osc 2 and Osc 3,

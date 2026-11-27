@@ -99,6 +99,9 @@ pub struct OscillatorState {
     pub sync_next: f64,
     pub began: f64,
     pub random: f64,
+    /// Asheville: each oscillator's fast jitter, in cents before Drift scales it, and the seeded noise it is drawn from.
+    pub jitter: [f64; 3],
+    pub jitter_noise: u64,
 }
 
 /// One of Basic's oscillators: its waveform, made every sample by voice/blep.rs, its detune in cents and its level.

@@ -128,7 +128,7 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
                 ("range", Data::Whole(half_steps)),
                 ("wave", own("wave")),
                 ("shape", share(&own("shape"), PERCENT)),
-                ("cents", own("tune")),
+                ("cents", Data::Float(cents_with_fine(&own("tune"), &own("fine")))),
                 ("mix", Data::Float(own("mix").as_whole().unwrap_or(0) as f64 / PANEL_TOP)),
                 ("sub", Data::Whole(sub)),
                 ("on", own("on")),
@@ -153,6 +153,12 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
 }
 
 /// Basic's oscillators that sound, each its waveform, its detune in cents and its level as a fraction, those off left out.
+/// A tuning in cents and its Fine in tenths of a cent, together as cents.
+fn cents_with_fine(cents: &Data, fine: &Data) -> f64 {
+    let tenths_a_cent = 10.0;
+    cents.as_whole().unwrap_or(0) as f64 + fine.as_whole().unwrap_or(0) as f64 / tenths_a_cent
+}
+
 fn basic_oscillators(sound: &Sound) -> Data {
     let count = sound.part_value(OSCILLATORS, OSCILLATORS).as_list().map_or(0, <[Data]>::len);
     let mut sounding = Vec::new();
@@ -162,7 +168,8 @@ fn basic_oscillators(sound: &Sound) -> Data {
             continue;
         }
         let level = share(&sound.oscillator(number, "level"), PERCENT);
-        sounding.push(Data::List(vec![waveform, sound.oscillator(number, "detune"), level]));
+        let cents = cents_with_fine(&sound.oscillator(number, "detune"), &sound.oscillator(number, "fine"));
+        sounding.push(Data::List(vec![waveform, Data::Float(cents), level]));
     }
     Data::List(sounding)
 }

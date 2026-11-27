@@ -260,6 +260,7 @@ type Trial = (&'static str, &'static str, &'static str);
 const TRIALS: &[Trial] = &[
     ("sid arpeggio", "{ engine: sid }", "{ engine: sid, oscillators: { type: sid, arpeggio: [0, 4, 7] } }"),
     ("basic wave", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] } }"),
+    ("basic fine", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, fine: 35 }] } }"),
     ("basic detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: saw, detune: 15 }] } }"),
     ("basic level", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }, { waveform: square, level: 20 }] } }"),
     ("lfo on", "{ engine: basic, matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
@@ -520,4 +521,38 @@ fn basic_oscillators_in_tune_mix_rather_than_lock() {
     assert!(average(&mixed) > 2.0 * average(&saw), "{} against {}", average(&mixed), average(&saw));
     let spread = mixed.iter().cloned().fold(f64::MIN, f64::max) / mixed.iter().cloned().fold(f64::MAX, f64::min);
     assert!(spread > 1.5, "each note starts the oscillators afresh: {spread}");
+}
+
+/// The loudness of each fiftieth of a second of the held part of a note, as the root of its mean square.
+fn window_levels(samples: &[f32]) -> Vec<f64> {
+    let window = (RATE / 50.0) as usize;
+    let held = (HELD_SECONDS * RATE) as usize;
+    let settled = window * 5;
+    samples[settled..held]
+        .chunks(window)
+        .map(|chunk| (chunk.iter().map(|sample| (*sample as f64).powi(2)).sum::<f64>() / chunk.len() as f64).sqrt())
+        .collect()
+}
+
+/// Asheville's three oscillators set in tune beat against each other with Drift up, as three analog oscillators do,
+/// each wandering and jittering on its own, and hold one steady level with Drift at nothing.
+#[test]
+fn ashevilles_drift_makes_oscillators_in_tune_beat() {
+    let sound = |drift: i64| {
+        format!(
+            "{{ engine: asheville, oscillators: {{ type: asheville, osc1_range: \"8\", osc2_range: \"8\", osc3_range: \"8\", osc1_wave: saw, osc2_wave: saw, osc3_wave: saw, osc1_tune: 0, osc2_tune: 0, osc3_tune: 0, drift: {drift} }}, envelopes: [{{ type: adsr, attack: 1, decay: 0, sustain: 100, release: 50 }}, {{ type: none }}, {{ type: none }}], filter: {{ type: none }} }}"
+        )
+    };
+    let swing = |drift: i64| {
+        let levels = window_levels(&played(&instrument(&sound(drift))));
+        let (most, least) = levels
+            .iter()
+            .fold((f64::MIN, f64::MAX), |(most, least), level| (most.max(*level), least.min(*level)));
+        most / least
+    };
+    let steady = swing(0);
+    let beating = swing(10);
+    // A window not lining up with the wave's cycle leaves a few percent even when nothing beats.
+    assert!(steady < 1.1, "steady without Drift: {steady:.3}");
+    assert!(beating > 1.3, "beating with Drift: {beating:.3}");
 }

@@ -84,8 +84,10 @@ fn control_number(source: &str) -> Option<i64> {
 }
 /// Asheville: its oscillators' settings, column by column; its panel's own; its Model's Continuous, which shows a Shape
 /// in each oscillator's Wave's place; and the endings that tell the two apart.
+/// Fine tuning's reach either way, in tenths of a cent: ten cents.
+const MOST_FINE_TENTHS: i64 = 100;
 const ASHEVILLE: &str = "asheville";
-const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
+const ASHEVILLE_OSCILLATORS: [[&str; 10]; 3] = [
     [
         "osc1_speed",
         "osc1_rate",
@@ -93,6 +95,7 @@ const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
         "osc1_wave",
         "osc1_shape",
         "osc1_tune",
+        "osc1_fine",
         "osc1_mix",
         "osc1_sub",
         "osc1_on",
@@ -104,6 +107,7 @@ const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
         "osc2_wave",
         "osc2_shape",
         "osc2_tune",
+        "osc2_fine",
         "osc2_mix",
         "osc2_sub",
         "osc2_on",
@@ -115,6 +119,7 @@ const ASHEVILLE_OSCILLATORS: [[&str; 9]; 3] = [
         "osc3_wave",
         "osc3_shape",
         "osc3_tune",
+        "osc3_fine",
         "osc3_mix",
         "osc3_sub",
         "osc3_on",
@@ -993,6 +998,7 @@ impl InstrumentEditor {
                         marks::MSG_TENTH_MILLISECONDS_SHOWN,
                         (true, TENTHS),
                     ),
+                    "tenth_cents" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_TENTH_CENTS_SHOWN, (false, TENTHS)),
                     "hertz" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_HERTZ_SHOWN, (true, 1)),
                     _ => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_SOUND_PERCENT_SHOWN, (false, 1)),
                 }
@@ -1064,6 +1070,16 @@ impl InstrumentEditor {
                         &named(marks::MSG_CENTS_SHOWN, &[("number", detune.into())]),
                     )
                     .with_shown_label(labels::MSG_DETUNE_LABEL),
+                    gauge(
+                        ids.at(Write::Oscillator(number, "fine")),
+                        &named(labels::MSG_OSCILLATOR_FINE_LABEL, &[("number", number.into())]),
+                        whole(&sound.oscillator(number, "fine")),
+                        (-MOST_FINE_TENTHS, MOST_FINE_TENTHS),
+                        GM_CELLS,
+                        marks::MSG_TENTH_CENTS_SHOWN,
+                        (false, TENTHS),
+                    )
+                    .with_shown_label(labels::MSG_FINE_LABEL),
                     gauge(
                         ids.at(Write::Oscillator(number, "level")),
                         &named(labels::MSG_OSCILLATOR_LEVEL_LABEL, &[("number", number.into())]),

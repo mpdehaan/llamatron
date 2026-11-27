@@ -258,6 +258,8 @@ pub const MSG_VELOCITY_AT_SHOWN: &str = "velocity {number}";
 pub const MSG_NUMBER_SHOWN: &str = "{number}";
 pub const MSG_MILLISECONDS_SHOWN: &str = "{number} ms";
 pub const MSG_CENTS_SHOWN: &str = "{number:+d} c";
+/// A tuning in tenths of a cent, shown as cents to a tenth.
+pub const MSG_TENTH_CENTS_SHOWN: &str = "{number:+.1f} c";
 pub const MSG_SEMITONES_SHOWN: &str = "{number:+d} st";
 pub const MSG_SIGNED_NUMBER_SHOWN: &str = "{number:+d}";
 pub const MSG_SID_RATE_SHOWN: &str = "{number} ({milliseconds} ms)";

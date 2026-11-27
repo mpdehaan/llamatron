@@ -1,8 +1,9 @@
 # Basic
 
 Basic is the plainest of the synths: up to three oscillators, each a Square,
-Saw, Sine, Triangle or Pulse wave, or Off, given a Detune in cents and a
-Level, through snappy ADSR envelopes and a ladder filter each note's own. Two
+Saw, Sine, Triangle or Pulse wave, or Off, given a Detune in cents, a Fine
+from −10.0 to +10.0 cents in tenths for slow beating high up, and a Level,
+through snappy ADSR envelopes and a ladder filter each note's own. Two
 saws detuned a little apart are the classic thick lead; a square an octave
 under a saw is a bass with weight.
 
@@ -27,3 +28,7 @@ detune once, and again only when something moves the pitch, so that a held
 note costs a few operations per oscillator per sample. Detune
 spreads by the Mod Matrix's Detune, so that a route can widen or narrow the
 chorus of two oscillators.
+
+The oscillators run free, as analog oscillators do: each note starts each
+oscillator at a phase of its own, so that two in tune mix into a fuller wave
+rather than locking into one fixed shape.

@@ -47,9 +47,15 @@ const MIX_GAIN: f64 = 0.5;
 /// How hard the mixer's overload saturates, and how far Feedback's loop at full turns the output back into it.
 const MIXER_PUSH: f64 = 1.2;
 const MOST_FEEDBACK: f64 = 1.5;
-/// Drift at full: how far, in cents, each oscillator wanders, and the slow rates its two wanderings run at.
+/// Drift at full: how far, in cents, each oscillator wanders, and the slow rates its two wanderings run at, each
+/// oscillator a little faster or slower than the next; how far each sits off its tuning for good, as its parts put it;
+/// and how much it jitters from cycle to cycle, in cents, and how fast that jitter moves.
 const MOST_DRIFT_CENTS: f64 = 12.0;
 const DRIFT_RATES: [f64; 2] = [0.071, 0.23];
+const DRIFT_RATE_SPREAD: [f64; 2] = [0.13, 0.17];
+const MOST_SPREAD_CENTS: f64 = 6.0;
+const MOST_JITTER_CENTS: f64 = 0.6;
+const JITTER_HERTZ: f64 = 30.0;
 /// Cold Start's extra wandering, in cents, and how long it takes to settle, in seconds since the instrument began.
 const COLD_CENTS: f64 = 25.0;
 const COLD_SETTLING_SECONDS: f64 = 12.0;
@@ -105,6 +111,10 @@ pub struct Asheville {
     pub ring: f64,
     /// Whether each oscillator's Tune is pulled toward unison, fifths and octaves.
     pub snap: bool,
+    /// What makes the instrument's oscillators a set of their own, seeded by the instrument: where each sits off its
+    /// tuning, from -1 to 1 of the most, and where each of its two slow wanderings stands, in turns.
+    pub spread: [f64; 3],
+    pub wander_phases: [[f64; 2]; 3],
 }
 
 /// The intervals Snap pulls a Tune toward, in cents either way: unison, a fifth, an octave, an octave and a fifth, two
@@ -177,7 +187,7 @@ pub fn compiled(spec: &Value) -> Asheville {
         "worn" => Character::Worn,
         _ => Character::Warm,
     };
-    Asheville {
+    let mut asheville = Asheville {
         oscillators,
         continuous: word(spec, "model", "classic") == "continuous",
         character,
@@ -186,7 +196,12 @@ pub fn compiled(spec: &Value) -> Asheville {
         noise: number(spec, "noise", 0.0).clamp(0.0, 1.0),
         ring: number(spec, "ring", 0.0).clamp(0.0, 1.0),
         snap: truth(spec, "snap", false),
-    }
+        spread: [0.0; 3],
+        wander_phases: [[0.0; 2]; 3],
+    };
+    // The instrument seeds its own set when it is placed; until then, the first set.
+    asheville.seed(0);
+    asheville
 }
 
 /// White noise from -1 to 1, a xorshift a sample, its state the voice's own.
@@ -246,17 +261,34 @@ impl Asheville {
             state.sub_phases[place] = *phase / f64::from(1u32 << octaves_down);
         }
         state.noise_state = ((random + 1.0) * 1e9) as u64 + 1;
+        state.jitter_noise = state.noise_state.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1;
+        state.jitter = [0.0; 3];
     }
 
-    /// How far an oscillator wanders from its tuning at a moment, in cents: Drift's two slow wanderings, Cold Start's
-    /// settling and Worn's mistuning and slip.
-    fn wander(&self, place: usize, pitch: f64, seconds: f64, began: f64, random: f64) -> f64 {
-        let offset = (random + 1.0) * (place as f64 + 1.0) * 2.3;
-        let slow = |rate: f64, turn: f64| (2.0 * PI * (rate * (1.0 + 0.13 * place as f64) * seconds) + offset * turn).sin();
-        let mut cents = self.drift * MOST_DRIFT_CENTS * (0.6 * slow(DRIFT_RATES[0], 1.0) + 0.4 * slow(DRIFT_RATES[1], 2.7));
+    /// Seed what makes the instrument's oscillators their own by a number, such as the instrument's: each one's spread
+    /// and where its wanderings stand, each a draw of its own, so that no two oscillators wander together.
+    pub fn seed(&mut self, number: u64) {
+        let seed = f64::from_bits(number.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1);
+        for place in 0..3 {
+            self.spread[place] = 2.0 * super::free_phase(seed, place) - 1.0;
+            self.wander_phases[place] = [super::free_phase(seed, place + 3), super::free_phase(seed, place + 6)];
+        }
+    }
+
+    /// How far an oscillator wanders from its tuning at a moment, in cents: Drift's spread, its two slow wanderings on
+    /// the instrument's own clock, so that they run on across notes, and its fast jitter; Cold Start's settling and Worn's
+    /// mistuning and slip.
+    fn wander(&self, place: usize, pitch: f64, clock: f64, began: f64, jitter: f64) -> f64 {
+        let slow = |which: usize| {
+            let rate = DRIFT_RATES[which] * (1.0 + DRIFT_RATE_SPREAD[which] * place as f64);
+            (2.0 * PI * (rate * clock + self.wander_phases[place][which])).sin()
+        };
+        let wandering = MOST_DRIFT_CENTS * (0.6 * slow(0) + 0.4 * slow(1));
+        let spread = MOST_SPREAD_CENTS * self.spread[place];
+        let mut cents = self.drift * (wandering + spread + MOST_JITTER_CENTS * jitter);
         match self.character {
             Character::Warm => {}
-            Character::ColdStart => cents += COLD_CENTS * (-began / COLD_SETTLING_SECONDS).exp() * slow(DRIFT_RATES[0], 4.1),
+            Character::ColdStart => cents += COLD_CENTS * (-began / COLD_SETTLING_SECONDS).exp() * slow(0),
             Character::Worn => {
                 cents += WORN_CENTS[place];
                 if pitch > WORN_SLIP_FROM {
@@ -272,11 +304,21 @@ impl Asheville {
     /// oscillator's value is kept in the state's sides, from -1 to 1, for the Mod Matrix's Osc 1 to Osc 3 sources.
     #[inline]
     pub fn sample(&self, state: &mut OscillatorState, pitch: f64, seconds: f64, moves: Moves, rate: f64) -> f64 {
-        let (began, random) = (state.began, state.random);
+        let began = state.began;
+        let clock = began + seconds;
+        // The jitter: white noise low-passed near JITTER_HERTZ, scaled so that its spread is one; a uniform draw's
+        // spread is 1/sqrt(3), and a one-pole of coefficient p keeps sqrt(p/2) of it.
+        let pull = (2.0 * PI * JITTER_HERTZ / rate).min(1.0);
+        let jitter_scale = 3f64.sqrt() / (pull / 2.0).sqrt();
+        if self.drift > 0.0 {
+            for jitter in state.jitter.iter_mut() {
+                *jitter += pull * (jitter_scale * white(&mut state.jitter_noise) - *jitter);
+            }
+        }
         let mut mix = 0.0;
         // Every oscillator runs, sounding or not, so that each can be read by the Mod Matrix.
         for (place, oscillator) in self.oscillators.iter().enumerate() {
-            let wandered = self.wander(place, pitch, seconds, began, random);
+            let wandered = self.wander(place, pitch, clock, began, state.jitter[place]);
             let tune = if self.snap { snapped(oscillator.cents) } else { oscillator.cents };
             let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch;
             let frequency = if let Some(hertz) = oscillator.hertz {
@@ -469,5 +511,21 @@ mod tests {
             let divided = state.sub_phases[place] * f64::from(1u32 << octaves_down);
             assert!((divided - state.phases[place]).abs() < 1e-12, "oscillator {place}");
         }
+    }
+
+    /// Each instrument's oscillators are a set of their own, seeded by the instrument: the same number makes the same
+    /// set, another number another, and no two oscillators of a set sit at one spread.
+    #[test]
+    fn each_instrument_seeds_its_own_oscillators() {
+        let spec = Value::Map(Vec::new());
+        let seeded = |number: u64| {
+            let mut asheville = compiled(&spec);
+            asheville.seed(number);
+            (asheville.spread, asheville.wander_phases)
+        };
+        assert_eq!(seeded(3), seeded(3));
+        assert_ne!(seeded(3), seeded(4));
+        let (spread, _) = seeded(3);
+        assert!(spread[0] != spread[1] && spread[1] != spread[2]);
     }
 }

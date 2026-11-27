@@ -220,6 +220,9 @@ impl Patch {
             if let Some(filter) = modular.filter.as_mut() {
                 filter.ladder.unit = crate::filters::ladder::LadderUnit::seeded(number as u64 + 1);
             }
+            if let crate::oscillators::OscillatorPart::Asheville(asheville) = &mut modular.oscillator {
+                asheville.seed(number as u64 + 1);
+            }
         }
     }
 
