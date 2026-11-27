@@ -1,0 +1,9 @@
+# A track whose Lowest octave is above its Highest.
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+songs:
+  - name: song
+    tracks: [{ name: lead, lowest_octave: 6, highest_octave: 3 }]
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

@@ -1,0 +1,3 @@
+# A groove of the set's own taking a factory groove's name.
+grooves:
+  - { name: swing 54, cells: [0, 44], cell_length: 1/8 }

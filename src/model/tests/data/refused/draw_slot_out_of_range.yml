@@ -1,0 +1,11 @@
+# A draw with a slot above its highest value.
+patterns:
+  - { name: tune, steps: 4, degree: [1, 2, 3, 4] }
+songs:
+  - name: song
+    tracks: [{ name: lead }]
+    draws:
+      AD: { slots: [0, 1, 12], value_min: 0, value_max: 11 }
+    scenes:
+      - name: one
+        clips: [{ track: lead, pattern: tune }]

@@ -212,6 +212,9 @@ impl Setlist {
         for place in 0..sections.len() {
             let section = sections[place];
             let Some(held) = data.get(section) else { continue };
+            if section == Section::GROOVES {
+                checked_groove_names(held).map_err(|(name, problem)| SongFileError::at(&setlist.place(section, &name), problem))?;
+            }
             let mut items = Vec::new();
             for (name, item) in held.as_map().unwrap_or(&[]) {
                 let name = name.python_str();
@@ -305,6 +308,19 @@ impl Setlist {
         }
         Data::Map(pairs)
     }
+}
+
+/// Refuse a groove of the set's own named as a factory groove is, before any groove is read, with the name refused.
+fn checked_groove_names(grooves: &Data) -> Result<(), (String, InvalidValue)> {
+    for (name, _) in grooves.as_map().unwrap_or(&[]) {
+        let name = name.python_str();
+        if FACTORY_GROOVE_NAMES.contains(&name.as_str()) {
+            let names = crate::schema::checking::listed(FACTORY_GROOVE_NAMES);
+            let problem = named(errors::ERR_FACTORY_GROOVE_NAME, &[("name", name.as_str().into()), ("names", names.into())]);
+            return Err((name, InvalidValue::new(problem)));
+        }
+    }
+    Ok(())
 }
 
 impl Context for Setlist {

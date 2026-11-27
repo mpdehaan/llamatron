@@ -23,6 +23,8 @@ const SEED: i64 = 7;
 /// The pattern's steps and the degrees they play.
 const STEPS: i128 = 4;
 const DEGREES: [i128; 4] = [1, 2, 3, 4];
+/// How the name of the top of a range of settings starts, such as highest_octave.
+const TOP_OF_A_RANGE: &str = "highest";
 /// A length every length setting takes, a quarter note.
 const A_QUARTER: &str = "1/4";
 
@@ -52,6 +54,8 @@ fn map(pairs: Vec<(&str, Data)>) -> Data {
 fn sample(setting: &Setting) -> Option<Data> {
     match setting.described {
         Described::Flag { .. } => Some(Data::Bool(true)),
+        // The top of a range is written at its highest, so that it stays above the range's bottom left at its default.
+        Described::WholeNumber { highest: Some(highest), .. } if setting.name.starts_with(TOP_OF_A_RANGE) => Some(Data::Whole(highest as i128)),
         Described::WholeNumber { lowest, highest, .. } => {
             let value = lowest.unwrap_or(1).max(highest.map_or(1, |most| most.min(1)));
             Some(Data::Whole(value as i128))

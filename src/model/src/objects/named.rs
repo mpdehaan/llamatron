@@ -210,6 +210,27 @@ pub fn plugin_table(plugin: &str) -> Option<&'static [Setting]> {
     })
 }
 
+/// The octaves the Chords generator voices its chords between unless its settings say: from 4 to 6.
+pub const DEFAULT_VOICING_LOWEST_OCTAVE: i64 = 4;
+pub const DEFAULT_VOICING_HIGHEST_OCTAVE: i64 = 6;
+/// The Chords generator's settings of the octaves it voices between.
+const VOICING_LOWEST_OCTAVE: &str = "lowest_octave";
+const VOICING_HIGHEST_OCTAVE: &str = "highest_octave";
+
+/// Refuse a Chords generator voicing from an octave above the one it voices up to, once each is checked on its own.
+fn checked_voicing_range(data: &Data) -> Result<(), InvalidValue> {
+    let octave = |name: &str, default: i64| data.get(name).and_then(Data::as_whole).map_or(default, |octave| octave as i64);
+    let lowest = octave(VOICING_LOWEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE);
+    let highest = octave(VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_HIGHEST_OCTAVE);
+    if lowest > highest {
+        return Err(InvalidValue::new(named(
+            errors::ERR_VOICE_LEADING_RANGE,
+            &[("lowest", lowest.into()), ("highest", highest.into())],
+        )));
+    }
+    Ok(())
+}
+
 impl GeneratorSettings {
     pub fn from_data(table: &'static [Setting], data: &Data) -> Result<GeneratorSettings, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
@@ -221,6 +242,9 @@ impl GeneratorSettings {
             if let Some(setting) = table.iter().find(|setting| Some(setting.name) == key.as_str()) {
                 check(setting, value, None)?;
             }
+        }
+        if std::ptr::eq(table, tables::CHORDS_PLUGIN) {
+            checked_voicing_range(&data)?;
         }
         Ok(GeneratorSettings { table, data })
     }

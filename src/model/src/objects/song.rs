@@ -23,6 +23,45 @@ pub struct Names<'a> {
     pub tracks: Vec<String>,
 }
 
+/// Refuse a track whose Lowest octave is above its Highest, once each is checked on its own.
+fn checked_octave_order(settings: &Holder) -> Result<(), InvalidValue> {
+    let octave = |name: &str, default: i64| settings.get(name).and_then(Data::as_whole).map_or(default, |octave| octave as i64);
+    let lowest = octave(TrackSetting::LOWEST_OCTAVE, limits::MIN_OCTAVE);
+    let highest = octave(TrackSetting::HIGHEST_OCTAVE, limits::MAX_OCTAVE);
+    if lowest > highest {
+        return Err(InvalidValue::new(named(
+            errors::ERR_OCTAVE_RANGE_BACKWARDS,
+            &[("lowest", lowest.into()), ("highest", highest.into())],
+        )));
+    }
+    Ok(())
+}
+
+/// Refuse a draw whose lowest value is above its highest, or with a slot outside them.
+fn checked_draw_range(settings: &Holder) -> Result<(), InvalidValue> {
+    let value = |name: &str, default: i64| settings.get(name).and_then(Data::as_whole).map_or(default, |value| value as i64);
+    let lowest = value(DrawSetting::VALUE_MIN, limits::MIN_DRAW_VALUE);
+    let highest = value(DrawSetting::VALUE_MAX, limits::MAX_DRAW_VALUE);
+    if lowest > highest {
+        return Err(InvalidValue::new(named(
+            errors::ERR_DRAW_VALUES_OUT_OF_ORDER,
+            &[("lowest", lowest.into()), ("highest", highest.into())],
+        )));
+    }
+    let slots = settings.get(DrawSetting::SLOTS).and_then(Data::as_list).unwrap_or(&[]);
+    for slot in slots.iter().filter(|slot| !slot.is_null()) {
+        let within = slot.as_whole().is_some_and(|slot| (lowest as i128..=highest as i128).contains(&slot));
+        if !within {
+            let message = named(
+                errors::ERR_DRAW_SLOT_OUT_OF_RANGE,
+                &[("lowest", lowest.into()), ("highest", highest.into()), ("value", slot.into())],
+            );
+            return Err(InvalidValue::new(message));
+        }
+    }
+    Ok(())
+}
+
 /// The fewest repeats a morph needs: its first pass all the clip's own pattern and its last all the target.
 pub const MIN_MORPH_REPEAT: i64 = 2;
 
@@ -110,9 +149,9 @@ impl Draw {
         // A setting left at its default, written as nothing, is not checked.
         let data = passed_over(&data, &|name| in_table(DRAW, name));
         let without_blanks = Data::Map(data.as_map().unwrap_or(&[]).iter().filter(|(_, value)| !value.is_null()).cloned().collect());
-        Ok(Draw {
-            settings: Holder::read(DRAW, &without_blanks, None, &[])?,
-        })
+        let settings = Holder::read(DRAW, &without_blanks, None, &[])?;
+        checked_draw_range(&settings)?;
+        Ok(Draw { settings })
     }
 
     pub fn get_written(&self, name: &str) -> Option<&Data> {
@@ -136,9 +175,9 @@ impl Track {
             return Err(InvalidValue::new(named(errors::ERR_TRACK_EXPECTED_SETTINGS, &[("data", (&data).into())])));
         }
         let data = built_ins_passed_over(&passed_over(&data, &|name| in_table(TRACK, name)), TrackSetting::BUILT_IN);
-        Ok(Track {
-            settings: Holder::read(TRACK, &data, Some(names), &[])?,
-        })
+        let settings = Holder::read(TRACK, &data, Some(names), &[])?;
+        checked_octave_order(&settings)?;
+        Ok(Track { settings })
     }
 
     pub fn is_drum(&self) -> bool {

@@ -1,0 +1,3 @@
+# A Chords generator voicing from an octave above the one it voices up to.
+generators:
+  - { name: high, kind: chords, lowest_octave: 7, highest_octave: 5 }

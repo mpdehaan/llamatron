@@ -18,6 +18,7 @@ use crate::tables::fixed_chord;
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::fundamentals::voice_leading;
+use llamatron_model::objects::named::{DEFAULT_VOICING_HIGHEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE};
 use llamatron_model::schema::checking::{time_length, TimeLength};
 use llamatron_model::schema::generated::file_format::{ACCIDENTALS, GENERATOR_RESTART, ONE_BAR_WRITTEN, TENSIONS};
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
@@ -43,8 +44,6 @@ const VOICE_LEADING: &str = "voice_leading";
 const LOWEST_OCTAVE: &str = "lowest_octave";
 const HIGHEST_OCTAVE: &str = "highest_octave";
 const ROOT_IN_BASS: &str = "root_in_bass";
-const DEFAULT_LOWEST_OCTAVE: i64 = 4;
-const DEFAULT_HIGHEST_OCTAVE: i64 = 6;
 /// A chord's places above its root, in a scale of seven notes: the 9th, 3rd, 11th, 5th, 13th and 7th.
 const ROOT_PLACE: i64 = 0;
 const NINTH_PLACE: i64 = 1;
@@ -179,8 +178,8 @@ impl<'a> ChordsSettings<'a> {
 
     fn voicing(&self, continuation: &Continuation) -> VoiceLeading {
         VoiceLeading {
-            lowest_octave: self.whole_or(LOWEST_OCTAVE, DEFAULT_LOWEST_OCTAVE),
-            highest_octave: self.whole_or(HIGHEST_OCTAVE, DEFAULT_HIGHEST_OCTAVE),
+            lowest_octave: self.whole_or(LOWEST_OCTAVE, DEFAULT_VOICING_LOWEST_OCTAVE),
+            highest_octave: self.whole_or(HIGHEST_OCTAVE, DEFAULT_VOICING_HIGHEST_OCTAVE),
             root_in_bass: self.written(ROOT_IN_BASS).is_some_and(|value| *value == Data::Bool(true)),
             before: match &continuation.state {
                 Some(super::GeneratorState::Voicing(before)) => Some(before.clone()),

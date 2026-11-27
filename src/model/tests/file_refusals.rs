@@ -33,6 +33,22 @@ fn refusals() -> Vec<(&'static str, String)> {
         ),
         ("chord_on_a_drum_pattern.yml", errors::ERR_CHORD_ON_DRUMS.to_string()),
         ("tie_on_a_note.yml", named(errors::ERR_TIE_ON_A_NOTE, &[("step", TIED_STEP.into())])),
+        (
+            "track_octaves_backwards.yml",
+            named(errors::ERR_OCTAVE_RANGE_BACKWARDS, &[("lowest", 6.into()), ("highest", 3.into())]),
+        ),
+        (
+            "chords_octaves_backwards.yml",
+            named(errors::ERR_VOICE_LEADING_RANGE, &[("lowest", 7.into()), ("highest", 5.into())]),
+        ),
+        (
+            "draw_slot_out_of_range.yml",
+            named(
+                errors::ERR_DRAW_SLOT_OUT_OF_RANGE,
+                &[("lowest", 0.into()), ("highest", 11.into()), ("value", 12.into())],
+            ),
+        ),
+        ("groove_named_as_a_factory_groove.yml", "(swing 54)".to_string()),
     ]
 }
 
