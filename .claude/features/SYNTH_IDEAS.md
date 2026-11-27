@@ -82,6 +82,13 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **The vactrol's age**: An old cell behaving less predictably strike to strike, within a musical range Claude proposes.
 - **Asheville's polyphonic mode**, after the late-1970s polyphonic analogs: every key its own voice, a shared filter and
   contours either paraphonic or per voice.
+- **The table oscillators' level and bands**: the band-limited tables Pocket, SID and Oh3 read made right: one gain a
+  waveform, taken from its full-band table, in place of each octave's own peak, so that high notes no longer play 2 to
+  5 dB louder than low ones nor step in level at each octave; two bands an octave, or neighbouring bands crossfaded, so
+  that a note just above a band's bottom keeps its top octave; a phase precise enough for low notes, a four-point read
+  under about 100 Hz, and guard samples so that a read never wraps. Each change measured by spectrum and level and timed
+  before and after (`.claude/rules/SYNTHS.md`), its sound changing the engines that use the tables. The research is in
+  `.claude/notes/synthesis/WAVETABLES.md`.
 - **Durham**: A homage to the classic analog bass pedal synth, on its modern descendant's panel, exposing only what that panel
   has; the filter very nearly perfect (the D'Angelo-Välimäki ladder). Research in `MONOSYNTHS.md`, "Durham"; mockup first.
 - **Drone**: A drone instrument of held, slowly moving oscillators, yet sounding only through the Amp, Env 1 opening it, as
@@ -96,7 +103,7 @@ The professor's research is in `.claude/notes/synthesis/`.
   groups, presets and block swapping are settled (open there: the low-pass gate's Strike and Gate, the Effects field, the engine
   dialog's columns, a picker column of engines and of effects).
 - **Kept for engines when built**: Through-zero FM and ADAA folders (ComplexOsc), integrated wavetables (Wavetable),
-  phase-locked footages (Stringy, Combo Organ), synced-square PWM (Monorail, Chirpy), the NES triangle (DustCart, BitArcade),
+  phase-locked footages (Stringy, Combo Organ), synced-square PWM (Monorail, Chirpy), the 1980s home console's stepped triangle (DustCart, BitArcade),
   Rings' resonator (the Resonator filter), sst-filters' further models (licence checked).
 - **More of FluidSynth** exposed as an engine of the backend.
 - **The agreed engines' designs**: ComplexOsc (one engine for the classic West Coast and the modern complex oscillator), Hurt

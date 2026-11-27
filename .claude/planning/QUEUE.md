@@ -6,19 +6,20 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 
 ## Now: the synths (finish the outstanding synth work, then the other engines with their demos)
 
-1. UX_IDEAS: Space on an empty drum Note step.
-2. OTHER_IDEAS: The screens comparison in Rust.
-3. DEMO_IDEAS: Engines and effects under each synth demo.
-4. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-5. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
+1. SYNTH_IDEAS: The table oscillators' level and bands.
+2. UX_IDEAS: Space on an empty drum Note step.
+3. OTHER_IDEAS: The screens comparison in Rust.
+4. DEMO_IDEAS: Engines and effects under each synth demo.
+5. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
+6. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
    (mockup).
-6. SYNTH_IDEAS: Durham (mockup).
-7. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
-8. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
-9. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
+7. SYNTH_IDEAS: Durham (mockup).
+8. SYNTH_IDEAS: MechaDrum split (mockup); The vactrol's age.
+9. SYNTH_IDEAS: Spectral; Variance; The professor's effect plans.
+10. SYNTH_IDEAS: Every engine and effect redesigned; The other engines and effects, each with its demo from DEMO_IDEAS
    (log_garden first, with ComplexOsc).
-10. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
-11. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
+11. SYNTH_IDEAS: Asheville's polyphonic mode; The Engine tab's rest; The Mod Matrix's destinations; the rest of the Instrument Page.
+12. OTHER_IDEAS: Drum-kit sequencing, at the end of all synth work.
 
 When a question waits on the user, do synth work that needs no mockup, or the song wizard.
 
