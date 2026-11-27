@@ -5,12 +5,13 @@
 //! Fold folds back past full scale and Wrap wraps round, the harsh digital sounds of cheap grooveboxes.
 //!
 //! A curve pushed hard makes harmonics far above half the sample rate, which would fold back down as tones unrelated to
-//! the note. Two things keep them out: the curve runs at twice the rate, between a halfband interpolator and decimator,
+//! the note. Two things keep them out: the curve runs at twice the rate, between a linear-phase halfband interpolator and decimator, whose even phase
+//! keeps a jump's peak where a band-limited jump's must be,
 //! and at that rate each sample is the curve's average over the sample's span rather than its value at one instant,
 //! worked out from the curve's antiderivative. Mix blends the shaped sound with the sound at twice the rate, before the
 //! two come down together, so that the two line up.
 
-use crate::voice::oversample::Halfband;
+use crate::voice::oversample::LinearHalfband;
 use std::f64::consts::PI;
 
 const MOST_GAIN: f64 = 20.0;
@@ -56,7 +57,7 @@ pub struct Drive {
     gain: f64,
     scale: f64,
     offset: f64,
-    halfband: Halfband,
+    halfband: LinearHalfband,
     previous: f64,
 }
 
@@ -82,7 +83,7 @@ impl Drive {
             gain,
             scale,
             offset,
-            halfband: Halfband::default(),
+            halfband: LinearHalfband::default(),
             previous: 0.0,
         }
     }
@@ -146,7 +147,7 @@ impl Drive {
 
     /// Back to rest: the halfband and the last input silent.
     pub fn reset(&mut self) {
-        self.halfband = Halfband::default();
+        self.halfband = LinearHalfband::default();
         self.previous = 0.0;
     }
 }
