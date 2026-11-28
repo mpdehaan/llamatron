@@ -36,6 +36,13 @@ internal_tools/check_before_commit.sh                              # before comm
 
 ## What a change must come with
 
+- Tests hold what the program must keep doing for a person, never the history of how it got there: what a page
+  does when a key is pressed, what a setting does to the sound, what a file becomes when exported. A one-off change,
+  such as a rename, a moved setting, a new default or a migration of an older layout, is checked by a scratchpad
+  test, written and run in `/tmp/claude/llamatron/` while the change is made and never committed; what lasts of it is
+  held by a general test, such as every set in the test data opening and playing. A committed test is named for the
+  behaviour it holds, never for a change ("no longer", "is renamed", "now"). A bug's test holds the behaviour the bug
+  broke.
 - Every behaviour has a test, at the layer a person meets it: model rules, what a file refuses, what each page's keys do to the
   set, what the exporters write. Complex scenarios, not one happy path.
 - Every setting a page can write is played by the render: a test writes each setting of every object's table and exports
