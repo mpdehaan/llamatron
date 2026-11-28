@@ -11,8 +11,15 @@ pub mod saturation;
 
 #[cfg(test)]
 pub mod spectrum;
+#[cfg(test)]
+pub mod testing;
 
 use std::f64::consts::PI;
+
+/// The ratio an octave multiplies a frequency by.
+pub const OCTAVE: f64 = 2.0;
+/// Decibels as an amplitude: twenty of them a tenfold.
+pub const DECIBELS_A_DECADE: f64 = 20.0;
 
 /// Below this a filter's state is flushed to zero, so that a decaying tail never falls into denormal numbers, which are slow.
 pub const TINY: f64 = 1e-20;
