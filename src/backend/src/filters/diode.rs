@@ -16,11 +16,25 @@
 
 use crate::dsp::one_pole::{OnePoleAllpass, OnePoleHighpass};
 use crate::dsp::saturation::SmoothTanh;
-use crate::dsp::{flushed, Biquad, BUTTERWORTH_Q};
-use std::f64::consts::PI;
+use crate::dsp::{flushed, Biquad, BUTTERWORTH_Q, HIGHEST_SHARE, OCTAVE};
+use std::f64::consts::TAU;
 
 /// How many times the sample rate the filter runs at.
 pub const OVERSAMPLING: usize = 4;
+/// The ladder's four stages, its last stage's place, and the decimation's two sections.
+const STAGES: usize = 4;
+const LAST_STAGE: usize = STAGES - 1;
+const DECIMATION_SECTIONS: usize = 2;
+/// Twice, as the first stage and the stages' own taps weigh in the ladder's step, the output is lifted, and a biquad's
+/// cosine is doubled; and half, as Open303's notch halves its width's angle.
+const TWICE: f64 = 2.0;
+const HALF: f64 = 0.5;
+/// Open303's fit of the stages' gain to the cutoff, (c0 + c1 fx) / (1 + c2 fx + c3 fx²), and of the loop's gain at full
+/// resonance, a polynomial of the sixth degree whose leading coefficient is one, the rest from the top down; and the
+/// gain it is divided by to give the output's makeup.
+const STAGE_GAIN_FIT: [f64; 4] = [0.00045522346, 6.1922189, 12.358354, 4.4156345];
+const LOOP_GAIN_FIT: [f64; 6] = [7198.6997, 5837.7917, 476.47308, 614.95611, 213.87126, 16.998792];
+const LOOP_GAIN_DIVISOR: f64 = 17.0;
 /// The high-pass inside the filter's feedback loop, the filter's lowest and highest cutoff, and its resonance skew.
 const FEEDBACK_HIGHPASS_HZ: f64 = 150.0;
 const LOWEST_CUTOFF_HZ: f64 = 200.0;
@@ -61,15 +75,15 @@ pub fn envelope_mapping(cutoff: f64, amount: f64) -> (f64, f64) {
 /// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `BiquadFilter` in BANDREJECT mode.
 /// A band-reject biquad by its centre and its width in octaves, as Open303 designs its notch.
 fn band_reject(centre: f64, octaves: f64, rate: f64) -> Biquad {
-    let w = 2.0 * PI * centre / rate;
+    let w = TAU * centre / rate;
     let (sine, cosine) = w.sin_cos();
-    let alpha = sine * (0.5 * 2f64.ln() * octaves * w / sine).sinh();
+    let alpha = sine * (HALF * OCTAVE.ln() * octaves * w / sine).sinh();
     let scale = 1.0 / (1.0 + alpha);
     Biquad {
         b0: scale,
-        b1: -2.0 * cosine * scale,
+        b1: -TWICE * cosine * scale,
         b2: scale,
-        a1: -2.0 * cosine * scale,
+        a1: -TWICE * cosine * scale,
         a2: (1.0 - alpha) * scale,
         s1: 0.0,
         s2: 0.0,
@@ -80,12 +94,12 @@ fn band_reject(centre: f64, octaves: f64, rate: f64) -> Biquad {
 /// decimation's sections, the filters after it, and the last input, which the oversampled steps run up from.
 #[derive(Clone, Copy, Debug)]
 pub struct AcidFilterState {
-    stages: [f64; 4],
+    stages: [f64; STAGES],
     feedback_highpass: OnePoleHighpass,
     b0: f64,
     k: f64,
     g: f64,
-    decimation: [Biquad; 2],
+    decimation: [Biquad; DECIMATION_SECTIONS],
     allpass: OnePoleAllpass,
     highpass: OnePoleHighpass,
     notch: Biquad,
@@ -100,7 +114,7 @@ impl AcidFilterState {
         let fast = rate * OVERSAMPLING as f64;
         let section = Biquad::low_pass(DECIMATION_SHARE * rate, BUTTERWORTH_Q, fast);
         AcidFilterState {
-            stages: [0.0; 4],
+            stages: [0.0; STAGES],
             feedback_highpass: OnePoleHighpass::new(FEEDBACK_HIGHPASS_HZ, fast),
             b0: 0.0,
             k: 0.0,
@@ -120,14 +134,16 @@ impl AcidFilterState {
     /// oversampled rate.
     pub fn prepare(&mut self, cutoff: f64, resonance: f64, rate: f64) {
         let fast = rate * OVERSAMPLING as f64;
-        let cutoff = cutoff.clamp(LOWEST_CUTOFF_HZ, HIGHEST_CUTOFF_HZ.min(0.45 * fast));
+        let cutoff = cutoff.clamp(LOWEST_CUTOFF_HZ, HIGHEST_CUTOFF_HZ.min(HIGHEST_SHARE * fast));
         let skewed = (1.0 - (-RESONANCE_SKEW * resonance.clamp(0.0, 1.0)).exp()) / (1.0 - (-RESONANCE_SKEW).exp());
-        let wc = 2.0 * PI * cutoff / fast;
-        let fx = wc * std::f64::consts::FRAC_1_SQRT_2 / (2.0 * PI);
+        let wc = TAU * cutoff / fast;
+        let fx = wc * std::f64::consts::FRAC_1_SQRT_2 / TAU;
         // Open303's fits, in its own order: the stages' gain, and the loop's gain at full resonance as a polynomial.
-        self.b0 = (0.00045522346 + 6.1922189 * fx) / (1.0 + 12.358354 * fx + 4.4156345 * fx * fx);
-        let k = fx * (fx * (fx * (fx * (fx * (fx + 7198.6997) - 5837.7917) - 476.47308) + 614.95611) + 213.87126) + 16.998792;
-        let mut g = k / 17.0;
+        let [c0, c1, c2, c3] = STAGE_GAIN_FIT;
+        self.b0 = (c0 + c1 * fx) / (1.0 + c2 * fx + c3 * fx * fx);
+        let [k5, k4, k3, k2, k1, k0] = LOOP_GAIN_FIT;
+        let k = fx * (fx * (fx * (fx * (fx * (fx + k5) - k4) - k3) + k2) + k1) + k0;
+        let mut g = k / LOOP_GAIN_DIVISOR;
         g = (g - 1.0) * skewed + 1.0;
         g *= 1.0 + skewed;
         self.g = g;
@@ -169,13 +185,13 @@ impl AcidFilterState {
         let b0 = self.b0;
         let [y1, y2, y3, y4] = &mut self.stages;
         let y0 = input - self.feedback_highpass.process(self.k * *y4);
-        *y1 += 2.0 * b0 * (y0 - *y1 + *y2);
-        *y2 += b0 * (*y1 - 2.0 * *y2 + *y3);
-        *y3 += b0 * (*y2 - 2.0 * *y3 + *y4);
-        *y4 += b0 * (*y3 - 2.0 * *y4);
+        *y1 += TWICE * b0 * (y0 - *y1 + *y2);
+        *y2 += b0 * (*y1 - TWICE * *y2 + *y3);
+        *y3 += b0 * (*y2 - TWICE * *y3 + *y4);
+        *y4 += b0 * (*y3 - TWICE * *y4);
         for stage in self.stages.iter_mut() {
             *stage = flushed(*stage);
         }
-        2.0 * self.g * self.stages[3]
+        TWICE * self.g * self.stages[LAST_STAGE]
     }
 }

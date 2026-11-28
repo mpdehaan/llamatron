@@ -25,7 +25,7 @@ use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::TAU;
 
-use crate::dsp::XORSHIFT_SHIFTS;
+use crate::dsp::{signed_draw, NOISE_SEED_SCALE};
 
 /// What an oscillator takes where its spec names none: its shape and its level in the mix, each a share; and the
 /// lowest of its subs, two octaves under it.
@@ -41,12 +41,6 @@ const SMOOTH_SQUARE: f64 = 3.0;
 const SMOOTH_CUBE: f64 = 2.0;
 /// The thirds of the continuous Shape: triangle to saw, saw to square, square to narrow pulse.
 const SHAPE_THIRDS: f64 = 3.0;
-/// The xorshift's three shifts, its seed where its state is empty being the golden ratio's bits; and the shift and the
-/// mantissa's bits by which its state becomes a number from -1 to 1.
-const MANTISSA_SHIFT: u32 = 11;
-const MANTISSA_BITS: u32 = 52;
-/// How a note's random number from -1 to 1 becomes the seed of its noise.
-const NOISE_SEED_SCALE: f64 = 1e9;
 /// The slower wandering's share of Drift, and the faster's.
 const SLOWER_WANDERING: f64 = 0.6;
 const FASTER_WANDERING: f64 = 0.4;
@@ -240,14 +234,7 @@ pub fn compiled(spec: &Value) -> Asheville {
 /// White noise from -1 to 1, a xorshift a sample, its state the voice's own.
 #[inline]
 fn white(state: &mut u64) -> f64 {
-    if *state == 0 {
-        *state = GOLDEN_GAMMA;
-    }
-    let [first, second, third] = XORSHIFT_SHIFTS;
-    *state ^= *state << first;
-    *state ^= *state >> second;
-    *state ^= *state << third;
-    (*state >> MANTISSA_SHIFT) as f64 / (1u64 << MANTISSA_BITS) as f64 - 1.0
+    signed_draw(state, GOLDEN_GAMMA)
 }
 
 /// One classic wave at a place in its cycle, its pulse widths moved by the Mod Matrix's Pulse width.

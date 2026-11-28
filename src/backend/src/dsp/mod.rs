@@ -27,8 +27,13 @@ pub const DECIBELS_A_POWER_DECADE: f64 = 10.0;
 /// A nanosecond's share of a second, and a millisecond's.
 pub const NANOSECONDS_A_SECOND: f64 = 1e9;
 pub const MILLISECONDS_A_SECOND: f64 = 1000.0;
-/// The xorshift's three shifts, Marsaglia's, which the backend's quick noises step by.
+/// The xorshift's three shifts, Marsaglia's, which the backend's quick noises step by; the shift and the mantissa's bits
+/// by which its state becomes a number from -1 to 1; and how a note's random number from -1 to 1 becomes the seed of a
+/// noise of its own.
 pub const XORSHIFT_SHIFTS: [u32; 3] = [13, 7, 17];
+const SIGNED_SHIFT: u32 = 11;
+const SIGNED_BITS: u32 = 52;
+pub const NOISE_SEED_SCALE: f64 = 1e9;
 /// How a Unipolar route of a source from -1 to 1 moves its destination from 0 to its amount: by half the amount, lifted
 /// by half.
 pub const UNIPOLAR_HALVING: f64 = 2.0;
@@ -133,6 +138,20 @@ fn angle(frequency: f64, quality: f64, rate: f64) -> (f64, f64) {
     let frequency = frequency.clamp(1.0, HIGHEST_SHARE * rate);
     let w = TAU * frequency / rate;
     (w.cos(), w.sin() / (TWICE * quality))
+}
+
+/// A xorshift's next draw from -1 to 1, its state the caller's own, restarted from a seed of the caller's where it is
+/// empty, since a xorshift's empty state never leaves itself.
+#[inline]
+pub fn signed_draw(state: &mut u64, restart: u64) -> f64 {
+    if *state == 0 {
+        *state = restart;
+    }
+    let [first, second, third] = XORSHIFT_SHIFTS;
+    *state ^= *state << first;
+    *state ^= *state >> second;
+    *state ^= *state << third;
+    (*state >> SIGNED_SHIFT) as f64 / (1u64 << SIGNED_BITS) as f64 - 1.0
 }
 
 /// A filter's state flushed to zero when too small to hear or not a number at all.

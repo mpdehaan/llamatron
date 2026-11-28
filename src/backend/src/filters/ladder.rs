@@ -23,11 +23,22 @@
 // closed-form Newton solve and the implementation are our own.
 
 use crate::dsp::oversample::Halfband;
-use crate::dsp::{flushed, HIGHEST_SHARE};
-use std::f64::consts::PI;
+use crate::dsp::{flushed, signed_draw, GOLDEN_GAMMA, HIGHEST_SHARE, NOISE_SEED_SCALE, OCTAVE};
+use std::f64::consts::{PI, TAU};
 
 /// The ladder's stages.
 pub const STAGES: usize = 4;
+/// The continued fraction's [7/6] rational for tanh: the top's coefficients, x(135135 + 17325x² + 378x⁴ + x⁶), and the
+/// bottom's, 135135 + 62370x² + 3150x⁴ + 28x⁶.
+const TANH_TOP: [f64; 3] = [135_135.0, 17_325.0, 378.0];
+const TANH_BOTTOM: [f64; 4] = [135_135.0, 62_370.0, 3_150.0, 28.0];
+/// Where the units' xorshift starts again if its state is ever empty.
+const XORSHIFT_RESTART: u64 = 0x2545_F491_4F6C_DD1D;
+/// Twice: a trapezoidal integrator's and a straight line's step, and the halving of a uniform draw to a share and of
+/// the drift's pull.
+const TWICE: f64 = 2.0;
+/// A uniform draw from -1 to 1 spreads by one over the root of three.
+const UNIFORM_VARIANCE_DIVISOR: f64 = 3.0;
 /// How many halfbands the stages run behind, each doubling the rate: three, eight times the rate, when Drive pushes
 /// the input pair hard enough to make harmonics far up; two, four times, when only the Resonance saturates the loop.
 const HALFBANDS: usize = 3;
@@ -76,21 +87,17 @@ fn fast_tanh(x: f64) -> f64 {
         return 1f64.copysign(x);
     }
     let square = x * x;
-    let top = x * (135_135.0 + square * (17_325.0 + square * (378.0 + square)));
-    let bottom = 135_135.0 + square * (62_370.0 + square * (3_150.0 + square * 28.0));
+    let [t0, t1, t2] = TANH_TOP;
+    let [b0, b1, b2, b3] = TANH_BOTTOM;
+    let top = x * (t0 + square * (t1 + square * (t2 + square)));
+    let bottom = b0 + square * (b1 + square * (b2 + square * b3));
     top / bottom
 }
 
 /// A seeded xorshift's next draw, from -1 to 1.
 #[inline]
 fn draw(state: &mut u64) -> f64 {
-    if *state == 0 {
-        *state = 0x2545_F491_4F6C_DD1D;
-    }
-    *state ^= *state << 13;
-    *state ^= *state >> 7;
-    *state ^= *state << 17;
-    (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
+    signed_draw(state, XORSHIFT_RESTART)
 }
 
 /// The parts of one ladder that are its own: each stage's capacitor's share of its value and each pair's offset.
@@ -105,10 +112,10 @@ pub struct LadderUnit {
 impl LadderUnit {
     /// A unit seeded by a number, such as the instrument's, so that the same number always makes the same unit.
     pub fn seeded(seed: u64) -> LadderUnit {
-        let mut state = seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1;
+        let mut state = seed.wrapping_mul(GOLDEN_GAMMA) | 1;
         let capacitors = std::array::from_fn(|_| 1.0 + CAPACITOR_TOLERANCE * draw(&mut state));
         let offsets = std::array::from_fn(|_| {
-            let size = LEAST_OFFSET + (MOST_OFFSET - LEAST_OFFSET) * (draw(&mut state) + 1.0) / 2.0;
+            let size = LEAST_OFFSET + (MOST_OFFSET - LEAST_OFFSET) * (draw(&mut state) + 1.0) / TWICE;
             size.copysign(draw(&mut state))
         });
         let rests = offsets.map(fast_tanh);
@@ -183,19 +190,19 @@ pub struct LadderState {
 impl LadderState {
     /// Seed the thermal voltage's wander from the note's own random number, from -1 to 1.
     pub fn seed(&mut self, random: f64) {
-        self.noise = ((random + 1.0) * 1e9) as u64 + 1;
+        self.noise = ((random + 1.0) * NOISE_SEED_SCALE) as u64 + 1;
     }
 
     /// Work the coefficients out for a cutoff in hertz, a Resonance and a Bass compensation from 0 to 1, at a rate,
     /// moving the thermal voltage's wander on by the samples since the last time.
     pub fn prepare(&mut self, settings: &LadderSettings, cutoff: f64, resonance: f64, rate: f64, samples: usize) {
-        let pull = 2.0 * PI * DRIFT_HERTZ * samples as f64 / rate;
+        let pull = TAU * DRIFT_HERTZ * samples as f64 / rate;
         // Low-passed white noise, scaled so that it strays about DRIFT_DEPTH: its spread is the noise's times
         // sqrt(pull / 2), and a uniform draw's spread is 1/sqrt(3).
-        let scale = DRIFT_DEPTH * 3f64.sqrt() / (pull / 2.0).sqrt();
+        let scale = DRIFT_DEPTH * UNIFORM_VARIANCE_DIVISOR.sqrt() / (pull / TWICE).sqrt();
         self.drift += pull * (scale * draw(&mut self.noise) - self.drift);
         let octaves_moved = self.drift * (cutoff.max(LOWEST_CUTOFF) / CONVERTER_CENTRE_HERTZ).log2();
-        let cutoff = (cutoff * 2f64.powf(octaves_moved)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * rate);
+        let cutoff = (cutoff * OCTAVE.powf(octaves_moved)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * rate);
         let fast = settings.fast() * rate;
         for (gain, capacitor) in self.gains.iter_mut().zip(settings.unit.capacitors) {
             *gain = (PI * cutoff / fast).tan() / capacitor;
@@ -242,7 +249,7 @@ impl LadderState {
     /// The output through its coupling capacitor, which takes away any steady level.
     #[inline]
     fn coupled(&mut self, input: f64, rate: f64) -> f64 {
-        let pole = 1.0 - 2.0 * PI * COUPLING_HERTZ / rate;
+        let pole = 1.0 - TAU * COUPLING_HERTZ / rate;
         let out = input - self.coupled_in + pole * self.coupled_out;
         self.coupled_in = input;
         self.coupled_out = flushed(out);
@@ -254,7 +261,7 @@ impl LadderState {
     #[inline]
     fn step(&mut self, unit: &LadderUnit, input: f64, tap: usize) -> f64 {
         // The first guess runs on in a straight line from the last two steps, so that one or two passes meet.
-        let mut voltages: [f64; STAGES] = std::array::from_fn(|stage| 2.0 * self.voltages[stage] - self.earlier[stage]);
+        let mut voltages: [f64; STAGES] = std::array::from_fn(|stage| TWICE * self.voltages[stage] - self.earlier[stage]);
         for _ in 0..MOST_PASSES {
             let moved = self.newton_pass(unit, input, &voltages);
             let mut most: f64 = 0.0;
@@ -267,7 +274,7 @@ impl LadderState {
             }
         }
         for (integrator, voltage) in self.integrators.iter_mut().zip(voltages) {
-            *integrator = flushed(2.0 * voltage - *integrator);
+            *integrator = flushed(TWICE * voltage - *integrator);
         }
         self.earlier = self.voltages;
         self.voltages = voltages;
