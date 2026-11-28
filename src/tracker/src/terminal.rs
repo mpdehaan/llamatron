@@ -61,6 +61,14 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     }
     start_terminal()?;
     tracker.app.session.recording = launch.for_recording;
+    // The tracker started to be used opens on the start screen, the title until ENTER, as a game's start page does; a
+    // launch that plays by itself never shows it.
+    if !launch.for_recording && !launch.plays() && !show_start_screen()? {
+        tracker.app.transport.close();
+        tracker.app.preview.close();
+        end_terminal();
+        return Ok(());
+    }
     // A recording opens on its title, and opens Arrange when the launch says to start; any other launch starts at once.
     if !launch.for_recording {
         start(&mut tracker, &launch);
@@ -71,6 +79,40 @@ pub fn run(path: Option<&Path>, launch: Launch) -> Result<(), String> {
     tracker.app.preview.close();
     end_terminal();
     finished
+}
+
+/// The start screen: the title with "Press ENTER to Start" under it, drawn until ENTER once the prompt has come in;
+/// true to go on into the tracker, false where Ctrl+C quit, which it does at once as everywhere.
+fn show_start_screen() -> Result<bool, String> {
+    let mut out = io::stdout();
+    let began = std::time::Instant::now();
+    let mut drawn: Option<std::time::Instant> = None;
+    let start_keys = crate::keys::keys_of(&crate::keybindings::StartScreen::START.keys);
+    loop {
+        let elapsed = began.elapsed().as_secs_f64();
+        if drawn.is_none_or(|at| at.elapsed() >= TITLE_FRAME) {
+            let (width, height) = terminal::size().map_err(|error| error.to_string())?;
+            let lines = crate::screens::title_card::start_lines(width as usize, height as usize, elapsed);
+            draw_lines(&mut out, lines, height as usize).map_err(|error| error.to_string())?;
+            drawn = Some(std::time::Instant::now());
+        }
+        if !event::poll(TICK).map_err(|error| error.to_string())? {
+            continue;
+        }
+        let Event::Key(pressed) = event::read().map_err(|error| error.to_string())? else {
+            continue;
+        };
+        if pressed.kind != KeyEventKind::Press {
+            continue;
+        }
+        let Some(name) = key_name(&pressed, false) else { continue };
+        if name == "ctrl+c" {
+            return Ok(false);
+        }
+        if start_keys.contains(&name.as_str()) && crate::screens::title_card::prompt_shown(elapsed) {
+            return Ok(true);
+        }
+    }
 }
 
 /// Refuse a recording of a song with a scene whose every clip loops: the song would wait there forever, and so would the

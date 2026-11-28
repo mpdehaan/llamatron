@@ -39,9 +39,20 @@ const SCAN_SECONDS: f64 = 2.4;
 const SCANNER_SHARE: f64 = 0.25;
 /// The address fades in as the letters settle.
 const ADDRESS_FADE_SECONDS: f64 = 0.6;
-/// The lines under the word: a blank line, the scanner, a blank line, the address.
+/// The lines under the word: a blank line, the scanner, a blank line, the address, and the start screen's prompt on the
+/// sixth line under the address.
 const SCANNER_ROW: usize = LETTER_ROWS + 1;
 const ADDRESS_ROW: usize = SCANNER_ROW + 2;
+const PROMPT_ROW: usize = ADDRESS_ROW + 6;
+/// The prompt fades in once the scanner is gone, then pulses once every PULSE_SECONDS between its dimmest and its
+/// brightest blue; at its dimmest it keeps PULSE_FLOOR of its level, and its letters reach full a little before its
+/// colour does.
+const PROMPT_FADE_SECONDS: f64 = 0.5;
+const PULSE_SECONDS: f64 = 1.6;
+const PULSE_FLOOR: f64 = 0.4;
+const PROMPT_LETTERS_LEAD: f64 = 2.5;
+const PROMPT_DIM: Rgb = [40.0, 80.0, 170.0];
+const PROMPT_BRIGHT: Rgb = [110.0, 160.0, 255.0];
 /// A title shown for a set time fades to black over its last FADE_OUT_SECONDS.
 const FADE_OUT_SECONDS: f64 = 0.8;
 /// Levels are kept to this many steps, so that runs of one shade are long.
@@ -114,6 +125,21 @@ fn scanner_level(column: usize, width: usize, elapsed: f64) -> f64 {
     (PI / 2.0 * distance / half).cos().powi(2)
 }
 
+/// How bright the start screen's prompt is at a moment: nothing until the scanner is gone, then fading in and pulsing.
+fn prompt_level(elapsed: f64) -> f64 {
+    let since = elapsed - scan_end();
+    if since < 0.0 {
+        return 0.0;
+    }
+    let pulse = (1.0 + (TAU * since / PULSE_SECONDS).cos()) / 2.0;
+    eased(since / PROMPT_FADE_SECONDS) * (PULSE_FLOOR + (1.0 - PULSE_FLOOR) * pulse)
+}
+
+/// Whether the start screen's prompt has come in at a moment, after which ENTER starts.
+pub fn prompt_shown(elapsed: f64) -> bool {
+    elapsed >= scan_end()
+}
+
 /// How much of the title shows at a moment: all of it, or less over the last moments of a title shown for seconds.
 fn fade_level(elapsed: f64, seconds: Option<f64>) -> f64 {
     seconds.map_or(1.0, |seconds| eased((seconds - elapsed) / FADE_OUT_SECONDS))
@@ -169,11 +195,23 @@ fn centred_text(text: &str, width: usize, colour: Rgb, level: f64) -> Text {
 /// The title's lines for a screen width by height at a moment, fading out over its last moments when it is shown for
 /// seconds.
 pub fn title_lines(width: usize, height: usize, elapsed: f64, seconds: Option<f64>) -> Vec<Text> {
+    drawn_title(width, height, elapsed, seconds, false)
+}
+
+/// The start screen's lines: the title with "Press ENTER to Start" under it, pulsing once the scanner is gone, shown until
+/// ENTER.
+pub fn start_lines(width: usize, height: usize, elapsed: f64) -> Vec<Text> {
+    drawn_title(width, height, elapsed, None, true)
+}
+
+/// The title's lines, with the start screen's prompt or without.
+fn drawn_title(width: usize, height: usize, elapsed: f64, seconds: Option<f64>, prompt: bool) -> Vec<Text> {
     let word = about::MSG_SPLASH_WORD;
     let scale = if words_width(word, WIDE) <= width { WIDE } else { NARROW };
     let letters_width = words_width(word, scale);
     let left = width.saturating_sub(letters_width) / 2;
-    let top = height.saturating_sub(ADDRESS_ROW + 1) / 2;
+    let tall = if prompt { PROMPT_ROW } else { ADDRESS_ROW } + 1;
+    let top = height.saturating_sub(tall) / 2;
     let fade = fade_level(elapsed, seconds);
     let letters_level = eased(elapsed / FADE_IN_SECONDS) * fade;
     let letter_style = shaded(TITLE_BLUE, letters_level);
@@ -212,6 +250,12 @@ pub fn title_lines(width: usize, height: usize, elapsed: f64, seconds: Option<f6
         let level = eased((elapsed - settled_at()) / ADDRESS_FADE_SECONDS) * fade;
         lines[address_line] = centred_text(about::MSG_SPLASH_ADDRESS, width, ADDRESS_BLUE, level);
     }
+    let prompt_line = top + PROMPT_ROW;
+    if prompt && prompt_line < height {
+        let level = prompt_level(elapsed);
+        let colour: Rgb = std::array::from_fn(|channel| PROMPT_DIM[channel] + (PROMPT_BRIGHT[channel] - PROMPT_DIM[channel]) * level);
+        lines[prompt_line] = centred_text(about::MSG_START_PROMPT, width, colour, (level * PROMPT_LETTERS_LEAD).min(1.0) * fade);
+    }
     lines
 }
 
@@ -228,5 +272,20 @@ mod tests {
         assert_eq!(lines.len(), height);
         assert!(lines.iter().all(|line| line.cell_len() == width));
         assert!(lines.iter().any(|line| line.text().contains(about::MSG_SPLASH_ADDRESS)));
+    }
+
+    /// The start screen shows the title with its prompt once the scanner is gone, and not before.
+    #[test]
+    fn the_start_screen_prompts_once_the_title_has_come_in() {
+        let (width, height) = (100, 30);
+        let shows = |elapsed: f64| {
+            start_lines(width, height, elapsed)
+                .iter()
+                .any(|line| line.text().contains(about::MSG_START_PROMPT))
+        };
+        let early = settled_at();
+        let settled = scan_end() + PROMPT_FADE_SECONDS;
+        assert!(!prompt_shown(early) && !shows(early));
+        assert!(prompt_shown(settled) && shows(settled));
     }
 }
