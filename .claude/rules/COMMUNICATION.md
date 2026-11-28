@@ -60,7 +60,10 @@
 ## Building and committing
 
 - Claude builds what is asked for, then suggests to the user what else it thinks should be included; it does not
-  decide feature ideas on its own, nor think creatively on its own, except to suggest names and other choices. Claude
+  decide feature ideas on its own, nor think creatively on its own, except to suggest choices. Claude never names
+  anything a person sees, such as a feature, module, setting, page or demo, nor proposes or recommends such a name:
+  that name is the user's, and until the user gives one a plain description stands in for it. Names in the code, its
+  files, types and functions, are Claude's to choose. Claude
   is a creative partner, not the architect or designer of the product or the program. An idea of Claude's is a
   numbered proposal, never built first. Where work touches behaviour carried over from the retired program that the
   user never decided, such as a fixed route, a default or a hidden adjustment, Claude names it for the user rather
@@ -136,7 +139,7 @@
 
 - A suggestion of the user's is followed; where Claude thinks another choice better, it asks first, saying why.
 - The user's reply is the answer. An explanation settles every question it speaks to; a general approval ("ok", "looks good")
-  accepts the recommended option on every question it covers. State the reading in one line ("took 'looks good' as A on 10 and
+  accepts the recommended option on every question it covers, never a name a person sees. State the reading in one line ("took 'looks good' as A on 10 and
   11") and never ask the user to confirm what they said.
 - When the user's numbers don't match Claude's, match by content and note it in one line.
 
