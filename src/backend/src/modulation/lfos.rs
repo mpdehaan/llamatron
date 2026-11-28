@@ -8,7 +8,7 @@
 //! time as the LFOs advance. A slot may hold a Snail in place of an LFO (`snail`), its nine outputs worked out over the
 //! chunk as the LFOs' are, its weightings moved by the bank's own sources.
 
-use crate::dsp::blep::blep;
+use crate::dsp::blep::{blep, naive_triangle, sine};
 use crate::dsp::Random;
 use crate::engine::MOST_FRAMES;
 use crate::modulation::matrix::{BankSource, RateRoute, WeightRoute};
@@ -18,6 +18,13 @@ use crate::registry::{self, Named};
 use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
+
+/// Smoothstep's coefficients, 3x² - 2x³; half a cycle, where the square falls; and a wave's span of two, from -1 to 1,
+/// which a raised cosine's glide halves.
+const SMOOTHSTEP_THREE: f64 = 3.0;
+const SMOOTHSTEP_TWO: f64 = 2.0;
+const HALF_CYCLE: f64 = 0.5;
+const JUMP: f64 = 2.0;
 
 pub const LFO_COUNT: usize = 4;
 const HELD_VALUES: usize = 4096;
@@ -435,7 +442,7 @@ pub fn faded_in(age: f64, fade: f64) -> f64 {
         return 1.0;
     }
     let x = (age / fade).max(0.0);
-    x * x * (3.0 - 2.0 * x)
+    x * x * (SMOOTHSTEP_THREE - SMOOTHSTEP_TWO * x)
 }
 
 /// A shape's value at a place in its cycles, its steps of step cycles a sample. The saws' and the square's jumps are
@@ -446,19 +453,19 @@ pub fn faded_in(age: f64, fade: f64) -> f64 {
 fn shaped(shape: Shape, cycles: f64, step: f64, held: &[f64]) -> f64 {
     let place = cycles.fract();
     match shape {
-        Shape::Sine => (2.0 * PI * place).sin(),
-        Shape::Triangle => 1.0 - 4.0 * (place - 0.5).abs(),
-        Shape::SawUp => 2.0 * place - 1.0 - blep(place, step),
-        Shape::SawDown => 1.0 - 2.0 * place + blep(place, step),
+        Shape::Sine => sine(place),
+        Shape::Triangle => naive_triangle(place),
+        Shape::SawUp => JUMP * place - 1.0 - blep(place, step),
+        Shape::SawDown => 1.0 - JUMP * place + blep(place, step),
         Shape::Square => {
-            let level = if place < 0.5 { 1.0 } else { -1.0 };
-            level + blep(place, step) - blep((place + 0.5).fract(), step)
+            let level = if place < HALF_CYCLE { 1.0 } else { -1.0 };
+            level + blep(place, step) - blep((place + HALF_CYCLE).fract(), step)
         }
         Shape::SampleAndHold => held[cycles as usize % HELD_VALUES],
         Shape::SmoothRandom => {
             let from = held[cycles as usize % HELD_VALUES];
             let to = held[(cycles as usize + 1) % HELD_VALUES];
-            from + (to - from) * (1.0 - (PI * place).cos()) / 2.0
+            from + (to - from) * (1.0 - (PI * place).cos()) / JUMP
         }
     }
 }
@@ -468,7 +475,13 @@ mod tests {
     use super::*;
     use crate::modulation::matrix::rate_routes;
 
-    const RATE: f64 = 48_000.0;
+    use crate::dsp::testing::{HALF_SECOND, RATE};
+
+    /// Two neighbouring values, a rise read from; a fast LFO's rate in hertz; and how near two counts of cycles or two
+    /// cycles' places agree.
+    const PAIR: usize = 2;
+    const FAST_HERTZ: f64 = 10.0;
+    const EXACT: f64 = 1e-6;
 
     fn bank(pairs: &[(&str, Value)]) -> LfoBank {
         let spec = Value::Map(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())).collect());
@@ -477,7 +490,7 @@ mod tests {
 
     /// The cycles an LFO's values start again in a chunk: each rise through zero.
     fn rises(values: &[f64]) -> usize {
-        values.windows(2).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
+        values.windows(PAIR).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
     }
 
     /// A slot moving an LFO's rate by another LFO doubles it at half the Amount while its source stays at the top: a
@@ -494,9 +507,10 @@ mod tests {
         };
         let cycles = |slots: Vec<Value>| {
             // The square at half a hertz holds at its top for its first second, the whole of the half second read.
-            let specs = [lfo("sine", 10.0), lfo("square", 0.5)];
+            let half_hertz = 0.5;
+            let specs = [lfo(spec::SINE, FAST_HERTZ), lfo(spec::SQUARE, half_hertz)];
             let mut bank = LfoBank::compiled(&specs, RATE).with_rate_routes(rate_routes(&slots));
-            let half_second = (RATE / 2.0) as usize;
+            let half_second = HALF_SECOND;
             let mut rises_seen = 0;
             let mut done = 0;
             while done < half_second {
@@ -512,7 +526,7 @@ mod tests {
         let still = cycles(Vec::new());
         let doubled = cycles(vec![slot(spec::LFO2, one_octave)]);
         assert!((still as i64 - cycles_of_10_hertz_in_half_a_second).abs() <= 1, "{still}");
-        assert!((doubled as i64 - 2 * still as i64).abs() <= 1, "{doubled} against {still}");
+        assert!((doubled as i64 - (still + still) as i64).abs() <= 1, "{doubled} against {still}");
         assert_eq!(cycles(vec![slot(spec::VELOCITY, one_octave)]), still);
     }
 
@@ -520,10 +534,10 @@ mod tests {
     #[test]
     fn smooth_random_glides_where_sample_and_hold_steps() {
         let most_jump = |shape: &str| {
-            let mut lfos = bank(&[(spec::SHAPE, shape.into()), (spec::RATE, 10.0.into())]);
+            let mut lfos = bank(&[(spec::SHAPE, shape.into()), (spec::RATE, FAST_HERTZ.into())]);
             lfos.advance(MOST_FRAMES, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
             lfos.now[0]
-                .windows(2)
+                .windows(PAIR)
                 .take(MOST_FRAMES - 1)
                 .map(|pair| (pair[1] - pair[0]).abs())
                 .fold(0.0, f64::max)
@@ -537,19 +551,20 @@ mod tests {
     /// and doubling the tempo doubles it.
     #[test]
     fn a_tempo_lfo_follows_the_song_tempo() {
+        const EIGHTH_SECOND: f64 = 0.125;
         let quarter = 1.0;
         let mut lfos = bank(&[(spec::SHAPE, spec::SAW_UP.into()), (spec::QUARTERS, quarter.into())]);
         let cycles_in = |lfos: &mut LfoBank| {
             let before = lfos.lfos[0].as_ref().expect("an LFO").cycles;
-            lfos.advance(RATE as usize / 8, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
+            lfos.advance((RATE * EIGHTH_SECOND) as usize, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
             lfos.lfos[0].as_ref().expect("an LFO").cycles - before
         };
-        let eighth_second = 1.0 / 8.0;
+        let (cycles_a_second_at_120, doubled_tempo) = (2.0, 240.0);
         let at_120 = cycles_in(&mut lfos);
-        assert!((at_120 - 2.0 * eighth_second).abs() < 1e-6, "{at_120}");
-        lfos.set_tempo(240.0);
+        assert!((at_120 - cycles_a_second_at_120 * EIGHTH_SECOND).abs() < EXACT, "{at_120}");
+        lfos.set_tempo(doubled_tempo);
         let at_240 = cycles_in(&mut lfos);
-        assert!((at_240 - 2.0 * at_120).abs() < 1e-6, "{at_240}");
+        assert!((at_240 - (at_120 + at_120)).abs() < EXACT, "{at_240}");
     }
 
     /// An On play LFO stands still while playback is stopped and starts from zero when it starts from silence; a Never one
@@ -582,7 +597,8 @@ mod tests {
     fn fade_in_eases_from_nothing_to_full() {
         let fade = 2.0;
         assert_eq!(faded_in(0.0, fade), 0.0);
-        assert!((faded_in(fade / 2.0, fade) - 0.5).abs() < 1e-12);
+        let (halfway, half_risen) = (fade / JUMP, HALF_CYCLE);
+        assert_eq!(faded_in(halfway, fade), half_risen);
         assert_eq!(faded_in(fade, fade), 1.0);
         assert_eq!(faded_in(0.0, 0.0), 1.0);
         assert!(bank(&[(spec::FADE_IN, fade.into())]).fades()[0] == fade);
@@ -593,7 +609,11 @@ mod tests {
     #[test]
     fn an_lfo_routed_to_a_snails_weighting_moves_its_path() {
         let heard_seconds = 60.0;
-        let specs = [Value::Map(vec![("type".into(), "snail".into())]), Value::Map(vec![("rate".into(), 0.5.into())])];
+        let half_hertz = 0.5;
+        let specs = [
+            Value::Map(vec![(spec::TYPE.into(), spec::SNAIL.into())]),
+            Value::Map(vec![(spec::RATE.into(), half_hertz.into())]),
+        ];
         let route = Value::Map(vec![
             (spec::SOURCE.into(), spec::LFO2.into()),
             (spec::DESTINATION.into(), spec::LFO1_SLOW.into()),

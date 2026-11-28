@@ -19,8 +19,11 @@ use std::f64::consts::TAU;
 /// The ratio an octave multiplies a frequency by, and the semitones of an octave.
 pub const OCTAVE: f64 = 2.0;
 pub const SEMITONES_AN_OCTAVE: f64 = 12.0;
-/// Decibels as an amplitude: twenty of them a tenfold.
+/// Decibels as an amplitude, ten to the power of a twentieth of them: the base, and twenty decibels a tenfold; and
+/// decibels as a power, ten a tenfold.
+pub const DECIBEL_BASE: f64 = 10.0;
 pub const DECIBELS_A_DECADE: f64 = 20.0;
+pub const DECIBELS_A_POWER_DECADE: f64 = 10.0;
 /// A nanosecond's share of a second, and a millisecond's.
 pub const NANOSECONDS_A_SECOND: f64 = 1e9;
 pub const MILLISECONDS_A_SECOND: f64 = 1000.0;

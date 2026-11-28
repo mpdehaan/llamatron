@@ -10,6 +10,7 @@
 //! expanded coming out, so that the hiss inside breathes with it, and each stage it enters saturates softly.
 
 use crate::dsp::{flushed, Random};
+use crate::dsp::{DECIBELS_A_DECADE, DECIBEL_BASE};
 use std::f64::consts::TAU;
 
 /// The most and fewest stages, at Darkness 0% and 100%; and the most clock ticks a host sample may hold at the stages
@@ -27,8 +28,6 @@ const SHORTEST_CHAIN: f64 = 16.0;
 const LINE_SPARE: usize = 2;
 const TICK_FLOOR_DIVISOR: f64 = 4.0;
 const FILTER_SHARE: f64 = 0.45;
-/// Decibels as an amplitude: ten to the power of a twentieth of them.
-const DECIBEL_BASE: f64 = 10.0;
 /// How often, in samples, the clock's rate, its wow and flutter and the filters' stepping are worked out again.
 const CONTROL_SAMPLES: usize = 32;
 /// How long a change of time takes to slide most of the way, in seconds: the device's clock glides.
@@ -44,7 +43,6 @@ const WANDER_HERTZ: f64 = 0.3;
 /// The hiss inside the device at Noise 1% and 100%, in decibels under full scale.
 const QUIETEST_HISS_DECIBELS: f64 = -80.0;
 const LOUDEST_HISS_DECIBELS: f64 = -50.0;
-const DECIBELS_PER_DECADE: f64 = 20.0;
 /// The compander's envelope time, in seconds, and the quietest level it divides by, so that silence is never boosted
 /// past 40 dB.
 const COMPANDER_SECONDS: f64 = 0.01;
@@ -307,7 +305,7 @@ impl BucketBrigade {
             0.0
         } else {
             let decibels = QUIETEST_HISS_DECIBELS + (LOUDEST_HISS_DECIBELS - QUIETEST_HISS_DECIBELS) * design.noise.min(1.0);
-            DECIBEL_BASE.powf(decibels / DECIBELS_PER_DECADE)
+            DECIBEL_BASE.powf(decibels / DECIBELS_A_DECADE)
         };
         let follow = 1.0 - (-1.0 / (COMPANDER_SECONDS * rate)).exp();
         let level = Level {
@@ -618,7 +616,7 @@ mod tests {
         for _ in 0..SECOND {
             quiet_level = quiet_level.max(device.process(0.0).0.abs());
         }
-        let loudest_hiss = DECIBEL_BASE.powf(LOUDEST_HISS_DECIBELS / DECIBELS_PER_DECADE);
+        let loudest_hiss = DECIBEL_BASE.powf(LOUDEST_HISS_DECIBELS / DECIBELS_A_DECADE);
         assert!(quiet_level < loudest_hiss, "{quiet_level}");
     }
 }

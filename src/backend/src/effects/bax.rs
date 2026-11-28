@@ -4,17 +4,20 @@
 //! Bax, a tone control after Peter Baxandall's published circuit of 1952: a gentle shelf of 6 dB an octave under its
 //! bass turnover and another over its treble turnover, each lifting or cutting by its own number of decibels.
 
-use crate::dsp::{flushed, HIGHEST_SHARE};
+use crate::dsp::{flushed, DECIBELS_A_DECADE, DECIBEL_BASE, HIGHEST_SHARE};
 use crate::protocol::values::number;
 use llamatron_names::spec;
 use rmpv::Value;
-use std::f64::consts::PI;
+use std::f64::consts::TAU;
 
 /// Where Bax's shelves turn over, in hertz, fixed as on a hi-fi tone control.
 const BASS_TURNOVER_HERTZ: f64 = 100.0;
 const TREBLE_TURNOVER_HERTZ: f64 = 10_000.0;
-/// Decibels to a gain: twenty to a power of ten.
-pub(crate) const DECIBELS_PER_DECADE: f64 = 20.0;
+/// The circuit's level and the matched filter's: the band's top at half the rate; the quadratic's halving, doubling and
+/// four; and the smallest outer coefficient divided by, under which the shelf is flat.
+const HALVES: f64 = 2.0;
+const QUADRATIC_FOUR: f64 = 4.0;
+const FLAT_SHELF: f64 = 1e-12;
 
 /// Bax's two shelves, one after the other, the bass's and the treble's.
 pub struct Bax {
@@ -87,7 +90,7 @@ impl Shelf {
     // own: a first-order filter's squared level is (B0 + B1 cos w)/(A0 + A1 cos w), and the three levels make a
     // quadratic for its feedback whose roots multiply to one, the stable one taken.
     fn new(decibels: f64, hertz: f64, end: End, rate: f64) -> Shelf {
-        let gain = 10f64.powf(decibels / DECIBELS_PER_DECADE);
+        let gain = DECIBEL_BASE.powf(decibels / DECIBELS_A_DECADE);
         let cutoff = match (gain < 1.0, end) {
             (false, _) => hertz,
             (true, End::Under) => hertz / gain,
@@ -95,17 +98,17 @@ impl Shelf {
         };
         let matched = cutoff.min(HIGHEST_SHARE * rate);
         let bottom = circuit_power(0.0, gain, cutoff, end);
-        let top = circuit_power(rate / 2.0, gain, cutoff, end);
+        let top = circuit_power(rate / HALVES, gain, cutoff, end);
         let middle = circuit_power(matched, gain, cutoff, end);
-        let cosine = (2.0 * PI * matched / rate).cos();
-        let (low_share, high_share) = ((1.0 + cosine) / 2.0, (1.0 - cosine) / 2.0);
+        let cosine = (TAU * matched / rate).cos();
+        let (low_share, high_share) = ((1.0 + cosine) / HALVES, (1.0 - cosine) / HALVES);
         let outer = bottom * low_share + top * high_share - middle;
-        let inner = 2.0 * (bottom * low_share - top * high_share - middle * cosine);
-        let back = if outer.abs() < 1e-12 {
+        let inner = HALVES * (bottom * low_share - top * high_share - middle * cosine);
+        let back = if outer.abs() < FLAT_SHELF {
             0.0
         } else {
-            let root = (inner * inner - 4.0 * outer * outer).max(0.0).sqrt();
-            let first = (-inner + root) / (2.0 * outer);
+            let root = (inner * inner - QUADRATIC_FOUR * outer * outer).max(0.0).sqrt();
+            let first = (-inner + root) / (HALVES * outer);
             if first.abs() <= 1.0 {
                 first
             } else {
@@ -115,8 +118,8 @@ impl Shelf {
         let at_bottom = bottom.sqrt() * (1.0 + back);
         let at_top = top.sqrt() * (1.0 - back);
         Shelf {
-            forward: (at_bottom + at_top) / 2.0,
-            forward_last: (at_bottom - at_top) / 2.0,
+            forward: (at_bottom + at_top) / HALVES,
+            forward_last: (at_bottom - at_top) / HALVES,
             back,
             last_in: 0.0,
             last_out: 0.0,
@@ -143,18 +146,24 @@ impl Shelf {
 mod tests {
     use super::*;
 
-    const RATE: f64 = 48_000.0;
+    use crate::dsp::testing::{sine, HALF_SECOND, RATE, SECOND};
+    use crate::dsp::DECIBELS_A_POWER_DECADE;
+
+    /// The levels each shelf is set to, in decibels, and where the treble's and the bass's are heard, in hertz.
+    const SHELF_DECIBELS: [f64; 4] = [15.0, 6.0, -6.0, -15.0];
+    const TREBLE_HEARD_HERTZ: [f64; 6] = [200.0, 2_000.0, 5_000.0, 10_000.0, 15_000.0, 20_000.0];
+    const BASS_HEARD_HERTZ: [f64; 4] = [30.0, 100.0, 400.0, 2_000.0];
 
     /// The level of a steady sine at some hertz through a Bax, once its shelves have settled, against the sine's own.
     fn through_bax(bass: f64, treble: f64, hertz: f64) -> f64 {
         let spec = Value::Map(vec![(spec::BASS.into(), bass.into()), (spec::TREBLE.into(), treble.into())]);
         let mut bax = Bax::compiled(&spec, RATE);
-        let samples = 48_000;
-        let input: Vec<f64> = (0..samples).map(|place| 0.5 * (2.0 * PI * hertz * place as f64 / RATE).sin()).collect();
+        let level = 0.5;
+        let input: Vec<f64> = (0..SECOND).map(|place| sine(hertz, level, place)).collect();
         let output: Vec<f64> = input.iter().map(|sample| bax.process(*sample)).collect();
-        let before: f64 = input[samples / 2..].iter().map(|sample| sample.powi(2)).sum();
-        let after: f64 = output[samples / 2..].iter().map(|sample| sample.powi(2)).sum();
-        DECIBELS_PER_DECADE / 2.0 * (after / before).log10()
+        let before: f64 = input[HALF_SECOND..].iter().map(|sample| sample * sample).sum();
+        let after: f64 = output[HALF_SECOND..].iter().map(|sample| sample * sample).sum();
+        DECIBELS_A_POWER_DECADE * (after / before).log10()
     }
 
     /// Bax at 0 dB leaves the sound as it is, and its shelves follow the circuit's own level across the band, to within a
@@ -162,20 +171,21 @@ mod tests {
     #[test]
     fn bax_follows_the_circuits_level_to_the_top_of_the_band() {
         let middle = 1_000.0;
-        assert!(through_bax(0.0, 0.0, middle).abs() < 0.01, "Bax at 0 dB leaves the sound alone");
+        let unchanged = 0.01;
+        assert!(through_bax(0.0, 0.0, middle).abs() < unchanged, "Bax at 0 dB leaves the sound alone");
         let near = 0.35;
-        for decibels in [15.0, 6.0, -6.0, -15.0] {
-            for hertz in [200.0, 2_000.0, 5_000.0, 10_000.0, 15_000.0, 20_000.0] {
-                let gain = 10f64.powf(decibels / DECIBELS_PER_DECADE);
+        for decibels in SHELF_DECIBELS {
+            for hertz in TREBLE_HEARD_HERTZ {
+                let gain = DECIBEL_BASE.powf(decibels / DECIBELS_A_DECADE);
                 let cutoff = if gain < 1.0 { TREBLE_TURNOVER_HERTZ * gain } else { TREBLE_TURNOVER_HERTZ };
-                let circuit = 10.0 * circuit_power(hertz, gain, cutoff, End::Over).log10();
+                let circuit = DECIBELS_A_POWER_DECADE * circuit_power(hertz, gain, cutoff, End::Over).log10();
                 let heard = through_bax(0.0, decibels, hertz);
                 assert!((heard - circuit).abs() < near, "treble {decibels} at {hertz}: {heard} against {circuit}");
             }
-            for hertz in [30.0, 100.0, 400.0, 2_000.0] {
-                let gain = 10f64.powf(decibels / DECIBELS_PER_DECADE);
+            for hertz in BASS_HEARD_HERTZ {
+                let gain = DECIBEL_BASE.powf(decibels / DECIBELS_A_DECADE);
                 let cutoff = if gain < 1.0 { BASS_TURNOVER_HERTZ / gain } else { BASS_TURNOVER_HERTZ };
-                let circuit = 10.0 * circuit_power(hertz, gain, cutoff, End::Under).log10();
+                let circuit = DECIBELS_A_POWER_DECADE * circuit_power(hertz, gain, cutoff, End::Under).log10();
                 let heard = through_bax(decibels, 0.0, hertz);
                 assert!((heard - circuit).abs() < near, "bass {decibels} at {hertz}: {heard} against {circuit}");
             }
