@@ -10,20 +10,25 @@ use crate::protocol::values::{number, truth};
 use llamatron_names::spec;
 use rmpv::Value;
 
+use crate::dsp::{OCTAVE, SHARE_BITS, SHARE_SHIFT, XORSHIFT_SHIFTS};
+/// From this many bits on, Bitcrush leaves the level alone.
+const MOST_CRUSHED_BITS: f64 = 16.0;
+
 /// The bits a Bitcrush keeps where its spec names none.
 const DEFAULT_BITS: f64 = 16.0;
 
 /// Where Bitcrush's dither starts, the same every playing.
-const DITHER_SEED: u64 = 0x9E37_79B9_7F4A_7C15;
+const DITHER_SEED: u64 = crate::dsp::GOLDEN_GAMMA;
 
 /// Triangular noise from -1 to 1, the sum of two uniform draws, from a seeded xorshift.
 #[inline]
 fn dither_noise(state: &mut u64) -> f64 {
     let mut draw = || {
-        *state ^= *state << 13;
-        *state ^= *state >> 7;
-        *state ^= *state << 17;
-        (*state >> 11) as f64 / (1u64 << 53) as f64
+        let [first, second, third] = XORSHIFT_SHIFTS;
+        *state ^= *state << first;
+        *state ^= *state >> second;
+        *state ^= *state << third;
+        (*state >> SHARE_SHIFT) as f64 / (1u64 << SHARE_BITS) as f64
     };
     draw() + draw() - 1.0
 }
@@ -51,7 +56,7 @@ impl Bitcrush {
         let bits = number(spec, spec::BITS, DEFAULT_BITS);
         let hold_rate = number(spec, spec::RATE, 0.0);
         Bitcrush {
-            levels: if bits < 16.0 { 2f64.powf(bits - 1.0) } else { 0.0 },
+            levels: if bits < MOST_CRUSHED_BITS { OCTAVE.powf(bits - 1.0) } else { 0.0 },
             dither: truth(spec, spec::DITHER, false),
             noise: DITHER_SEED,
             step: if hold_rate > 0.0 && hold_rate < rate { hold_rate / rate } else { 0.0 },

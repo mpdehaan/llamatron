@@ -107,9 +107,16 @@ mod tests {
 
     #[test]
     fn a_message_reads_back_as_written() {
+        let (at, instrument, pitch, velocity) = (1.5, 3, 60, 100);
         let sent = message(
             NOTES,
-            vec![Value::Array(vec![Value::Array(vec![1.5.into(), 0.into(), 3.into(), 60.into(), 100.into()])])],
+            vec![Value::Array(vec![Value::Array(vec![
+                at.into(),
+                0.into(),
+                instrument.into(),
+                pitch.into(),
+                velocity.into(),
+            ])])],
         );
         let mut wire = Vec::new();
         write_message(&mut wire, &sent).unwrap();

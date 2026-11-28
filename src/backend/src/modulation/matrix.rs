@@ -13,6 +13,11 @@ use crate::registry::{self, Named};
 use llamatron_names::spec;
 use rmpv::Value;
 
+use crate::dsp::UNIPOLAR_HALVING;
+/// The envelopes a voice has, and Env 3's place among them.
+const ENVELOPE_COUNT: usize = 3;
+const ENV3_PLACE: usize = 2;
+
 /// What a matrix slot reads.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Source {
@@ -150,7 +155,11 @@ pub fn weight_routes(slots: &[Value]) -> Vec<WeightRoute> {
             continue;
         }
         let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR;
-        let (reach, offset) = if unipolar { (amount / 2.0, amount / 2.0) } else { (amount, 0.0) };
+        let (reach, offset) = if unipolar {
+            (amount / UNIPOLAR_HALVING, amount / UNIPOLAR_HALVING)
+        } else {
+            (amount, 0.0)
+        };
         routes.push(WeightRoute {
             source,
             via,
@@ -200,7 +209,11 @@ pub fn rate_routes(slots: &[Value]) -> Vec<RateRoute> {
         // A Unipolar route moves the rate from its own to the amount's octaves, never below, as a matrix route does.
         let reach = amount * RATE_OCTAVES;
         let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR;
-        let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
+        let (reach, offset) = if unipolar {
+            (reach / UNIPOLAR_HALVING, reach / UNIPOLAR_HALVING)
+        } else {
+            (reach, 0.0)
+        };
         routes.push(RateRoute {
             source,
             via,
@@ -542,7 +555,7 @@ pub struct Route {
 /// What the matrix's sources hold at one sample.
 #[derive(Clone, Copy, Default)]
 pub struct Sources {
-    pub envelopes: [f64; 3],
+    pub envelopes: [f64; ENVELOPE_COUNT],
     pub lfos: [f64; LFO_COUNT],
     /// Each Snail's outputs, by its slot, those the matrix reads.
     pub snails: [[f64; OUTPUT_COUNT]; LFO_COUNT],
@@ -551,7 +564,7 @@ pub struct Sources {
     /// The voice's oscillator a sample before, from -1 to 1.
     pub oscillator: f64,
     /// Asheville's three oscillators a sample before.
-    pub oscs: [f64; 3],
+    pub oscs: [f64; OWN_OSCILLATORS],
     /// The value of each CC the matrix reads, from 0 to 1, in the order of the matrix's list of them.
     pub controls: [f64; MOST_CONTROLS],
 }
@@ -562,7 +575,7 @@ impl Sources {
         match source {
             Source::Env1 => self.envelopes[0],
             Source::Env2 => self.envelopes[1],
-            Source::Env3 => self.envelopes[2],
+            Source::Env3 => self.envelopes[ENV3_PLACE],
             Source::Lfo(place) => self.lfos[place],
             Source::Snail(slot, output) => self.snails[slot][output],
             Source::Velocity => self.velocity,
@@ -638,7 +651,11 @@ impl ModMatrix {
             // A Unipolar route moves its destination from 0 to the amount: a source of -1 to 1 is halved and lifted.
             let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR && source.is_bipolar();
             let reach = amount * range;
-            let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
+            let (reach, offset) = if unipolar {
+                (reach / UNIPOLAR_HALVING, reach / UNIPOLAR_HALVING)
+            } else {
+                (reach, 0.0)
+            };
             routes.push(Route {
                 source,
                 via,
@@ -710,11 +727,12 @@ mod tests {
     /// lowest moves a Unipolar route's pitch not at all.
     #[test]
     fn a_unipolar_route_moves_from_nothing_to_its_amount() {
+        let half_amount = 50.0;
         let route = |polarity: &str| {
             ModMatrix::compiled(&[Value::Map(vec![
                 (spec::SOURCE.into(), spec::LFO1.into()),
                 (spec::DESTINATION.into(), spec::PITCH.into()),
-                (spec::AMOUNT.into(), 50.0.into()),
+                (spec::AMOUNT.into(), half_amount.into()),
                 (spec::POLARITY.into(), polarity.into()),
             ])])
         };

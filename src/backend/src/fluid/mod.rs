@@ -13,6 +13,11 @@ use libloading::Library;
 use llamatron_names::fluid_calls;
 use std::ffi::{c_char, c_double, c_int, c_void, CString};
 
+/// A pitch bend's high byte stands seven bits up, MIDI's data bytes being seven bits each; and the two channels of
+/// FluidSynth's scratch, left and right.
+const SEVEN_BITS: i32 = 7;
+const STEREO: usize = 2;
+
 const SAMPLE_RATE: &str = "synth.sample-rate";
 const GAIN: &str = "synth.gain";
 const THREAD_SAFE: &str = "synth.threadsafe-api";
@@ -171,7 +176,7 @@ impl Fluid {
                 CONTROL_CHANGE => (calls.control_change)(self.synth, channel, first, second),
                 PROGRAM_CHANGE => (calls.program_change)(self.synth, channel, first),
                 CHANNEL_PRESSURE => (calls.channel_pressure)(self.synth, channel, first),
-                PITCH_BEND => (calls.pitch_bend)(self.synth, channel, first | (second << 7)),
+                PITCH_BEND => (calls.pitch_bend)(self.synth, channel, first | (second << SEVEN_BITS)),
                 _ => 0,
             };
         }
@@ -187,11 +192,11 @@ impl Fluid {
 
     /// Add the synth's next samples to the two channels given, which are as long as each other.
     pub fn render(&mut self, left: &mut [f32], right: &mut [f32], scratch: &mut [f32]) {
-        let count = left.len().min(right.len()).min(scratch.len() / 2);
+        let count = left.len().min(right.len()).min(scratch.len() / STEREO);
         if count == 0 {
             return;
         }
-        let (into_left, into_right) = scratch.split_at_mut(scratch.len() / 2);
+        let (into_left, into_right) = scratch.split_at_mut(scratch.len() / STEREO);
         // SAFETY: both buffers hold at least count floats, and FluidSynth writes exactly count to each, one apart.
         unsafe {
             (self.calls.write_float)(

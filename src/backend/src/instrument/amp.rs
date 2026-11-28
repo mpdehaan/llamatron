@@ -12,6 +12,8 @@ use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
 use llamatron_names::spec;
 
+use crate::dsp::saturation::soft_limit;
+
 /// The kinds of Amp, each a circuit.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum AmpKind {
@@ -92,15 +94,6 @@ pub fn compiled(spec: &rmpv::Value) -> AmpPart {
     }
 }
 
-/// A soft limit close to tanh and cheaper, x(27 + x²)/(27 + 9x²), held at its ends past three.
-// After stmlib's SoftLimit (stmlib/dsp/dsp.h, Emilie Gillet, MIT); the implementation here is our own.
-#[inline]
-fn soft_limit(x: f64) -> f64 {
-    let held = x.clamp(-3.0, 3.0);
-    let square = held * held;
-    held * (27.0 + square) / (27.0 + 9.0 * square)
-}
-
 impl AmpPart {
     /// The gain Env 1's level gives, along the Response's curve from linear to exponential.
     #[inline]
@@ -160,8 +153,9 @@ mod tests {
             (spec::CHARACTER.into(), 1.0.into()),
         ]));
         let (quiet, loud, open) = (0.05, 1.0, 1.0);
-        assert!((warm.process(quiet, open, 1.0) / quiet - 1.0).abs() < 0.05);
-        assert!(warm.process(loud, open, 1.0) < loud * 0.9);
+        let (near_unity, squashed) = (0.05, 0.9);
+        assert!((warm.process(quiet, open, 1.0) / quiet - 1.0).abs() < near_unity);
+        assert!(warm.process(loud, open, 1.0) < loud * squashed);
     }
 
     /// Clean at a linear Response is the signal times its opening; an exponential Response opens it later.
@@ -180,7 +174,8 @@ mod tests {
         let (quiet, loud, open, shut) = (0.05, 1.0, 1.0, 0.0);
         let quiet_gain = transistor.process(quiet, open, 1.0) / quiet;
         let loud_gain = transistor.process(loud, open, 1.0) / loud;
-        assert!(loud_gain < quiet_gain * 0.9, "{loud_gain} against {quiet_gain}");
+        let squashed = 0.9;
+        assert!(loud_gain < quiet_gain * squashed, "{loud_gain} against {quiet_gain}");
         assert!(transistor.process(loud, shut, 1.0) > 0.0, "it leaks when shut");
         let ota = amp(spec::OTA_VCA, 0.0, drive, 0.0);
         assert!(ota.process(loud, open, 1.0) / loud < ota.process(quiet, open, 1.0) / quiet);

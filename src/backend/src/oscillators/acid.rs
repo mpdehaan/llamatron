@@ -8,6 +8,9 @@
 use super::*;
 use llamatron_names::spec;
 
+/// The halves of a cycle, its rise and its fall.
+const HALVES: usize = 2;
+
 /// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a
 /// cycle, and played at half the saw's level.
 const SQUARE_SHAPER_GAIN: f64 = 69.8232412342666;
@@ -22,7 +25,7 @@ pub const COUPLING_HIGHPASS_HZ: f64 = 44.486;
 /// table.
 /// One cycle of the saw as Open303 draws it: rising from 0 to 1 over the first half, then from -1 to 0.
 pub fn saw_cycle(length: usize) -> Vec<f64> {
-    let half = length / 2;
+    let half = length / HALVES;
     (0..length)
         .map(|place| {
             if place < half {
@@ -36,7 +39,7 @@ pub fn saw_cycle(length: usize) -> Vec<f64> {
 
 /// One cycle of the square, from one cycle of a rising saw of a length.
 pub fn square_cycle(length: usize) -> Vec<f64> {
-    let half = length / 2;
+    let half = length / HALVES;
     (0..length)
         .map(|place| {
             // The saw as Open303 draws it, rising from 0 to 1 over the first half, then from -1 to 0, read half a cycle on.
@@ -86,8 +89,9 @@ mod tests {
     /// The square is shaped from the saw: it sits near its two levels most of the cycle, and is not centred on nothing.
     #[test]
     fn the_square_is_shaped_from_the_saw() {
-        let cycle = square_cycle(2048);
-        let near_levels = cycle.iter().filter(|value| value.abs() > 0.45).count();
-        assert!(near_levels > 1900, "{near_levels}");
+        let (length, near_a_level, most_of_it) = (2048, 0.45, 1900);
+        let cycle = square_cycle(length);
+        let near_levels = cycle.iter().filter(|value| value.abs() > near_a_level).count();
+        assert!(near_levels > most_of_it, "{near_levels}");
     }
 }

@@ -26,6 +26,15 @@ use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
+/// Where each field stands in the tracker's lists: a port's group after its name and kind, FluidSynth's gain after its
+/// library and SoundFont, a forget's time after its tag, and an instrument's sound after its port and channel; and
+/// FluidSynth's gain where the tracker sends none.
+const PORT_GROUP_PLACE: usize = 2;
+const FLUID_GAIN_PLACE: usize = 2;
+const FORGET_AFTER_PLACE: usize = 2;
+const SOUND_PLACE: usize = 2;
+const DEFAULT_FLUID_GAIN: f64 = 0.55;
+
 pub const OPEN: &str = wire::OPEN;
 pub const START: &str = wire::START;
 pub const ADD: &str = wire::ADD;
@@ -55,7 +64,7 @@ fn ports_of(opened: &Value) -> Vec<Port> {
             let items = port.as_array()?;
             let name = items.first()?.as_str()?.to_string();
             let kind = items.get(1).and_then(Value::as_str).unwrap_or(MIDI).to_string();
-            let group = items.get(2).and_then(as_number).unwrap_or(0.0) as usize;
+            let group = items.get(PORT_GROUP_PLACE).and_then(as_number).unwrap_or(0.0) as usize;
             Some(Port { name, kind, group })
         })
         .collect()
@@ -150,7 +159,7 @@ fn load_fluid(opened: &Value, player: &mut Player, rate: f64) -> Result<(), Fail
         return Ok(());
     };
     let text = |place: usize| given.get(place).and_then(Value::as_str).unwrap_or("");
-    let gain = given.get(2).and_then(as_number).unwrap_or(0.55);
+    let gain = given.get(FLUID_GAIN_PLACE).and_then(as_number).unwrap_or(DEFAULT_FLUID_GAIN);
     let fluid = Fluid::load(text(0), text(1), rate, gain).map_err(|problem| Failed(wire::FLUIDSYNTH, problem.to_string()))?;
     log::info!("FluidSynth ready with {}", text(1));
     player.send(Command::Fluid(Box::new(fluid)));
@@ -175,7 +184,11 @@ pub fn serve(answer: Answer, input: &mut dyn protocol::Inbox) -> i32 {
             return 1;
         }
     };
-    log::info!("sending to {} ports, notes held back {:.2} ms", ports.len(), opened.delay * 1000.0);
+    log::info!(
+        "sending to {} ports, notes held back {:.2} ms",
+        ports.len(),
+        opened.delay * crate::dsp::MILLISECONDS_A_SECOND
+    );
     tell(&answer, &message(protocol::READY, vec![opened.rate.into(), opened.delay.into()]));
     let Opened {
         mut player,
@@ -235,7 +248,7 @@ fn take(received: &Value, commands: &mpsc::Sender<SenderCommand>, ports: &[Port]
         }
         FORGET => SenderCommand::Forget {
             tag: number(1).unwrap_or(0.0) as u32,
-            after: number(2).unwrap_or(0.0),
+            after: number(FORGET_AFTER_PLACE).unwrap_or(0.0),
         },
         STOP_TAG => SenderCommand::StopTag(number(1).unwrap_or(0.0) as u32),
         STOP_ALL => SenderCommand::StopAll,
@@ -276,7 +289,7 @@ fn set_sounds(given: Option<&Value>, ports: &[Port], player: &mut Option<Player>
             continue;
         };
         let number = port.group * INSTRUMENTS_PER_PORT + channel;
-        let patch = Box::new(Patch::compiled(items.get(2).unwrap_or(&Value::Nil), rate));
+        let patch = Box::new(Patch::compiled(items.get(SOUND_PLACE).unwrap_or(&Value::Nil), rate));
         if let Ok(mut hits) = hits.lock() {
             hits.set_instrument(number, &patch);
         }

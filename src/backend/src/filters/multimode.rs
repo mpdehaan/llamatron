@@ -4,8 +4,8 @@
 //! The Multimode filter: a state-variable filter of two integrators, low, band, high or notch, its Q from the resonance,
 //! its band integrator saturating softly.
 
-use super::ota::soft_limit;
 use super::{FilterMode, FilterPart, FilterState};
+use crate::dsp::saturation::soft_limit;
 
 impl FilterPart {
     /// The state-variable filter (two integrators), its damping the stored feedback, its output by the mode.

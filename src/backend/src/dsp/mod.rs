@@ -16,10 +16,19 @@ pub mod testing;
 
 use std::f64::consts::TAU;
 
-/// The ratio an octave multiplies a frequency by.
+/// The ratio an octave multiplies a frequency by, and the semitones of an octave.
 pub const OCTAVE: f64 = 2.0;
+pub const SEMITONES_AN_OCTAVE: f64 = 12.0;
 /// Decibels as an amplitude: twenty of them a tenfold.
 pub const DECIBELS_A_DECADE: f64 = 20.0;
+/// A nanosecond's share of a second, and a millisecond's.
+pub const NANOSECONDS_A_SECOND: f64 = 1e9;
+pub const MILLISECONDS_A_SECOND: f64 = 1000.0;
+/// The xorshift's three shifts, Marsaglia's, which the backend's quick noises step by.
+pub const XORSHIFT_SHIFTS: [u32; 3] = [13, 7, 17];
+/// How a Unipolar route of a source from -1 to 1 moves its destination from 0 to its amount: by half the amount, lifted
+/// by half.
+pub const UNIPOLAR_HALVING: f64 = 2.0;
 /// Twice, as a biquad's cosine and Q are doubled in its coefficients, and half, as its zeros are halved.
 const TWICE: f64 = 2.0;
 /// A biquad's coefficients, three a side.

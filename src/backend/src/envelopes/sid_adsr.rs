@@ -6,6 +6,11 @@
 use super::*;
 use llamatron_names::spec;
 
+/// Two points at a time, a span of the envelope's line; and the shortest span divided by, so that two points at one time
+/// divide by nothing.
+const PAIR: usize = 2;
+const SHORTEST_SPAN: f64 = 1e-12;
+
 /// What the chip's envelope takes where its spec names none: its sustain, of its sixteen steps, the top of them, and the
 /// step of its rate table its decay and release take.
 const DEFAULT_SUSTAIN_STEP: f64 = 10.0;
@@ -13,7 +18,7 @@ const TOP_SUSTAIN_STEP: f64 = 15.0;
 const DEFAULT_RATE_STEP: f64 = 9.0;
 
 pub fn sid_adsr(spec: &Value) -> EnvelopePart {
-    let rate = |name: &str, default: f64| SID_PERIODS[(number(spec, name, default) as usize).min(15)] / SID_CLOCK;
+    let rate = |name: &str, default: f64| SID_PERIODS[(number(spec, name, default) as usize).min(SID_PERIODS.len() - 1)] / SID_CLOCK;
     let attack_step = rate(spec::ATTACK, 0.0);
     let sustain = number(spec, spec::SUSTAIN, DEFAULT_SUSTAIN_STEP).clamp(0.0, TOP_SUSTAIN_STEP) * SID_SUSTAIN_STEP;
     let rise = SID_TOP * attack_step;
@@ -52,10 +57,10 @@ pub(super) fn along(points: &[(f64, f64)], time: f64) -> f64 {
     if time <= points[0].0 {
         return points[0].1;
     }
-    for pair in points.windows(2) {
+    for pair in points.windows(PAIR) {
         let (start, end) = (pair[0], pair[1]);
         if time <= end.0 {
-            let span = (end.0 - start.0).max(1e-12);
+            let span = (end.0 - start.0).max(SHORTEST_SPAN);
             return start.1 + (end.1 - start.1) * (time - start.0) / span;
         }
     }

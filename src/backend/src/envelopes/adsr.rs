@@ -6,6 +6,10 @@
 use super::*;
 use llamatron_names::spec;
 
+/// How far above full a timer's target stands, as a share, at the curve's timing; and a curve's percent.
+const TIMER_TARGET_SHARE: f64 = 0.5;
+const PERCENT: f64 = 100.0;
+
 /// What an ADSR takes where its spec names none: its release, decay and attack in seconds, and its sustain level.
 const DEFAULT_RELEASE: f64 = 0.2;
 const DEFAULT_SUSTAIN: f64 = 0.6;
@@ -24,8 +28,8 @@ pub fn compiled(spec: &Value, kind: &str) -> EnvelopePart {
         sustain = 1.0;
     }
     let curve = number(spec, spec::ATTACK_CURVE, TIMER_CURVE);
-    let target = (curve > STRAIGHT).then(|| 1.0 + 0.5 * (TIMER_CURVE / curve).powf(CURVE_POWER));
-    let bend = (curve < -STRAIGHT).then(|| SWELL_BEND * -curve / 100.0);
+    let target = (curve > STRAIGHT).then(|| 1.0 + TIMER_TARGET_SHARE * (TIMER_CURVE / curve).powf(CURVE_POWER));
+    let bend = (curve < -STRAIGHT).then(|| SWELL_BEND * -curve / PERCENT);
     EnvelopePart::Adsr {
         attack: number(spec, spec::ATTACK, DEFAULT_ATTACK).max(SHORTEST_ATTACK),
         hold: number(spec, spec::HOLD, 0.0),

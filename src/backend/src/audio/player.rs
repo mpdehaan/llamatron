@@ -23,6 +23,13 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+/// The percentile of callback times reported, the 99th, out of a hundred; a millisecond's nanoseconds; and how long the
+/// player idles between looks while nothing plays, in milliseconds.
+const PERCENTILE: u64 = 99;
+const PERCENT: u64 = 100;
+const NANOSECONDS_A_MILLISECOND: f64 = 1e6;
+const IDLE_MILLISECONDS: u64 = 2;
+
 const COMMANDS: usize = 1 << 16;
 const TRASH: usize = 1 << 12;
 const FIRST_CALLBACK_SECONDS: f64 = 3.0;
@@ -162,8 +169,8 @@ impl Statistics {
         let mut seen = 0;
         for (bin, count) in counts.iter().enumerate() {
             seen += count;
-            if total > 0 && seen * 100 >= total * 99 {
-                return ((bin as u64 + 1) * HISTOGRAM_STEP_NS) as f64 / 1e6;
+            if total > 0 && seen * PERCENT >= total * PERCENTILE {
+                return ((bin as u64 + 1) * HISTOGRAM_STEP_NS) as f64 / NANOSECONDS_A_MILLISECOND;
             }
         }
         0.0
@@ -251,7 +258,7 @@ fn wait_for_first_chunk(statistics: &Statistics) -> Result<f64, StartProblem> {
         if began.elapsed().as_secs_f64() > FIRST_CALLBACK_SECONDS {
             return Err(StartProblem::TooSlow);
         }
-        std::thread::sleep(Duration::from_millis(2));
+        std::thread::sleep(Duration::from_millis(IDLE_MILLISECONDS));
     }
     Ok(f64::from_bits(statistics.latency_bits.load(Ordering::Acquire)))
 }
@@ -364,7 +371,7 @@ impl Callback {
         }
         self.played += frames as i64;
         self.publish();
-        let took = ((clock::now() - began) * 1e9) as u64;
+        let took = ((clock::now() - began) * crate::dsp::NANOSECONDS_A_SECOND) as u64;
         self.statistics.took(took);
     }
 

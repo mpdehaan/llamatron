@@ -14,6 +14,9 @@ use llamatron_names::wire;
 use std::io;
 use std::panic;
 
+/// What the daemon exits with when it stops on an internal error.
+const PANICKED: i32 = 2;
+
 const DEFAULT_BLOCK: usize = 128;
 const DEFAULT_RATE: f64 = 44100.0;
 const LOG_FOLDER: &str = ".llamatron";
@@ -107,7 +110,7 @@ fn main() {
                 vec![wire::PANIC.into(), "the daemon stopped on an internal error; its log says where".into()],
             ),
         );
-        2
+        PANICKED
     });
     drop(logger);
     std::process::exit(code);

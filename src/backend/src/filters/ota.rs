@@ -6,19 +6,13 @@
 
 use super::{FilterPart, FilterState};
 
+use crate::dsp::saturation::{soft_limit, soft_limit_share, SOFT_LIMIT_END};
+/// The OTA filter's stages, four poles.
+const STAGES: usize = 4;
+
 /// Where the soft limit reaches one and holds.
-const SOFT_LIMIT_END: f64 = 3.0;
 /// The least a stage's saturation may slow it, so that a very loud stage never stops.
 const LEAST_SQUASH: f64 = 0.01;
-
-/// A soft limit close to tanh and far cheaper, x(27 + x²)/(27 + 9x²), held at its ends past three, where it reaches one.
-// After stmlib's SoftLimit (stmlib/dsp/dsp.h, Emilie Gillet, MIT); the implementation here is our own.
-#[inline]
-pub(super) fn soft_limit(x: f64) -> f64 {
-    let held = x.clamp(-SOFT_LIMIT_END, SOFT_LIMIT_END);
-    let square = held * held;
-    held * (27.0 + square) / (27.0 + 9.0 * square)
-}
 
 /// What a stage's saturation scales its gain by: soft_limit(y)/y, worked out without the division, never under
 /// LEAST_SQUASH.
@@ -27,8 +21,7 @@ fn soft_squash(y: f64) -> f64 {
     if y.abs() >= SOFT_LIMIT_END {
         return (1.0 / y.abs()).max(LEAST_SQUASH);
     }
-    let square = y * y;
-    (27.0 + square) / (27.0 + 9.0 * square)
+    soft_limit_share(y)
 }
 
 impl FilterPart {
@@ -51,13 +44,14 @@ impl FilterPart {
         }
         let [s1, s2, s3, s4] = state.stages;
         let [g1, g2, g3, g4] = shares;
-        let carried = g4 * g3 * g2 * rests[0] * s1 + g4 * g3 * rests[1] * s2 + g4 * rests[2] * s3 + rests[3] * s4;
+        let [rest1, rest2, rest3, rest4] = rests;
+        let carried = g4 * g3 * g2 * rest1 * s1 + g4 * g3 * rest2 * s2 + g4 * rest3 * s3 + rest4 * s4;
         let all = g1 * g2 * g3 * g4;
         let k = state.feedback;
         let solved = (input - k * carried) / (1.0 + k * all);
         let mut signal = soft_limit(solved);
-        let mut taps = [0.0; 4];
-        for place in 0..4 {
+        let mut taps = [0.0; STAGES];
+        for place in 0..STAGES {
             let stage = &mut state.stages[place];
             let moved = (signal - *stage) * shares[place];
             let out = moved + *stage;

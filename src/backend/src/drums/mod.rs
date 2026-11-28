@@ -14,14 +14,14 @@
 //! pass, a fade where it falls silent, and a gain so that its loudest moment peaks at -3 dB.
 
 use crate::dsp::{self, band_pass_pair, Biquad, Random, BUTTERWORTH_Q};
+use crate::dsp::{OCTAVE, SEMITONES_AN_OCTAVE};
 use crate::registry::{self, Entry};
 use llamatron_names::spec;
 use std::f64::consts::{PI, TAU};
 use std::sync::Arc;
 
 const MIDDLE_C: f64 = 60.0;
-/// The knob's middle, where a knob a spec leaves out stands; each knob's place among the five; a velocity's top; the
-/// semitones of an octave and the ratio an octave multiplies a frequency by.
+/// The knob's middle, where a knob a spec leaves out stands; each knob's place among the five; and a velocity's top.
 const MIDDLE_KNOB: f64 = 64.0;
 const PITCH_KNOB: usize = 0;
 const DECAY_KNOB: usize = 1;
@@ -29,8 +29,6 @@ const COLOR_KNOB: usize = 2;
 const SHAPE_KNOB: usize = 3;
 const SWEEP_KNOB: usize = 4;
 const VELOCITY_TOP: f64 = 127.0;
-const SEMITONES_AN_OCTAVE: f64 = 12.0;
-const OCTAVE: f64 = 2.0;
 /// Decibels as an amplitude: ten to the power of a twentieth of them.
 const DECIBEL_BASE: f64 = 10.0;
 const DECIBELS_A_DECADE: f64 = 20.0;

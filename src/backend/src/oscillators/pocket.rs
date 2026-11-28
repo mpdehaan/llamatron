@@ -7,6 +7,9 @@
 use super::*;
 use llamatron_names::spec;
 
+use crate::dsp::OCTAVE;
+use crate::dsp::SEMITONES_AN_OCTAVE;
+
 /// What the chip's voice takes where its spec names none: its pulse's duty, and its sweep's step.
 const DEFAULT_DUTY: f64 = 0.25;
 const DEFAULT_SWEEP_STEP: f64 = 3.0;
@@ -59,7 +62,7 @@ impl OscillatorPart {
                 state.period = period.max(0);
             }
         }
-        let unheld = CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(moves.pitch / 12.0);
+        let unheld = CHIP_CLOCK / (PERIODS - state.period as f64) * OCTAVE.powf(moves.pitch / SEMITONES_AN_OCTAVE);
         let frequency = unheld.clamp(frequency_of(LOWEST_PITCH), frequency_of(HIGHEST_PITCH));
         if let Some(noise) = noise {
             state.phases[0] += frequency * NOISE_STEPS_PER_CYCLE / rate;

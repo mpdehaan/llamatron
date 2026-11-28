@@ -7,6 +7,10 @@
 use super::*;
 use llamatron_names::spec;
 
+/// Half a cycle, where a ring's sign flips; and a full jump of a wave from -1 to 1, or back.
+const HALF_CYCLE: f64 = 0.5;
+const FULL_JUMP: f64 = 2.0;
+
 /// What the SID takes where its spec names none: its pulse width, and its second oscillator's interval in semitones.
 const DEFAULT_PULSE_WIDTH: f64 = 0.5;
 const DEFAULT_INTERVAL: f64 = 7.0;
@@ -61,7 +65,7 @@ impl OscillatorPart {
             let synced = sid_synced(*wave, state, frequency_of(base + interval + moves.interval), frequency, width, rate);
             // With Ring on as well, the chip rings the synced wave by its master: the sign flips in the master's
             // second half, whose phase the sync keeps.
-            if *ring && state.second_phase >= 0.5 {
+            if *ring && state.second_phase >= HALF_CYCLE {
                 return -synced;
             }
             return synced;
@@ -84,7 +88,7 @@ impl OscillatorPart {
         }
         if *ring {
             state.second_phase = (state.second_phase + frequency_of(base + interval + moves.interval) / rate) % 1.0;
-            if state.second_phase >= 0.5 {
+            if state.second_phase >= HALF_CYCLE {
                 out = -out;
             }
         }
@@ -107,7 +111,7 @@ pub(super) fn sid_synced(wave: SidWave, state: &mut OscillatorState, frequency: 
                 -1.0
             }
         }
-        _ => 2.0 * place - 1.0,
+        _ => FULL_JUMP * place - 1.0,
     };
     let step = (frequency / rate).min(MOST_STEP);
     let master_step = (master / rate).min(MOST_STEP);
@@ -124,14 +128,14 @@ pub(super) fn sid_synced(wave: SidWave, state: &mut OscillatorState, frequency: 
         }
     };
     if matches!(wave, SidWave::Pulse) {
-        own_jump(state.sync_phase, place, width, -2.0, &mut this, &mut next);
+        own_jump(state.sync_phase, place, width, -FULL_JUMP, &mut this, &mut next);
     }
     if place >= 1.0 {
         place -= 1.0;
         let after = place / step;
         let size = match wave {
-            SidWave::Saw | SidWave::Noise => -2.0,
-            SidWave::Pulse => 2.0,
+            SidWave::Saw | SidWave::Noise => -FULL_JUMP,
+            SidWave::Pulse => FULL_JUMP,
             SidWave::Triangle => 0.0,
         };
         this += size * blep::this_sample(after);

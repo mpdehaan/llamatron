@@ -5,7 +5,10 @@
 //! 2009, www.rs-met.com, MIT license).
 
 use crate::dsp::flushed;
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
+
+/// Half, by which a high pass's gain is the mean of one and its pole.
+const HALF: f64 = 0.5;
 
 /// After Open303 by Robin Schmidt (Copyright (c) 2009, www.rs-met.com), MIT license: its `OnePoleFilter` in HIGHPASS mode.
 /// A one-pole high-pass, as Open303 makes one: its coefficients and what it keeps.
@@ -19,9 +22,9 @@ pub struct OnePoleHighpass {
 
 impl OnePoleHighpass {
     pub fn new(cutoff: f64, rate: f64) -> OnePoleHighpass {
-        let pole = (-2.0 * PI * cutoff / rate).exp();
+        let pole = (-TAU * cutoff / rate).exp();
         OnePoleHighpass {
-            gain: 0.5 * (1.0 + pole),
+            gain: HALF * (1.0 + pole),
             pole,
             last_in: 0.0,
             last_out: 0.0,

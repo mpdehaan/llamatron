@@ -22,6 +22,7 @@ pub mod tables;
 
 use crate::dsp::blep;
 use crate::dsp::one_pole::OnePoleHighpass;
+use crate::dsp::SEMITONES_AN_OCTAVE;
 use crate::dsp::{OCTAVE, SHARE_BITS, SHARE_SHIFT, SPLITMIX_LAST, SPLITMIX_MULTIPLIERS, SPLITMIX_SHIFTS};
 use crate::oscillators::tables::{Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
@@ -31,8 +32,6 @@ use rmpv::Value;
 use std::sync::Arc;
 
 const MIDDLE_A: f64 = 69.0;
-/// The semitones of an octave.
-const SEMITONES_AN_OCTAVE: f64 = 12.0;
 const A_FREQUENCY: f64 = 440.0;
 const NARROWEST: f64 = 0.1;
 /// A pulse's width where nothing moves it: a square.

@@ -8,6 +8,7 @@
 //! for each octave band, holding its harmonics up to the highest that stays under half the sample rate at the band's top
 //! note; a note reads the table of its octave. Built when an instrument is compiled, never while playing.
 
+use crate::dsp::OCTAVE;
 use llamatron_names::spec;
 use rustfft::num_complex::Complex;
 use rustfft::FftPlanner;
@@ -21,7 +22,6 @@ const HALF: f64 = 0.5;
 const HALVES: usize = 2;
 const SMALLEST_PEAK: f64 = 1e-9;
 /// The ratio an octave band's top doubles by, and the share of the rate where hearing's top, Nyquist's, stands.
-const OCTAVE: f64 = 2.0;
 const NYQUIST_DIVISOR: f64 = 2.0;
 /// The chip's pulse of eight steps; its wave memory of 32 steps of four bits, their middle seven and a half; and the
 /// triangle's slope, four times its share of a half cycle.

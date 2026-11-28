@@ -17,7 +17,7 @@ pub fn now() -> f64 {
         let mut info = libc::mach_timebase_info { numer: 0, denom: 0 };
         // SAFETY: mach_timebase_info only writes the two numbers of the struct it is given, which lives on this stack.
         unsafe { libc::mach_timebase_info(&mut info) };
-        info.numer as f64 / info.denom as f64 / 1e9
+        info.numer as f64 / info.denom as f64 / crate::dsp::NANOSECONDS_A_SECOND
     });
     // SAFETY: mach_absolute_time reads a counter and has no preconditions.
     let ticks = unsafe { libc::mach_absolute_time() };
@@ -31,7 +31,7 @@ pub fn now() -> f64 {
     let mut time = libc::timespec { tv_sec: 0, tv_nsec: 0 };
     // SAFETY: clock_gettime only writes the struct it is given, which lives on this stack.
     unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut time) };
-    time.tv_sec as f64 + time.tv_nsec as f64 / 1e9
+    time.tv_sec as f64 + time.tv_nsec as f64 / crate::dsp::NANOSECONDS_A_SECOND
 }
 
 /// A moment on the shared clock as host ticks, the stamps CoreMIDI delivers by.

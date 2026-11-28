@@ -25,6 +25,8 @@ use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::TAU;
 
+use crate::dsp::XORSHIFT_SHIFTS;
+
 /// What an oscillator takes where its spec names none: its shape and its level in the mix, each a share; and the
 /// lowest of its subs, two octaves under it.
 /// How many oscillators Asheville has, and the slow wanderings of each.
@@ -41,9 +43,6 @@ const SMOOTH_CUBE: f64 = 2.0;
 const SHAPE_THIRDS: f64 = 3.0;
 /// The xorshift's three shifts, its seed where its state is empty being the golden ratio's bits; and the shift and the
 /// mantissa's bits by which its state becomes a number from -1 to 1.
-const XORSHIFT_FIRST: u32 = 13;
-const XORSHIFT_SECOND: u32 = 7;
-const XORSHIFT_THIRD: u32 = 17;
 const MANTISSA_SHIFT: u32 = 11;
 const MANTISSA_BITS: u32 = 52;
 /// How a note's random number from -1 to 1 becomes the seed of its noise.
@@ -244,9 +243,10 @@ fn white(state: &mut u64) -> f64 {
     if *state == 0 {
         *state = GOLDEN_GAMMA;
     }
-    *state ^= *state << XORSHIFT_FIRST;
-    *state ^= *state >> XORSHIFT_SECOND;
-    *state ^= *state << XORSHIFT_THIRD;
+    let [first, second, third] = XORSHIFT_SHIFTS;
+    *state ^= *state << first;
+    *state ^= *state >> second;
+    *state ^= *state << third;
     (*state >> MANTISSA_SHIFT) as f64 / (1u64 << MANTISSA_BITS) as f64 - 1.0
 }
 
