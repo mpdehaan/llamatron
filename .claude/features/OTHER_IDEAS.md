@@ -12,6 +12,11 @@ built.
   changing it, rather than copying the code nearby; and proposes how the rules can be made more concise without
   losing anything they hold.
 
+- **The rules reviewed by a Claude Code expert**: after the Rust expert's review, a consultant agent, written as a
+  PhD-level Claude Code expert from Anthropic, reads every rule in `CLAUDE.md` and `.claude/` and suggests how to make
+  them more concise, less redundant, better organized and less likely to be broken; the suggestions come to the user
+  to decide on, none built first.
+
 ## The Model
 
 - **CC ramps** on a scene (954, 955 open).
