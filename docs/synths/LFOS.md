@@ -2,7 +2,8 @@
 
 An LFO, a low-frequency oscillator, is a slow or fast wobble, as a player's
 hand shaking the pitch for vibrato or turning a knob back and forth. The
-Modulators tab holds four modulators, Mod 1 to Mod 4, each an LFO. What each one moves is set in the [Mod
+Modulators tab holds four modulators, Mod 1 to Mod 4, each an LFO or a
+[Snail](#snail), chosen by its Type. What each one moves is set in the [Mod
 Matrix](MOD_MATRIX.md). Each is on unless switched off, its On switch at the
 foot of its column, so that a route to it is heard at once; one that no route
 reads costs nothing.
@@ -55,6 +56,38 @@ every change of tempo and every tempo ramp. A bar here is four quarter notes.
 Fade in, from off to 10 seconds, raises the LFO's depth after each note starts,
 as a violinist's vibrato grows into a held note: each note fades in from its
 own start, so that short notes stay plain and long ones bloom.
+
+## Snail
+
+A Snail drifts: three slow wanderers that never repeat, for a pad whose
+brightness opens and closes over half a minute, never twice the same way, or a
+delay that comes and goes over a whole song. Each of its three circuits, Slow,
+Slower and Slowest, wanders around two places and switches between them at
+times no one can predict, Slow about every 20 seconds, Slower about every 2
+minutes and Slowest about every 30 minutes. No note starts a Snail again: it
+goes on drifting through the song, and starts from the same place each time
+playback starts, so that a song sounds the same at every playing, live and in a
+WAV export. Each instrument's Snails wander paths of their own.
+
+Each circuit gives three outputs to the Mod Matrix, X, Y and Z, each from -100%
+to +100%: X its first stage, which bends sharply at each switch, Y its last
+stage, the smoothest, and Z the same path as Y upside down, from another stage
+of the circuit. For Mod 2 they are listed as
+`Mod 2 / Slow X` to `Mod 2 / Slowest Z`.
+
+| Setting | Range | What it does |
+| --- | --- | --- |
+| Slow | -100% to +100% (+0%) | how long Slow lingers on each side: toward +100%, its Y stays above the middle longer, at +0% the circuit as built |
+| Slower | -100% to +100% (+0%) | the same for Slower |
+| On | on or off | whether the Snail runs |
+
+Slowest has no setting of its own. Slow and Slower are also Mod Matrix
+destinations, `Mod 2 / Slow` and `Mod 2 / Slower`, which another modulator of
+the same instrument, an LFO or a Snail, can move.
+
+Each circuit is a slow chaotic electronic circuit, two integrators, an inverter
+and a switch, modelled part for part with its op-amps' limits, stepped on a
+clock of its own so that its path never depends on the sample rate.
 
 ## How the LFOs Are Built
 

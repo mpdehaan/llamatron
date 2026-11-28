@@ -5,7 +5,8 @@ synthesizer do, laid out as a table. Its six slots are on the Mod Matrix tab.
 
 ![The Mod Matrix tab](../screenshots/synth_matrix.svg)
 
-Each slot has a Source: an envelope, an LFO, the note's Velocity, or Per Note
+Each slot has a Source: an envelope, an LFO, an output of a
+[Snail](LFOS.md#snail), the note's Velocity, or Per Note
 S&H, a random value drawn as each note starts and held for the whole note, a
 sample and hold built in; or Osc 1, the note's own oscillator (Osc 1 to Osc 3
 on Asheville, one for each), which moves at audio rate: Osc 1 to Pitch is the
@@ -43,8 +44,10 @@ halves it at its bottom. Mod 2, a slow sine, into Mod 1 rate makes Mod 1's
 vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
 racing through one half of its cycle and lingering in the other. Unipolar
 only ever speeds the rate up. A Via scales the route as elsewhere, by another
-LFO. The LFOs belong to the whole instrument, not to a note, so only an LFO
-moves a rate: a slot reading an envelope, Velocity, Per Note S&H, an oscillator
+LFO. A Snail's Slow and Slower are moved the same way, `Mod 2 / Slow` and
+`Mod 2 / Slower` among the destinations while Mod 2 holds a Snail, by an LFO
+or a Snail's output. The LFOs belong to the whole instrument, not to a note,
+so only an LFO moves a rate: a slot reading an envelope, Velocity, Per Note S&H, an oscillator
 or a CC into a rate, or scaling it by one of them, moves nothing. An LFO
 following the key keeps its ratio to the note and is not moved.
 

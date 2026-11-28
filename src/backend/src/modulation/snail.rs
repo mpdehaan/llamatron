@@ -342,4 +342,28 @@ mod tests {
         };
         assert!((path(44_100.0) - path(48_000.0)).abs() < 0.02);
     }
+
+    /// A Snail's outputs move by fine, unrounded amounts from one sample to the next, never standing still for a step
+    /// of its clock and never jumping, so that whatever it moves follows it smoothly.
+    #[test]
+    fn a_snails_outputs_move_finely_and_smoothly() {
+        let rate = 48_000.0;
+        let heard = (5.0 * rate) as usize;
+        let most_change = 1e-4;
+        let mut snail = Snail::seeded(5, [0.0, 0.0]);
+        let mut outputs = [0.0; OUTPUT_COUNT];
+        snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
+        let mut last = outputs[0];
+        let mut moved_samples = 0;
+        for _ in 0..heard {
+            snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
+            let change = (outputs[0] - last).abs();
+            assert!(change < most_change, "Slow X jumped by {change}");
+            if change > 0.0 {
+                moved_samples += 1;
+            }
+            last = outputs[0];
+        }
+        assert!(moved_samples > heard * 9 / 10, "Slow X moved on {moved_samples} of {heard} samples");
+    }
 }
