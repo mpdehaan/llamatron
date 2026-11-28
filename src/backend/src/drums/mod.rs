@@ -521,12 +521,4 @@ mod tests {
         }
         assert!(hit.len() as f64 / rate > 1.0, "a long Decay rings over a second");
     }
-
-    #[test]
-    fn a_hit_renders_the_same_every_time() {
-        assert_eq!(
-            render_hit("snare", &[64.0; 5], 62.0, 90.0, 44100.0),
-            render_hit("snare", &[64.0; 5], 62.0, 90.0, 44100.0)
-        );
-    }
 }

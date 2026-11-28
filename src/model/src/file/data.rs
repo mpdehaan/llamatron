@@ -426,22 +426,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn plain_scalars_resolve_as_pyyaml_resolves_them() {
-        assert_eq!(resolved("on"), Data::Bool(true));
-        assert_eq!(resolved("No"), Data::Bool(false));
-        assert_eq!(resolved("010"), Data::Whole(8));
-        assert_eq!(resolved("1:30"), Data::Whole(90));
-        assert_eq!(resolved("0x1f"), Data::Whole(31));
-        assert_eq!(resolved("1.5"), Data::Float(1.5));
-        assert_eq!(resolved("1.0e+3"), Data::Float(1000.0));
-        assert_eq!(resolved("1e3"), Data::text("1e3"));
-        assert_eq!(resolved("1/4"), Data::text("1/4"));
-        assert_eq!(resolved(".5"), Data::Float(0.5));
-        assert_eq!(resolved("~"), Data::Null);
-        assert_eq!(resolved("C#4"), Data::text("C#4"));
-    }
-
-    #[test]
     fn a_file_loads_with_its_order_and_quoting() {
         let data = load("b: [1, '2', x]\na: {c: on}\n").unwrap();
         let Data::Map(pairs) = &data else { panic!("a mapping") };

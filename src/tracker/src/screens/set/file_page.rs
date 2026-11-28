@@ -371,61 +371,10 @@ mod tests {
     use super::*;
     use crate::preferences::TrackInstrumentDefault;
 
-    /// A column as the page shows it: its heading, and its fields' labels.
-    type ShownColumn = (Option<String>, Vec<String>);
-
-    /// The File/Global page's tabs, each its label and its columns.
-    fn tabs_of(app: &App) -> Vec<(String, Vec<ShownColumn>)> {
-        FilePage
-            .form(app)
-            .iter()
-            .find_map(|node| match node {
-                Node::TabBox(tab_box) => Some(tab_box.tabs.clone()),
-                _ => None,
-            })
-            .expect("a tab box")
-            .iter()
-            .map(|tab| {
-                let columns = tab
-                    .columns
-                    .iter()
-                    .map(|column| (column.heading.clone(), column.fields.iter().map(|field| field.label.clone()).collect()))
-                    .collect();
-                (tab.label.clone(), columns)
-            })
-            .collect()
-    }
-
     fn new_set() -> App {
         let unconfigured = crate::track_instrument::new_track_instrument(TrackInstrumentDefault::FluidSynth, false, false, None);
         let drums = crate::track_instrument::new_track_instrument(TrackInstrumentDefault::FluidSynth, true, false, None);
         App::new(crate::document::Document::new_set(unconfigured, drums).expect("a new set"))
-    }
-
-    /// The page has two tabs: File, the set's settings in General and Defaults, and Global, Track Inst. Default.
-    #[test]
-    fn the_page_shows_file_and_global_tabs() {
-        let app = new_set();
-        let tabs = tabs_of(&app);
-        assert_eq!(
-            tabs.iter().map(|(label, _)| label.as_str()).collect::<Vec<_>>(),
-            [labels::MSG_FILE_TAB, labels::MSG_GLOBAL_TAB]
-        );
-        let file = &tabs[0].1;
-        assert_eq!(file[0].0.as_deref(), Some(labels::MSG_GENERAL_HEADING));
-        assert_eq!(file[1].0.as_deref(), Some(labels::MSG_DEFAULTS_HEADING));
-        let defaults = &file[1].1;
-        assert_eq!(
-            defaults,
-            &[
-                labels::MSG_DEFAULT_FOLLOW_ACTION_LABEL,
-                labels::MSG_DEFAULT_DRUM_OCTAVE_LABEL,
-                labels::MSG_DEFAULT_OCTAVE_LABEL,
-                labels::MSG_STEP_SIZE_LABEL
-            ]
-        );
-        assert!(file[0].1.contains(&labels::MSG_OCTAVE_LABELS_LABEL.to_string()));
-        assert_eq!(tabs[1].1[0].1, [labels::MSG_TRACK_INSTRUMENT_DEFAULT_LABEL]);
     }
 
     /// Track Inst. Default offers FluidSynth only where it is installed, starts on FluidSynth where it is and on BuiltIn

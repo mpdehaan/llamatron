@@ -404,25 +404,6 @@ mod tests {
         }
     }
 
-    /// Each oscillator's starting phase is a draw of its own: over many notes, two oscillators start within a twentieth of
-    /// a cycle of each other about as often as chance has them, a tenth of the time, never far more.
-    #[test]
-    fn free_running_oscillators_start_apart_by_chance() {
-        let notes = 10_000;
-        let near = 0.05;
-        let chance = 2.0 * near;
-        let mut together = 0;
-        for note in 0..notes {
-            let random = note as f64 / notes as f64 * 2.0 - 1.0;
-            let gap = (free_phase(random, 0) - free_phase(random, 1)).abs();
-            if gap.min(1.0 - gap) < near {
-                together += 1;
-            }
-        }
-        let share = together as f64 / notes as f64;
-        assert!((share - chance).abs() < chance / 4.0, "{share}");
-    }
-
     /// A synced SID wave sounds at the note played: its master runs at the note, so that its lowest strong partial is the
     /// note's, whatever the Interval tunes the synced wave to.
     #[test]

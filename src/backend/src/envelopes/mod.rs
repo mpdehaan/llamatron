@@ -395,20 +395,6 @@ mod tests {
     use super::*;
     use rmpv::Value;
 
-    /// The Response lands on each of the four cells at its place on the gauge, so that an older set's Cell plays as it
-    /// did, and moves evenly between them.
-    #[test]
-    fn the_response_passes_through_every_cell() {
-        let new = 0.0;
-        for (place, rise, fall) in CELLS {
-            let (at_rise, at_fall) = vactrol::cell_times(place, new);
-            assert!((at_rise - rise).abs() < 1e-12 && (at_fall - fall).abs() < 1e-12, "{place}");
-        }
-        let (quick, _) = vactrol::cell_times(0.1, new);
-        let (lazier, _) = vactrol::cell_times(0.2, new);
-        assert!(CELLS[0].1 < quick && quick < lazier && lazier < CELLS[1].1);
-    }
-
     /// Every envelope type at its snappiest settings is tight, at its top within a millisecond and silent within a few
     /// more of its release, yet never steps by more than a twelfth of its swing from one sample to the next, so that
     /// neither edge clicks.

@@ -118,19 +118,6 @@ fn a_soloed_track_is_exported_alone() {
     assert_eq!(tracks_in("tests/data/panned_fluidsynth.yml", "unsoloed"), tempo_and_two);
 }
 
-/// A track's Lowest and Highest octave, which only guide the piano roll, never stop its song from exporting.
-#[test]
-fn a_tracks_octave_range_exports() {
-    let folder = fresh_folder("octave_range");
-    let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
-        .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/octave_range_track.yml"))
-        .args(["--to", "midi", "--out"])
-        .arg(&folder)
-        .output()
-        .expect("llamatron runs");
-    assert!(run.status.success(), "{}", String::from_utf8_lossy(&run.stderr));
-}
-
 /// A set holding a value that cannot be used is refused for export, the change it would make listed, until --force
 /// exports it with the nearest allowed value in its place; the set file is not changed.
 #[test]

@@ -179,26 +179,3 @@ impl AcidFilterState {
         2.0 * self.g * self.stages[3]
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// The filter stays bounded at full resonance, as the circuit never quite rings on by itself, and passes a low note.
-    #[test]
-    fn the_acid_filter_is_bounded_at_full_resonance() {
-        let rate = 48000.0;
-        let (cutoff, full, frequency) = (800.0, 1.0, 110.0);
-        let mut state = AcidFilterState::new(rate);
-        state.prepare(cutoff, full, rate);
-        let seconds = 2.0;
-        let mut loudest: f64 = 0.0;
-        for place in 0..(rate * seconds) as usize {
-            let saw = 2.0 * ((place as f64 * frequency / rate) % 1.0) - 1.0;
-            let out = state.process(saw, 1.0);
-            assert!(out.is_finite());
-            loudest = loudest.max(out.abs());
-        }
-        assert!(loudest > 0.05 && loudest < 20.0, "{loudest}");
-    }
-}

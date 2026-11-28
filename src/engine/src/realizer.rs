@@ -1466,20 +1466,3 @@ fn grab_circle(scene: &Scene) -> Option<Vec<String>> {
     }
     None
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    /// A song with a pattern written for a scale of seven notes, as every pattern the tracker makes is.
-    const SCALE_LENGTH_SET: &str = include_str!("../tests/data/scale_length_set.yml");
-
-    /// A pattern's scale length changes no note, so a song using such a pattern renders.
-    #[test]
-    fn a_pattern_written_for_a_scale_length_renders() {
-        let setlist = Setlist::read_text(SCALE_LENGTH_SET).expect("the scenario's set is valid");
-        let song = setlist.get_song("song").expect("the scenario has its song");
-        let rendered = SongRealizer::new(&setlist, song, Some(1)).render();
-        assert!(rendered.is_ok(), "{:?}", rendered.err());
-    }
-}

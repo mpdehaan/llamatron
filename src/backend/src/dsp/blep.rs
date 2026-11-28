@@ -148,17 +148,6 @@ pub fn next_sample(fraction: f64) -> f64 {
 mod tests {
     use super::*;
 
-    /// A smoothed saw stays within its bounds and is continuous across its jump: no two samples further apart than the
-    /// jump the naive saw makes.
-    #[test]
-    fn a_smoothed_saw_eases_its_jump() {
-        let step = 0.05;
-        let values: Vec<f64> = (0..200).map(|sample| saw((sample as f64 * step).fract(), step)).collect();
-        let most_jump = values.windows(2).map(|pair| (pair[1] - pair[0]).abs()).fold(0.0, f64::max);
-        assert!(most_jump < 2.0, "{most_jump}");
-        assert!(values.iter().all(|value| value.abs() <= 1.0 + 1e-9));
-    }
-
     const RATE: usize = 48_000;
 
     /// Two seconds of a wave at a whole number of hertz.

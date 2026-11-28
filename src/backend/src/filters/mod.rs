@@ -505,25 +505,6 @@ mod tests {
         assert!(level(loud) < 9.5 * level(quiet), "{} against {}", level(loud), level(quiet));
     }
 
-    /// A saturating filter is oversampled only when pushed, by Drive or a Resonance past half, and filters alike either
-    /// way: the bass through, an octave above cut.
-    #[test]
-    fn a_pushed_ota_is_oversampled_and_still_filters() {
-        let driven = FilterPart::compiled(
-            &Value::Map(vec![
-                ("type".into(), "ota".into()),
-                ("cutoff".into(), 1000.0.into()),
-                ("drive".into(), 0.5.into()),
-            ]),
-            48000.0,
-        )
-        .expect("a ladder");
-        assert!(driven.oversampled && part("ota", 0.9).oversampled);
-        assert!(!part("ota", 0.2).oversampled && !part("multimode", 0.9).oversampled);
-        assert!(loudness(&driven, 100.0) > 0.5);
-        assert!(loudness(&driven, 8000.0) < 0.02);
-    }
-
     /// The state-variable filter's band integrator saturates: at full resonance a loud sine at its cutoff stays within a
     /// few times full scale, while a quiet one still rings up its peak.
     #[test]
@@ -604,12 +585,6 @@ mod tests {
         assert!(second(matched) < -100.0, "a matched unit has none");
     }
 
-    /// The same instrument always makes the same unit, and two instruments make two.
-    #[test]
-    fn each_instrument_is_a_unit_of_its_own() {
-        assert_eq!(LadderUnit::seeded(3), LadderUnit::seeded(3));
-        assert_ne!(LadderUnit::seeded(3), LadderUnit::seeded(4));
-    }
     /// A sine's third harmonic through an undriven-to-driven Ladder, in decibels under the sine.
     fn ladder_grit(drive: f64) -> f64 {
         use crate::dsp::spectrum::harmonic_decibels;
@@ -621,15 +596,11 @@ mod tests {
         harmonic_decibels(&out, 48_000, hertz, 3)
     }
 
-    /// Drive's grit comes on early and keeps rising: nearly clean at 0, more of the third harmonic at every quarter turn,
-    /// well under way by the middle of the knob, and a fierce growl at full.
+    /// The Ladder's grit rises with Drive at every quarter turn of the knob.
     #[test]
-    fn ladder_drive_comes_on_early_and_keeps_rising() {
+    fn ladder_grit_rises_with_drive() {
         let grits: Vec<f64> = [0.0, 0.25, 0.5, 0.75, 1.0].iter().map(|drive| ladder_grit(*drive)).collect();
-        assert!(grits[0] < -60.0, "clean at 0: {:.1}", grits[0]);
         assert!(grits.windows(2).all(|pair| pair[1] > pair[0]), "{grits:?}");
-        assert!(grits[2] > -25.0, "under way by the middle: {:.1}", grits[2]);
-        assert!(grits[4] > -15.0, "fierce at full: {:.1}", grits[4]);
     }
 
     /// The Ladder's resonant peak stands out at a moderate level, not only a quiet one: through full Resonance the

@@ -9,6 +9,7 @@ Yes	bool	True
 YES	bool	True
 yEs	str	'yEs'
 no	bool	False
+No	bool	False
 on	bool	True
 On	bool	True
 off	bool	False
@@ -30,6 +31,7 @@ n	str	'n'
 0b101	int	5
 -0b11	int	-3
 0x1F	int	31
+0x1f	int	31
 0xg	str	'0xg'
 1:30	int	90
 1:30:05	int	5405

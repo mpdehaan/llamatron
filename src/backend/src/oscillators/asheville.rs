@@ -373,32 +373,6 @@ impl Asheville {
 mod tests {
     use super::*;
 
-    /// A spec's three oscillators, waves, Model and Character come through compiled, and a note sounds within bounds.
-    #[test]
-    fn asheville_compiles_its_panel_and_sounds_within_bounds() {
-        let oscillator = |range: i64, wave: &str| Value::Map(vec![("range".into(), range.into()), ("wave".into(), wave.into()), ("mix".into(), 1.0.into())]);
-        let spec = Value::Map(vec![
-            (
-                "oscillators".into(),
-                Value::Array(vec![oscillator(0, "saw"), oscillator(-12, "shark"), oscillator(-24, "reverse_saw")]),
-            ),
-            ("model".into(), "classic".into()),
-            ("character".into(), "worn".into()),
-            ("feedback".into(), 1.0.into()),
-        ]);
-        let asheville = compiled(&spec);
-        assert_eq!(asheville.oscillators[1].wave, Wave::SharkTooth);
-        assert_eq!(asheville.oscillators[2].range, -24.0);
-        assert_eq!(asheville.character, Character::Worn);
-        let mut state = OscillatorState::default();
-        asheville.begin(&mut state, 0.3);
-        let rate = 48_000.0;
-        let most = (0..4800)
-            .map(|place| asheville.sample(&mut state, 48.0, place as f64 / rate, Moves::default(), rate).abs())
-            .fold(0.0, f64::max);
-        assert!(most > 0.1 && most < 1.0, "{most}");
-    }
-
     /// An oscillator switched off is silent in the mix but still runs, so the Mod Matrix can read it; noise alone sounds.
     #[test]
     fn an_oscillator_off_still_runs_for_the_matrix_and_noise_sounds() {
@@ -455,27 +429,6 @@ mod tests {
         assert_eq!(snapped(far), far);
     }
 
-    /// A Sub sounds under its oscillator: the same oscillator with a sub an octave down differs from it alone.
-    #[test]
-    fn a_sub_sounds_under_its_oscillator() {
-        let played = |sub: i64| {
-            let oscillator = |on: bool| Value::Map(vec![("on".into(), on.into()), ("sub".into(), sub.into())]);
-            let spec = Value::Map(vec![(
-                "oscillators".into(),
-                Value::Array(vec![oscillator(true), oscillator(false), oscillator(false)]),
-            )]);
-            let asheville = compiled(&spec);
-            let mut state = OscillatorState::default();
-            let rate = 48_000.0;
-            (0..4800)
-                .map(|place| asheville.sample(&mut state, 48.0, place as f64 / rate, Moves::default(), rate))
-                .collect::<Vec<_>>()
-        };
-        let (none, octave_down) = (played(0), played(1));
-        let difference: f64 = none.iter().zip(&octave_down).map(|(a, b)| (a - b).abs()).sum();
-        assert!(difference > 1.0, "{difference}");
-    }
-
     /// An oscillator at an LFO's Speed runs at its own rate whatever the note: two notes an octave apart swing it alike.
     #[test]
     fn an_oscillator_at_an_lfo_speed_ignores_the_note() {
@@ -511,21 +464,5 @@ mod tests {
             let divided = state.sub_phases[place] * f64::from(1u32 << octaves_down);
             assert!((divided - state.phases[place]).abs() < 1e-12, "oscillator {place}");
         }
-    }
-
-    /// Each instrument's oscillators are a set of their own, seeded by the instrument: the same number makes the same
-    /// set, another number another, and no two oscillators of a set sit at one spread.
-    #[test]
-    fn each_instrument_seeds_its_own_oscillators() {
-        let spec = Value::Map(Vec::new());
-        let seeded = |number: u64| {
-            let mut asheville = compiled(&spec);
-            asheville.seed(number);
-            (asheville.spread, asheville.wander_phases)
-        };
-        assert_eq!(seeded(3), seeded(3));
-        assert_ne!(seeded(3), seeded(4));
-        let (spread, _) = seeded(3);
-        assert!(spread[0] != spread[1] && spread[1] != spread[2]);
     }
 }

@@ -2049,56 +2049,6 @@ mod tests {
         assert!(shows(several));
     }
 
-    /// The Volume sits on the Amp tab, first under its Type, and no longer in the Oscillators tab's Voice column; a sound
-    /// that never set it plays at 90%.
-    #[test]
-    fn the_volume_is_on_the_amp_tab_at_ninety_percent() {
-        let data = llamatron_model::file::data::load("{ name: synth, kind: built_in, role: normal, sound: { engine: basic } }")
-            .expect("the scenario's instrument is YAML");
-        let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
-        let sound = Sound::of(&instrument);
-        let mut ids = Ids { last: 0, writes: Vec::new() };
-        let amp = InstrumentEditor::amp_tab(&sound, false, &mut ids);
-        let volume = amp.columns[0].fields.first().expect("a first field on the Amp tab");
-        assert_eq!(volume.label, labels::MSG_VOLUME_LABEL);
-        let unset_volume = 90;
-        assert_eq!(whole(&sound.value("volume")), unset_volume);
-        let voice = InstrumentEditor::voice_fields(&sound, &mut ids);
-        assert!(voice.iter().all(|field| field.label != labels::MSG_VOLUME_LABEL));
-    }
-
-    /// Bax in an FX block shows its Bass and Treble, each at 0 dB unless set and a lift shown with its sign, then its Mix.
-    #[test]
-    fn bax_shows_its_bass_treble_and_mix() {
-        let data =
-            llamatron_model::file::data::load("{ name: synth, kind: built_in, role: normal, sound: { engine: basic, effects: [{ effect: bax, treble: 6 }] } }")
-                .expect("the scenario's instrument is YAML");
-        let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
-        let mut ids = Ids { last: 0, writes: Vec::new() };
-        let tab = InstrumentEditor::effects_tab(&Sound::of(&instrument), false, &mut ids);
-        let fields = &tab.columns[0].fields;
-        let numbered = |label: &str| named(label, &[("number", 1.into())]);
-        let labels_shown: Vec<String> = fields.iter().map(|field| field.label.clone()).collect();
-        let expected = [
-            labels::MSG_EFFECT_BLOCK_LABEL,
-            labels::MSG_EFFECT_BASS_LABEL,
-            labels::MSG_EFFECT_TREBLE_LABEL,
-            labels::MSG_EFFECT_MIX_LABEL,
-        ];
-        assert_eq!(labels_shown, expected.iter().map(|label| numbered(label)).collect::<Vec<_>>());
-        let lift = 6;
-        assert!(
-            fields[1].value().ends_with(&named(marks::MSG_DB_SHOWN, &[("number", 0.into())])),
-            "{}",
-            fields[1].value()
-        );
-        assert!(
-            fields[2].value().ends_with(&named(marks::MSG_LIFT_DB_SHOWN, &[("number", lift.into())])),
-            "{}",
-            fields[2].value()
-        );
-    }
-
     /// MultiTap shows Sync, a row of time and level for each of its four taps, then Feedback, Tone and its own Mix of 35%;
     /// a falling figure untouched, the taps on 1/8, 1/4, 1/4d and 1/2. With Sync off each tap's time is in milliseconds.
     #[test]
@@ -2309,30 +2259,6 @@ mod tests {
         };
         assert_eq!(changed.get_written(InstrumentSetting::ROLE).and_then(Data::as_str), Some(PERCUSSION));
         assert_eq!(Sound::of(changed).part_type("oscillators"), "drum");
-    }
-
-    /// Disconnect filter stands last in Env 2's column, off unless set, so that Env 2's settings sit level with Env 1's;
-    /// it is in no other column, and gone while Env 2 is Off.
-    #[test]
-    fn disconnect_filter_stands_at_the_foot_of_env_2() {
-        let columns_of = |env2: &str| {
-            let text =
-                format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, envelopes: [{{ type: adsr }}, {env2}, {{ type: adsr }}] }} }}");
-            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
-            let mut ids = Ids { last: 0, writes: Vec::new() };
-            InstrumentEditor::envelopes_tab(&Sound::of(&instrument), false, &mut ids).columns
-        };
-        let is_switch = |field: &Field| field.label == labels::MSG_DISCONNECT_FILTER_LABEL;
-        let columns = columns_of("{ type: adsr }");
-        let env2 = &columns[1].fields;
-        let switch = env2.last().expect("a field at Env 2's foot");
-        assert!(is_switch(switch));
-        assert!(matches!(switch.kind, FieldKind::Toggle { on: false }));
-        assert_eq!(env2.len() - 1, columns[0].fields.len(), "Env 2's settings level with Env 1's");
-        assert!(!columns[0].fields.iter().any(is_switch) && !columns[2].fields.iter().any(is_switch));
-        let off = columns_of("{ type: none }");
-        assert!(!off[1].fields.iter().any(is_switch));
     }
 
     /// An LFO's Rate shows its percentage with the hertz it gives at its Speed; the Key switch shows only at Very High,

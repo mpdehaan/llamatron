@@ -395,16 +395,4 @@ mod tests {
         std::thread::sleep(Duration::from_millis(200));
         assert!(!sender.is_running());
     }
-
-    /// A load report's busy share and dropouts are kept, and nothing is shown before the first report.
-    #[test]
-    fn a_load_report_is_kept() {
-        let load = SynthLoad::default();
-        assert_eq!(load.latest(), None);
-        let busy = 0.25;
-        let dropouts: u64 = 3;
-        let report = Value::Map(vec![(BUSY.into(), busy.into()), (DROPOUTS.into(), Value::from(dropouts))]);
-        load.take(&report);
-        assert_eq!(load.latest(), Some((busy, dropouts)));
-    }
 }

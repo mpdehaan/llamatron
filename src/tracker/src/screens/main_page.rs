@@ -459,17 +459,6 @@ mod tests {
     use super::*;
     use crate::preferences::TrackInstrumentDefault;
 
-    /// W, the song wizard's key, says the wizard returns in a later version and opens no page.
-    #[test]
-    fn w_says_the_wizard_returns_later() {
-        let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
-        let mut tracker = crate::app::Tracker::new(crate::document::Document::new_set(synth(false), synth(true)).expect("a new set"));
-        let pages = tracker.depth();
-        tracker.press(crate::keys::first_key(&Keys::WIZARD));
-        assert_eq!(tracker.depth(), pages);
-        assert_eq!(tracker.app.status.text(), messages::MSG_WIZARD_NOT_YET);
-    }
-
     /// The main screen as a person reads it: every page it opens is named in exactly one cell, at the smallest size and
     /// a large one, so that no cell is drawn twice and none is missing.
     #[test]

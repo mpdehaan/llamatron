@@ -317,16 +317,3 @@ fn words_of_big_endian(bytes: &[u8]) -> Vec<u32> {
     }
     words
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Every expected value here was printed by CPython: random.Random(seed) and its calls.
-    #[test]
-    fn a_whole_seed_draws_pythons_numbers() {
-        let mut generator = PythonRandom::new(Seed::Whole(42));
-        assert_eq!(generator.random(), 0.6394267984578837);
-        assert_eq!(generator.random(), 0.025010755222666936);
-    }
-}

@@ -241,7 +241,7 @@ impl Drive {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::dsp::spectrum::{stray_decibels, stray_decibels_under};
+    use crate::dsp::spectrum::stray_decibels_under;
 
     const RATE: usize = 48_000;
     const CURVES: [Curve; 5] = [Curve::Soft, Curve::Warm, Curve::Hard, Curve::Fold, Curve::Wrap];
@@ -253,43 +253,9 @@ mod tests {
             .collect()
     }
 
-    /// The same curve read at each sample's instant, as Drive was before it was anti-aliased.
-    fn naive(curve: Curve, input: &[f64]) -> Vec<f32> {
-        let drive = Drive::new(curve, 1.0);
-        input.iter().map(|sample| drive.shaped(sample * drive.gain) as f32).collect()
-    }
-
     fn driven(curve: Curve, input: &[f64]) -> Vec<f32> {
         let mut drive = Drive::new(curve, 1.0);
         input.iter().map(|sample| drive.process(*sample, 1.0) as f32).collect()
-    }
-
-    /// At full Amount on a high note, every curve's stray tones, the aliasing folded back between its harmonics, fall
-    /// well under what the bare curve makes.
-    #[test]
-    fn every_curve_pushed_hard_on_a_high_note_folds_far_less_back() {
-        let hertz = 2_999;
-        let input = sine(hertz, 0.8);
-        let least_gain = 15.0;
-        for curve in CURVES {
-            let before = stray_decibels(&naive(curve, &input), RATE, hertz);
-            let after = stray_decibels(&driven(curve, &input), RATE, hertz);
-            assert!(after < before - least_gain, "curve {:?}: {after:.1} dB against {before:.1} dB", curve as u8);
-        }
-    }
-
-    /// Each antiderivative's slope is its curve: the difference over a small span is the curve at its middle.
-    #[test]
-    fn each_antiderivative_rises_by_its_curve() {
-        let span = 1e-4;
-        for curve in CURVES {
-            let drive = Drive::new(curve, 0.5);
-            for place in -40..=40 {
-                let x = place as f64 * 0.137;
-                let slope = (drive.antiderivative(x + span) - drive.antiderivative(x - span)) / (2.0 * span);
-                assert!((slope - drive.shaped(x)).abs() < 1e-3, "curve {:?} at {x}: {slope}", curve as u8);
-            }
-        }
     }
 
     /// At no Mix the sound comes through whole, delayed only by the halfband, and silence stays silent at any Mix.
@@ -307,14 +273,14 @@ mod tests {
         }
     }
 
-    /// Wrap folds the most back down, so it runs at eight times the rate: on a 5 kHz note at full Amount, what is heard of
-    /// its stray tones, under 18 kHz, lies 40 dB under its harmonics.
+    /// Every curve pushed hard on a high note stays clean where it is heard: on a 5 kHz note at full Amount, its stray
+    /// tones under 18 kHz lie 40 dB under its harmonics.
     #[test]
-    fn wrap_on_a_high_note_stays_clean_where_it_is_heard() {
+    fn every_curve_on_a_high_note_stays_clean_where_it_is_heard() {
         let hertz = 5_003;
         let heard_under = 18_000;
         let input = sine(hertz, 0.8);
-        for curve in [Curve::Fold, Curve::Wrap] {
+        for curve in CURVES {
             let stray = stray_decibels_under(&driven(curve, &input), RATE, hertz, heard_under);
             assert!(stray < -40.0, "curve {:?}: {stray:.1} dB", curve as u8);
         }
