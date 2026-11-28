@@ -17,6 +17,10 @@ built.
   them more concise, less redundant, better organized and less likely to be broken, told that Claude has a very hard
   time following its rules; the suggestions come to the user to decide on, none built first.
 
+- **The support folder consolidated**: after the expert reviews, the tools in `internal_tools/` are reviewed: those that
+  overlap merged, those not used or not used for a long time removed, and nothing kept only for rebuilding the retired
+  Python program, its frozen answers standing in for it, unless the song wizard's port in Rust needs it.
+
 ## The Model
 
 - **CC ramps** on a scene (954, 955 open).
