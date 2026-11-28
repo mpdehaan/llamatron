@@ -9,8 +9,8 @@
 //! first two. Versions are compared number by number, never as decimals, so 1.1.10 comes after 1.1.9.
 
 /// The program's version, which every saved file records.
-pub const PROGRAM_VERSION: &str = "1.1.7";
+pub const PROGRAM_VERSION: &str = "1.1.8";
 
 /// When the version was last raised, as About says it.
-pub const BUILD_DATE: &str = "2026-11-27";
-pub const BUILD_TIME: &str = "20:30";
+pub const BUILD_DATE: &str = "2026-11-28";
+pub const BUILD_TIME: &str = "09:50";
