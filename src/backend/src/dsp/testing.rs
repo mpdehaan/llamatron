@@ -6,11 +6,13 @@
 
 use std::f64::consts::TAU;
 
-/// The sample rate the tests play at, in hertz, and a second, half, a quarter and a tenth of one of its samples.
+/// The sample rate the tests play at, in hertz, and a second, half, a quarter, an eighth and a tenth of one of its
+/// samples.
 pub const RATE: f64 = 48000.0;
 pub const SECOND: usize = 48000;
 pub const HALF_SECOND: usize = 24000;
 pub const QUARTER_SECOND: usize = 12000;
+pub const EIGHTH_SECOND: usize = 6000;
 pub const TENTH_SECOND: usize = 4800;
 /// Two seconds of samples, long enough for a filter to settle and a tone's harmonics to be read.
 pub const TWO_SECONDS: usize = 96000;

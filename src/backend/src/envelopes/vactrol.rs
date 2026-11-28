@@ -5,7 +5,15 @@
 //! a little its own.
 
 use super::*;
+use crate::dsp::{GOLDEN_GAMMA, SPLITMIX_MULTIPLIERS, SPLITMIX_SHIFTS};
 use llamatron_names::spec;
+use std::f64::consts::TAU;
+
+/// The pairs of uniform draws a hit takes; Box and Muller's -2 under the root; and the two places past the ends by which a
+/// draw's whole range is divided, so that it never reaches 0 or 1.
+const PAIRS_A_HIT: u64 = 2;
+const BOX_MULLER_SCALE: f64 = 2.0;
+const PAST_BOTH_ENDS: f64 = 2.0;
 
 /// What a vactrol takes where its spec names none: its cell's rise and fall and a strike's width, in seconds, and its
 /// memory's share.
@@ -37,7 +45,7 @@ pub fn vactrol(spec: &Value) -> EnvelopePart {
             number(spec, spec::FALL, DEFAULT_FALL).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age),
         ),
     };
-    let unstable = 1.0 - number(spec, "stability", 1.0);
+    let unstable = 1.0 - number(spec, spec::STABILITY, 1.0);
     let gated = word(spec, spec::DRIVE, spec::STRIKE) != spec::STRIKE;
     let width = number(spec, spec::STRIKE_WIDTH, DEFAULT_STRIKE_WIDTH);
     let full = if gated {
@@ -92,32 +100,35 @@ pub(super) fn fallen_scaled(level: f64, seconds: f64, hyperbola: f64, full: f64)
 
 /// Three standard normals for a vactrol's hit by its number, the same every playing: splitmix64 through Box-Muller.
 pub(super) fn hit_normals(hit: u64) -> (f64, f64, f64) {
-    let (first, second) = uniforms(hit * 2 + 1);
-    let (third, fourth) = uniforms(hit * 2 + 2);
-    let radius = (-2.0 * first.ln()).sqrt();
-    let angle = 2.0 * std::f64::consts::PI * second;
+    let pairs = hit * PAIRS_A_HIT;
+    let (first, second) = uniforms(pairs + 1);
+    let (third, fourth) = uniforms(pairs + PAIRS_A_HIT);
+    let radius = (-BOX_MULLER_SCALE * first.ln()).sqrt();
+    let angle = TAU * second;
     (
         radius * angle.cos(),
         radius * angle.sin(),
-        (-2.0 * third.ln()).sqrt() * (2.0 * std::f64::consts::PI * fourth).cos(),
+        (-BOX_MULLER_SCALE * third.ln()).sqrt() * (TAU * fourth).cos(),
     )
 }
 
 pub(super) fn uniforms(number: u64) -> (f64, f64) {
     let mix = |step: u64| {
-        let mut value = step.wrapping_mul(0x9E37_79B9_7F4A_7C15);
-        value = (value ^ (value >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
-        value = (value ^ (value >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
-        value ^= value >> 31;
-        (value as f64 + 1.0) / (u64::MAX as f64 + 2.0)
+        let [first_shift, second_shift, last_shift] = SPLITMIX_SHIFTS;
+        let [first_multiplier, second_multiplier] = SPLITMIX_MULTIPLIERS;
+        let mut value = step.wrapping_mul(GOLDEN_GAMMA);
+        value = (value ^ (value >> first_shift)).wrapping_mul(first_multiplier);
+        value = (value ^ (value >> second_shift)).wrapping_mul(second_multiplier);
+        value ^= value >> last_shift;
+        (value as f64 + 1.0) / (u64::MAX as f64 + PAST_BOTH_ENDS)
     };
-    (mix(number), mix(number.wrapping_add(0x9E37_79B9_7F4A_7C15)))
+    (mix(number), mix(number.wrapping_add(GOLDEN_GAMMA)))
 }
 
 /// The room's warmth from -1 to 1 at a time: slow, smooth and the same every playing.
 pub(super) fn room_warmth(seconds: f64) -> f64 {
     WARMTH
         .iter()
-        .map(|(period, weight, phase)| weight * (2.0 * std::f64::consts::PI * seconds / period + phase).sin())
+        .map(|(period, weight, phase)| weight * (TAU * seconds / period + phase).sin())
         .sum()
 }

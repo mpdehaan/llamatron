@@ -18,6 +18,8 @@ const MOST_LOOP_GAIN: f64 = 1.96;
 /// How much harder the loop's saturation is pushed at full resonance than at none: the peak at the cutoff, tall near the
 /// top, is squashed and grows the circuit's growl as the resonance rises, as the driven circuit screams near oscillation.
 const EDGE_PUSH: f64 = 3.0;
+/// The power the edge comes in by over the resonance, its cube.
+const EDGE_CURVE: i32 = 3;
 /// The least loop gain, so that the output, divided by it, stays finite.
 const LEAST_LOOP_GAIN: f64 = 0.01;
 
@@ -70,7 +72,7 @@ impl SallenKeyState {
         self.share = share;
         self.loop_gain = loop_gain;
         // Cubed, so the edge stays out of the way through the middle of the range and comes in over its top third.
-        self.edge = 1.0 + EDGE_PUSH * resonance.clamp(0.0, 1.0).powi(3);
+        self.edge = 1.0 + EDGE_PUSH * resonance.clamp(0.0, 1.0).powi(EDGE_CURVE);
         match form {
             Form::Low => {
                 self.low_beta = (loop_gain - loop_gain * share) / (1.0 + g);
@@ -127,33 +129,45 @@ impl SallenKeyState {
 mod tests {
     use super::*;
 
-    const RATE: f64 = 48_000.0;
+    use crate::dsp::testing::{sine, EIGHTH_SECOND, QUARTER_SECOND, RATE};
+
     /// A quiet sine, below where the loop's saturation bends it.
     const QUIET: f64 = 0.1;
+    /// The cutoff the tests set, a sine well under it and one well over it, in hertz; and the level a passed sine keeps
+    /// at least.
+    const CUTOFF: f64 = 1_000.0;
+    const LOW_HERTZ: f64 = 100.0;
+    const HIGH_HERTZ: f64 = 8_000.0;
+    const PASSED: f64 = 0.8;
+
+    /// The loudest a quiet sine comes out of a form of the filter at a resonance, against its own level, over the second
+    /// half of a quarter second, once the filter has settled.
+    fn settled_level(form: Form, frequency: f64, resonance: f64) -> f64 {
+        let mut state = SallenKeyState::default();
+        state.prepare(form, CUTOFF, resonance, RATE);
+        let mut most: f64 = 0.0;
+        for place in 0..QUARTER_SECOND {
+            let input = sine(frequency, QUIET, place);
+            let out = match form {
+                Form::Low => state.low(input, 1.0),
+                Form::High => state.high(input, 1.0),
+            } / QUIET;
+            if place > EIGHTH_SECOND {
+                most = most.max(out.abs());
+            }
+        }
+        most
+    }
 
     /// The low-pass passes a low sine and cuts a high one, and at full resonance a click rings long but dies away.
     #[test]
     fn the_low_pass_cuts_above_its_cutoff_and_rings_without_oscillating() {
-        let cutoff = 1_000.0;
-        let level = |frequency: f64, resonance: f64| {
-            let mut state = SallenKeyState::default();
-            state.prepare(Form::Low, cutoff, resonance, RATE);
-            let samples = RATE as usize / 4;
-            let mut most: f64 = 0.0;
-            for place in 0..samples {
-                let out = state.low(QUIET * (2.0 * PI * frequency * place as f64 / RATE).sin(), 1.0) / QUIET;
-                if place > samples / 2 {
-                    most = most.max(out.abs());
-                }
-            }
-            most
-        };
-        let (low, high, quiet) = (100.0, 8_000.0, 0.0);
-        assert!(level(low, quiet) > 0.8, "a low sine passes");
-        assert!(level(high, quiet) < 0.05, "a high sine is cut");
+        let (no_resonance, cut) = (0.0, 0.05);
+        assert!(settled_level(Form::Low, LOW_HERTZ, no_resonance) > PASSED, "a low sine passes");
+        assert!(settled_level(Form::Low, HIGH_HERTZ, no_resonance) < cut, "a high sine is cut");
         let ringing = |from: f64, to: f64| {
             let mut state = SallenKeyState::default();
-            state.prepare(Form::Low, cutoff, 1.0, RATE);
+            state.prepare(Form::Low, CUTOFF, 1.0, RATE);
             let mut most: f64 = 0.0;
             for place in 0..(RATE * to) as usize {
                 let out = state.low(if place == 0 { 1.0 } else { 0.0 }, 1.0);
@@ -163,29 +177,17 @@ mod tests {
             }
             most
         };
-        let (soon, later, long_after) = (0.01, 0.02, 1.0);
-        assert!(ringing(soon, later) > 0.001, "full resonance still rings 10 ms after a click");
-        assert!(ringing(long_after - 0.1, long_after) < 1e-6, "and is silent a second later");
+        let (soon, later, long_after, last_tenth) = (0.01, 0.02, 1.0, 0.9);
+        let (still_ringing, silent) = (0.001, 1e-6);
+        assert!(ringing(soon, later) > still_ringing, "full resonance still rings 10 ms after a click");
+        assert!(ringing(last_tenth, long_after) < silent, "and is silent a second later");
     }
 
     /// The high-pass cuts a low sine and passes a high one.
     #[test]
     fn the_high_pass_cuts_below_its_cutoff() {
-        let cutoff = 1_000.0;
-        let level = |frequency: f64| {
-            let mut state = SallenKeyState::default();
-            state.prepare(Form::High, cutoff, 0.0, RATE);
-            let samples = RATE as usize / 4;
-            let mut most: f64 = 0.0;
-            for place in 0..samples {
-                let out = state.high(QUIET * (2.0 * PI * frequency * place as f64 / RATE).sin(), 1.0) / QUIET;
-                if place > samples / 2 {
-                    most = most.max(out.abs());
-                }
-            }
-            most
-        };
-        assert!(level(50.0) < 0.1, "a low sine is cut");
-        assert!(level(8_000.0) > 0.8, "a high sine passes");
+        let (lowest_hertz, no_resonance, cut) = (50.0, 0.0, 0.1);
+        assert!(settled_level(Form::High, lowest_hertz, no_resonance) < cut, "a low sine is cut");
+        assert!(settled_level(Form::High, HIGH_HERTZ, no_resonance) > PASSED, "a high sine passes");
     }
 }

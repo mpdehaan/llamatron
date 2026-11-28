@@ -15,15 +15,15 @@
 //! with the note, so that a pinged gate plays in tune.
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
-use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
+use crate::dsp::{OCTAVE, SEMITONES_AN_OCTAVE};
+use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime, ENV3_PLACE, ENVELOPE_COUNT};
 use crate::protocol::values::{number, word};
 use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::{LN_10, PI};
 
-/// Env 3's place among the envelopes, and what a gate takes where its spec names none: how far it opens in hertz, a
-/// ping's and a trigger's length in seconds, and its cell's memory.
-const ENV3_PLACE: usize = 2;
+/// What a gate takes where its spec names none: how far it opens in hertz, a ping's and a trigger's length in seconds,
+/// and its cell's memory.
 const DEFAULT_OPEN_HERTZ: f64 = 8000.0;
 const DEFAULT_PING_SECONDS: f64 = 0.001;
 const DEFAULT_TRIGGER_SECONDS: f64 = 0.002;
@@ -46,6 +46,9 @@ const LOWEST_CUTOFF: f64 = 20.0;
 const DARK_LIGHT: f64 = 1e-4;
 /// The cutoff worked out once every few samples, as the filters' is.
 const COEFFICIENT_STEP: usize = 4;
+/// The gate's filter's two stages, and the cells in series in its divider, two.
+const STAGES: usize = 2;
+const CELLS: f64 = 2.0;
 /// The gate's type in a spec, in either place.
 pub const LOW_PASS_GATE: &str = spec::LOW_PASS_GATE;
 
@@ -77,7 +80,7 @@ pub struct GateNote {
 /// What one voice's gate keeps: its filter's stages and coefficient, its cell, and the light an envelope has lit it to.
 #[derive(Clone, Copy, Default)]
 pub struct GateState {
-    stages: [f64; 2],
+    stages: [f64; STAGES],
     g: f64,
     countdown: usize,
     cell: EnvelopeState,
@@ -158,7 +161,7 @@ impl GatePart {
     /// The gate's light at a time into its note: its cell's, or the lighting envelope's level smoothed by the cell, the
     /// envelopes' levels given with velocity.
     #[inline]
-    pub fn light(&self, state: &mut GateState, note: NoteTime, envelopes: &[f64; 3]) -> f64 {
+    pub fn light(&self, state: &mut GateState, note: NoteTime, envelopes: &[f64; ENVELOPE_COUNT]) -> f64 {
         match self.trigger {
             GateTrigger::Cell => self.cell.level(&mut state.cell, note, None),
             GateTrigger::Envelope(place) => {
@@ -190,8 +193,8 @@ impl GatePart {
             return source * gain(conductance);
         }
         if state.countdown == 0 {
-            let opened = self.open * 2f64.powf(self.key_track * (note.pitch - MIDDLE_C) / 12.0);
-            let cutoff = (opened * conductance * LIT_OHMS * 2f64.powf(note.octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
+            let opened = self.open * OCTAVE.powf(self.key_track * (note.pitch - MIDDLE_C) / SEMITONES_AN_OCTAVE);
+            let cutoff = (opened * conductance * LIT_OHMS * OCTAVE.powf(note.octaves)).clamp(LOWEST_CUTOFF, HIGHEST_SHARE * self.rate);
             state.g = (PI * cutoff / self.rate).tan();
             state.countdown = COEFFICIENT_STEP;
         }
@@ -235,15 +238,21 @@ fn cell_spec(spec: &Value, held: bool) -> Value {
 
 /// The loudness a conductance gives through the divider, 1 at full light.
 fn gain(conductance: f64) -> f64 {
-    let full = DIVIDER_OHMS / (DIVIDER_OHMS + 2.0 * LIT_OHMS);
-    DIVIDER_OHMS / (DIVIDER_OHMS + 2.0 / conductance) / full
+    let full = DIVIDER_OHMS / (DIVIDER_OHMS + CELLS * LIT_OHMS);
+    DIVIDER_OHMS / (DIVIDER_OHMS + CELLS / conductance) / full
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    const RATE: f64 = 48_000.0;
+    use crate::dsp::testing::{RATE, SECOND};
+    use crate::envelopes::{ENV1_PLACE, ENV2_PLACE};
+
+    /// No envelope lit, and Env 1 alone at full; and the level a gate's light comes out at least at its brightest.
+    const DARK: [f64; ENVELOPE_COUNT] = [0.0; ENVELOPE_COUNT];
+    const ENV1_FULL: [f64; ENVELOPE_COUNT] = [1.0, 0.0, 0.0];
+    const OPENED: f64 = 0.5;
 
     fn gate(pairs: &[(&str, Value)]) -> GatePart {
         let mut all = vec![(spec::TYPE.into(), LOW_PASS_GATE.into())];
@@ -257,7 +266,6 @@ mod tests {
         let struck = gate(&[(spec::TRIGGER, spec::TRIGGER.into()), (spec::MODE, spec::VCA.into())]);
         let (mut state, mut memory) = (GateState::default(), EnvelopeMemory::default());
         struck.start(&mut state, &mut memory, 1.0, 0.0);
-        let no_envelopes = [0.0; 3];
         let mut loudest: f64 = 0.0;
         // A slow cell's hyperbolic fall takes several seconds to go fully dark.
         let seconds = 12.0;
@@ -266,9 +274,9 @@ mod tests {
                 age: sample as f64 / RATE,
                 released: None,
             };
-            loudest = loudest.max(struck.light(&mut state, note, &no_envelopes));
+            loudest = loudest.max(struck.light(&mut state, note, &DARK));
         }
-        assert!(loudest > 0.5, "{loudest}");
+        assert!(loudest > OPENED, "{loudest}");
         assert!(struck.is_done(&state, false), "closed by itself");
     }
 
@@ -279,19 +287,19 @@ mod tests {
         let lit = gate(&[(spec::TRIGGER, spec::ENV1.into()), (spec::RESPONSE, 1.0.into())]);
         let mut state = GateState::default();
         let note = NoteTime { age: 0.0, released: None };
-        let full = [1.0, 0.0, 0.0];
-        let first = lit.light(&mut state, note, &full);
-        assert!(first > 0.0 && first < 0.1, "{first}");
-        for _ in 0..RATE as usize {
-            lit.light(&mut state, note, &full);
+        let lagging = 0.1;
+        let first = lit.light(&mut state, note, &ENV1_FULL);
+        assert!(first > 0.0 && first < lagging, "{first}");
+        for _ in 0..SECOND {
+            lit.light(&mut state, note, &ENV1_FULL);
         }
         assert!(!lit.is_done(&state, true), "still lit as the envelope ends");
-        let dark = [0.0; 3];
-        for _ in 0..(5.0 * RATE) as usize {
-            lit.light(&mut state, note, &dark);
+        let faded_seconds = 5;
+        for _ in 0..faded_seconds * SECOND {
+            lit.light(&mut state, note, &DARK);
         }
         assert!(lit.is_done(&state, true));
-        assert!(lit.reads_envelope(0) && !lit.reads_envelope(1));
+        assert!(lit.reads_envelope(ENV1_PLACE) && !lit.reads_envelope(ENV2_PLACE));
     }
 
     /// In VCA mode the gate only sets loudness: a steady signal comes out in proportion, unfiltered, louder with more light.
@@ -299,16 +307,17 @@ mod tests {
     fn a_vca_gate_sets_loudness_alone() {
         let vca = gate(&[(spec::MODE, spec::VCA.into())]);
         let mut state = GateState::default();
+        let (place, middle_c, near) = (1_000.0, 60.0, 1e-3);
         let note = GateNote {
-            place: 1_000.0,
-            pitch: 60.0,
+            place,
+            pitch: middle_c,
             level: 1.0,
             octaves: 0.0,
         };
         let (dim, bright, signal) = (0.2, 1.0, 0.5);
         let quiet = vca.process(&mut state, signal, dim, note);
         let loud = vca.process(&mut state, signal, bright, note);
-        assert!((loud - signal).abs() < 1e-3, "{loud}");
+        assert!((loud - signal).abs() < near, "{loud}");
         assert!(quiet > 0.0 && quiet < loud);
     }
 }
