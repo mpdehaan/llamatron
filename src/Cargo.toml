@@ -14,3 +14,13 @@ lto = "thin"
 codegen-units = 1
 panic = "unwind"
 debug = 1
+
+# The synths and the spectrum they are measured by are compiled optimized even in the quick build the tests use, since
+# their tests play hundreds of notes and unoptimized audio code runs about ten times slower; the rest stays quick to
+# compile.
+[profile.dev.package.llamatron-backend]
+opt-level = 3
+
+[profile.dev.package.rustfft]
+opt-level = 3
+

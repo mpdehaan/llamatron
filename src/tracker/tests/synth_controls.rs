@@ -220,36 +220,49 @@ fn written(value: &str) -> Data {
     }
 }
 
-/// Every setting of every type of every part: moved across its range, at least two of its values sound different.
+/// Every setting of every type of every part: moved across its range, at least two of its values sound different. The
+/// parts' types are tried side by side, one thread a type, since each plays many notes.
 #[test]
 fn every_synth_control_changes_the_sound() {
-    let mut unwired: Vec<String> = Vec::new();
-    for (part, types, _) in PART_TYPES {
-        for part_type in types.iter() {
-            let plain = instrument(&tried_in(part, part_type));
-            let settings = TYPE_SETTINGS.iter().find(|(kind, _)| kind == part_type).map_or(&[][..], |(_, names)| *names);
-            for setting in settings {
-                if tried_apart(part_type, setting) {
-                    continue;
-                }
-                let Some(kind) = kind_of(part_type, setting) else { continue };
-                let mut base = plain.clone();
-                for (name, value) in company(part_type, setting) {
-                    base = with_sound(&base, Sound::of(&base).with_part_value(part, name, written(value)));
-                }
-                let sound = Sound::of(&base);
-                let playings: Vec<Vec<f32>> = values_of(kind)
-                    .into_iter()
-                    .map(|value| played(&with_sound(&base, sound.with_part_value(part, setting, value))))
-                    .collect();
-                let any_differ = playings.iter().skip(1).any(|playing| differs(&playings[0], playing));
-                if !any_differ {
-                    unwired.push(format!("{part} {part_type} {setting}"));
-                }
-            }
+    let trials: Vec<(&str, &str)> = PART_TYPES
+        .iter()
+        .flat_map(|(part, types, _)| types.iter().map(move |part_type| (*part, *part_type)))
+        .collect();
+    let unwired: Vec<String> = std::thread::scope(|scope| {
+        let running: Vec<_> = trials
+            .iter()
+            .map(|(part, part_type)| scope.spawn(move || unwired_controls(part, part_type)))
+            .collect();
+        running.into_iter().flat_map(|thread| thread.join().expect("a trial runs to its end")).collect()
+    });
+    assert!(unwired.is_empty(), "these controls change nothing: {unwired:#?}");
+}
+
+/// The controls of one type of part that change nothing, each named by its part, type and setting.
+fn unwired_controls(part: &str, part_type: &str) -> Vec<String> {
+    let mut unwired = Vec::new();
+    let plain = instrument(&tried_in(part, part_type));
+    let settings = TYPE_SETTINGS.iter().find(|(kind, _)| *kind == part_type).map_or(&[][..], |(_, names)| *names);
+    for setting in settings {
+        if tried_apart(part_type, setting) {
+            continue;
+        }
+        let Some(kind) = kind_of(part_type, setting) else { continue };
+        let mut base = plain.clone();
+        for (name, value) in company(part_type, setting) {
+            base = with_sound(&base, Sound::of(&base).with_part_value(part, name, written(value)));
+        }
+        let sound = Sound::of(&base);
+        let playings: Vec<Vec<f32>> = values_of(kind)
+            .into_iter()
+            .map(|value| played(&with_sound(&base, sound.with_part_value(part, setting, value))))
+            .collect();
+        let any_differ = playings.iter().skip(1).any(|playing| differs(&playings[0], playing));
+        if !any_differ {
+            unwired.push(format!("{part} {part_type} {setting}"));
         }
     }
-    assert!(unwired.is_empty(), "these controls change nothing: {unwired:#?}");
+    unwired
 }
 
 /// Two sounds as set files write them, the second differing from the first in one control, and what that control is.
@@ -319,11 +332,19 @@ const TRIALS: &[Trial] = &[
 /// The controls tried apart each change the sound, and the vactrol's memory carries from one note into the next.
 #[test]
 fn every_control_tried_apart_changes_the_sound() {
-    let mut unwired: Vec<&str> = TRIALS
-        .iter()
-        .filter(|(_, first, second)| !differs(&played(&instrument(first)), &played(&instrument(second))))
-        .map(|(control, ..)| *control)
-        .collect();
+    // The trials run side by side, one thread a trial, since each plays a note twice.
+    let mut unwired: Vec<&str> = std::thread::scope(|scope| {
+        let running: Vec<_> = TRIALS
+            .iter()
+            .map(|(control, first, second)| scope.spawn(move || (*control, differs(&played(&instrument(first)), &played(&instrument(second))))))
+            .collect();
+        running
+            .into_iter()
+            .map(|thread| thread.join().expect("a trial runs to its end"))
+            .filter(|(_, changes)| !changes)
+            .map(|(control, _)| control)
+            .collect()
+    });
     let remembering = |memory: &str| {
         let sound = format!("{{ engine: basic, envelopes: [{{ type: vactrol, memory: {memory} }}] }}");
         played_notes(&instrument(&sound), &[PITCH, PITCH])
