@@ -1,42 +1,37 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""The check of named values finds a number or a name typed in place, and passes over a line that names a value."""
+"""The check of named values reports exactly the lines of a sample of Rust that type a value in place.
+
+The sample, `data/named_values_sample.rs`, marks each line the check must report with the comment `flagged`.
+"""
 
 import importlib.util
 import pathlib
 import unittest
 
-TOOL = pathlib.Path(__file__).resolve().parent.parent.parent / "internal_tools" / "check_named_values.py"
+HERE = pathlib.Path(__file__).resolve().parent
+TOOL = HERE.parent.parent / "internal_tools" / "check_named_values.py"
+SAMPLE = HERE / "data" / "named_values_sample.rs"
+FLAGGED_MARK = "// flagged"
 SPEC = importlib.util.spec_from_file_location("check_named_values", TOOL)
 CHECK = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(CHECK)
 
 
 class NamedValuesTest(unittest.TestCase):
-    """What a Rust line types in place, by what the check reports of it."""
+    """What the check reports of the sample, line by line."""
 
-    def test_a_name_typed_as_text_is_found(self):
-        self.assertEqual(CHECK.breakages('    let second = asheville("osc2_pitch", amount);'), ['"osc2_pitch"'])
-
-    def test_a_number_other_than_zero_or_one_is_found(self):
-        self.assertEqual(CHECK.breakages("    run(cutoff, 48000);"), ["48000"])
-
-    def test_zero_and_one_pass(self):
-        self.assertEqual(CHECK.breakages("    let first = values[0] + 1.0;"), [])
-
-    def test_a_line_naming_a_value_passes(self):
-        self.assertEqual(CHECK.breakages("const PREVIEW_CHANNEL: i64 = 15;"), [])
-        self.assertEqual(CHECK.breakages("    let shown_rows = 7;"), [])
-        self.assertEqual(CHECK.breakages("    let (resonance, drive) = (0.3, 0.5);"), [])
-        self.assertEqual(CHECK.breakages('    let abc: &[u8] = b"abc";'), [])
-
-    def test_shown_text_and_comments_pass(self):
-        self.assertEqual(CHECK.breakages('    assert!(moved, "the A gauge moves Slow"); // 48 kHz'), [])
-
-    def test_every_line_of_a_constant_table_is_a_definition(self):
-        table = 'const NAMED: [(&str, usize); 2] = [\n    (words::BLACK, 0),\n    (words::RED, 7),\n];\nfn after() { run(7); }'
-        self.assertEqual(CHECK.definition_lines(table), {1, 2, 3, 4})
+    def test_exactly_the_marked_lines_are_reported(self):
+        text = SAMPLE.read_text()
+        definitions = CHECK.definition_lines(text)
+        reported, marked = set(), set()
+        for number, line in enumerate(text.splitlines(), 1):
+            if FLAGGED_MARK in line:
+                marked.add(number)
+            if number not in definitions and CHECK.breakages(line):
+                reported.add(number)
+        self.assertEqual(reported, marked)
 
     def test_the_places_that_define_names_are_passed_over(self):
         self.assertTrue(CHECK.passed_over("src/names/src/lib.rs"))

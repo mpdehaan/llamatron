@@ -3,7 +3,9 @@
 The rules for the code, in any language it is written in: the Rust program in `src/`, and the small tools in
 `internal_tools/` and `python/`. `.claude/rules/RUST.md` holds the Rust's own rules besides these, clippy and rustfmt among
 them, and `developer_docs/ARCHITECTURE.md` explains the design they serve. The code MUST be easy for people to maintain without AI:
-plain code, comments that explain why, tests that read clearly.
+plain code, comments that explain why, tests that read clearly. Every internal tool, script and test, in any
+language, is held to exactly the same standard as the program itself: no rule here, nor in `.claude/rules/RUST.md` or
+`.claude/rules/TESTING.md`, is relaxed for them, and the checks read them as they read the program.
 
 ## Readability
 
