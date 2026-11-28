@@ -1455,6 +1455,8 @@ const OSCILLATORS_FIELD: &str = "Osc Type";
 /// The first fields of the Envelopes and Filter tabs.
 const ENVELOPES_FIELD: &str = "Env 1 Type";
 const FILTER_FIELD: &str = "Filter Type";
+/// The first field of the LFOs tab, the first LFO's type.
+const LFOS_FIELD: &str = "LFO 1 type";
 
 /// Turn a settings page, its cursor on the row of tabs, to the tab whose first field is the one named: Down goes into the
 /// tab under the cursor and the page says which field it reached; Up comes back to the row and Right moves along it.
@@ -1637,7 +1639,7 @@ fn shots() -> Vec<Shot> {
         synth(words::FILTER_DIODE, "filter diode", FILTER_FIELD),
         synth(words::FILTER_OTA, "filter ota", FILTER_FIELD),
         synth(words::FILTER_LOW_PASS_GATE, "filter low pass gate", FILTER_FIELD),
-        synth(words::SYNTH_LFOS, "wobble lead", "LFO 1 shape"),
+        synth(words::SYNTH_LFOS, "wobble lead", LFOS_FIELD),
         synth(words::SYNTH_FILTER, "wobble lead", FILTER_FIELD),
         synth(words::SYNTH_EFFECTS, "wobble lead", "FX 1"),
         synth(words::SYNTH_MATRIX, "wobble lead", "Slot 1 source"),
