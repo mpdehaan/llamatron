@@ -146,7 +146,7 @@ impl Document {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
         let read = Setlist::read_text_corrected(&text).map_err(|error| error.message)?;
         let note = conversion_note(&read.conversion);
-        let mut document = Document::new(read.setlist, Some(path.to_path_buf()));
+        let mut document = Document::new(with_a_song(read.setlist)?, Some(path.to_path_buf()));
         if !read.corrections.is_empty() || note.is_some() {
             document.dirty = true;
         }
@@ -160,7 +160,7 @@ impl Document {
     /// The set a file holds, opened as the tracker opens it.
     pub fn open(path: &Path) -> Result<Document, String> {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
-        let setlist = Setlist::read_text(&text).map_err(|error| error.message)?;
+        let setlist = with_a_song(Setlist::read_text(&text).map_err(|error| error.message)?)?;
         Ok(Document::new(setlist, Some(path.to_path_buf())))
     }
 
@@ -205,7 +205,7 @@ impl Document {
     pub fn take_up(&mut self, file: &Path, dirty: bool, song: &str) -> Result<(), String> {
         let text = std::fs::read_to_string(file).map_err(|error| format!("{}: {error}", file.display()))?;
         let setlist = Setlist::read_text(&text).map_err(|error| format!("{}: {}", file.display(), error.message))?;
-        self.setlist = setlist;
+        self.setlist = with_a_song(setlist).map_err(|problem| format!("{}: {problem}", file.display()))?;
         self.dirty = dirty;
         self.current = song.to_string();
         self.record_edit();
@@ -348,6 +348,15 @@ pub struct OpenedSet {
     pub document: Document,
     pub corrections: Vec<Correction>,
     pub note: Option<String>,
+}
+
+/// A set the tracker can open: one holding a song, since every page works on the current song; a file with none is
+/// refused.
+fn with_a_song(setlist: Setlist) -> Result<Setlist, String> {
+    if setlist.song_names().is_empty() {
+        return Err(llamatron_strings::errors::ERR_LAST_SONG.to_string());
+    }
+    Ok(setlist)
 }
 
 /// What the status line says of a file converted from an older layout, or None for a file read as it is.

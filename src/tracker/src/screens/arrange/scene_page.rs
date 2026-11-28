@@ -416,7 +416,7 @@ mod tests {
     /// A scene that cannot be played says why under its settings, after its length.
     #[test]
     fn a_scene_that_cannot_play_says_why() {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/every_clip_loops.yml");
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/refused/every_clip_loops.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));

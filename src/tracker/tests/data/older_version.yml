@@ -1,3 +1,5 @@
 # llamatron: a set saved by an older version of llamatron, which opens converted, unsaved until it is saved again.
 version: 1.0.20
 step_size: 1/16
+songs:
+  - name: song

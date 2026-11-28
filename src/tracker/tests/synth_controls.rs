@@ -583,3 +583,24 @@ fn ashevilles_drift_makes_oscillators_in_tune_beat() {
     assert!(steady < 1.1, "steady without Drift: {steady:.3}");
     assert!(beating > 1.3, "beating with Drift: {beating:.3}");
 }
+
+/// Every engine of notes, walked from the engine list, plays the same note the same way every time, so that every
+/// render is the same, and keeps within its headroom: its voice, before the instrument's Volume and the engine's safety,
+/// peaks under half as much again as full scale. The drum machines are held by their own tests.
+#[test]
+fn every_engine_plays_the_same_twice_within_its_headroom() {
+    use llamatron_tracker::generated::sounds::ENGINES_OF_ROLE;
+    let normal = "normal";
+    let headroom = 1.5f32;
+    let engines = ENGINES_OF_ROLE
+        .iter()
+        .filter(|(role, _)| *role == normal)
+        .flat_map(|(_, engines)| engines.iter().copied());
+    for engine in engines {
+        let plain = format!("{{ engine: {engine} }}");
+        let first = played(&instrument(&plain));
+        assert_eq!(first, played(&instrument(&plain)), "{engine} plays the same twice");
+        let peak = first.iter().fold(0.0f32, |most, sample| most.max(sample.abs()));
+        assert!(peak > 0.0 && peak < headroom, "{engine}: {peak}");
+    }
+}
