@@ -41,6 +41,9 @@ The professor's research is in `.claude/notes/synthesis/`.
   as Mod Matrix sources; it restarts at each note or at each scene.
 - **Snail's lane speeds**: each of Snail's lanes, Slow, Slower and Slowest, has a switch of three speeds, each a time
   in seconds, so that a Snail's drift is easier to hear.
+- **Additive synthesis researched**: the professor researches additive synthesis and brings ideas for oscillators, and
+  additions to the existing designs that would make them more special, such as wave types for the Spectral oscillator,
+  with a survey of the kinds of synthesis the ideas have not explored much.
 - **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (the snails' traces, a
   chaotic system's path), worked out on the screen's side only while its box is on screen, and only if
   cheap.
