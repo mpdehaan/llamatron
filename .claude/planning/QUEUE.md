@@ -22,7 +22,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 14. OTHER_IDEAS: The song wizard's screens comparison in Rust.
 15. DEMO_IDEAS: Engines and effects under each synth demo.
 16. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-17. SYNTH_IDEAS: Modulator modules (Chaos and Snail, then Tide, Turing, Bounce and Swarm); New-instrument choices
+17. SYNTH_IDEAS: Snail; Snail's faster mode; New-instrument choices
    (mockup).
 18. SYNTH_IDEAS: Durham (mockup).
 19. SYNTH_IDEAS: The drum instruments (mockup); The vactrol's age.

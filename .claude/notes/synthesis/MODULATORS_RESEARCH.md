@@ -63,15 +63,110 @@ block, about 3 to 6 operations a sample.
 
 A jerk system is a single third-order equation `x''' = J(x, x', x'')`, the simplest form of chaos and the easiest to
 build as an analog circuit of three integrators and one nonlinearity. Sprott ("Some simple chaotic jerk functions",
-American Journal of Physics 1997) found `x''' = -A x'' + x'² - x` chaotic at A = 2.017; Sprott ("Simple chaotic systems
-and circuits", American Journal of Physics 2000) and Sprott and Linz give the circuit family
-`x''' = -A x'' - x' + G(x)` with piecewise-linear G (such as `|x| - 1`, or a sign function minus a linear term for a
-two-scroll attractor that circulates around two centres and switches between them). A **lean** toward one centre is
-an offset added to G, which biases the time spent around each scroll. Very slow motion (trips of tens of seconds to
-tens of minutes) is the same system with a small time step; the system's own variables `x`, `x'` give two outputs, and
-sums and differences of several such circuits, split into positive and negative halves by rectification, give
-further related outputs. The exact equations and parameters must be taken from Sprott's tables, since small changes
-of A or G move a jerk system between chaos, periodic orbits and divergence. Cost: as Lorenz, at an even slower rate.
+American Journal of Physics 1997) found `x''' = -A x'' + x'² - x` chaotic at A = 2.017. Sprott ("A new class of
+chaotic circuit", Physics Letters A 266, 2000, 19-23) gives the family `x''' = -A x'' - x' + G(x)` with
+piecewise-linear G, among them `G(x) = -B x + C sgn(x)`: a two-lobed attractor that circulates around one centre,
+then the other, switching between them at irregular times. Very slow motion, from tens of seconds to tens of minutes
+a cycle, is the same circuit with large capacitors and resistors.
+
+### 3.1 The Circuit
+
+Four op-amp stages. Stage 1 is an inverting integrator (capacitor `Cx`) whose output is `x`. From `x`, a resistor
+`Rxw` charges a passive node `w`, held by a capacitor `Cw` to ground. From `w`, a path of resistance `K` returns to
+stage 1's summing input, and a resistor `Rwy` feeds stage 2, an inverting integrator (`Cy`) whose output is `y`.
+Stage 3 inverts `y` with gain `g = Rf/Ri`, giving `z = -g y`. Stage 4 is a comparator, open loop against ground,
+whose output `Q` sits at one rail while `z < 0` and at the other while `z > 0`. Both `z` (through `Rzi`) and `Q`
+(through `Rq`) return to stage 1. With a knob as a variable resistor inside `K`, the fastest version below at the
+knob's lowest is `y''' + 0.6 y'' + y' + y = 0.2128 Q(y)`: Sprott's form with `A ≈ 0.6` and `G(Y) = -B Y + C sgn(Y)`.
+
+Three versions, the slower made by scaling the resistors:
+
+| Version | Cx | Cw | Cy | K (fixed + knob) | Rxw | Rwy | Rzi | Rq | g | B |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Slow | 2 µF | 50 µF | 1 µF | 100k + 10k | 100k | 100k | 1M | 4.7M | 1 | 1.00 to 1.15 |
+| Slower | 2 µF | 50 µF | 1 µF | 1M + 100k | 1M | 1M | 6.8M | 14.7M | 1 | 1.47 to 1.70 |
+| Slowest | 2 µF | 40 µF | 1 µF | 10M, no knob | 10M | 10M | 68M | 100M | 1.5 | 1.97 |
+
+The knob raises B. A larger g in the slowest version (2.2, then 3.3) shortens its cycle and then makes it periodic.
+
+### 3.2 The Equations
+
+The state is the charge voltage on `Cx` (`Vcx`), the node `w`, and the charge voltage on `Cy` (`Vcy`). The op-amps'
+outputs saturate, and while one is at its rail its summing node leaves virtual ground: the integrator's output is the
+charge clipped, and the summing node carries the difference.
+
+```
+sat(v) = clamp(v, -10, +10)                 # the linear stages' swing, in volts
+x = sat(Vcx);  vx = x - Vcx                 # vx is 0 unless stage 1 is at a rail
+y = sat(Vcy);  vy = y - Vcy
+z = sat(-g y)
+Q = +11.38 if z < 0 else -10.64             # the comparator's rails, as measured on one build
+K = Kfixed + Kknob * knob                   # knob from 0 to 1
+
+dVcx/dt = -[ (z - vx)/Rzi + (Q + bias - vx)/Rq + (w - vx)/K ] / Cx
+dw/dt   =  [ (x - w)/Rxw + (vx - w)/K - (w - vy)/Rwy ] / Cw
+dVcy/dt = -(w - vy) / (Rwy Cy)
+```
+
+The saturation is part of the instrument, not a nicety. Without it only the fastest version stays bounded: the
+slower two are linearly more unstable (their larger B) and run off to infinity, the rails holding them in the
+circuit. The middle version spends about 4% of its time at a rail and the slowest about 32%, the slowest's `z` coming
+out squarish, with long flat tops. A model that only slows the fastest version down cannot sound like the others.
+
+The outputs are `x`, `y` and `z` (`-y`, clipped, where g is 1). Their ranges, to divide by for -1 to +1:
+
+| Version | x | y | z |
+| --- | --- | --- | --- |
+| Slow | ±2.8 | ±6.0 | ±6.0 |
+| Slower | ±7 | ±10 | ±10 |
+| Slowest | ±6.5 | ±10 | ±10 |
+
+### 3.3 Behaviour
+
+Simulated by RK4 over 10⁵ to 10⁷ seconds, a cycle being the mean time between two switches of lobe:
+
+- **Slow**: a cycle of about 21 seconds; time on a lobe irregular, from 3.5 to 19 seconds between the 10th and 90th
+  percentiles; two starts a hair apart part ways with an e-folding time of about 8 seconds; never at a rail.
+- **Slower**: about 106 to 134 seconds across its knob, chaotic for most of it, one or several turns a visit; at the
+  knob's top it locks into a periodic 65-second cycle. Its fine behaviour depends on the rails: at ±10.5 to ±10.8 V
+  it turns periodic, so it differs from one built unit to the next.
+- **Slowest**: about 31 minutes, chaotic.
+
+**The knob weights the lobes only weakly.** In the fastest version the share of time on the upper lobe moves from
+about 54% to 56% across the knob, and that little comes only from the comparator's unequal rails; in the middle
+version the knob mostly changes the time a visit takes. Outside the knob's range the circuit sticks on one lobe or
+turns periodic, so the knob is clamped to its range.
+
+**A bias on the comparator's rails** weights the lobes strongly: an offset added to `Q` (one resistor into stage 1's
+summing node) of -1.5 V to +1.5 V moves the upper lobe's share from 36% to 67% in the fastest version, 47% to 75% in
+the middle one and 37% to 84% in the slowest, every version staying chaotic at every bias (two starts a hair apart
+always parting) and its cycle near its own: the fastest 18 to 21 seconds, the middle 111 to 133, the slowest 31 to
+39 minutes. At a bias of zero the circuit is exactly the one above.
+
+### 3.4 Running It in Real Time
+
+- **A fixed clock.** A chaotic system magnifies any difference, so the circuit is stepped on a time grid of its own,
+  never the sample rate's or a chunk's: otherwise real-time playback and an export would part ways within minutes.
+  RK4 at 2.5 ms for the fastest, 25 ms for the middle and 250 ms for the slowest (results unchanged from 1 to 50 ms
+  in the fastest); each sample reads a straight line between grid points, so nothing it moves steps. The system is
+  not stiff, so no implicit method is needed; it is dissipative, so symplectic methods do not apply. Over minutes no
+  integrator, nor the circuit, follows one exact path: what is kept is the statistics and the bounds.
+- **The same on every computer.** f64 and plain `+ - × /`, `min` and `max` only, never a fused multiply-add or a
+  reordering, so that IEEE arithmetic gives the same bits everywhere. A setting moved by modulation is read at grid
+  times.
+- **Seeding.** Start from `(0, w0, 0)`, `w0` drawn in ±0.03 V from the instrument's, the slot's and the circuit's
+  seed, then run two to six cycles of warm-up so the circuit starts on its attractor rather than in the slowest
+  version's half-hour spiral outward (under a millisecond).
+- **Starting mid-song**: step forward from the song's start, about 12 ms for ten minutes of the fastest version.
+- **Guard**: with the rails, `|x|, |y| ≤ 10` and `|w| ≲ 1.5`. A value not finite, `|w| > 12` or `|Vc| > 30` restarts
+  the circuit from its seed with a counter mixed in. `K` never falls below its fixed part.
+- **Cost**: about 50 ns an RK4 step, so about 25 µs a second of sound per instrument for all three circuits.
+
+### 3.5 Open Implementations
+
+An open derivation of the fastest version from its schematic is published without a licence, so only its ideas are
+used. A port to the open VCV Rack platform (CC0-1.0) holds that engine, its two slower versions being the fastest
+slowed by fixed factors rather than their own circuits.
 
 ## 4. The Function Generator
 

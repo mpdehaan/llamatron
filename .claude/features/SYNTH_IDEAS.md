@@ -17,8 +17,8 @@ The professor's research is in `.claude/notes/synthesis/`.
   major up a degree in C major is D minor); a tied or glided note keeps the note it started on; a CC goes out ahead of
   its step's notes, only when its value changes, at most every 1/64 note, how often a setting of the MIDI tab with a
   default chosen from research into what devices handle.
-- **Demos of the new modulators**: a demo for each new kind as it is built, LFO+ (Fade in, Tempo, Smooth random), Snail,
-  Chaos, Tide, Turing, Bounce and Swarm, each made to show what the modulator does to music, and kept to the synth demos'
+- **Demos of the new modulators**: a demo for each new kind as it is built, the LFO's Fade in, Sync and Smooth random,
+  and Snail, each made to show what the modulator does to music, and kept to the synth demos'
   rules (DEMO_IDEAS.md).
 - **New-instrument choices**: Blank, Sampled (FluidSynth, where installed), Synth, Drum Synth or External MIDI, beside Normal
   and Percussion, each choosing a few settings that can still be changed. Mockup first.
@@ -27,33 +27,17 @@ The professor's research is in `.claude/notes/synthesis/`.
   each note afresh, sending no CC.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **Modulator modules**: each Modulators tab slot holds a module chosen by its Type, and beside LFO the Type
-  offers Snail, Chaos, Tide, Turing, Bounce and Swarm, a module of several outputs adding them to the Mod Matrix's sources
-  while chosen (`.claude/planning/DESIGNS.md`, "Modulator modules on the LFOs tab"). What each module is:
-  - **Chaos**: a chaotic system's path in three dimensions, X, Y and Z, never repeating; System is Lorenz (two lobes it
-    flips between), Rössler (a smoother spiral that now and then leaps out), Chua (the electronic double scroll),
-    Thomas, Pendulum (a double pendulum) or Predator & prey (Lotka-Volterra); a Chaos amount from a near loop to full
-    chaos, and a speed; bounded and numerically safe, restarted from its seed if it ever escapes. Other systems kept for
-    later: the jerk systems, Aizawa, Halvorsen, Dadras, the logistic and Hénon maps, the Duffing oscillator, the
-    rungler (a shift register clocked and fed by its own oscillators).
-  - **Snail**: three slow chaotic circuits, Slow, Slower and Slowest (about 20 seconds, 75 seconds and 35 minutes
-    a cycle), each travelling around two strange attractors, Slow and Slower each with a gauge of its name setting which
-    attractor it lingers around, Slowest with none; each circuit's X, Y and Z (Y inverted) as outputs, and the two
-    gauges as destinations. Never restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked
-    before building.
-  - **Tide**: a function generator of four related outputs, read from open firmware (MIT, `pichenettes/eurorack`,
-    `tides2/`): a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
-    exponential); Slope (rise against fall); Smooth (a low-pass one way, a wavefolder the other); four outputs related by
-    Outputs (Shapes, Phases, Ratios) and a Spread; at audio rate its Shape and Slope change meaning and narrow at high
-    pitches to stay unaliased.
-  - **Turing**: a random loop of 8 or 16 steps that repeats and slowly changes as a Change gauge allows, from locked to
-    always new, after an open-hardware design.
-  - **Bounce**: a ball dropped at each note, its bounces shrinking and speeding up to rest, for ratchets, dub delays and
-    falling sweeps.
-  - **Swarm**: four slow oscillators drifting into step and back out of it as their Pull rises and falls (coupled
-    oscillators, Kuramoto).
-- **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (a chaotic system's path,
-  the snails' traces, a tide's four outputs), worked out on the screen's side only while its box is on screen, and only if
+- **Snail**: a Type of a Modulators slot beside LFO (`.claude/planning/DESIGNS.md`, "Snail"): three slow chaotic
+  circuits, Slow, Slower and Slowest (about 20 seconds, 2 minutes and 30 minutes a cycle), each travelling around two
+  attractors, Slow and Slower each with a gauge of its name setting which attractor it lingers around, Slowest with
+  none; each circuit's X, Y and Z as Mod Matrix sources, and the two gauges as destinations. Never restarted by a note.
+- **Snail's faster mode**: a switch on the Snail turning it from its slow circuits to faster chaotic systems, each a
+  path in three dimensions, X, Y and Z, never repeating: Lorenz (two lobes it flips between), Rössler (a smoother
+  spiral that now and then leaps out), Chua (the electronic double scroll), Thomas, a double pendulum, or predator and
+  prey (Lotka-Volterra), with a speed and an amount from a near loop to full chaos; bounded and numerically safe,
+  restarted from its seed if it ever escapes.
+- **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (the snails' traces, a
+  chaotic system's path), worked out on the screen's side only while its box is on screen, and only if
   cheap.
 - **Envelopes drawn**, later, at a calm rate: on the Envelopes tab, each envelope's shape drawn in its box from its settings, redrawn as they
   change, and a moving mark along it while a note fires it, worked out on the screen's side as the gauges' live markers
