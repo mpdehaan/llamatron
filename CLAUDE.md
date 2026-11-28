@@ -36,8 +36,8 @@ These come before every other rule, whatever the task, mode or tool permits.
 
 llamatron is a text UI for composing electronic music in MIDI, for Ableton Live and later other DAWs, inspired by Ableton's
 Session View, the Elektron Monomachine, the Sequentix Cirklon and software trackers. `docs/WHY_LLAMATRON.md` defines what it is
-for, and features are judged against it. It is written in Rust: one Cargo workspace in `src/`, a crate a layer (math, strings,
-model, engine, exporters, importers, backend, tracker), built with `sh build.sh` into `src/target/release/llamatron`. Its types
+for, and features are judged against it. It is written in Rust: one Cargo workspace in `src/`, a crate a layer (names, math,
+strings, model, engine, exporters, importers, backend, tracker), built with `sh build.sh` into `src/target/release/llamatron`. Its types
 are internal, not an API, and change freely to suit the tracker. The Python program it replaced is retired in `py_legacy/`, kept
 read-only beside its frozen answers (`py_legacy/frozen_test_data/`) until the tree is deleted, and nothing in it is changed.
 `python/` holds the little Python the development tools still use, with `.venv` made by `sh setup.sh`.

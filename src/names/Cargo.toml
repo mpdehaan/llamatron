@@ -1,0 +1,12 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-names"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "Every name llamatron uses as a value, defined once at the bottom of the layers for every crate to read"
+publish = false
+
+[dependencies]

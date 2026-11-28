@@ -28,7 +28,7 @@ standard a person who does not know Rust can trust: it builds itself, explains i
 - Every crate the UI uses (the tracker and its drawing) is approved by the user before it is added: Claude
   proposes it with what it does, who maintains it, how widely it is used and its licence, and waits for the yes.
 
-- `src/` is one Cargo workspace, a crate a layer (math, strings, model, engine, exporters, importers, backend, tracker), all
+- `src/` is one Cargo workspace, a crate a layer (names, math, strings, model, engine, exporters, importers, backend, tracker), all
   building into `src/target/`; a crate uses only the crates its manifest names, so the compiler keeps the layering.
 - The code is in folders by kind, as Rust arranges a crate (a folder a module, its `mod.rs` naming its parts and
   holding only what the kind shares): `protocol/`, `daemon/`, `audio/`, `engine/`, `instrument/`, `oscillators/`,

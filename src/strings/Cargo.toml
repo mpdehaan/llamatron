@@ -10,3 +10,4 @@ description = "Every text llamatron shows, and Python's template filling (the Py
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }

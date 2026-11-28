@@ -18,6 +18,7 @@ name = "llamatron-backend"
 path = "src/main.rs"
 
 [dependencies]
+llamatron-names = { path = "../names" }
 cpal = "0.15"
 rtrb = "0.3"
 rmpv = "1"

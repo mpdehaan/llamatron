@@ -6,8 +6,7 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
-#[rustfmt::skip]
-pub mod file_format;
+pub use llamatron_names::file_format;
 #[rustfmt::skip]
 pub mod limits;
 #[rustfmt::skip]

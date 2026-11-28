@@ -10,6 +10,7 @@ description = "llamatron's model: the set as stored, its values, objects, schema
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }
 llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
 yaml-rust2 = "0.10"

@@ -578,6 +578,7 @@ dependencies = [
  "flexi_logger",
  "libc",
  "libloading",
+ "llamatron-names",
  "log",
  "midir",
  "rmp",
@@ -637,13 +638,21 @@ name = "llamatron-model"
 version = "0.1.0"
 dependencies = [
  "llamatron-math",
+ "llamatron-names",
  "llamatron-strings",
  "yaml-rust2",
 ]
 
 [[package]]
+name = "llamatron-names"
+version = "0.1.0"
+
+[[package]]
 name = "llamatron-strings"
 version = "0.1.0"
+dependencies = [
+ "llamatron-names",
+]
 
 [[package]]
 name = "llamatron-tracker"
