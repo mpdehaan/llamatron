@@ -130,7 +130,9 @@ pub enum OscillatorPart {
         triangle: Tables,
         noise: Arc<Vec<f32>>,
         pulse_width: f64,
-        interaction: Interaction,
+        /// The chip's Ring and Sync switches, each on or off, both on together as the chip allows.
+        ring: bool,
+        sync: bool,
         interval: f64,
         arpeggio: Vec<f64>,
     },
@@ -157,13 +159,6 @@ pub enum SidWave {
     Saw,
     Pulse,
     Noise,
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum Interaction {
-    Off,
-    Ring,
-    Sync,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

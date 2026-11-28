@@ -236,7 +236,7 @@ instruments:
       engine: sid
       volume: 26
       voices: 1
-      oscillators: { type: sid, wave: pulse, pulse_width: 40, modulation: "off", interval: 7, arpeggio: [] }
+      oscillators: { type: sid, wave: pulse, pulse_width: 40, interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 8, sustain: 10, release: 6 }, { type: none }, { type: none }]
       filter: { type: none }
       lfos: [{ "on": true, shape: triangle, speed: medium, rate_percent: 21, restart: on_play }, { "on": true, shape: sine, speed: medium, rate_percent: 76, restart: each_note }]
@@ -248,7 +248,7 @@ instruments:
       engine: sid
       volume: 21
       voices: 1
-      oscillators: { type: sid, wave: pulse, pulse_width: 25, modulation: "off", interval: 7, arpeggio: [0, 7, 12] }
+      oscillators: { type: sid, wave: pulse, pulse_width: 25, interval: 7, arpeggio: [0, 7, 12] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 9, sustain: 8, release: 6 }, { type: none }, { type: none }]
       filter: { type: multimode, mode: low, cutoff: 1500, resonance: 30, env_amount: 0, key_track: 50 }
   - name: bright arpeggio
@@ -258,7 +258,7 @@ instruments:
       engine: sid
       volume: 24
       voices: 1
-      oscillators: { type: sid, wave: pulse, pulse_width: 25, modulation: "off", interval: 7, arpeggio: [0, 7, 12] }
+      oscillators: { type: sid, wave: pulse, pulse_width: 25, interval: 7, arpeggio: [0, 7, 12] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 9, sustain: 8, release: 6 }, { type: none }, { type: none }]
       filter: { type: multimode, mode: low, cutoff: 3600, resonance: 30, env_amount: 0, key_track: 50 }
   - name: triangle bass
@@ -268,7 +268,7 @@ instruments:
       engine: sid
       volume: 32
       voices: 1
-      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 6, sustain: 9, release: 3 }, { type: none }, { type: none }]
       filter: { type: none }
   - name: ring bell
@@ -278,7 +278,7 @@ instruments:
       engine: sid
       volume: 15
       voices: 1
-      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: ring, interval: 7, arpeggio: [] }
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, ring_on: true, interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 10, sustain: 0, release: 10 }, { type: none }, { type: none }]
       filter: { type: none }
   - name: chip kick
@@ -288,7 +288,7 @@ instruments:
       engine: sid
       volume: 40
       voices: 1
-      oscillators: { type: sid, wave: triangle, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
+      oscillators: { type: sid, wave: triangle, pulse_width: 50, interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 5, sustain: 0, release: 4 }, { type: none }, { type: adsr, attack: 0, hold: 0, decay: 60, snap: 0, sustain: 0, release: 60 }]
       filter: { type: none }
       matrix: [{ source: env3, via: none, destination: pitch, amount: 100 }]
@@ -299,7 +299,7 @@ instruments:
       engine: sid
       volume: 22
       voices: 1
-      oscillators: { type: sid, wave: noise, pulse_width: 50, modulation: "off", interval: 7, arpeggio: [] }
+      oscillators: { type: sid, wave: noise, pulse_width: 50, interval: 7, arpeggio: [] }
       envelopes: [{ type: sid_adsr, attack: 0, decay: 4, sustain: 0, release: 4 }, { type: none }, { type: none }]
       filter: { type: none }
       matrix: [{ source: velocity, via: none, destination: amp, amount: 40 }]

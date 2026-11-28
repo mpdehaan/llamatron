@@ -384,7 +384,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
         Preset::Map(&[
             ("wave", Preset::Text("pulse")),
             ("pulse_width", Preset::Whole(50)),
-            ("modulation", Preset::Text("off")),
+            ("ring_on", Preset::Flag(false)),
+            ("sync_on", Preset::Flag(false)),
             ("interval", Preset::Whole(7)),
             ("arpeggio", Preset::List(&[])),
         ]),
@@ -646,7 +647,7 @@ pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "ashevi
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("basic", &[]),
-    ("sid", &["wave", "pulse_width", "modulation", "interval", "arpeggio"]),
+    ("sid", &["wave", "pulse_width", "ring_on", "sync_on", "interval", "arpeggio"]),
     (
         "pocket",
         &["chip_voice", "duty", "wave_shape", "noise", "sweep_pace", "sweep_direction", "sweep_step"],
@@ -1089,13 +1090,8 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             what: "percent",
         },
     ),
-    (
-        "modulation",
-        SettingKind::Choice {
-            choices: &["off", "ring", "sync"],
-            names: &["Off", "Ring", "Sync"],
-        },
-    ),
+    ("ring_on", SettingKind::Toggle),
+    ("sync_on", SettingKind::Toggle),
     (
         "interval",
         SettingKind::Number {

@@ -1,8 +1,8 @@
 // llamatron: a music program
 // Copyright (C) 2026  Michael DeHaan
 // SPDX-License-Identifier: GPL-3.0-or-later
-//! The SID chip's oscillator: its triangle, saw, pulse and noise through the chip's own converter, ring and sync from a
-//! second oscillator, and its arpeggio.
+//! The SID chip's oscillator: its triangle, saw, pulse and noise through the chip's own converter, Ring and Sync from a
+//! second oscillator, each a switch of its own as on the chip, and its arpeggio.
 
 use super::*;
 
@@ -14,11 +14,6 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
         "noise" => SidWave::Noise,
         _ => SidWave::Pulse,
     };
-    let interaction = match word(spec, "modulation", "off") {
-        "ring" => Interaction::Ring,
-        "sync" => Interaction::Sync,
-        _ => Interaction::Off,
-    };
     let (chip_saw, triangle) = tables::sid_wave_tables(rate);
     OscillatorPart::Sid {
         wave,
@@ -26,7 +21,8 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
         triangle,
         noise: tables::sid_noise(),
         pulse_width: number(spec, "pulse_width", 0.5),
-        interaction,
+        ring: truth(spec, "ring", false),
+        sync: truth(spec, "sync", false),
         interval: number(spec, "interval", 7.0),
         arpeggio: numbers(spec, "arpeggio"),
     }
@@ -40,7 +36,8 @@ impl OscillatorPart {
             triangle,
             noise,
             pulse_width,
-            interaction,
+            ring,
+            sync,
             interval,
             arpeggio,
         } = self
@@ -53,10 +50,16 @@ impl OscillatorPart {
         }
         let frequency = frequency_of(base);
         let width = (*pulse_width + moves.width).clamp(NARROWEST, WIDEST);
-        if *interaction == Interaction::Sync {
+        if *sync {
             // A synced wave repeats at its master's period, so the master runs at the note, and the wave heard, reset
             // by it, runs at the note plus the Interval, as the chip's synced oscillator is tuned above its master.
-            return sid_synced(*wave, state, frequency_of(base + interval + moves.interval), frequency, width, rate);
+            let synced = sid_synced(*wave, state, frequency_of(base + interval + moves.interval), frequency, width, rate);
+            // With Ring on as well, the chip rings the synced wave by its master: the sign flips in the master's
+            // second half, whose phase the sync keeps.
+            if *ring && state.second_phase >= 0.5 {
+                return -synced;
+            }
+            return synced;
         }
         let speed = frequency * TABLE_SIZE as f64 / rate;
         let position = state.phases[0];
@@ -74,7 +77,7 @@ impl OscillatorPart {
             state.phases[1] += speed * SID_NOISE_STEPS_PER_CYCLE / TABLE_SIZE as f64;
             out = noise[state.phases[1] as usize % noise.len()] as f64;
         }
-        if *interaction == Interaction::Ring {
+        if *ring {
             state.second_phase = (state.second_phase + frequency_of(base + interval + moves.interval) / rate) % 1.0;
             if state.second_phase >= 0.5 {
                 out = -out;

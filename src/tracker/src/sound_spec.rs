@@ -73,7 +73,8 @@ fn oscillators(sound: &Sound) -> Data {
         "sid" => spec.extend([
             ("wave", setting("wave")),
             ("pulse_width", share(&setting("pulse_width"), PERCENT)),
-            ("modulation", setting("modulation")),
+            ("ring", setting("ring_on")),
+            ("sync", setting("sync_on")),
             ("interval", setting("interval")),
             ("arpeggio", setting("arpeggio")),
         ]),
