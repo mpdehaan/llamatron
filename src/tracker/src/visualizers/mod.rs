@@ -181,7 +181,7 @@ mod tests {
     /// On Arrange, Z shows the first mode, Z again the next, and ESC brings the clips back.
     #[test]
     fn the_visualizer_key_steps_through_the_modes_and_esc_brings_the_clips_back() {
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(REAL_TIME_SET, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(REAL_TIME_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.press(first_key(&MainKeys::ARRANGE));
         let shown = ported_modes();

@@ -1638,7 +1638,7 @@ mod tests {
     const TWO_BY_TWO_SET: &str = include_str!("../../../tests/data/two_by_two_set.yml");
 
     fn arranged() -> (App, ArrangePage) {
-        let setlist = Setlist::read_text(TWO_BY_TWO_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(TWO_BY_TWO_SET).expect("the scenario's set is valid");
         (App::new(crate::document::Document::new(setlist, None)), ArrangePage::new())
     }
 
@@ -1680,7 +1680,7 @@ mod tests {
     const DRUMS_FIRST_SET: &str = include_str!("../../../tests/data/drums_first_set.yml");
 
     fn drums_first() -> (App, ArrangePage) {
-        let setlist = Setlist::read_text(DRUMS_FIRST_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(DRUMS_FIRST_SET).expect("the scenario's set is valid");
         (App::new(crate::document::Document::new(setlist, None)), ArrangePage::new())
     }
 
@@ -1693,7 +1693,7 @@ mod tests {
     const DRUMS_ONLY_SET: &str = include_str!("../../../tests/data/drums_only_set.yml");
 
     fn drums_only() -> (App, ArrangePage) {
-        let setlist = Setlist::read_text(DRUMS_ONLY_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(DRUMS_ONLY_SET).expect("the scenario's set is valid");
         (App::new(crate::document::Document::new(setlist, None)), ArrangePage::new())
     }
 
@@ -1967,7 +1967,7 @@ mod tests {
         use crate::keys::first_key;
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_and_a_generator.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
         tracker.press(first_key(&crate::keybindings::MainPage::ARRANGE));
         // Arrange opens on the scene's name; the clip is the cell to its right.

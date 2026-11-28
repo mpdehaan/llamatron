@@ -1,10 +1,14 @@
 songs:
   - name: song
-    scenes: [{ name: one }]
-arps:
-  zip: {}
-  Bounce: {}
-drifts:
-  climb: {}
-chains:
-  alpha: []
+    scenes:
+      - name: one
+generators:
+  - name: zip
+    kind: arp
+  - name: Bounce
+    kind: arp
+  - name: climb
+    kind: drift
+  - name: alpha
+    kind: chain
+    generators: []

@@ -1,3 +1,0 @@
-version: 1.1.2
-instruments:
-  - { name: pluck, kind: built_in, sound: { engine: basic, envelopes: [{ type: vactrol, cell: lazy, light: gate, strike_width: 30 }], filter: { type: low_pass_gate, gate_mode: lowpass, input: ping, ping_width: 15 } } }

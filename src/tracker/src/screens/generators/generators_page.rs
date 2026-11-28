@@ -448,7 +448,7 @@ mod tests {
     const MIXED_KINDS_SET: &str = include_str!("../../../tests/data/mixed_kinds_set.yml");
 
     fn mixed_kinds_app() -> App {
-        let setlist = Setlist::read_text(MIXED_KINDS_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(MIXED_KINDS_SET).expect("the scenario's set is valid");
         App::new(crate::document::Document::new(setlist, None))
     }
 

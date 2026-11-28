@@ -1881,7 +1881,7 @@ mod tests {
     fn a_pattern_under_a_scale_of_another_size_says_what_it_was_written_for() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/pentatonic_pattern_under_major.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(crate::screens::pattern::open_clip_pattern("tune", Vec::new(), "lead"));
         tracker.settle();

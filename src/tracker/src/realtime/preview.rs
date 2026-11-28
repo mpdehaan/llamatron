@@ -675,7 +675,7 @@ mod tests {
     /// Listening to a pattern plays it: the copy's one scene holds the pattern's clip.
     #[test]
     fn a_pattern_preview_holds_its_clip() {
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET).expect("the scenario's set is valid");
         let document = Document::new(setlist, None);
         let (copy, track, _) = pattern_copy(&document, "tune").expect("the pattern is in the set");
         let scene = &copy.song().scenes()[PREVIEW_SCENE];
@@ -685,7 +685,7 @@ mod tests {
     /// Listening to a pattern through a built-in Preview instrument plays that synth, not a port with no name.
     #[test]
     fn a_pattern_listens_through_a_built_in_preview_instrument() {
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET).expect("the scenario's set is valid");
         let document = Document::new(setlist, None);
         let route = pattern_route(&document, "tune");
         assert_eq!(route.sound.as_deref(), Some("lead synth"));

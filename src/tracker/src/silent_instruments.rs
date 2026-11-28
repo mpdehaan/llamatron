@@ -74,7 +74,7 @@ mod tests {
     fn only_instruments_played_through_and_unheard_are_told() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/silent_instruments.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let connected = vec!["a connected port".to_string()];
         let lines = silent_instrument_lines(&setlist, false, &connected);
         let missing = named(

@@ -115,8 +115,7 @@ impl Document {
     fn file_now(&self) -> Option<Data> {
         let path = self.path.as_ref()?;
         let text = std::fs::read_to_string(path).ok()?;
-        let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
-        let setlist = Setlist::read_text(&text, stem).ok()?;
+        let setlist = Setlist::read_text(&text).ok()?;
         Some(without_version(&setlist.to_data()))
     }
 
@@ -145,8 +144,7 @@ impl Document {
     /// corrections or a conversion is unsaved, since its file still holds what it did.
     pub fn open_corrected(path: &Path) -> Result<OpenedSet, String> {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
-        let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
-        let read = Setlist::read_text_corrected(&text, stem).map_err(|error| error.message)?;
+        let read = Setlist::read_text_corrected(&text).map_err(|error| error.message)?;
         let note = conversion_note(&read.conversion);
         let mut document = Document::new(read.setlist, Some(path.to_path_buf()));
         if !read.corrections.is_empty() || note.is_some() {
@@ -162,8 +160,7 @@ impl Document {
     /// The set a file holds, opened as the tracker opens it.
     pub fn open(path: &Path) -> Result<Document, String> {
         let text = std::fs::read_to_string(path).map_err(|error| error.to_string())?;
-        let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string());
-        let setlist = Setlist::read_text(&text, stem).map_err(|error| error.message)?;
+        let setlist = Setlist::read_text(&text).map_err(|error| error.message)?;
         Ok(Document::new(setlist, Some(path.to_path_buf())))
     }
 
@@ -207,12 +204,7 @@ impl Document {
     /// does where a page not ported yet changed the set.
     pub fn take_up(&mut self, file: &Path, dirty: bool, song: &str) -> Result<(), String> {
         let text = std::fs::read_to_string(file).map_err(|error| format!("{}: {error}", file.display()))?;
-        let stem = self
-            .path
-            .as_ref()
-            .and_then(|path| path.file_stem())
-            .map(|stem| stem.to_string_lossy().to_string());
-        let setlist = Setlist::read_text(&text, stem).map_err(|error| format!("{}: {}", file.display(), error.message))?;
+        let setlist = Setlist::read_text(&text).map_err(|error| format!("{}: {}", file.display(), error.message))?;
         self.setlist = setlist;
         self.dirty = dirty;
         self.current = song.to_string();
@@ -358,29 +350,9 @@ pub struct OpenedSet {
     pub note: Option<String>,
 }
 
-/// What the status line says of a file converted from an older layout, naming each name the conversion changed, or
-/// None for a file read as it is.
+/// What the status line says of a file converted from an older layout, or None for a file read as it is.
 fn conversion_note(conversion: &llamatron_model::file::migrations::Conversion) -> Option<String> {
-    if !conversion.moved {
-        return None;
-    }
-    if conversion.renames.is_empty() {
-        return Some(llamatron_strings::messages::MSG_CONVERTED.to_string());
-    }
-    let renames: Vec<String> = conversion
-        .renames
-        .iter()
-        .map(|(kind, old, new)| {
-            llamatron_strings::named(
-                llamatron_strings::messages::MSG_RENAMED_IN_CONVERSION,
-                &[("kind", kind.as_str().into()), ("old", old.as_str().into()), ("new", new.as_str().into())],
-            )
-        })
-        .collect();
-    Some(llamatron_strings::named(
-        llamatron_strings::messages::MSG_CONVERTED_WITH_RENAMES,
-        &[("renames", renames.join(", ").as_str().into())],
-    ))
+    conversion.moved.then(|| llamatron_strings::messages::MSG_CONVERTED.to_string())
 }
 
 #[cfg(test)]

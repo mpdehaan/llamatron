@@ -97,8 +97,9 @@ plain code, comments that explain why, tests that read clearly.
 ## The set file
 
 - Every setting has a default, so older files load and new settings need no migration.
-- A key rename or structural change MUST come with a migration (`src/model/src/file/migrations.rs`), never changed once
-  released. Every shipped file is migrated in the same change, exports unchanged.
+- A key rename or structural change moves every shipped set and test set to the new layout in the same change, exports
+  unchanged; while no older file needs opening (the user's word), it needs no migration, `CLAUDE.md` ("Version")
+  saying when that ends.
 - A removed setting gets no migration: the reader passes over unknown names, and the next save drops them.
 - A rename MUST update every reference by name.
 

@@ -202,7 +202,7 @@ mod tests {
     /// a notes track, a drum track with an instrument of its own, or no FluidSynth, still go the usual way.
     #[test]
     fn a_drum_track_with_no_instrument_listens_through_the_drum_kit() {
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(TRACKS_SET, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(TRACKS_SET).expect("the scenario's set is valid");
         let mut app = App::new(crate::document::Document::new(setlist, None));
         app.fluidsynth_installed = true;
         assert!(listens_through_drum_kit(&app, "drums"));

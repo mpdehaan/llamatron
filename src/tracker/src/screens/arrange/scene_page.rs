@@ -400,7 +400,7 @@ mod tests {
     /// ENTER on the scene page's Name renames the scene, and a name another scene has is refused.
     #[test]
     fn enter_on_the_name_renames_the_scene_and_refuses_a_taken_name() {
-        let setlist = Setlist::read_text(TWO_SCENE_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(TWO_SCENE_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(ScenePage { index: 0 })));
         tracker.settle();
@@ -418,7 +418,7 @@ mod tests {
     fn a_scene_that_cannot_play_says_why() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/every_clip_loops.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(ScenePage { index: 0 })));
         tracker.settle();

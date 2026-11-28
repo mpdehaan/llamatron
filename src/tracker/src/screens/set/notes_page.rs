@@ -346,7 +346,7 @@ mod tests {
     fn clearing_the_notes_asks_first() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/grab_into_a_circle.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let mut tracker = Tracker::new(crate::document::Document::new(Setlist::read_text(&text, None).expect("valid"), None));
+        let mut tracker = Tracker::new(crate::document::Document::new(Setlist::read_text(&text).expect("valid"), None));
         let page = NotesPage::new(&tracker.app, false);
         tracker.app.show_page(Box::new(page));
         tracker.settle();

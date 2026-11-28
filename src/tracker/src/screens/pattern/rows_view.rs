@@ -1358,7 +1358,7 @@ mod draw_use_tests {
     fn a_use_draws_row_shows_what_each_step_does() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/draw_uses.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let song = setlist.get_song("song").expect("the song");
         let pattern = setlist.get_pattern("tune").expect("the pattern");
         let open = std::collections::HashSet::new();

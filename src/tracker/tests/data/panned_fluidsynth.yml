@@ -1,21 +1,36 @@
 scales:
-  - { name: C Major, root: C, type: major }
-
+  - name: C Major
+    root: C
+    type: major
 patterns:
-  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }
-
+  - name: tune
+    steps: 4
+    rows:
+      degree:
+        - 1
+        - 2
+        - 3
+        - 4
 instruments:
-  - { name: left piano, device: "*FluidSynth", gm_sound: 1, pan: 20 }
-  - { name: middle piano, device: "*FluidSynth", gm_sound: 1 }
-
+  - name: left piano
+    device: "*FluidSynth"
+    gm_sound: 1
+    pan: 20
+  - name: middle piano
+    device: "*FluidSynth"
+    gm_sound: 1
 songs:
   - name: panned
     scale: C Major
     tracks:
-      - { name: left, instrument: left piano }
-      - { name: middle, instrument: middle piano }
+      - name: left
+        instrument: left piano
+      - name: middle
+        instrument: middle piano
     scenes:
       - name: one
         clips:
-          - { track: left, pattern: tune }
-          - { track: middle, pattern: tune }
+          - track: left
+            pattern: tune
+          - track: middle
+            pattern: tune

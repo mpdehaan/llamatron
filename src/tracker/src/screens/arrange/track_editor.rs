@@ -470,7 +470,7 @@ mod tests {
 
     /// The tracker on the track editor of the bass track.
     fn on_the_bass_track() -> Tracker {
-        let setlist = Setlist::read_text(TWO_TRACK_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(TWO_TRACK_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(TrackEditor { name: "bass".to_string() })));
         tracker.settle();

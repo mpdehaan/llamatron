@@ -2152,7 +2152,7 @@ mod tests {
         let text = format!(
             "scales:\n  - {{ name: C Major, root: C, type: major }}\ninstruments:\n  - {instrument}\nsongs:\n  - name: song\n    scale: C Major\n    tracks: [{track}]\n    scenes: [{{ name: one }}]\n"
         );
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text).expect("the scenario's set is valid");
         App::new(crate::document::Document::new(setlist, None))
     }
 

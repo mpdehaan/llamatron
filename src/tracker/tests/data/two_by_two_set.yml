@@ -1,9 +1,14 @@
 patterns:
-  tune: { steps: 4 }
+  - name: tune
+    steps: 4
 songs:
   - name: song
-    tracks: [{ name: lead }, { name: bass }]
+    tracks:
+      - name: lead
+      - name: bass
     scenes:
       - name: verse
-        clips: [{ track: lead, pattern: tune }]
+        clips:
+          - track: lead
+            pattern: tune
       - name: chorus

@@ -169,7 +169,7 @@ instruments:
     sound:
       engine: oh3
       volume: 24
-      oscillators: { type: acid, acid_wave: saw, circuit: stock }
+      oscillators: { type: acid, acid_wave: saw }
       envelopes: [{ type: acid_gate, circuit: modded, accent: 70, accent_sweep: 70, accent_decay: 180, amp_decay: 1200, soft_attack: 30 }, { type: adsr, attack: 0, hold: 0, decay: 320, snap: 0, sustain: 0, release: 320 }, { type: none }]
       filter: { type: diode, circuit: stock, cutoff: 360, resonance: 78, env_amount: 70, key_track: 0, drive: 10 }
       effects: [{ effect: drive, curve: soft, amount: 12 }]
@@ -179,7 +179,7 @@ instruments:
     sound:
       engine: oh3
       volume: 18
-      oscillators: { type: acid, acid_wave: square, circuit: stock }
+      oscillators: { type: acid, acid_wave: square }
       envelopes: [{ type: acid_gate, circuit: stock, accent: 50 }, { type: adsr, attack: 0, hold: 0, decay: 400, snap: 0, sustain: 0, release: 400 }, { type: none }]
       filter: { type: diode, circuit: stock, cutoff: 1300, resonance: 45, env_amount: 45, key_track: 50, drive: 0 }
   - { name: kick, kind: built_in, role: percussion, sound: { engine: drum, volume: 62, oscillators: { type: drum, machine: synth_kick } } }

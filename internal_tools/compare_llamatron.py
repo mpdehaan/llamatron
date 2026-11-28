@@ -43,12 +43,21 @@ STEPS = ('load', 'layout', 'migrate', 'save', 'edits', 'pattern_edits', 'render'
 KEPT = TOP / '.cache' / 'compare_llamatron'
 # What a set changed since the answers were frozen is answered with, so that it is counted apart.
 CHANGED = 'changed since frozen'
+# The frozen sets saved in a layout llamatron no longer reads, whose migrations were removed while no older file needs
+# opening: counted apart, as a set changed since the freeze is.
+OLDER_LAYOUTS = {
+    'test_data/migrations/arp_before_lists.yml',
+    'test_data/migrations/out_of_range_before_lists.yml',
+    'test_data/wizard_songs/rock_everything.yml',
+}
 
 
 def kept_python(step, path):
     """Return the Python's frozen answer for a step on a set or MIDI file, None where the step does not apply to it, or
     CHANGED where the file is not the one the answer was frozen for."""
     key = key_of(path)
+    if key in OLDER_LAYOUTS:
+        return CHANGED
     index = json.loads((ANSWERS / step / 'index.json').read_text(encoding='utf-8'))
     if index.get(key) != hashlib.sha256(path.read_bytes()).hexdigest():
         return CHANGED

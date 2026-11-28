@@ -167,7 +167,7 @@ fn every_setting_plays() {
                 continue;
             }
             let data = set_with(place, setting.name, value);
-            let setlist = match Setlist::read_data(data, None) {
+            let setlist = match Setlist::read_data(data) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
                     refused.push(format!("{place:?} {}: the set does not read: {}", setting.name, problem.message));

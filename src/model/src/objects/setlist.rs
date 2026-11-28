@@ -172,14 +172,14 @@ fn sensible_generator_order(value: Option<Data>) -> Option<Data> {
 impl Setlist {
     /// The set a file's text holds, read as the Python reads it: loaded, migrated, laid out as the objects read it, and every
     /// part checked in the order the file is read.
-    pub fn read_text(text: &str, file_stem: Option<String>) -> Result<Setlist, SongFileError> {
+    pub fn read_text(text: &str) -> Result<Setlist, SongFileError> {
         let data = crate::file::data::load(text).map_err(|problem| SongFileError::plain(problem.0))?;
-        Setlist::read_data(data, file_stem)
+        Setlist::read_data(data)
     }
 
     /// A set from data laid out as a set file is, as a file's text reads to: migrated, then laid out as the objects are.
-    pub fn read_data(data: Data, file_stem: Option<String>) -> Result<Setlist, SongFileError> {
-        let (moved, _) = migrated(data, file_stem);
+    pub fn read_data(data: Data) -> Result<Setlist, SongFileError> {
+        let (moved, _) = migrated(data);
         let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
         Setlist::from_data(&laid_out)
     }
@@ -187,9 +187,9 @@ impl Setlist {
     /// A set from a file's text, with each value that cannot be used but has an allowed value near it changed to that value,
     /// and the corrections made: none where the file reads as it is. A problem with no allowed value near it still refuses
     /// the file. The file itself is not changed.
-    pub fn read_text_corrected(text: &str, file_stem: Option<String>) -> Result<ReadSet, SongFileError> {
+    pub fn read_text_corrected(text: &str) -> Result<ReadSet, SongFileError> {
         let data = crate::file::data::load(text).map_err(|problem| SongFileError::plain(problem.0))?;
-        let (moved, conversion) = migrated(data, file_stem);
+        let (moved, conversion) = migrated(data);
         let laid_out = as_object_layout(&moved).map_err(|problem| SongFileError::at(&problem.section, problem.problem))?;
         let refusal = match Setlist::from_data(&laid_out) {
             Ok(setlist) => {

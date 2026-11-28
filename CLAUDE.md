@@ -103,8 +103,10 @@ internal_tools/push_all.sh                                      # the only way t
 written into every set file. Versions are compared number by number, never as decimals. The build number is raised once per
 push by `internal_tools/push_all.sh` (via `internal_tools/bump_version.py --before-push`) when Rust under `src/` changed; by hand
 only with `internal_tools/bump.sh`, never a hand edit. The first two numbers are the user's. `BUILD_DATE` and `BUILD_TIME` are
-written with each bump. A layout change that would break an older file MUST come with a migration
-(`src/model/src/file/migrations.rs`). Examples keep the `version` they were saved with.
+written with each bump. While no older file needs opening (the user's word), a layout change needs no migration:
+every shipped set and test set is moved to the new layout in the same change, and `src/model/src/file/migrations.rs`
+keeps its mechanism with its first migration only, for the day a release needs one. Examples keep the `version` they
+were saved with.
 
 ## Working with the user
 

@@ -86,8 +86,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
         },
         "migrate" => match load(&text) {
             Ok(data) => {
-                let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-                let (moved, _) = llamatron_model::file::migrations::migrated(data, stem);
+                let (moved, _) = llamatron_model::file::migrations::migrated(data);
                 match llamatron_model::file::layout::as_object_layout(&moved) {
                     Ok(objects) => {
                         let file = llamatron_model::file::layout::as_file_layout(&objects);
@@ -105,46 +104,37 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "pattern_edits" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
-                Ok(setlist) => {
-                    let _ = writeln!(out, "{}", pattern_edits_of(&setlist));
-                    0
-                }
-                Err(problem) => {
-                    let _ = writeln!(err, "{path}: {}", problem.message);
-                    1
-                }
+        "pattern_edits" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+            Ok(setlist) => {
+                let _ = writeln!(out, "{}", pattern_edits_of(&setlist));
+                0
             }
-        }
-        "edits" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
-                Ok(setlist) => {
-                    let _ = writeln!(out, "{}", edits_of(&setlist));
-                    0
-                }
-                Err(problem) => {
-                    let _ = writeln!(err, "{path}: {}", problem.message);
-                    1
-                }
+            Err(problem) => {
+                let _ = writeln!(err, "{path}: {}", problem.message);
+                1
             }
-        }
-        "save" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
-                Ok(setlist) => {
-                    let file = llamatron_model::file::layout::as_file_layout(&setlist.to_data());
-                    let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&file));
-                    0
-                }
-                Err(problem) => {
-                    let _ = writeln!(err, "{path}: {}", problem.message);
-                    1
-                }
+        },
+        "edits" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+            Ok(setlist) => {
+                let _ = writeln!(out, "{}", edits_of(&setlist));
+                0
             }
-        }
+            Err(problem) => {
+                let _ = writeln!(err, "{path}: {}", problem.message);
+                1
+            }
+        },
+        "save" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+            Ok(setlist) => {
+                let file = llamatron_model::file::layout::as_file_layout(&setlist.to_data());
+                let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&file));
+                0
+            }
+            Err(problem) => {
+                let _ = writeln!(err, "{path}: {}", problem.message);
+                1
+            }
+        },
         "import" => match imported(path, &text) {
             Ok(json) => {
                 let _ = writeln!(out, "{json}");
@@ -156,8 +146,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
             }
         },
         "player" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
                     let _ = writeln!(err, "{path}: {}", problem.message);
@@ -176,8 +165,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
             }
         }
         "timeline" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
                     let _ = writeln!(err, "{path}: {}", problem.message);
@@ -200,7 +188,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 .file_stem()
                 .map(|stem| stem.to_string_lossy().to_string())
                 .unwrap_or_default();
-            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, Some(stem.clone())) {
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
                     let _ = writeln!(err, "{path}: {}", problem.message);
@@ -224,8 +212,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
             }
         }
         "render" => {
-            let stem = std::path::Path::new(path).file_stem().map(|stem| stem.to_string_lossy().to_string());
-            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text, stem) {
+            let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
                     let _ = writeln!(err, "{path}: {}", problem.message);
@@ -803,7 +790,7 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
     if path.ends_with(".mid") {
         inputs.push((stem, std::fs::read(file).map_err(|problem| problem.to_string())?));
     } else {
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(text, Some(stem.clone())).map_err(|problem| problem.message)?;
+        let setlist = llamatron_model::objects::setlist::Setlist::read_text(text).map_err(|problem| problem.message)?;
         for name in setlist.song_names() {
             let Some(song) = setlist.get_song(name) else { continue };
             let grid = llamatron_engine::realizer::SongRealizer::new(&setlist, song, Some(RENDER_SEED))
@@ -814,7 +801,7 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
             inputs.push((base, bytes));
         }
     }
-    let new_set = llamatron_model::objects::setlist::Setlist::read_text(NEW_SET, None).map_err(|problem| problem.message)?;
+    let new_set = llamatron_model::objects::setlist::Setlist::read_text(NEW_SET).map_err(|problem| problem.message)?;
     let mut made = Vec::new();
     let first_input = inputs.first().cloned();
     for (name, bytes) in inputs {

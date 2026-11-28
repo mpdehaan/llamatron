@@ -122,5 +122,5 @@ pub fn new_set(main_instrument: Data, drum_instrument: Data) -> Result<Setlist, 
         ),
         (Section::SONGS, Data::List(vec![song])),
     ]);
-    Setlist::read_data(set, None).map_err(|error| error.message)
+    Setlist::read_data(set).map_err(|error| error.message)
 }

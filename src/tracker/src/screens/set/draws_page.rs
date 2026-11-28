@@ -279,7 +279,7 @@ mod tests {
     fn space_types_into_a_slot_as_enter_does() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/one_draw_stepping.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(DrawsPage)));
         tracker.settle();

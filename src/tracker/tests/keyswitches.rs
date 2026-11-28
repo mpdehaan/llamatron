@@ -23,7 +23,7 @@ const SEED: i64 = 7;
 fn keyswitched() -> Grid {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/keyswitched.yml");
     let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-    let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+    let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
     let song = setlist.get_song("song").expect("the song");
     SongRealizer::new(&setlist, song, Some(SEED)).render().expect("the song renders")
 }

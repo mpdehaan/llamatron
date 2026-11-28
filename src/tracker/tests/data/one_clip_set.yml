@@ -1,8 +1,12 @@
 patterns:
-  tune: { steps: 4 }
+  - name: tune
+    steps: 4
 songs:
   - name: song
-    tracks: [{ name: lead }]
+    tracks:
+      - name: lead
     scenes:
       - name: one
-        clips: [{ track: lead, pattern: tune }]
+        clips:
+          - track: lead
+            pattern: tune

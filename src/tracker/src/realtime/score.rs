@@ -373,7 +373,7 @@ mod tests {
     fn draw_places_follow_each_step_that_draws() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/one_draw_stepping.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let song = setlist.get_song("song").expect("the song");
         let score = Score::new(&setlist, song, &[], None).expect("the song renders");
         let first_draw = 0;

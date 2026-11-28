@@ -854,7 +854,7 @@ mod tests {
     /// ENTER on the clip page's Name names the clip, and Bksp gives it back its pattern's name.
     #[test]
     fn enter_on_the_name_names_the_clip_and_bksp_gives_back_the_patterns() {
-        let setlist = Setlist::read_text(ONE_CLIP_SET, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(ONE_CLIP_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
         tracker.settle();
@@ -878,7 +878,7 @@ mod tests {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/grab_into_a_circle.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         Tracker::new(crate::document::Document::new(
-            Setlist::read_text(&text, None).expect("the scenario's set is valid"),
+            Setlist::read_text(&text).expect("the scenario's set is valid"),
             None,
         ))
     }
@@ -906,7 +906,7 @@ mod tests {
     fn clip_of_two_patterns() -> Tracker {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let setlist = Setlist::read_text(&text, None).expect("the scenario's set is valid");
+        let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
         tracker.settle();

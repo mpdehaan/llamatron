@@ -1,10 +1,21 @@
 patterns:
-  tune: { steps: 4 }
-  beat: { steps: 4, drum: true }
+  - name: tune
+    steps: 4
+  - name: beat
+    steps: 4
+    drum: true
 songs:
   - name: song
-    tracks: [{ name: kick, drum: true }, { name: lead }, { name: bass }]
+    tracks:
+      - name: kick
+        drum: true
+      - name: lead
+      - name: bass
     scenes:
       - name: verse
-        clips: [{ track: kick, pattern: beat }, { track: lead, pattern: tune }]
+        clips:
+          - track: kick
+            pattern: beat
+          - track: lead
+            pattern: tune
       - name: chorus
