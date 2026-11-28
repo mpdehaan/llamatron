@@ -36,6 +36,9 @@ The professor's research is in `.claude/notes/synthesis/`.
   spiral that now and then leaps out), Chua (the electronic double scroll), Thomas, a double pendulum, or predator and
   prey (Lotka-Volterra), with a speed and an amount from a near loop to full chaos; bounded and numerically safe,
   restarted from its seed if it ever escapes.
+- **Loop**: a Type of a Modulators slot beside LFO and Snail (`.claude/planning/DESIGNS.md`, "Loop"): a loop of random
+  steps, synced to the song, that repeats and changes as slowly as its Change allows, read at x1, x2, x4 and ÷2 as four
+  Mod Matrix sources that stay in step, with Change as its destination.
 - **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (the snails' traces, a
   chaotic system's path), worked out on the screen's side only while its box is on screen, and only if
   cheap.
