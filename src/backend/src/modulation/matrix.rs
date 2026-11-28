@@ -7,6 +7,7 @@
 
 use crate::modulation::lfos::LFO_COUNT;
 use crate::modulation::snail::{OUTPUT_COUNT, WEIGHTED_COUNT};
+use crate::oscillators::OWN_OSCILLATORS;
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
 use rmpv::Value;
@@ -51,6 +52,11 @@ pub enum Destination {
     Interval,
     /// A Snail's weighting of a circuit, by the Snail's place and the circuit's, moved through the newest note.
     Weight(usize, usize),
+    /// One of Asheville's oscillators alone, by its place: its pitch, its pulse width, its Detune and its Fine.
+    OscPitch(usize),
+    OscWidth(usize),
+    OscDetune(usize),
+    OscFine(usize),
     Cutoff,
     Resonance,
     Amp,
@@ -445,6 +451,54 @@ pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
         value: (Destination::Interval, 24.0),
     },
     Named {
+        name: "osc1_pitch",
+        value: (Destination::OscPitch(0), 24.0),
+    },
+    Named {
+        name: "osc1_pulse_width",
+        value: (Destination::OscWidth(0), 0.4),
+    },
+    Named {
+        name: "osc1_detune",
+        value: (Destination::OscDetune(0), DETUNE_REACH_CENTS),
+    },
+    Named {
+        name: "osc1_fine",
+        value: (Destination::OscFine(0), FINE_REACH_CENTS),
+    },
+    Named {
+        name: "osc2_pitch",
+        value: (Destination::OscPitch(1), 24.0),
+    },
+    Named {
+        name: "osc2_pulse_width",
+        value: (Destination::OscWidth(1), 0.4),
+    },
+    Named {
+        name: "osc2_detune",
+        value: (Destination::OscDetune(1), DETUNE_REACH_CENTS),
+    },
+    Named {
+        name: "osc2_fine",
+        value: (Destination::OscFine(1), FINE_REACH_CENTS),
+    },
+    Named {
+        name: "osc3_pitch",
+        value: (Destination::OscPitch(2), 24.0),
+    },
+    Named {
+        name: "osc3_pulse_width",
+        value: (Destination::OscWidth(2), 0.4),
+    },
+    Named {
+        name: "osc3_detune",
+        value: (Destination::OscDetune(2), DETUNE_REACH_CENTS),
+    },
+    Named {
+        name: "osc3_fine",
+        value: (Destination::OscFine(2), FINE_REACH_CENTS),
+    },
+    Named {
         name: "cutoff",
         value: (Destination::Cutoff, 6.0),
     },
@@ -523,6 +577,11 @@ pub struct Moved {
     pub detune: f64,
     pub fine: f64,
     pub interval: f64,
+    /// What each of Asheville's oscillators alone is moved by: its pitch in semitones, its Detune and Fine in cents,
+    /// and its pulse width.
+    pub osc_pitch: [f64; OWN_OSCILLATORS],
+    pub osc_cents: [f64; OWN_OSCILLATORS],
+    pub osc_width: [f64; OWN_OSCILLATORS],
     /// What each Snail's weightings are moved by, Slow's and Slower's.
     pub weights: [[f64; WEIGHTED_COUNT]; LFO_COUNT],
     pub cutoff: f64,
@@ -624,6 +683,9 @@ impl ModMatrix {
                 Destination::Fine => moved.fine += value,
                 Destination::Interval => moved.interval += value,
                 Destination::Weight(slot, circuit) => moved.weights[slot][circuit] += value,
+                Destination::OscPitch(place) => moved.osc_pitch[place] += value,
+                Destination::OscWidth(place) => moved.osc_width[place] += value,
+                Destination::OscDetune(place) | Destination::OscFine(place) => moved.osc_cents[place] += value,
                 Destination::Cutoff => moved.cutoff += value,
                 Destination::Resonance => moved.resonance += value,
                 Destination::Amp => moved.amp += value,

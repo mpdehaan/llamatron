@@ -320,7 +320,7 @@ impl Asheville {
         for (place, oscillator) in self.oscillators.iter().enumerate() {
             let wandered = self.wander(place, pitch, clock, began, state.jitter[place]);
             let tune = if self.snap { snapped(oscillator.cents) } else { oscillator.cents };
-            let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch;
+            let tuned = pitch + oscillator.range + (tune + wandered) / CENTS + moves.pitch + moves.osc_pitch[place];
             let frequency = if let Some(hertz) = oscillator.hertz {
                 // At an LFO's Speed it runs at its own rate whatever the note; heard, it keeps to hearing's bottom.
                 if oscillator.on {
@@ -336,10 +336,11 @@ impl Asheville {
             };
             let step = (frequency / rate).min(MOST_STEP);
             let at = state.phases[place];
+            let width = moves.width + moves.osc_width[place];
             let value = if self.continuous {
-                continuous(oscillator.shape, at, step, moves.width)
+                continuous(oscillator.shape, at, step, width)
             } else {
-                classic(oscillator.wave, at, step, moves.width)
+                classic(oscillator.wave, at, step, width)
             };
             state.phases[place] = (at + step).fract();
             state.sides[place] = value;

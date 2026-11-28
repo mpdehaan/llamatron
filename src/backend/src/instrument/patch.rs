@@ -25,7 +25,7 @@ use crate::instrument::amp::{self, AmpPart};
 use crate::modulation::lfos::{self, LfoBank, LFO_COUNT};
 use crate::modulation::matrix::{self, Destination, ModMatrix, Moved, Source, Sources};
 use crate::modulation::snail::WEIGHTED_COUNT;
-use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState};
+use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState, OWN_OSCILLATORS};
 use crate::protocol::values::{field, list, number, truth, word};
 use rmpv::Value;
 
@@ -501,11 +501,15 @@ impl Patch {
             if gliding {
                 bend += (voice.glide_from - voice.pitch) * (-((sample - voice.glide_at) as f64).max(0.0) / (glide * rate)).exp();
             }
-            reach = reach.max(bend);
+            // Each of Asheville's oscillators alone, its Detune and Fine in cents with its pitch.
+            let osc_pitch: [f64; OWN_OSCILLATORS] = std::array::from_fn(|place| moved.osc_pitch[place] + moved.osc_cents[place] / CENTS_A_SEMITONE);
+            reach = reach.max(bend + osc_pitch.iter().fold(0.0, |most: f64, each| most.max(*each)));
             let moves = Moves {
                 pitch: bend,
                 width: moved.pulse_width,
                 interval: moved.interval,
+                osc_pitch,
+                osc_width: moved.osc_width,
             };
             let seconds = note.age;
             let mut wave = 0.0;

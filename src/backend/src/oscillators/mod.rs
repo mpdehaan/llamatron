@@ -245,7 +245,14 @@ pub struct Moves {
     pub pitch: f64,
     pub width: f64,
     pub interval: f64,
+    /// What the Mod Matrix moves each of Asheville's oscillators alone by: its pitch in semitones, its Detune and Fine
+    /// with it, and its pulse width.
+    pub osc_pitch: [f64; OWN_OSCILLATORS],
+    pub osc_width: [f64; OWN_OSCILLATORS],
 }
+
+/// How many oscillators of Asheville's the Mod Matrix moves one by one.
+pub const OWN_OSCILLATORS: usize = 3;
 
 impl OscillatorPart {
     /// Ready a voice's state as its note begins.

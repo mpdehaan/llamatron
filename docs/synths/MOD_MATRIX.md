@@ -17,14 +17,19 @@ LFO at Very High speed routed to Pitch is the same analog-style FM from a
 second source ([LFOs](LFOS.md)). A Via scales the source by a second one, so
 that, for instance, an LFO moves the cutoff only as far as the note is loud;
 Per Note S&H is a source only, never a Via.
-Moves is what it moves, Pitch, Pulse width, Detune and Fine (every
-oscillator's tuning, by up to a semitone and a tenth of one), SID interval (how far the
-SID's second oscillator stands from the note, for sweeping a sync lead), Cutoff,
-Resonance, Amp or an LFO's rate,
-and Amount how far, either way, as a share of what it moves. Mod 1 to Pitch, with an LFO in Mod 1, is
-vibrato, with a Square shape and a large Amount a chip trill; Velocity to
-Cutoff makes harder notes brighter; Per Note S&H to Detune makes each note a little
-different.
+Moves is what it moves, each named by its block, then ` / `, then what it
+moves: `Osc / Pitch`, `Osc / Pulse Width`, `Osc / Detune` and `Osc / Fine` (the
+oscillator's tuning, by up to a semitone and a tenth of one), `Osc / Interval`
+(how far the SID's second oscillator stands from the note, for sweeping a sync
+lead), `Filter / Cutoff`, `Filter / Resonance`, `Amp / Level`, or a Modulators
+slot's input, such as `Mod 1 / Rate`. On Asheville, whose three oscillators
+each have their own, the oscillator's destinations are each oscillator's
+alone, `Osc 1 / Pitch` to `Osc 3 / Fine`, so that a route can wobble Osc 2
+against the other two. Amount is how far, either way, as a share of what it
+moves. Mod 1 to `Osc / Pitch`, with an LFO in Mod 1, is vibrato, with a Square
+shape and a large Amount a chip trill; Velocity to `Filter / Cutoff` makes
+harder notes brighter; Per Note S&H to `Osc / Detune` makes each note a
+little different.
 
 Polarity says how the route reads a source that swings both ways, as an LFO
 does. Bipolar, the default, moves what it moves from minus the Amount to plus

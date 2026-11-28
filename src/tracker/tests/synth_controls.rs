@@ -725,3 +725,37 @@ fn a_snail_moves_its_destinations_and_its_settings_move_it() {
         "the Slow speed moves Slow"
     );
 }
+
+/// On Asheville, a route to one oscillator's Pitch moves that oscillator alone: Osc 1 / Pitch and Osc 2 / Pitch are
+/// heard apart, and each is heard against no route at all.
+#[test]
+fn ashevilles_oscillators_are_moved_one_by_one() {
+    let (amount, lfo) = (30, "lfo1");
+    let asheville = |destination: &str, amount: i64| {
+        let oscillator = |on: bool| settings(&[("on", Data::Bool(on))]);
+        let sound = settings(&[
+            ("engine", Data::text("asheville")),
+            (
+                "oscillators",
+                settings(&[
+                    ("type", Data::text("asheville")),
+                    ("oscillators", Data::List(vec![oscillator(true), oscillator(true)])),
+                ]),
+            ),
+            ("lfos", Data::List(vec![settings(&[("on", Data::Bool(true))])])),
+            ("matrix", Data::List(vec![route(lfo, destination, amount)])),
+        ]);
+        let instrument = settings(&[
+            ("name", Data::text("tried")),
+            ("kind", Data::text("built_in")),
+            ("role", Data::text("normal")),
+            ("sound", sound),
+        ]);
+        played(&Instrument::from_data(&instrument).expect("the scenario's instrument is valid"))
+    };
+    let unmoved = asheville("osc1_pitch", 0);
+    let first = asheville("osc1_pitch", amount);
+    let second = asheville("osc2_pitch", amount);
+    assert!(differs(&unmoved, &first) && differs(&unmoved, &second), "each oscillator's Pitch is heard");
+    assert!(differs(&first, &second), "each moves its own oscillator");
+}

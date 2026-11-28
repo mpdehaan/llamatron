@@ -156,6 +156,23 @@ const RANGE_SUFFIX: &str = "_range";
 const ASHEVILLE_PANEL: [&str; 8] = ["model", "character", "noise_level", "ring", "tune_snap", "drift", "feedback_on", "feedback"];
 const CONTINUOUS: &str = "continuous";
 const ASHEVILLE_SOURCES: [&str; 3] = ["osc1", "osc2", "osc3"];
+/// The destinations that move an engine's one oscillator, which Asheville offers for each of its oscillators instead,
+/// and how each of Asheville's is named: `osc`, its number and `_`.
+const ONE_OSCILLATOR_DESTINATIONS: [&str; 4] = ["pitch", "pulse_width", "detune", "fine"];
+const OWN_OSCILLATOR_PREFIX: &str = "osc";
+
+/// Whether the Mod Matrix offers a destination for the engine's oscillators: each of Asheville's alone, an engine of
+/// one oscillator its oscillator; any other always.
+fn offered_by_oscillators(name: &str, asheville: bool) -> bool {
+    let own = name
+        .strip_prefix(OWN_OSCILLATOR_PREFIX)
+        .is_some_and(|rest| rest.split('_').next().is_some_and(|number| number.parse::<usize>().is_ok()));
+    if own {
+        return asheville;
+    }
+    !(asheville && ONE_OSCILLATOR_DESTINATIONS.contains(&name))
+}
+
 /// An engine of one oscillator's output as a source, which Asheville names by each oscillator instead.
 const ONE_OSCILLATOR_SOURCE: &str = "osc";
 /// The sources a route may read but never scale another by.
@@ -1762,12 +1779,14 @@ impl InstrumentEditor {
         chosen(id, label, &choices, &names, current)
     }
 
-    /// A Mod Matrix slot's Destination: every destination, each Modulators slot's offered as what it holds.
-    fn destination_field(id: usize, label: &str, current: &str, snails: &Snails) -> Field {
+    /// A Mod Matrix slot's Destination: every destination, each Modulators slot's offered as what it holds, and the
+    /// oscillators' as the engine has them: each of Asheville's alone, the one oscillator of any other.
+    fn destination_field(id: usize, label: &str, current: &str, asheville: bool, snails: &Snails) -> Field {
         let destinations: Vec<&str> = MATRIX_DESTINATIONS
             .iter()
             .copied()
             .filter(|destination| *destination == current || offered_by_slots(destination, snails))
+            .filter(|destination| *destination == current || offered_by_oscillators(destination, asheville))
             .collect();
         chosen(
             id,
@@ -1833,6 +1852,7 @@ impl InstrumentEditor {
                     ids.at(Write::Item("matrix", number, "destination")),
                     &numbered(labels::MSG_SLOT_DESTINATION_LABEL),
                     &text(&slot(number, "destination")),
+                    asheville,
                     &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_DESTINATION_LABEL)),
@@ -2477,6 +2497,23 @@ mod tests {
         assert_eq!(headings, [Some(first)]);
     }
 
+    /// The Mod Matrix names each destination by its block: Asheville offers each oscillator's Pitch alone, as Osc 2 /
+    /// Pitch, and any other engine its one oscillator's, as Osc / Pitch, and every engine the filter's Cutoff.
+    #[test]
+    fn the_matrix_offers_each_oscillators_destinations_by_the_engine() {
+        let names = |asheville: bool| -> Vec<String> {
+            match InstrumentEditor::destination_field(1, labels::MSG_SLOT_DESTINATION_LABEL, "none", asheville, &NO_SNAILS).kind {
+                FieldKind::Choice { names, .. } => names.unwrap_or_default(),
+                _ => Vec::new(),
+            }
+        };
+        let shown = |key: &str| named_in(labels::MSG_MATRIX_DESTINATION_NAMES, key);
+        let (asheville, one) = (names(true), names(false));
+        assert!(asheville.contains(&shown("osc2_pitch")) && !asheville.contains(&shown("pitch")));
+        assert!(one.contains(&shown("pitch")) && !one.contains(&shown("osc2_pitch")));
+        assert!(asheville.contains(&shown("cutoff")) && one.contains(&shown("cutoff")));
+    }
+
     /// The Mod Matrix offers what each Modulators slot holds: Mod 1 and Mod 1 rate while it holds an LFO, Mod 1 / Slow
     /// X and the rest of a Snail's outputs, and Mod 1 / Slow and Mod 1 / Slower, while it holds a Snail.
     #[test]
@@ -2491,7 +2528,13 @@ mod tests {
         let snail_first: Snails = [true, false, false, false];
         for (snails, holds_snail) in [(NO_SNAILS, false), (snail_first, true)] {
             let sources = choices(InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", false, false, &snails));
-            let destinations = choices(InstrumentEditor::destination_field(1, labels::MSG_SLOT_DESTINATION_LABEL, "none", &snails));
+            let destinations = choices(InstrumentEditor::destination_field(
+                1,
+                labels::MSG_SLOT_DESTINATION_LABEL,
+                "none",
+                false,
+                &snails,
+            ));
             let has = |list: &[String], key: &str, pairs: &[(&str, &str)]| list.contains(&name(pairs, key));
             assert_eq!(has(&sources, "lfo1_slowest_z", labels::MSG_MATRIX_SOURCE_NAMES), holds_snail);
             assert_eq!(has(&sources, "lfo1", labels::MSG_MATRIX_SOURCE_NAMES), !holds_snail);
