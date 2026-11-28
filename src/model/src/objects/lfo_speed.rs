@@ -18,13 +18,12 @@ pub const MOST_PERCENT: f64 = 100.0;
 pub const RATIOS: &[&str] = &["1:4", "1:2", "1:1", "3:2", "2:1", "3:1", "4:1", "5:1", "6:1", "7:1", "8:1"];
 pub const DEFAULT_RATIO: &str = "1:1";
 /// The LFO+'s own Speed, which follows the song's tempo, and the Speeds an LFO+ offers, the Tempo last.
-pub const TEMPO_SPEED: &str = "tempo";
-pub const PLUS_SPEED_NAMES: &[&str] = &["low", "medium", "high", "very_high", TEMPO_SPEED];
 /// The divisions of the beat a Tempo LFO's cycle lasts, as the file writes them, longest first: a note value, dotted
-/// (half as long again) or a triplet (two thirds as long); and the one a new LFO+ has.
+/// (half as long again) or a triplet (two thirds as long), from sixteen bars down to a sixty-fourth; and the one a synced
+/// LFO starts on.
 pub const DIVISIONS: &[&str] = &[
-    "4/1", "2/1", "1/1", "1/1d", "1/1t", "1/2", "1/2d", "1/2t", "1/4", "1/4d", "1/4t", "1/8", "1/8d", "1/8t", "1/16", "1/16d", "1/16t", "1/32", "1/32d",
-    "1/32t",
+    "16/1", "8/1", "4/1", "2/1", "1/1", "1/2", "1/2d", "1/2t", "1/4", "1/4d", "1/4t", "1/8", "1/8d", "1/8t", "1/16", "1/16d", "1/16t", "1/32", "1/32d",
+    "1/32t", "1/64", "1/64d", "1/64t",
 ];
 pub const DEFAULT_DIVISION: &str = "1/4";
 /// The quarter notes in a whole, and how much longer a dotted and a triplet division last than their note.

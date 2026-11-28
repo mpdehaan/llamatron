@@ -496,6 +496,7 @@ pub const MSG_AMOUNT_LABEL: &str = "Amount";
 pub const MSG_LFO_LABEL: &str = "LFO {number}";
 pub const MSG_SLOT_HEADING: &str = "Slot {number}";
 pub const MSG_LFO_ON_LABEL: &str = "LFO {number} on";
+pub const MSG_LFO_SYNC_LABEL: &str = "LFO {number} sync";
 /// The labels of Asheville's oscillator columns, beneath each column's heading.
 pub static MSG_ASHEVILLE_COLUMN_LABELS: &[(&str, &str)] = &[("speed", "Speed"), ("rate", "Rate"), ("range", "Range"), ("wave", "Wave"), ("shape", "Shape"), ("tune", "Tune"), ("fine", "Fine"), ("mix", "Mix"), ("sub", "Sub"), ("on", "On")];
 pub const MSG_LFO_SHAPE_LABEL: &str = "LFO {number} shape";
@@ -503,16 +504,14 @@ pub const MSG_LFO_RATE_LABEL: &str = "LFO {number} rate";
 pub const MSG_LFO_SPEED_LABEL: &str = "LFO {number} speed";
 pub const MSG_LFO_KEY_LABEL: &str = "LFO {number} key";
 pub const MSG_LFO_RATIO_LABEL: &str = "LFO {number} ratio";
-pub const MSG_LFO_TYPE_LABEL: &str = "LFO {number} type";
 pub const MSG_LFO_FADE_IN_LABEL: &str = "LFO {number} fade in";
 pub const MSG_LFO_DIVISION_LABEL: &str = "LFO {number} division";
-pub static MSG_LFO_TYPE_NAMES: &[(&str, &str)] = &[("lfo", "LFO"), ("lfo_plus", "LFO+")];
 pub static MSG_LFO_DIVISION_NAMES: &[(&str, &str)] = &[
-    ("4/1", "4/1"),
-    ("2/1", "2/1"),
-    ("1/1", "1/1"),
-    ("1/1d", "1/1 dotted"),
-    ("1/1t", "1/1 triplet"),
+    ("16/1", "16 bars"),
+    ("8/1", "8 bars"),
+    ("4/1", "4 bars"),
+    ("2/1", "2 bars"),
+    ("1/1", "1 bar"),
     ("1/2", "1/2"),
     ("1/2d", "1/2 dotted"),
     ("1/2t", "1/2 triplet"),
@@ -528,11 +527,14 @@ pub static MSG_LFO_DIVISION_NAMES: &[(&str, &str)] = &[
     ("1/32", "1/32"),
     ("1/32d", "1/32 dotted"),
     ("1/32t", "1/32 triplet"),
+    ("1/64", "1/64"),
+    ("1/64d", "1/64 dotted"),
+    ("1/64t", "1/64 triplet"),
 ];
-pub static MSG_LFO_SPEED_NAMES: &[(&str, &str)] = &[("low", "Low"), ("medium", "Medium"), ("high", "High"), ("very_high", "Very High"), ("tempo", "Tempo")];
+pub static MSG_LFO_SPEED_NAMES: &[(&str, &str)] = &[("low", "Low"), ("medium", "Medium"), ("high", "High"), ("very_high", "Very High")];
 pub const MSG_LFO_RESTART_LABEL: &str = "LFO {number} restart";
 pub static MSG_LFO_RESTART_NAMES: &[(&str, &str)] = &[("each_note", "Each note"), ("each_scene", "Each scene"), ("on_play", "On play"), ("never", "Never")];
-pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} on", "On"), ("LFO {number} type", "Type"), ("LFO {number} fade in", "Fade in"), ("LFO {number} division", "Rate"), ("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} restart", "Restart")];
+pub static MSG_LFO_SHOWN_LABELS: &[(&str, &str)] = &[("LFO {number} on", "On"), ("LFO {number} sync", "Sync"), ("LFO {number} fade in", "Fade in"), ("LFO {number} division", "Rate"), ("LFO {number} shape", "Shape"), ("LFO {number} speed", "Speed"), ("LFO {number} rate", "Rate"), ("LFO {number} ratio", "Rate"), ("LFO {number} key", "Key"), ("LFO {number} restart", "Restart")];
 pub static MSG_EFFECT_SHOWN_LABELS: &[(&str, &str)] = &[("FX {number} bits", "Bits"), ("FX {number} dither", "Dither"), ("FX {number} rate", "Rate"), ("FX {number} curve", "Curve"), ("FX {number} amount", "Amount"), ("FX {number} bass", "Bass"), ("FX {number} treble", "Treble"), ("FX {number} sync", "Sync"), ("FX {number} feedback", "Feedback"), ("FX {number} feedback from", "Feedback from"), ("FX {number} tone", "Tone"), ("FX {number} low cut", "Low cut"), ("FX {number} time change", "Time change"), ("FX {number} mode", "Mode"), ("FX {number} darkness", "Darkness"), ("FX {number} noise", "Noise"), ("FX {number} drive", "Drive"), ("FX {number} wow", "Wow"), ("FX {number} flutter", "Flutter"), ("FX {number} mix", "Mix")];
 pub const MSG_BUILT_IN_SHOWN: &str = "Synth: {engine}";
 pub static MSG_ENGINE_NAMES: &[(&str, &str)] = &[("basic", "Basic"), ("asheville", "Asheville"), ("drum", "MechaDrum"), ("sid", "SID"), ("pocket", "Pocket"), ("oh3", "Oh3")];

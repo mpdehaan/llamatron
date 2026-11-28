@@ -393,8 +393,8 @@ fn lfos(sound: &Sound) -> Data {
             ("restart", setting("restart")),
             ("fade_in", share(&setting("fade_in"), MILLISECONDS)),
         ];
-        // A Tempo LFO's cycle is a division of the beat, which the backend times by the song's tempo.
-        if speed == lfo_speed::TEMPO_SPEED {
+        // A synced LFO's cycle is a length of the beat, which the backend times by the song's tempo.
+        if setting("sync") == Data::Bool(true) {
             let division = setting("division").as_str().unwrap_or(lfo_speed::DEFAULT_DIVISION).to_string();
             lfo.push(("quarters", Data::Float(lfo_speed::quarters_of(&division))));
         }

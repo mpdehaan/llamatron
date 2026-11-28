@@ -96,7 +96,7 @@ Each part has a page of its own:
 | --- | --- |
 | Oscillators, the raw tone and the Voice settings | [Oscillators](synths/OSCILLATORS.md) |
 | Env 1, Env 2 and Env 3 | [Envelopes](synths/ENVELOPES.md) |
-| Four modulators, LFOs and LFO+s | [LFOs](synths/LFOS.md) |
+| Four modulators, LFOs | [LFOs](synths/LFOS.md) |
 | The filter or the low-pass gate | [Filters](synths/FILTERS.md) |
 | The Amp each note ends in | [Amp](synths/AMP.md) |
 | Two effects in order, the FX tab | [Effects](synths/EFFECTS.md) |

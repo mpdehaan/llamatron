@@ -14,7 +14,7 @@ use llamatron_backend::modulation::{lfos, matrix};
 use llamatron_backend::oscillators;
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
-use llamatron_model::schema::generated::file_format::{EFFECTS, LFO_PLUS_SHAPES, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
+use llamatron_model::schema::generated::file_format::{EFFECTS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
 use llamatron_tracker::generated::sounds::PART_TYPES;
 use llamatron_tracker::instrument_sound::Sound;
 use llamatron_tracker::sound_spec::synth_spec;
@@ -131,7 +131,7 @@ fn every_effect_offered_is_registered_and_every_registered_effect_is_offered() {
 /// Every LFO shape the file names is registered, and every registered shape is one the file names.
 #[test]
 fn every_lfo_shape_offered_is_registered_and_every_registered_shape_is_offered() {
-    let offered: BTreeSet<&str> = LFO_SHAPES.iter().chain(LFO_PLUS_SHAPES.iter()).copied().collect();
+    let offered: BTreeSet<&str> = LFO_SHAPES.iter().copied().collect();
     let registered: BTreeSet<&str> = lfos::SHAPES.iter().map(|choice| choice.name).collect();
     assert_eq!(offered, registered);
 }

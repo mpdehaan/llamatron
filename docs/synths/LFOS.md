@@ -2,16 +2,16 @@
 
 An LFO, a low-frequency oscillator, is a slow or fast wobble, as a player's
 hand shaking the pitch for vibrato or turning a knob back and forth. The
-Modulators tab holds four modulators, each with a Type: LFO, the plain one,
-or LFO+, the same with more choices. What each one moves is set in the [Mod
+Modulators tab holds four LFOs. What each one moves is set in the [Mod
 Matrix](MOD_MATRIX.md). Each is on unless switched off, its On switch at the
 foot of its column, so that a route to it is heard at once; one that no route
 reads costs nothing.
 
 ![The Modulators tab](../screenshots/synth_lfos.svg)
 
-Shape is Sine, Triangle, Saw up, Saw down, Square, or Sample & Hold, a new
-random value each cycle. Speed chooses how fast a span the Rate covers, as the
+Shape is Sine, Triangle, Saw up, Saw down, Square, Sample & Hold, a new
+random value each cycle, or Smooth random, a new random value each cycle glided
+to rather than stepped, for a wandering drift where Sample & Hold jumps. Speed chooses how fast a span the Rate covers, as the
 range switch of a modular synthesizer's LFO does, and Rate, from 0 to 100%,
 sweeps across it, each step a like change in octaves, its hertz shown beside
 it, such as `74% (5.0 Hz)`:
@@ -44,19 +44,17 @@ that a slow sweep lines up with each scene. Never keeps its place when
 playback stops and goes on from there when it starts again. While nothing
 plays, every modulator stands still and costs nothing.
 
-## LFO+
+## Sync and Fade In
 
-An LFO+ is an LFO with three more choices, kept apart so that the plain LFO
-stays simple. Its Shape adds Smooth random, a new random value each cycle
-glided to rather than stepped, for a wandering drift where Sample & Hold
-jumps. Its Speed adds Tempo, where the Rate becomes a division of the beat,
-from 4/1 to 1/32, dotted or triplet, such as `1/8 dotted`, so that a wobble
-or a tremolo stays in time with the song through every change of tempo and
-every tempo ramp. And Fade in, from off to 10 seconds, raises the LFO's depth
-after each note starts, as a violinist's vibrato grows into a held note: each
-note fades in from its own start, so that short notes stay plain and long ones
-bloom. Set back to LFO, a slot plays as a plain LFO but keeps what its LFO+
-was set to.
+Sync, off unless switched on, sets the Rate as a length of the song's beat
+instead of a Speed: from 16 bars, a slow swell over a whole section, down to
+1/64 of a note, with a dotted and a triplet value for each note length, such as
+`1/8 dotted`, so that a wobble or a tremolo stays in time with the song through
+every change of tempo and every tempo ramp. A bar here is four quarter notes.
+
+Fade in, from off to 10 seconds, raises the LFO's depth after each note starts,
+as a violinist's vibrato grows into a held note: each note fades in from its
+own start, so that short notes stay plain and long ones bloom.
 
 ## How the LFOs Are Built
 

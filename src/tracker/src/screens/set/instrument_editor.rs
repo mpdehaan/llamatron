@@ -23,8 +23,8 @@ use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_PLUS_SHAPES, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES,
-    MATRIX_DESTINATIONS, MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
+    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_RESTARTS, LFO_SHAPES, MATRIX_DESTINATIONS,
+    MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -1268,17 +1268,13 @@ impl InstrumentEditor {
         let mut columns = Vec::new();
         for number in 1..=LFO_COUNT as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
-            // An LFO+ offers Smooth random, the Tempo speed and Fade in beside what an LFO does.
-            let is_plus = sound.is_lfo_plus(number);
-            let (shapes, speeds) = if is_plus {
-                (LFO_PLUS_SHAPES, lfo_speed::PLUS_SPEED_NAMES)
-            } else {
-                (LFO_SHAPES, lfo_speed::SPEED_NAMES)
-            };
+            let (shapes, speeds) = (LFO_SHAPES, lfo_speed::SPEED_NAMES);
             let shape = text(&sound.lfo_setting(number, "shape"));
             let speed = text(&sound.lfo_setting(number, "speed"));
-            let keyed = speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, "key"));
-            let rate = if speed == lfo_speed::TEMPO_SPEED {
+            let synced = flag(&lfo(number, "sync"));
+            let keyed = !synced && speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, "key"));
+            // Synced, the Rate is a length of the beat; free, a Speed and a Rate within it.
+            let rate = if synced {
                 chosen(
                     ids.at(Write::Item("lfos", number, "division")),
                     &numbered(labels::MSG_LFO_DIVISION_LABEL),
@@ -1292,14 +1288,6 @@ impl InstrumentEditor {
             };
             let mut fields = vec![
                 chosen(
-                    ids.at(Write::Item("lfos", number, "type")),
-                    &numbered(labels::MSG_LFO_TYPE_LABEL),
-                    LFO_TYPES,
-                    &names_in(labels::MSG_LFO_TYPE_NAMES, LFO_TYPES),
-                    &text(&lfo(number, "type")),
-                )
-                .with_shown_label(&shown_label(labels::MSG_LFO_TYPE_LABEL)),
-                chosen(
                     ids.at(Write::Item("lfos", number, "shape")),
                     &numbered(labels::MSG_LFO_SHAPE_LABEL),
                     shapes,
@@ -1307,25 +1295,29 @@ impl InstrumentEditor {
                     &shape,
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_SHAPE_LABEL)),
-                chosen(
-                    ids.at(Write::Item("lfos", number, "speed")),
-                    &numbered(labels::MSG_LFO_SPEED_LABEL),
-                    speeds,
-                    &names_in(labels::MSG_LFO_SPEED_NAMES, speeds),
-                    &speed,
-                )
-                .with_shown_label(&shown_label(labels::MSG_LFO_SPEED_LABEL)),
-                rate,
+                Field::toggle(ids.at(Write::Item("lfos", number, "sync")), &numbered(labels::MSG_LFO_SYNC_LABEL), synced)
+                    .with_shown_label(&shown_label(labels::MSG_LFO_SYNC_LABEL)),
             ];
-            if speed == lfo_speed::AUDIO_SPEED {
+            if !synced {
+                fields.push(
+                    chosen(
+                        ids.at(Write::Item("lfos", number, "speed")),
+                        &numbered(labels::MSG_LFO_SPEED_LABEL),
+                        speeds,
+                        &names_in(labels::MSG_LFO_SPEED_NAMES, speeds),
+                        &speed,
+                    )
+                    .with_shown_label(&shown_label(labels::MSG_LFO_SPEED_LABEL)),
+                );
+            }
+            fields.push(rate);
+            if !synced && speed == lfo_speed::AUDIO_SPEED {
                 fields.push(
                     Field::toggle(ids.at(Write::Item("lfos", number, "key")), &numbered(labels::MSG_LFO_KEY_LABEL), keyed)
                         .with_shown_label(&shown_label(labels::MSG_LFO_KEY_LABEL)),
                 );
             }
-            if is_plus {
-                fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, "fade_in"))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
-            }
+            fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, "fade_in"))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
             fields.extend([chosen(
                 ids.at(Write::Item("lfos", number, "restart")),
                 &numbered(labels::MSG_LFO_RESTART_LABEL),

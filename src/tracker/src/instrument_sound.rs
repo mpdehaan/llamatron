@@ -6,18 +6,10 @@
 
 use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, EFFECT_OWN_DEFAULTS, ENGINE_PRESETS, LFO_DEFAULTS, SOUND_DEFAULTS, TYPE_DEFAULTS};
 use llamatron_model::file::data::Data;
-use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::Instrument;
 use llamatron_model::schema::generated::file_format::InstrumentSetting;
-/// An LFO slot's settings that its Type decides, and the Type that offers them.
+/// A sound's list of LFOs.
 const LFOS: &str = "lfos";
-pub const LFO_TYPE: &str = "type";
-pub const LFO_PLUS: &str = "lfo_plus";
-const LFO_SHAPE: &str = "shape";
-const LFO_SPEED: &str = "speed";
-pub const LFO_FADE_IN: &str = "fade_in";
-const SMOOTH_RANDOM: &str = "smooth_random";
-const SAMPLE_AND_HOLD: &str = "sample_and_hold";
 
 /// The envelopes' parts, in the order a sound's list of envelopes holds them.
 pub const ENVELOPE_PARTS: [&str; 3] = ["env1", "env2", "env3"];
@@ -158,26 +150,9 @@ impl Sound {
         own.unwrap_or_else(|| self.item("effects", number, name, EFFECT_DEFAULTS))
     }
 
-    /// One setting of an LFO, by its number from 1, as its Type plays it: an LFO, not an LFO+, plays a Smooth random shape
-    /// as Sample & Hold, a Tempo speed as the default Speed, and no Fade in, so that a slot turned back to LFO sounds as an
-    /// LFO does while keeping what its LFO+ was set to.
+    /// One setting of an LFO, by its number from 1, or its default.
     pub fn lfo_setting(&self, number: usize, name: &str) -> Data {
-        let value = self.item(LFOS, number, name, LFO_DEFAULTS);
-        let is_plus = self.item(LFOS, number, LFO_TYPE, LFO_DEFAULTS).as_str() == Some(LFO_PLUS);
-        if is_plus {
-            return value;
-        }
-        match (name, value.as_str()) {
-            (LFO_SHAPE, Some(SMOOTH_RANDOM)) => Data::text(SAMPLE_AND_HOLD),
-            (LFO_SPEED, Some(lfo_speed::TEMPO_SPEED)) => Data::text(lfo_speed::DEFAULT_SPEED),
-            (LFO_FADE_IN, _) => Data::Whole(0),
-            _ => value,
-        }
-    }
-
-    /// Whether an LFO, by its number from 1, is an LFO+.
-    pub fn is_lfo_plus(&self, number: usize) -> bool {
-        self.item(LFOS, number, LFO_TYPE, LFO_DEFAULTS).as_str() == Some(LFO_PLUS)
+        self.item(LFOS, number, name, LFO_DEFAULTS)
     }
 
     /// One setting of an oscillator of a basic engine's, by its number from 1.
