@@ -257,6 +257,7 @@ pub const MSG_TENTH_MILLISECONDS_SHOWN: &str = "{number:.1f} ms";
 pub const MSG_VELOCITY_AT_SHOWN: &str = "velocity {number}";
 pub const MSG_NUMBER_SHOWN: &str = "{number}";
 pub const MSG_MILLISECONDS_SHOWN: &str = "{number} ms";
+pub const MSG_SECONDS_SHOWN: &str = "{number} s";
 pub const MSG_CENTS_SHOWN: &str = "{number:+d} c";
 /// A tuning in tenths of a cent, shown as cents to a tenth.
 pub const MSG_TENTH_CENTS_SHOWN: &str = "{number:+.1f} c";

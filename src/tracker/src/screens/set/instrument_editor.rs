@@ -24,7 +24,7 @@ use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
     InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS,
-    MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
+    MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS, SNAIL_SPEEDS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -1315,12 +1315,33 @@ impl InstrumentEditor {
         .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
     }
 
-    /// A slot holding a Snail: its Type, Slow's and Slower's weightings, and its switch.
+    /// A Snail's lane's speed switch: fast, middle or slow, each shown as the seconds a trip of the lane takes.
+    fn lane_speed_field(sound: &Sound, ids: &mut Ids, number: usize, lane: usize, label: &str) -> Field {
+        let name = crate::sound_spec::SNAIL_LANE_SPEEDS[lane];
+        let seconds = crate::sound_spec::SNAIL_SPEED_SECONDS[lane];
+        let names: Vec<String> = seconds
+            .iter()
+            .map(|seconds| named(marks::MSG_SECONDS_SHOWN, &[("number", (*seconds).into())]))
+            .collect();
+        chosen(
+            ids.at(Write::Item("lfos", number, name)),
+            &named(label, &[("number", number.into())]),
+            SNAIL_SPEEDS,
+            &names,
+            &text(&sound.lfo_setting(number, name)),
+        )
+        .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
+    }
+
+    /// A slot holding a Snail: its Type, its two weightings A and B together, each lane's speed, and its switch.
     fn snail_column(sound: &Sound, ids: &mut Ids, number: usize) -> TabColumn {
         let fields = vec![
             Self::slot_type_field(sound, ids, number),
             Self::weighting_field(sound, ids, number, "slow", labels::MSG_SNAIL_SLOW_LABEL),
             Self::weighting_field(sound, ids, number, "slower", labels::MSG_SNAIL_SLOWER_LABEL),
+            Self::lane_speed_field(sound, ids, number, 0, labels::MSG_SNAIL_SLOW_SPEED_LABEL),
+            Self::lane_speed_field(sound, ids, number, 1, labels::MSG_SNAIL_SLOWER_SPEED_LABEL),
+            Self::lane_speed_field(sound, ids, number, 2, labels::MSG_SNAIL_SLOWEST_SPEED_LABEL),
             Field::toggle(
                 ids.at(Write::Item("lfos", number, "on")),
                 &named(labels::MSG_LFO_ON_LABEL, &[("number", number.into())]),

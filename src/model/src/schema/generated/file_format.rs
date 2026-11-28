@@ -816,6 +816,7 @@ pub static NOISES: &[&str] = &["long", "short"];
 pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold", "smooth_random"];
 /// When a modulator's cycle starts again.
 pub static LFO_TYPES: &[&str] = &["lfo", "snail"];
+pub static SNAIL_SPEEDS: &[&str] = &["fast", "middle", "slow"];
 pub static LFO_RESTARTS: &[&str] = &["each_note", "each_scene", "on_play", "never"];
 pub static EFFECTS: &[&str] = &["none", "bax", "bitcrush", "drive", "multitap"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];

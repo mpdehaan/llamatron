@@ -10,6 +10,7 @@ use crate::instrument_sound::Sound;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::schema::generated::file_format::MatrixSetting;
+use llamatron_model::schema::generated::file_format::SNAIL_SPEEDS;
 use llamatron_model::schema::generated::limits::LFO_COUNT;
 
 const MILLISECONDS: f64 = 1000.0;
@@ -375,6 +376,11 @@ fn filter(sound: &Sound) -> Data {
 const LFO_SOURCE_PREFIX: &str = "lfo";
 /// A slot's Type that holds a Snail.
 const SNAIL_TYPE: &str = "snail";
+/// A Snail's lanes' speed switches, Slow's, Slower's and Slowest's, and the seconds each switch's fast, middle and slow
+/// give, primes so that a lane's trips rarely line up with a song's sections; the middle is the default.
+pub const SNAIL_LANE_SPEEDS: [&str; 3] = ["slow_speed", "slower_speed", "slowest_speed"];
+pub const SNAIL_SPEED_SECONDS: [[i64; 3]; 3] = [[7, 23, 61], [61, 127, 307], [601, 1801, 3607]];
+const MIDDLE_SPEED: usize = 1;
 
 /// The LFOs in their places, every slot of the four, None for one that is off or that no Mod Matrix route reads, so that
 /// the matrix finds each by its number and the engine works out only the LFOs something hears.
@@ -388,12 +394,21 @@ fn lfos(sound: &Sound) -> Data {
             lfos.push(Data::Null);
             continue;
         }
-        // A Snail has only its two weightings, each a fraction either way.
+        // A Snail has its two weightings, each a fraction either way, and each lane's speed, the seconds its switch
+        // chooses.
         if setting("type").as_str() == Some(SNAIL_TYPE) {
+            let seconds = SNAIL_LANE_SPEEDS.iter().zip(SNAIL_SPEED_SECONDS.iter()).map(|(name, choices)| {
+                let place = SNAIL_SPEEDS
+                    .iter()
+                    .position(|speed| setting(name).as_str() == Some(speed))
+                    .unwrap_or(MIDDLE_SPEED);
+                Data::Whole(choices[place].into())
+            });
             lfos.push(mapping(vec![
                 ("type", Data::text(SNAIL_TYPE)),
                 ("slow", share(&setting("slow"), PERCENT)),
                 ("slower", share(&setting("slower"), PERCENT)),
+                ("seconds", Data::List(seconds.collect())),
             ]));
             continue;
         }

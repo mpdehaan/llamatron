@@ -613,13 +613,20 @@ fn settings(pairs: &[(&str, Data)]) -> Data {
 /// An instrument of the basic engine whose first Modulators slot holds a Snail weighted as given, and whose Mod Matrix
 /// routes as the slots given say.
 fn snail_instrument(weighting: i64, routes: &[Data]) -> Instrument {
+    snail_at_speed(weighting, "middle", routes)
+}
+
+/// The same instrument, its Snail's Slow lane at a speed of its switch.
+fn snail_at_speed(weighting: i64, speed: &str, routes: &[Data]) -> Instrument {
     let (engine, snail) = ("basic", "snail");
+    let snail_slot = settings(&[
+        ("type", Data::text(snail)),
+        ("slow", Data::Whole(weighting.into())),
+        ("slow_speed", Data::text(speed)),
+    ]);
     let sound = settings(&[
         ("engine", Data::text(engine)),
-        (
-            "lfos",
-            Data::List(vec![settings(&[("type", Data::text(snail)), ("slow", Data::Whole(weighting.into()))])]),
-        ),
+        ("lfos", Data::List(vec![snail_slot])),
         ("matrix", Data::List(routes.to_vec())),
     ]);
     let instrument = settings(&[
@@ -692,9 +699,9 @@ fn every_source_moves_a_snails_weighting() {
 }
 
 /// A Snail in a Modulators slot is heard as a person plays it: each of its outputs moves the cutoff through the Mod
-/// Matrix, and its Slow gauge changes the path Slow takes.
+/// Matrix, and its A gauge and its Slow speed change the path Slow takes.
 #[test]
-fn a_snail_moves_its_destinations_and_its_slow_gauge_moves_it() {
+fn a_snail_moves_its_destinations_and_its_settings_move_it() {
     let (cutoff, full, centre, leaning) = ("cutoff", 100, 0, 100);
     let silent = played(&snail_instrument(centre, &[route("lfo1_slow_x", cutoff, 0)]));
     for circuit in ["slow", "slower", "slowest"] {
@@ -708,6 +715,11 @@ fn a_snail_moves_its_destinations_and_its_slow_gauge_moves_it() {
     assert_ne!(
         slow_path(&snail_instrument(centre, &routed)),
         slow_path(&snail_instrument(leaning, &routed)),
-        "the Slow gauge moves Slow"
+        "the A gauge moves Slow"
+    );
+    assert_ne!(
+        slow_path(&snail_instrument(centre, &routed)),
+        slow_path(&snail_at_speed(centre, "fast", &routed)),
+        "the Slow speed moves Slow"
     );
 }

@@ -170,6 +170,8 @@ All made by the model's naming (`src/model/src/objects/naming.rs`):
 
 ## Wording
 
+- A Mod Matrix source or destination is named by its slot or block, then ` / `, then its parameter, each word of
+  the parameter's name capitalized: `Mod 1 / Rate`, `Mod 2 / Slow X`.
 - Names of products and makers in what the program shows: `.claude/COMPLIANCE.md`.
 - A bad value: `x must be ..., got value`; a wrong type: `expected a Note, got value`; only the value after `got` keeps its repr.
 - Names in parentheses, `no pattern called (tune)`, never quotes.

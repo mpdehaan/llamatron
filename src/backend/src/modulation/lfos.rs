@@ -133,7 +133,9 @@ fn snail_of(spec: &Value, instrument: u64, place: usize) -> Option<Snail> {
         return None;
     }
     let weightings = std::array::from_fn(|circuit| number(spec, WEIGHTINGS[circuit], 0.0).clamp(-1.0, 1.0));
-    Some(Snail::seeded(snail_seed(instrument, place), weightings))
+    let given = crate::protocol::values::field(spec, "seconds").and_then(Value::as_array);
+    let trips = std::array::from_fn(|lane| given.and_then(|seconds| seconds.get(lane)).and_then(crate::protocol::values::as_number));
+    Some(Snail::seeded(snail_seed(instrument, place), weightings, trips))
 }
 
 /// The tempo a song is taken to play at until it says, in quarter notes a minute.
@@ -247,7 +249,7 @@ impl LfoBank {
     pub fn seed(&mut self, instrument: u64) {
         for (place, snail) in self.snails.iter_mut().enumerate() {
             if let Some(snail) = snail.as_mut() {
-                *snail = Snail::seeded(snail_seed(instrument, place), snail.weightings);
+                *snail = Snail::seeded(snail_seed(instrument, place), snail.weightings, snail.trips);
             }
         }
     }

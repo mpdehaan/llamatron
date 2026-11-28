@@ -37,14 +37,14 @@ as an envelope or Velocity, always moves from nothing to the Amount.
 ## LFO Rates
 
 An LFO can speed up and slow down another, the way a player turns a
-vibrato's speed knob while holding a note. Moves also offers Mod 1 rate to
-Mod 4 rate. A slot whose Source is an LFO moves that LFO's rate by up to two
+vibrato's speed knob while holding a note. Moves also offers Mod 1 / Rate to
+Mod 4 / Rate. A slot whose Source is an LFO moves that LFO's rate by up to two
 octaves either way at its full Amount: 50% doubles it at the source's top and
-halves it at its bottom. Mod 2, a slow sine, into Mod 1 rate makes Mod 1's
+halves it at its bottom. Mod 2, a slow sine, into Mod 1 / Rate makes Mod 1's
 vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
 racing through one half of its cycle and lingering in the other. Unipolar
 only ever speeds the rate up. A Via scales the route as elsewhere, by another
-LFO. A Snail's Slow and Slower, `Mod 2 / Slow` and `Mod 2 / Slower` among the
+LFO. A Snail's A and B, `Mod 2 / A` and `Mod 2 / B` among the
 destinations while Mod 2 holds a Snail, take every source
 ([Snail](LFOS.md#snail)). The LFOs belong to the whole instrument, not to a note,
 so only an LFO moves a rate: a slot reading an envelope, Velocity, Per Note S&H, an oscillator

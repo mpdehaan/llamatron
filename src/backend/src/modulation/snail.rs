@@ -51,6 +51,8 @@ struct Parts {
     rq: f64,
     gain: f64,
     step: f64,
+    /// About how long a trip between two switches of side takes as built, in seconds, which a lane's speed sets anew.
+    trip: f64,
     swings: [f64; OUTPUTS_A_CIRCUIT],
     on_path: [State; START_POINTS],
 }
@@ -74,6 +76,7 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 4.7e6,
         gain: 1.0,
         step: 0.0025,
+        trip: 21.0,
         swings: [2.8, 6.0, 6.0],
         on_path: [
             [-1.242177, -0.371047, -1.689325],
@@ -98,6 +101,7 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 14.7e6,
         gain: 1.0,
         step: 0.025,
+        trip: 120.0,
         swings: [7.0, 10.0, 10.0],
         on_path: [
             [1.534898, 0.945275, -0.604615],
@@ -122,6 +126,7 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 100e6,
         gain: 1.5,
         step: 0.25,
+        trip: 1860.0,
         swings: [6.5, 10.0, 10.0],
         on_path: [
             [-0.149621, -0.103403, -4.237310],
@@ -191,11 +196,13 @@ struct Circuit {
     before: [f64; OUTPUTS_A_CIRCUIT],
     after: [f64; OUTPUTS_A_CIRCUIT],
     into_step: f64,
+    /// How much faster than built its clock runs, so that a trip takes the seconds its lane's speed chooses.
+    pace: f64,
 }
 
 impl Circuit {
     /// A circuit started on its path, at the point its seed chooses, its RC node moved a little by the seed.
-    fn seeded(parts: &'static Parts, seed: u64) -> Circuit {
+    fn seeded(parts: &'static Parts, seed: u64, trip_seconds: f64) -> Circuit {
         let mut random = Random::new(seed);
         let point = (random.next_u64() % START_POINTS as u64) as usize;
         let mut start = parts.on_path[point];
@@ -207,6 +214,7 @@ impl Circuit {
             before: [0.0; OUTPUTS_A_CIRCUIT],
             after: [0.0; OUTPUTS_A_CIRCUIT],
             into_step: 0.0,
+            pace: parts.trip / trip_seconds.max(f64::MIN_POSITIVE),
         };
         circuit.after = circuit.outputs();
         circuit.before = circuit.after;
@@ -254,7 +262,7 @@ impl Circuit {
     /// there, read along a straight line between its last two steps.
     #[inline]
     fn advance(&mut self, seconds: f64, weighting: f64) -> [f64; OUTPUTS_A_CIRCUIT] {
-        self.into_step += seconds / self.parts.step;
+        self.into_step += seconds * self.pace / self.parts.step;
         while self.into_step >= 1.0 {
             self.step(weighting);
             self.before = self.after;
@@ -270,17 +278,22 @@ impl Circuit {
 pub struct Snail {
     circuits: Vec<Circuit>,
     pub weightings: [f64; WEIGHTED_COUNT],
+    pub trips: [Option<f64>; CIRCUIT_COUNT],
 }
 
 impl Snail {
-    /// A Snail seeded by its instrument and its slot, its weightings set.
-    pub fn seeded(seed: u64, weightings: [f64; WEIGHTED_COUNT]) -> Snail {
+    /// A Snail seeded by its instrument and its slot, its weightings set, each lane's trip lasting the seconds given, or
+    /// as built where none is given.
+    pub fn seeded(seed: u64, weightings: [f64; WEIGHTED_COUNT], trips: [Option<f64>; CIRCUIT_COUNT]) -> Snail {
         let circuits = CIRCUITS
             .iter()
             .enumerate()
-            .map(|(place, parts)| Circuit::seeded(parts, seed.wrapping_mul(CIRCUIT_COUNT as u64).wrapping_add(place as u64)))
+            .map(|(place, parts)| {
+                let trip = trips[place].unwrap_or(parts.trip);
+                Circuit::seeded(parts, seed.wrapping_mul(CIRCUIT_COUNT as u64).wrapping_add(place as u64), trip)
+            })
             .collect();
-        Snail { circuits, weightings }
+        Snail { circuits, weightings, trips }
     }
 
     /// Move every circuit on by a sample of some seconds, each weighted circuit at its weighting moved by what the Mod
@@ -304,7 +317,7 @@ mod tests {
 
     /// The lobe a circuit is on at each read, by the sign of its Y, over some seconds at a weighting.
     fn lobes(place: usize, seed: u64, weighting: f64, seconds: f64) -> Vec<bool> {
-        let mut circuit = Circuit::seeded(&CIRCUITS[place], seed);
+        let mut circuit = Circuit::seeded(&CIRCUITS[place], seed, CIRCUITS[place].trip);
         let reads = (seconds / READ_EVERY) as usize;
         (0..reads).map(|_| circuit.advance(READ_EVERY, weighting)[1] > 0.0).collect()
     }
@@ -345,7 +358,7 @@ mod tests {
     fn a_snail_follows_its_own_clock_whatever_the_sample_rate() {
         let heard = 30.0;
         let path = |rate: f64| {
-            let mut snail = Snail::seeded(3, [0.0, 0.0]);
+            let mut snail = Snail::seeded(3, [0.0, 0.0], [None; CIRCUIT_COUNT]);
             let mut outputs = [0.0; OUTPUT_COUNT];
             for _ in 0..(heard * rate) as usize {
                 snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
@@ -362,7 +375,7 @@ mod tests {
         let rate = 48_000.0;
         let heard = (5.0 * rate) as usize;
         let most_change = 1e-4;
-        let mut snail = Snail::seeded(5, [0.0, 0.0]);
+        let mut snail = Snail::seeded(5, [0.0, 0.0], [None; CIRCUIT_COUNT]);
         let mut outputs = [0.0; OUTPUT_COUNT];
         snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
         let mut last = outputs[0];
@@ -377,5 +390,21 @@ mod tests {
             last = outputs[0];
         }
         assert!(moved_samples > heard * 9 / 10, "Slow X moved on {moved_samples} of {heard} samples");
+    }
+
+    /// A lane's speed sets how long its trips take: Slow at its fast 7 seconds switches sides about three times as
+    /// often as at its built 21.
+    #[test]
+    fn a_lanes_speed_sets_how_long_its_trips_take() {
+        let (seconds, seed, fast) = (2000.0, 7, 7.0);
+        let path = |trip: f64| {
+            let mut circuit = Circuit::seeded(&CIRCUITS[0], seed, trip);
+            let reads = (seconds / READ_EVERY) as usize;
+            (0..reads).map(|_| circuit.advance(READ_EVERY, 0.0)[1] > 0.0).collect::<Vec<_>>()
+        };
+        let (_, built) = share_and_cycle(&path(CIRCUITS[0].trip));
+        let (_, quick) = share_and_cycle(&path(fast));
+        let ratio = built / quick;
+        assert!((2.0..4.5).contains(&ratio), "built {built} quick {quick}");
     }
 }
