@@ -22,7 +22,7 @@ pub mod tables;
 
 use crate::dsp::blep;
 use crate::dsp::one_pole::OnePoleHighpass;
-use crate::dsp::OCTAVE;
+use crate::dsp::{OCTAVE, SHARE_BITS, SHARE_SHIFT, SPLITMIX_LAST, SPLITMIX_MULTIPLIERS, SPLITMIX_SHIFTS};
 use crate::oscillators::tables::{Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
 use crate::registry::{self, Entry};
@@ -234,19 +234,11 @@ pub const HELPERS: &[&str] = &["tables.rs"];
 
 /// What mixes a note's random number and an oscillator's place into a seed of their own: the golden ratio as a
 /// 64-bit number, the usual odd constant of such hashes.
-const PHASE_MIX: u64 = 0x9E37_79B9_7F4A_7C15;
+const PHASE_MIX: u64 = crate::dsp::GOLDEN_GAMMA;
 
 /// Where a free-running oscillator is in its cycle as a note starts, from the note's random number, from -1 to 1, and the
 /// oscillator's place: each oscillator its own draw, unrelated to the others', so that no two start near together more
 /// often than chance would have them.
-/// SplitMix64's three shifts and two multipliers, its last shift's place, and the shift and bits by which its top 53
-/// bits become a share from 0 to 1.
-const SPLITMIX_SHIFTS: [u32; 3] = [30, 27, 31];
-const SPLITMIX_MULTIPLIERS: [u64; 2] = [0xBF58_476D_1CE4_E5B9, 0x94D0_49BB_1331_11EB];
-const SPLITMIX_LAST: usize = 2;
-const SHARE_SHIFT: u32 = 11;
-const SHARE_BITS: u32 = 53;
-
 pub fn free_phase(random: f64, place: usize) -> f64 {
     // A SplitMix64 step of the random number's bits and the place, its top 53 bits a share of a cycle.
     let mut bits = random.to_bits() ^ (place as u64 + 1).wrapping_mul(PHASE_MIX);

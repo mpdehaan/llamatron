@@ -18,6 +18,7 @@
 //! own.
 
 use crate::dsp::blep::{pulse, saw, triangle};
+use crate::dsp::GOLDEN_GAMMA;
 use crate::oscillators::{frequency_of, Moves, OscillatorState};
 use crate::protocol::values::{list, number, truth, word};
 use llamatron_names::spec;
@@ -38,9 +39,8 @@ const SMOOTH_SQUARE: f64 = 3.0;
 const SMOOTH_CUBE: f64 = 2.0;
 /// The thirds of the continuous Shape: triangle to saw, saw to square, square to narrow pulse.
 const SHAPE_THIRDS: f64 = 3.0;
-/// The xorshift's seed where its state is empty, the golden ratio's bits; its three shifts; and the shift and the
+/// The xorshift's three shifts, its seed where its state is empty being the golden ratio's bits; and the shift and the
 /// mantissa's bits by which its state becomes a number from -1 to 1.
-const GOLDEN_GAMMA: u64 = 0x9E37_79B9_7F4A_7C15;
 const XORSHIFT_FIRST: u32 = 13;
 const XORSHIFT_SECOND: u32 = 7;
 const XORSHIFT_THIRD: u32 = 17;

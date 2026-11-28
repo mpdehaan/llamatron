@@ -17,6 +17,31 @@ use std::sync::Arc;
 /// Half a cycle, where a square turns and a saw crosses zero; the second and third harmonics; and the organ's: the
 /// second's and third's levels, and the peak of the three together, which scales it to full.
 const HALF: f64 = 0.5;
+/// A table's spectrum is half its length, the rest mirrored; and the smallest peak a table is scaled from.
+const HALVES: usize = 2;
+const SMALLEST_PEAK: f64 = 1e-9;
+/// The ratio an octave band's top doubles by, and the share of the rate where hearing's top, Nyquist's, stands.
+const OCTAVE: f64 = 2.0;
+const NYQUIST_DIVISOR: f64 = 2.0;
+/// The chip's pulse of eight steps; its wave memory of 32 steps of four bits, their middle seven and a half; and the
+/// triangle's slope, four times its share of a half cycle.
+const PULSE_STEPS: usize = 8;
+const PULSE_STEPS_SHARE: f64 = 8.0;
+const WAVE_STEPS: usize = 32;
+const WAVE_STEPS_SHARE: f64 = 32.0;
+const FOUR_BIT_MIDDLE: f64 = 7.5;
+const TRIANGLE_SLOPE: f64 = 4.0;
+/// The noise registers' widths: the short metallic buzz's and the long hiss's, in bits.
+const SHORT_NOISE_BITS: u32 = 7;
+const LONG_NOISE_BITS: u32 = 15;
+/// Twice, by which a DAC's level from 0 to 1 becomes one from -1 to 1.
+const TWICE: f64 = 2.0;
+/// The SID's noise register: its taps fed back, its 23 bits' mask, the eight of its bits read as the top of a word to
+/// its DAC with where each goes, and how far under the DAC's twelve bits the eight sit.
+const SID_NOISE_TAPS: (u32, u32) = (22, 17);
+const SID_NOISE_MASK: u32 = 0x7F_FFFF;
+const SID_NOISE_WORD_BITS: [(u32, u32); 7] = [(20, 7), (18, 6), (14, 5), (11, 4), (9, 3), (5, 2), (2, 1)];
+const SID_NOISE_WORD_WIDTH: usize = 8;
 const SECOND: f64 = 2.0;
 const THIRD: f64 = 3.0;
 const ORGAN_SECOND: f64 = 0.5;
@@ -64,20 +89,20 @@ fn from_spectrum(planner: &mut FftPlanner<f64>, spectrum: &[Complex<f64>]) -> Ve
     let mut full = vec![Complex::new(0.0, 0.0); TABLE_SIZE];
     for (bin, value) in spectrum.iter().enumerate() {
         full[bin] = *value;
-        if bin > 0 && bin < TABLE_SIZE / 2 {
+        if bin > 0 && bin < TABLE_SIZE / HALVES {
             full[TABLE_SIZE - bin] = value.conj();
         }
     }
     planner.plan_fft_inverse(TABLE_SIZE).process(&mut full);
     let table: Vec<f64> = full.iter().map(|value| value.re / TABLE_SIZE as f64).collect();
-    let peak = table.iter().fold(0.0_f64, |most, sample| most.max(sample.abs())).max(1e-9);
+    let peak = table.iter().fold(0.0_f64, |most, sample| most.max(sample.abs())).max(SMALLEST_PEAK);
     table.iter().map(|sample| (sample / peak) as f32).collect()
 }
 
 /// The highest harmonic a band keeps at a sample rate.
 fn highest_in_band(band: usize, rate: f64) -> usize {
-    let top = LOWEST_FREQUENCY * 2f64.powi(band as i32 + 1);
-    (rate / 2.0 / top) as usize
+    let top = LOWEST_FREQUENCY * OCTAVE.powi(band as i32 + 1);
+    (rate / NYQUIST_DIVISOR / top) as usize
 }
 
 /// The octave band a frequency reads its table from.
@@ -96,12 +121,12 @@ pub fn cycle_tables(cycle: &[f64], rate: f64) -> Tables {
     let repeat = TABLE_SIZE / cycle.len();
     let mut signal: Vec<Complex<f64>> = cycle.iter().flat_map(|step| std::iter::repeat_n(Complex::new(*step, 0.0), repeat)).collect();
     planner.plan_fft_forward(TABLE_SIZE).process(&mut signal);
-    let mut spectrum: Vec<Complex<f64>> = signal[..TABLE_SIZE / 2 + 1].to_vec();
+    let mut spectrum: Vec<Complex<f64>> = signal[..TABLE_SIZE / HALVES + 1].to_vec();
     spectrum[0] = Complex::new(0.0, 0.0);
     Arc::new(
         (0..OCTAVE_BANDS)
             .map(|band| {
-                let highest = highest_in_band(band, rate).clamp(1, TABLE_SIZE / 2 - 1);
+                let highest = highest_in_band(band, rate).clamp(1, TABLE_SIZE / HALVES - 1);
                 let kept: Vec<Complex<f64>> = spectrum
                     .iter()
                     .enumerate()
@@ -115,14 +140,16 @@ pub fn cycle_tables(cycle: &[f64], rate: f64) -> Tables {
 
 /// The tables of a chip's pulse of a duty, the share of its eight steps it is high.
 pub fn duty_tables(duty: f64, rate: f64) -> Tables {
-    let high = (duty * 8.0).round() as usize;
-    let cycle: Vec<f64> = (0..8).map(|step| if step < high { 1.0 } else { -1.0 }).collect();
+    let high = (duty * PULSE_STEPS_SHARE).round() as usize;
+    let cycle: Vec<f64> = (0..PULSE_STEPS).map(|step| if step < high { 1.0 } else { -1.0 }).collect();
     cycle_tables(&cycle, rate)
 }
 
 /// The 32 steps of four bits a drawn wave of a shape holds, 0 to 15, as the chip's wave memory holds them.
 fn drawn(function: fn(f64) -> f64) -> Vec<f64> {
-    (0..32).map(|place| ((function(place as f64 / 32.0) + 1.0) * 7.5).round()).collect()
+    (0..WAVE_STEPS)
+        .map(|place| ((function(place as f64 / WAVE_STEPS_SHARE) + 1.0) * FOUR_BIT_MIDDLE).round())
+        .collect()
 }
 
 /// The tables of a drawn wave of 32 steps of four bits, by its shape's name; a triangle for a name it does not know.
@@ -132,16 +159,16 @@ pub fn shape_tables(shape: &str, rate: f64) -> Tables {
         spec::SQUARE => drawn(|x| if x < HALF { 1.0 } else { -1.0 }),
         spec::SINE => drawn(|x| (TAU * x).sin()),
         spec::ORGAN => drawn(|x| ((TAU * x).sin() + ORGAN_SECOND * (SECOND * TAU * x).sin() + ORGAN_THIRD * (THIRD * TAU * x).sin()) / ORGAN_PEAK),
-        _ => drawn(|x| 1.0 - 4.0 * (x - 0.5).abs()),
+        _ => drawn(|x| 1.0 - TRIANGLE_SLOPE * (x - HALF).abs()),
     };
-    let cycle: Vec<f64> = steps.iter().map(|step| step / 7.5 - 1.0).collect();
+    let cycle: Vec<f64> = steps.iter().map(|step| step / FOUR_BIT_MIDDLE - 1.0).collect();
     cycle_tables(&cycle, rate)
 }
 
 /// A chip's noise as the values a shift register gives in turn, -1 or 1: 32767 of the long hiss from 15 bits, or 127 of the
 /// short metallic buzz from 7, the register's two lowest bits made one by exclusive or and fed back at the top.
 pub fn shift_register_noise(short: bool) -> Arc<Vec<f32>> {
-    let width = if short { 7 } else { 15 };
+    let width = if short { SHORT_NOISE_BITS } else { LONG_NOISE_BITS };
     let mut register: u32 = (1 << width) - 1;
     let mut values = Vec::with_capacity((1 << width) - 1);
     for _ in 0..((1 << width) - 1) {
@@ -207,7 +234,7 @@ pub fn sid_wave_tables(rate: f64) -> (Tables, Tables) {
     let dac = sid_dac();
     let top = (1usize << SID_DAC_BITS) - 1;
     let words = |place: usize| place * (1 << SID_DAC_BITS) / TABLE_SIZE;
-    let level = |word: usize| 2.0 * dac[word & top] - 1.0;
+    let level = |word: usize| TWICE * dac[word & top] - 1.0;
     let saw: Vec<f64> = (0..TABLE_SIZE).map(|place| level(words(place))).collect();
     let triangle: Vec<f64> = (0..TABLE_SIZE)
         .map(|place| {
@@ -229,15 +256,17 @@ fn without_offset(cycle: Vec<f64>) -> Vec<f64> {
 /// the top of its waveform DAC, -1 to 1, as the chip outputs it.
 pub fn sid_noise() -> Arc<Vec<f32>> {
     let dac = sid_dac();
-    let noise_shift = SID_DAC_BITS - 8;
+    let noise_shift = SID_DAC_BITS - SID_NOISE_WORD_WIDTH;
     let mut register: u32 = 0x7FFFF8;
     let mut values = Vec::with_capacity(SID_NOISE_STEPS);
     for _ in 0..SID_NOISE_STEPS {
-        let bit = ((register >> 22) ^ (register >> 17)) & 1;
-        register = ((register << 1) | bit) & 0x7FFFFF;
-        let bit_of = |place: u32, to: u32| ((register >> place) & 1) << to;
-        let word = bit_of(20, 7) | bit_of(18, 6) | bit_of(14, 5) | bit_of(11, 4) | bit_of(9, 3) | bit_of(5, 2) | bit_of(2, 1) | (register & 1);
-        values.push((2.0 * dac[(word as usize) << noise_shift] - 1.0) as f32);
+        let (first_tap, second_tap) = SID_NOISE_TAPS;
+        let bit = ((register >> first_tap) ^ (register >> second_tap)) & 1;
+        register = ((register << 1) | bit) & SID_NOISE_MASK;
+        let word = SID_NOISE_WORD_BITS
+            .iter()
+            .fold(register & 1, |word, (place, to)| word | (((register >> place) & 1) << to));
+        values.push((TWICE * dac[(word as usize) << noise_shift] - 1.0) as f32);
     }
     Arc::new(values)
 }
@@ -249,18 +278,20 @@ mod tests {
     /// A cycle's tables, one an octave band, peak at one, and the top band holds only a few harmonics.
     #[test]
     fn a_table_peaks_at_one_and_the_top_band_holds_few_harmonics() {
-        let cycle: Vec<f64> = (0..32).map(|step| if step < 16 { 1.0 } else { -1.0 }).collect();
-        let tables = cycle_tables(&cycle, 44100.0);
+        let (rate, steps, high_steps, few, tolerance) = (44100.0, 32, 16, 4, 1e-6);
+        let cycle: Vec<f64> = (0..steps).map(|step| if step < high_steps { 1.0 } else { -1.0 }).collect();
+        let tables = cycle_tables(&cycle, rate);
         assert_eq!(tables.len(), OCTAVE_BANDS);
         let peak = tables[0].iter().fold(0.0_f32, |most, sample| most.max(sample.abs()));
-        assert!((peak - 1.0).abs() < 1e-6);
-        assert!(highest_in_band(OCTAVE_BANDS - 1, 44100.0) < 4);
+        assert!((peak - 1.0).abs() < tolerance);
+        assert!(highest_in_band(OCTAVE_BANDS - 1, rate) < few);
     }
 
     #[test]
     fn the_long_noise_repeats_after_32767_steps_and_the_short_after_127() {
-        assert_eq!(shift_register_noise(false).len(), 32767);
-        assert_eq!(shift_register_noise(true).len(), 127);
+        let (long_period, short_period) = (32767, 127);
+        assert_eq!(shift_register_noise(false).len(), long_period);
+        assert_eq!(shift_register_noise(true).len(), short_period);
     }
 
     /// The 6581's DAC is uneven as the chip's is: with no termination resistor, bit 0 alone gives what bit 1 alone gives,
@@ -268,8 +299,9 @@ mod tests {
     #[test]
     fn the_sid_dac_runs_its_lowest_bits_together() {
         let dac = sid_dac();
-        let (bit_0, bit_1) = (dac[1], dac[2]);
-        assert!((bit_0 - bit_1).abs() < bit_1 * 0.05, "bit 0 {bit_0} is about bit 1 {bit_1}");
-        assert!((dac[dac.len() - 1] - 1.0).abs() < 1e-9);
+        let (bit_0_alone, bit_1_alone, about, tolerance) = (1, 2, 0.05, 1e-9);
+        let (bit_0, bit_1) = (dac[bit_0_alone], dac[bit_1_alone]);
+        assert!((bit_0 - bit_1).abs() < bit_1 * about, "bit 0 {bit_0} is about bit 1 {bit_1}");
+        assert!((dac[dac.len() - 1] - 1.0).abs() < tolerance);
     }
 }
