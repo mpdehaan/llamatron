@@ -74,8 +74,9 @@ plain code, comments that explain why, tests that read clearly.
   included, reads it there. Unused constants are removed. No list of sections or settings is kept by hand where the
   schema holds it. Different meanings are different constants even where their values agree: a dozen minimums of 0
   are a dozen constants, each named for what it bounds.
-- **No YAML in a string**, anywhere in the source, tests included: data is built as data structures and serialized where
-  it is written. A set a test starts from is a data file beside the tests, read by name.
+- **No code or data format in a string**, anywhere in the source, tests included, in any language (Rust, YAML, JSON,
+  a set file): data is built as data structures and serialized where it is written, and code a test reads is a
+  file beside the tests, read by name. A tool that writes code writes it from a template.
 - **A file is written by a serializer**: a format llamatron writes, YAML, JSON, MIDI or any other, is built as data and
   written by the library or the module that serializes it, never by formatting its text by hand.
 - **Look before saying it is missing**: before writing code that reads or writes a format, or that does what a library
