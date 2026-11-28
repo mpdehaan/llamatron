@@ -7,6 +7,7 @@
 
 #[rustfmt::skip]
 pub mod file_format;
+pub mod fill;
 pub mod fluid_calls;
 pub mod spec;
 pub mod wire;

@@ -10,6 +10,7 @@ description = "llamatron's tracker: the text UI's pages, dialogs and keys (the P
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }
 llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
 llamatron-model = { path = "../model" }

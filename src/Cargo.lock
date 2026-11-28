@@ -665,6 +665,7 @@ dependencies = [
  "llamatron-importers",
  "llamatron-math",
  "llamatron-model",
+ "llamatron-names",
  "llamatron-strings",
  "rmpv",
  "unicode-width",

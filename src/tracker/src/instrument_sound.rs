@@ -8,6 +8,7 @@ use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, EFFECT_OWN_DEFAULTS, ENG
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Instrument;
 use llamatron_model::schema::generated::file_format::InstrumentSetting;
+use llamatron_names::spec;
 /// A sound's list of LFOs.
 const LFOS: &str = "lfos";
 
@@ -82,7 +83,7 @@ impl Sound {
     pub fn part(&self, part: &str) -> Data {
         if let Some(place) = ENVELOPE_PARTS.iter().position(|each| *each == part) {
             if let Some(envelope) = self
-                .own("envelopes")
+                .own(spec::ENVELOPES)
                 .as_ref()
                 .and_then(Data::as_list)
                 .and_then(|envelopes| envelopes.get(place))
@@ -134,7 +135,7 @@ impl Sound {
     /// every effect's, else every effect's default.
     pub fn effect_setting(&self, number: usize, name: &str) -> Data {
         let stored = self
-            .value("effects")
+            .value(spec::EFFECTS)
             .as_list()
             .and_then(|items| items.get(number - 1))
             .and_then(|item| item.get(name))
@@ -142,12 +143,12 @@ impl Sound {
         if let Some(stored) = stored {
             return stored;
         }
-        let effect = self.item("effects", number, "effect", EFFECT_DEFAULTS);
+        let effect = self.item(spec::EFFECTS, number, spec::EFFECT, EFFECT_DEFAULTS);
         let own = EFFECT_OWN_DEFAULTS
             .iter()
             .find(|(kind, setting, _)| effect.as_str() == Some(kind) && *setting == name)
             .map(|(_, _, preset)| preset.to_data());
-        own.unwrap_or_else(|| self.item("effects", number, name, EFFECT_DEFAULTS))
+        own.unwrap_or_else(|| self.item(spec::EFFECTS, number, name, EFFECT_DEFAULTS))
     }
 
     /// One setting of an LFO, by its number from 1, or its default.
@@ -157,7 +158,7 @@ impl Sound {
 
     /// One setting of an oscillator of a basic engine's, by its number from 1.
     pub fn oscillator(&self, number: usize, name: &str) -> Data {
-        let oscillators = self.part_value("oscillators", "oscillators");
+        let oscillators = self.part_value(spec::OSCILLATORS, spec::OSCILLATORS);
         let item = oscillators
             .as_list()
             .and_then(|items| items.get(number - 1))
@@ -197,7 +198,7 @@ impl Sound {
     /// The sound made from an engine's preset, its volume and LFOs kept.
     pub fn with_engine(&self, engine: &str) -> Data {
         let mut sound = Data::Map(vec![(Data::text(ENGINE), Data::text(engine))]);
-        for name in ["volume", "lfos"] {
+        for name in [spec::VOLUME, spec::LFOS] {
             if let Some(kept) = self.own(name) {
                 put(&mut sound, name, kept);
             }
@@ -212,7 +213,7 @@ impl Sound {
                 .iter()
                 .map(|each| if *each == part { value.clone() } else { self.part(each) })
                 .collect();
-            put(&mut sound, "envelopes", Data::List(envelopes));
+            put(&mut sound, spec::ENVELOPES, Data::List(envelopes));
         } else {
             put(&mut sound, part, value);
         }
@@ -240,15 +241,15 @@ impl Sound {
     /// The sound with one setting of an oscillator changed, the oscillators before it made, off, where it has none.
     pub fn with_oscillator(&self, number: usize, name: &str, value: Data) -> Data {
         let mut oscillators = self
-            .part_value("oscillators", "oscillators")
+            .part_value(spec::OSCILLATORS, spec::OSCILLATORS)
             .as_list()
             .map(<[Data]>::to_vec)
             .unwrap_or_default();
         while oscillators.len() < number {
-            oscillators.push(Data::Map(vec![(Data::text("waveform"), Data::text("off"))]));
+            oscillators.push(Data::Map(vec![(Data::text(spec::WAVEFORM), Data::text(spec::OFF))]));
         }
         put(&mut oscillators[number - 1], name, value);
-        self.with_part_value("oscillators", "oscillators", Data::List(oscillators))
+        self.with_part_value(spec::OSCILLATORS, spec::OSCILLATORS, Data::List(oscillators))
     }
 
     /// The sound with one setting of an item of one of its lists changed, the items before it made empty.
@@ -275,10 +276,14 @@ impl Sound {
 
     /// The sound with one of the drum machine's knobs changed.
     pub fn with_knob(&self, place: usize, value: Data) -> Data {
-        let mut knobs = self.part_value("oscillators", "knobs").as_list().map(<[Data]>::to_vec).unwrap_or_default();
+        let mut knobs = self
+            .part_value(spec::OSCILLATORS, spec::KNOBS)
+            .as_list()
+            .map(<[Data]>::to_vec)
+            .unwrap_or_default();
         if place < knobs.len() {
             knobs[place] = value;
         }
-        self.with_part_value("oscillators", "knobs", Data::List(knobs))
+        self.with_part_value(spec::OSCILLATORS, spec::KNOBS, Data::List(knobs))
     }
 }

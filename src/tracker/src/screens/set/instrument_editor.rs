@@ -31,6 +31,8 @@ use llamatron_model::schema::generated::limits::{
     MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_LOW_CUT, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS,
     MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_LOW_CUT, MIN_TAP_TONE, MOST_BAX_DECIBELS,
 };
+use llamatron_names::fill;
+use llamatron_names::spec;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
@@ -113,40 +115,40 @@ const MOST_FINE_TENTHS: i64 = 100;
 const ASHEVILLE: &str = "asheville";
 const ASHEVILLE_OSCILLATORS: [[&str; 10]; 3] = [
     [
-        "osc1_speed",
-        "osc1_rate",
-        "osc1_range",
-        "osc1_wave",
-        "osc1_shape",
-        "osc1_tune",
-        "osc1_fine",
-        "osc1_mix",
-        "osc1_sub",
-        "osc1_on",
+        spec::OSC1_SPEED,
+        spec::OSC1_RATE,
+        spec::OSC1_RANGE,
+        spec::OSC1_WAVE,
+        spec::OSC1_SHAPE,
+        spec::OSC1_TUNE,
+        spec::OSC1_FINE,
+        spec::OSC1_MIX,
+        spec::OSC1_SUB,
+        spec::OSC1_ON,
     ],
     [
-        "osc2_speed",
-        "osc2_rate",
-        "osc2_range",
-        "osc2_wave",
-        "osc2_shape",
-        "osc2_tune",
-        "osc2_fine",
-        "osc2_mix",
-        "osc2_sub",
-        "osc2_on",
+        spec::OSC2_SPEED,
+        spec::OSC2_RATE,
+        spec::OSC2_RANGE,
+        spec::OSC2_WAVE,
+        spec::OSC2_SHAPE,
+        spec::OSC2_TUNE,
+        spec::OSC2_FINE,
+        spec::OSC2_MIX,
+        spec::OSC2_SUB,
+        spec::OSC2_ON,
     ],
     [
-        "osc3_speed",
-        "osc3_rate",
-        "osc3_range",
-        "osc3_wave",
-        "osc3_shape",
-        "osc3_tune",
-        "osc3_fine",
-        "osc3_mix",
-        "osc3_sub",
-        "osc3_on",
+        spec::OSC3_SPEED,
+        spec::OSC3_RATE,
+        spec::OSC3_RANGE,
+        spec::OSC3_WAVE,
+        spec::OSC3_SHAPE,
+        spec::OSC3_TUNE,
+        spec::OSC3_FINE,
+        spec::OSC3_MIX,
+        spec::OSC3_SUB,
+        spec::OSC3_ON,
     ],
 ];
 /// An oscillator's Speed that plays the note at its Range; at any other it runs at its Rate, as an LFO.
@@ -189,10 +191,10 @@ pub struct InstrumentEditor {
 /// The settings of MultiTap's four taps, by tap: whether it sounds, its time as a division of the beat, its time in
 /// milliseconds, its level.
 const TAP_SETTINGS: [(&str, &str, &str, &str); 4] = [
-    ("tap1_on", "tap1_division", "tap1_ms", "tap1_level"),
-    ("tap2_on", "tap2_division", "tap2_ms", "tap2_level"),
-    ("tap3_on", "tap3_division", "tap3_ms", "tap3_level"),
-    ("tap4_on", "tap4_division", "tap4_ms", "tap4_level"),
+    (spec::TAP1_ON, spec::TAP1_DIVISION, spec::TAP1_MS, spec::TAP1_LEVEL),
+    (spec::TAP2_ON, spec::TAP2_DIVISION, spec::TAP2_MS, spec::TAP2_LEVEL),
+    (spec::TAP3_ON, spec::TAP3_DIVISION, spec::TAP3_MS, spec::TAP3_LEVEL),
+    (spec::TAP4_ON, spec::TAP4_DIVISION, spec::TAP4_MS, spec::TAP4_LEVEL),
 ];
 /// The taps MultiTap may feed back from, and how it reaches a changed time.
 const FEEDBACK_FROM_TAPS: [&str; 4] = ["1", "2", "3", "4"];
@@ -202,31 +204,40 @@ const DELAY_MODES: [&str; 2] = ["digital", "analog"];
 const ANALOG: &str = "analog";
 /// The analog device's own settings, each a gauge of percent, with its label.
 const ANALOG_SETTINGS: [(&str, &str); 5] = [
-    ("darkness", labels::MSG_EFFECT_DARKNESS_LABEL),
-    ("noise", labels::MSG_EFFECT_NOISE_LABEL),
-    ("drive", labels::MSG_EFFECT_DRIVE_LABEL),
-    ("wow", labels::MSG_EFFECT_WOW_LABEL),
-    ("flutter", labels::MSG_EFFECT_FLUTTER_LABEL),
+    (spec::DARKNESS, labels::MSG_EFFECT_DARKNESS_LABEL),
+    (spec::NOISE, labels::MSG_EFFECT_NOISE_LABEL),
+    (spec::DRIVE, labels::MSG_EFFECT_DRIVE_LABEL),
+    (spec::WOW, labels::MSG_EFFECT_WOW_LABEL),
+    (spec::FLUTTER, labels::MSG_EFFECT_FLUTTER_LABEL),
 ];
+
+/// The Analog starting point's first, third and fourth taps' levels in percent, the second being off, its feedback in
+/// percent, and its loop's tone and low cut in hertz.
+const ANALOG_TAP1_LEVEL: i128 = 80;
+const ANALOG_TAP3_LEVEL: i128 = 55;
+const ANALOG_TAP4_LEVEL: i128 = 35;
+const ANALOG_FEEDBACK_PERCENT: i128 = 40;
+const ANALOG_TONE_HERTZ: i128 = 3500;
+const ANALOG_LOW_CUT_HERTZ: i128 = 120;
 
 /// Where MultiTap starts when its Mode becomes Analog: a warm dotted echo, the second tap off, fed back from the third,
 /// darker and thinner than the digital delay.
 fn analog_starting_point() -> Vec<(&'static str, Data)> {
     vec![
-        ("mode", Data::text(ANALOG)),
-        ("tap1_division", Data::text("1/8d")),
-        ("tap1_level", Data::Whole(80)),
-        ("tap2_division", Data::text("1/4")),
-        ("tap2_level", Data::Whole(0)),
-        ("tap2_on", Data::Bool(false)),
-        ("tap3_division", Data::text("1/4d")),
-        ("tap3_level", Data::Whole(55)),
-        ("tap4_division", Data::text("1/2")),
-        ("tap4_level", Data::Whole(35)),
-        ("feedback_from", Data::text("3")),
-        ("feedback", Data::Whole(40)),
-        ("tone", Data::Whole(3500)),
-        ("low_cut", Data::Whole(120)),
+        (spec::MODE, Data::text(ANALOG)),
+        (spec::TAP1_DIVISION, Data::text("1/8d")),
+        (spec::TAP1_LEVEL, Data::Whole(ANALOG_TAP1_LEVEL)),
+        (spec::TAP2_DIVISION, Data::text("1/4")),
+        (spec::TAP2_LEVEL, Data::Whole(0)),
+        (spec::TAP2_ON, Data::Bool(false)),
+        (spec::TAP3_DIVISION, Data::text("1/4d")),
+        (spec::TAP3_LEVEL, Data::Whole(ANALOG_TAP3_LEVEL)),
+        (spec::TAP4_DIVISION, Data::text("1/2")),
+        (spec::TAP4_LEVEL, Data::Whole(ANALOG_TAP4_LEVEL)),
+        (spec::FEEDBACK_FROM, Data::text("3")),
+        (spec::FEEDBACK, Data::Whole(ANALOG_FEEDBACK_PERCENT)),
+        (spec::TONE, Data::Whole(ANALOG_TONE_HERTZ)),
+        (spec::LOW_CUT, Data::Whole(ANALOG_LOW_CUT_HERTZ)),
     ]
 }
 
@@ -237,7 +248,7 @@ fn flag_or_on(value: &Data) -> bool {
 
 /// Whether the instrument slides into glided steps: on unless set off.
 fn glides_on(sound: &Sound) -> bool {
-    !matches!(sound.value("glides"), Data::Bool(false))
+    !matches!(sound.value(spec::GLIDES), Data::Bool(false))
 }
 
 fn whole(value: &Data) -> i64 {
@@ -261,22 +272,25 @@ fn gauge_text(number: i64, lowest: i64, highest: i64, cells: usize, unit: &str, 
     };
     let gauge = gauge_bar(share, cells);
     let value = if divisor != 1 {
-        named(unit, &[("number", (number as f64 / divisor as f64).into())])
+        named(unit, &[(fill::NUMBER, (number as f64 / divisor as f64).into())])
     } else {
-        named(unit, &[("number", number.into())])
+        named(unit, &[(fill::NUMBER, number.into())])
     };
-    named(marks::MSG_SOUND_GAUGE, &[("gauge", gauge.as_str().into()), ("value", value.as_str().into())])
+    named(
+        marks::MSG_SOUND_GAUGE,
+        &[(fill::GAUGE, gauge.as_str().into()), (fill::VALUE, value.as_str().into())],
+    )
 }
 
 /// Hertz as a rate is read: tenths below ten, whole hertz below a thousand, then kilohertz.
 fn hertz_shown(hertz: f64) -> String {
     let (tens, thousand) = (10.0, 1000.0);
     if hertz < tens {
-        named(marks::MSG_TENTHS_HERTZ_SHOWN, &[("number", hertz.into())])
+        named(marks::MSG_TENTHS_HERTZ_SHOWN, &[(fill::NUMBER, hertz.into())])
     } else if hertz < thousand {
-        named(marks::MSG_HERTZ_SHOWN, &[("number", (hertz.round() as i64).into())])
+        named(marks::MSG_HERTZ_SHOWN, &[(fill::NUMBER, (hertz.round() as i64).into())])
     } else {
-        named(marks::MSG_KILOHERTZ_SHOWN, &[("number", (hertz / thousand).into())])
+        named(marks::MSG_KILOHERTZ_SHOWN, &[(fill::NUMBER, (hertz / thousand).into())])
     }
 }
 
@@ -295,7 +309,7 @@ fn bounded_gauge(id: usize, label: &str, number: i64, range: (i64, i64), value_s
     let (lowest, highest) = range;
     let share = (number - lowest) as f64 / (highest - lowest).max(1) as f64;
     let bar = gauge_bar(share, GM_CELLS);
-    let shown = named(marks::MSG_SOUND_GAUGE, &[("gauge", bar.as_str().into()), ("value", value_shown.into())]);
+    let shown = named(marks::MSG_SOUND_GAUGE, &[(fill::GAUGE, bar.as_str().into()), (fill::VALUE, value_shown.into())]);
     Field::number(id, label, Some(number), Some(lowest), Some(highest), lowest, Some(shown))
 }
 
@@ -447,7 +461,7 @@ impl InstrumentEditor {
                     .as_list()
                     .map_or(Vec::new(), |steps| steps.iter().map(|step| whole(step).to_string()).collect());
                 app.asking = Some(Edit::AskText {
-                    title: named(messages::MSG_ARPEGGIO_PROMPT, &[("most", MAX_ARPEGGIO_STEPS.into())]),
+                    title: named(messages::MSG_ARPEGGIO_PROMPT, &[(fill::MOST, MAX_ARPEGGIO_STEPS.into())]),
                     value: typed.join(marks::MSG_ARPEGGIO_SEPARATOR),
                 });
                 return;
@@ -458,9 +472,9 @@ impl InstrumentEditor {
                 let valid = parsed.filter(|steps| steps.len() as i64 <= MAX_ARPEGGIO_STEPS && steps.iter().all(|step| step.abs() <= MAX_INTERVAL));
                 let Some(steps) = valid else {
                     let words = [
-                        ("most", MAX_ARPEGGIO_STEPS.into()),
-                        ("highest", MAX_INTERVAL.into()),
-                        ("value", text.as_str().into()),
+                        (spec::MOST, MAX_ARPEGGIO_STEPS.into()),
+                        (spec::HIGHEST, MAX_INTERVAL.into()),
+                        (spec::VALUE, text.as_str().into()),
                     ];
                     app.refuse(&named(llamatron_strings::errors::ERR_BAD_ARPEGGIO, &words));
                     return;
@@ -508,9 +522,9 @@ impl InstrumentEditor {
         let uses = crate::uses::tracks_naming(app.document.get_setlist(), Section::INSTRUMENTS, &self.name);
         if let Some((song, track)) = uses.first() {
             let words = [
-                ("name", self.name.as_str().into()),
-                ("track", track.as_str().into()),
-                ("song", song.as_str().into()),
+                (spec::NAME, self.name.as_str().into()),
+                (spec::TRACK, track.as_str().into()),
+                (spec::SONG, song.as_str().into()),
             ];
             app.refuse(&named(llamatron_strings::errors::ERR_PERCUSSION_IN_USE, &words));
             return;
@@ -524,7 +538,7 @@ impl InstrumentEditor {
             .unwrap_or("");
         let replaced = sound.with_engine(first_engine);
         let name = self.name.clone();
-        let title = named(messages::MSG_CHANGE_PERCUSSION_TITLE, &[("name", self.name.as_str().into())]);
+        let title = named(messages::MSG_CHANGE_PERCUSSION_TITLE, &[(fill::NAME, self.name.as_str().into())]);
         let lines = vec![messages::MSG_PERCUSSION_REPLACES_SYNTH.to_string()];
         let dialog =
             crate::screens::dialogs::ConfirmDialog::new(&title, lines, true, true).then(Box::new(move |app: &mut App, _: &crate::screens::dialogs::Answer| {
@@ -581,7 +595,7 @@ impl InstrumentEditor {
         let keyswitches = crate::keyswitches::keyswitches_of(app, Some(&self.name));
         let title = llamatron_strings::named(
             llamatron_strings::messages::MSG_KEYSWITCH_MAP_TITLE,
-            &[("instrument", self.name.as_str().into())],
+            &[(spec::INSTRUMENT, self.name.as_str().into())],
         );
         let name = self.name.clone();
         let then = Box::new(move |app: &mut App, slots: Vec<crate::keyswitches::Keyswitch>| {
@@ -590,10 +604,10 @@ impl InstrumentEditor {
                 .map(|slot| {
                     let mut pairs = Vec::new();
                     if let Some(named) = &slot.name {
-                        pairs.push((Data::text("name"), Data::text(named)));
+                        pairs.push((Data::text(spec::NAME), Data::text(named)));
                     }
                     if let Some(note) = slot.note {
-                        pairs.push((Data::text("note"), Data::Whole(note as i128)));
+                        pairs.push((Data::text(spec::NOTE), Data::Whole(note as i128)));
                     }
                     if pairs.is_empty() {
                         Data::Null
@@ -607,7 +621,7 @@ impl InstrumentEditor {
                 if let Some(llamatron_model::objects::setlist::Item::Instrument(held)) =
                     setlist.get_item_mut(llamatron_model::schema::generated::file_format::Section::INSTRUMENTS, &name)
                 {
-                    held.set_written("keyswitches", value);
+                    held.set_written(spec::KEYSWITCHES, value);
                 }
             });
         });
@@ -630,8 +644,8 @@ impl InstrumentEditor {
             .get_written(InstrumentSetting::VELOCITY)
             .and_then(Data::as_whole)
             .map(|whole| whole as i64);
-        let percent_shown = |percent: i64| named(marks::MSG_PERCENT_SHOWN, &[("percent", percent.into())]);
-        let accent_shown = |accent: i64| named(marks::MSG_ACCENT_SHOWN, &[("accent", accent.into())]);
+        let percent_shown = |percent: i64| named(marks::MSG_PERCENT_SHOWN, &[(fill::PERCENT, percent.into())]);
+        let accent_shown = |accent: i64| named(marks::MSG_ACCENT_SHOWN, &[(fill::ACCENT, accent.into())]);
         let in_effect = velocity.unwrap_or(DEFAULT_VELOCITY);
         let nodes = vec![
             Field::name(NAME, &self.name),
@@ -734,7 +748,7 @@ impl InstrumentEditor {
         let Some(instrument) = self.instrument(app) else { return };
         if instrument.get_preview().is_none() {
             let sound = Sound::of(instrument);
-            let drum = self.role(app, instrument, &sound) == "percussion";
+            let drum = self.role(app, instrument, &sound) == spec::PERCUSSION;
             let name = self.name.clone();
             app.document.change_set(|setlist| {
                 if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name) {
@@ -777,7 +791,7 @@ impl InstrumentEditor {
         if let Some(drum) = tracks.first() {
             return if *drum { PERCUSSION } else { NORMAL }.to_string();
         }
-        if Self::kind(instrument) == BUILT_IN && sound.part_type("oscillators") == "drum" {
+        if Self::kind(instrument) == BUILT_IN && sound.part_type(spec::OSCILLATORS) == spec::DRUM {
             return PERCUSSION.to_string();
         }
         NORMAL.to_string()
@@ -860,7 +874,7 @@ impl InstrumentEditor {
                 1,
                 None,
             )
-            .titled(&named(messages::MSG_CHANNEL_PROMPT, &[("lowest", 1.into()), ("highest", 16.into())]))
+            .titled(&named(messages::MSG_CHANNEL_PROMPT, &[(fill::LOWEST, 1.into()), (fill::HIGHEST, 16.into())]))
         };
         let sound = instrument
             .get_written(InstrumentSetting::GM_SOUND)
@@ -868,7 +882,7 @@ impl InstrumentEditor {
             .map(|whole| whole as i64);
         let sound_shown = sound.map_or(marks::MSG_NONE_SHOWN.to_string(), |sound| {
             let name = labels::MSG_GM_SOUNDS.get((sound - MIN_GM_SOUND) as usize).copied().unwrap_or("");
-            named(labels::MSG_GM_SOUND_SHOWN, &[("number", sound.into()), ("name", name.into())])
+            named(labels::MSG_GM_SOUND_SHOWN, &[(fill::NUMBER, sound.into()), (fill::NAME, name.into())])
         });
         let lead = instrument
             .get_written(InstrumentSetting::KEYSWITCH_LEAD)
@@ -878,7 +892,7 @@ impl InstrumentEditor {
             .get_written(InstrumentSetting::LATENCY)
             .and_then(Data::as_whole)
             .map_or(0, |whole| whole as i64);
-        let milliseconds = |number: i64| named(marks::MSG_KEYSWITCH_LEAD_SHOWN, &[("milliseconds", number.into())]);
+        let milliseconds = |number: i64| named(marks::MSG_KEYSWITCH_LEAD_SHOWN, &[(fill::MILLISECONDS, number.into())]);
         let mut fields = vec![
             Field::custom(
                 ids.at(Write::Setting(InstrumentSetting::DEVICE)),
@@ -904,7 +918,7 @@ impl InstrumentEditor {
             )
             .titled(&named(
                 messages::MSG_KEYSWITCH_LEAD_PROMPT,
-                &[("lowest", MIN_KEYSWITCH_LEAD.into()), ("highest", MAX_KEYSWITCH_LEAD.into())],
+                &[(spec::LOWEST, MIN_KEYSWITCH_LEAD.into()), (spec::HIGHEST, MAX_KEYSWITCH_LEAD.into())],
             )),
             Field::number(
                 ids.at(Write::Setting(InstrumentSetting::LATENCY)),
@@ -917,7 +931,7 @@ impl InstrumentEditor {
             )
             .titled(&named(
                 messages::MSG_LATENCY_PROMPT,
-                &[("lowest", MIN_INSTRUMENT_LATENCY.into()), ("highest", MAX_INSTRUMENT_LATENCY.into())],
+                &[(spec::LOWEST, MIN_INSTRUMENT_LATENCY.into()), (spec::HIGHEST, MAX_INSTRUMENT_LATENCY.into())],
             )),
         ];
         // Only FluidSynth is sent the pan, since a device's own pan is its player's to set.
@@ -935,7 +949,7 @@ impl InstrumentEditor {
         } else {
             marks::MSG_SOUND_PERCENT_SHOWN
         };
-        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[("number", DEFAULT_PAN.into())]);
+        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[(fill::NUMBER, DEFAULT_PAN.into())]);
         gauge(
             ids.at(Write::Setting(InstrumentSetting::PAN)),
             labels::MSG_PAN_LABEL,
@@ -974,8 +988,8 @@ impl InstrumentEditor {
     fn acts_with(sound: &Sound, part: &str, name: &str) -> bool {
         let chosen = |setting: &str| sound.part_value(part, setting).as_str().map(str::to_string);
         match name {
-            "trigger_time" => chosen("trigger").as_deref() == Some("trigger"),
-            "ping_time" => chosen("signal").as_deref() != Some("oscillator"),
+            spec::TRIGGER_TIME => chosen(spec::TRIGGER).as_deref() == Some(spec::TRIGGER),
+            spec::PING_TIME => chosen(spec::SIGNAL).as_deref() != Some(spec::OSCILLATOR),
             _ => true,
         }
     }
@@ -1004,8 +1018,8 @@ impl InstrumentEditor {
             .or_else(|| SETTING_KINDS.iter().find(|(found, _)| *found == name).map(|(_, how)| *how))
             .unwrap_or(SettingKind::Toggle);
         let strides = match how {
-            SettingKind::Gauge { what: "milliseconds", .. } => Some(TIME_STRIDES),
-            SettingKind::Gauge { what: "hertz", .. } => Some(HERTZ_STRIDES),
+            SettingKind::Gauge { what: spec::MILLISECONDS, .. } => Some(TIME_STRIDES),
+            SettingKind::Gauge { what: spec::HERTZ, .. } => Some(HERTZ_STRIDES),
             _ => None,
         };
         let id = ids.at_gauge(Write::Part(part, name), strides.unwrap_or(STEPS_OF_ONE));
@@ -1020,21 +1034,24 @@ impl InstrumentEditor {
                 let number = whole(&value);
                 let value_shown = match zero {
                     Some(zero) if number == 0 => zero.to_string(),
-                    _ => named(unit, &[("number", number.into())]),
+                    _ => named(unit, &[(fill::NUMBER, number.into())]),
                 };
                 bounded_gauge(id, &label, number, (lowest, highest), &value_shown)
             }
             SettingKind::SidTime { times, .. } => {
                 let rate = whole(&value);
                 let milliseconds = SID_ATTACK_MS.get(rate as usize).copied().unwrap_or(0) * times;
-                let shown = named(marks::MSG_SID_RATE_SHOWN, &[("number", rate.into()), ("milliseconds", milliseconds.into())]);
+                let shown = named(
+                    marks::MSG_SID_RATE_SHOWN,
+                    &[(fill::NUMBER, rate.into()), (fill::MILLISECONDS, milliseconds.into())],
+                );
                 Field::number(id, &label, Some(rate), Some(0), Some(MAX_SID_RATE), 0, Some(shown))
             }
             SettingKind::Gauge { lowest, highest, what } => {
                 let number = whole(&value);
                 match what {
-                    "milliseconds" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_MILLISECONDS_SHOWN, (true, 1)),
-                    "tenths" => gauge(
+                    spec::MILLISECONDS => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_MILLISECONDS_SHOWN, (true, 1)),
+                    spec::TENTHS => gauge(
                         id,
                         &label,
                         number,
@@ -1043,8 +1060,8 @@ impl InstrumentEditor {
                         marks::MSG_TENTH_MILLISECONDS_SHOWN,
                         (true, TENTHS),
                     ),
-                    "tenth_cents" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_TENTH_CENTS_SHOWN, (false, TENTHS)),
-                    "hertz" => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_HERTZ_SHOWN, (true, 1)),
+                    spec::TENTH_CENTS => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_TENTH_CENTS_SHOWN, (false, TENTHS)),
+                    spec::HERTZ => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_HERTZ_SHOWN, (true, 1)),
                     _ => gauge(id, &label, number, (lowest, highest), GM_CELLS, marks::MSG_SOUND_PERCENT_SHOWN, (false, 1)),
                 }
             }
@@ -1053,29 +1070,29 @@ impl InstrumentEditor {
     }
 
     fn voice_fields(sound: &Sound, ids: &mut Ids) -> Vec<Field> {
-        let sharing = text(&sound.value("filter_sharing"));
+        let sharing = text(&sound.value(spec::FILTER_SHARING));
         let mut fields = vec![
             Field::number(
-                ids.at(Write::Sound("voices")),
+                ids.at(Write::Sound(spec::VOICES)),
                 labels::MSG_VOICES_LABEL,
-                Some(whole(&sound.value("voices"))),
+                Some(whole(&sound.value(spec::VOICES))),
                 Some(1),
                 Some(MAX_VOICES),
                 1,
                 None,
             ),
-            Field::toggle(ids.at(Write::Sound("glides")), labels::MSG_GLIDE_LABEL, glides_on(sound)),
+            Field::toggle(ids.at(Write::Sound(spec::GLIDES)), labels::MSG_GLIDE_LABEL, glides_on(sound)),
             gauge(
-                ids.at_gauge(Write::Sound("glide"), TIME_STRIDES),
+                ids.at_gauge(Write::Sound(spec::GLIDE), TIME_STRIDES),
                 labels::MSG_GLIDE_TIME_LABEL,
-                whole(&sound.value("glide")),
+                whole(&sound.value(spec::GLIDE)),
                 (0, MAX_GLIDE_MS),
                 GM_CELLS,
                 marks::MSG_MILLISECONDS_SHOWN,
                 (true, 1),
             ),
             chosen(
-                ids.at(Write::Sound("filter_sharing")),
+                ids.at(Write::Sound(spec::FILTER_SHARING)),
                 labels::MSG_FILTER_SHARING_LABEL,
                 FILTER_SHARINGS,
                 &names_in(labels::MSG_FILTER_SHARING_NAMES, FILTER_SHARINGS),
@@ -1083,24 +1100,24 @@ impl InstrumentEditor {
             ),
         ];
         // A note's own filter or a shared one differ only while two notes sound at once, which one voice never does.
-        if whole(&sound.value("voices")) <= 1 {
+        if whole(&sound.value(spec::VOICES)) <= 1 {
             fields.retain(|field| field.label != labels::MSG_FILTER_SHARING_LABEL);
         }
         fields
     }
 
     fn oscillators_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
-        let top = vec![Self::type_field(sound, "oscillators", ids)];
+        let top = vec![Self::type_field(sound, spec::OSCILLATORS, ids)];
         let mut columns = Vec::new();
-        let kind = sound.part_type("oscillators");
-        if kind == "basic" {
+        let kind = sound.part_type(spec::OSCILLATORS);
+        if kind == spec::BASIC {
             for number in 1..=BASIC_OSCILLATORS {
-                let heading = named(labels::MSG_OSCILLATOR_LABEL, &[("number", number.into())]);
-                let waveform = text(&sound.oscillator(number, "waveform"));
-                let detune = whole(&sound.oscillator(number, "detune"));
+                let heading = named(labels::MSG_OSCILLATOR_LABEL, &[(fill::NUMBER, number.into())]);
+                let waveform = text(&sound.oscillator(number, spec::WAVEFORM));
+                let detune = whole(&sound.oscillator(number, spec::DETUNE));
                 let fields = vec![
                     chosen(
-                        ids.at(Write::Oscillator(number, "waveform")),
+                        ids.at(Write::Oscillator(number, spec::WAVEFORM)),
                         &heading,
                         OSCILLATOR_WAVEFORMS,
                         &names_in(labels::MSG_WAVEFORM_NAMES, OSCILLATOR_WAVEFORMS),
@@ -1108,17 +1125,17 @@ impl InstrumentEditor {
                     )
                     .with_shown_label(labels::MSG_WAVE_LABEL),
                     bounded_gauge(
-                        ids.at(Write::Oscillator(number, "detune")),
-                        &named(labels::MSG_OSCILLATOR_DETUNE_LABEL, &[("number", number.into())]),
+                        ids.at(Write::Oscillator(number, spec::DETUNE)),
+                        &named(labels::MSG_OSCILLATOR_DETUNE_LABEL, &[(fill::NUMBER, number.into())]),
                         detune,
                         (-MAX_DETUNE_CENTS, MAX_DETUNE_CENTS),
-                        &named(marks::MSG_CENTS_SHOWN, &[("number", detune.into())]),
+                        &named(marks::MSG_CENTS_SHOWN, &[(fill::NUMBER, detune.into())]),
                     )
                     .with_shown_label(labels::MSG_DETUNE_LABEL),
                     gauge(
-                        ids.at(Write::Oscillator(number, "fine")),
-                        &named(labels::MSG_OSCILLATOR_FINE_LABEL, &[("number", number.into())]),
-                        whole(&sound.oscillator(number, "fine")),
+                        ids.at(Write::Oscillator(number, spec::FINE)),
+                        &named(labels::MSG_OSCILLATOR_FINE_LABEL, &[(fill::NUMBER, number.into())]),
+                        whole(&sound.oscillator(number, spec::FINE)),
                         (-MOST_FINE_TENTHS, MOST_FINE_TENTHS),
                         GM_CELLS,
                         marks::MSG_TENTH_CENTS_SHOWN,
@@ -1126,9 +1143,9 @@ impl InstrumentEditor {
                     )
                     .with_shown_label(labels::MSG_FINE_LABEL),
                     gauge(
-                        ids.at(Write::Oscillator(number, "level")),
-                        &named(labels::MSG_OSCILLATOR_LEVEL_LABEL, &[("number", number.into())]),
-                        whole(&sound.oscillator(number, "level")),
+                        ids.at(Write::Oscillator(number, spec::LEVEL)),
+                        &named(labels::MSG_OSCILLATOR_LEVEL_LABEL, &[(fill::NUMBER, number.into())]),
+                        whole(&sound.oscillator(number, spec::LEVEL)),
                         (0, MAX_PERCENT),
                         GM_CELLS,
                         marks::MSG_SOUND_PERCENT_SHOWN,
@@ -1146,9 +1163,9 @@ impl InstrumentEditor {
             tab.not_ready = not_ready;
             return tab;
         }
-        let mut own = Self::setting_fields(sound, "oscillators", ids);
-        if kind == "drum" {
-            let knobs = sound.part_value("oscillators", "knobs");
+        let mut own = Self::setting_fields(sound, spec::OSCILLATORS, ids);
+        if kind == spec::DRUM {
+            let knobs = sound.part_value(spec::OSCILLATORS, spec::KNOBS);
             for place in 0..KNOB_COUNT as usize {
                 let number = knobs.as_list().and_then(|knobs| knobs.get(place)).map_or(0, whole);
                 own.push(gauge(
@@ -1164,7 +1181,7 @@ impl InstrumentEditor {
         }
         // A type of no settings of its own, such as Basic, whose one oscillator has its column, shows no empty column.
         if !own.is_empty() {
-            columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own));
+            columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, spec::OSCILLATORS)), own));
         }
         let mut tab = Tab::new(labels::MSG_OSCILLATORS_TAB, columns);
         tab.top = top;
@@ -1177,8 +1194,8 @@ impl InstrumentEditor {
     fn asheville_columns(sound: &Sound, ids: &mut Ids) -> Vec<TabColumn> {
         let mut columns = Vec::new();
         for (number, names) in ASHEVILLE_OSCILLATORS.iter().enumerate() {
-            let heading = named(labels::MSG_OSCILLATOR_LABEL, &[("number", (number + 1).into())]);
-            let speed = text(&sound.part_value("oscillators", names[0]));
+            let heading = named(labels::MSG_OSCILLATOR_LABEL, &[(fill::NUMBER, (number + 1).into())]);
+            let speed = text(&sound.part_value(spec::OSCILLATORS, names[0]));
             let fields = names
                 .iter()
                 .filter(|name| Self::asheville_shows(sound, &speed, name))
@@ -1187,7 +1204,7 @@ impl InstrumentEditor {
                     let field = if name.ends_with(RATE_SUFFIX) {
                         Self::oscillator_rate_field(sound, &speed, name, ids)
                     } else {
-                        Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids)
+                        Self::setting_field(sound, spec::OSCILLATORS, ASHEVILLE, name, ids)
                     };
                     field.with_shown_label(&column_label)
                 })
@@ -1196,17 +1213,17 @@ impl InstrumentEditor {
         }
         let own = ASHEVILLE_PANEL
             .iter()
-            .map(|name| Self::setting_field(sound, "oscillators", ASHEVILLE, name, ids))
+            .map(|name| Self::setting_field(sound, spec::OSCILLATORS, ASHEVILLE, name, ids))
             .collect();
         // The panel's own settings stand after the oscillators, in the one row the box scrolls along.
-        columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, "oscillators")), own));
+        columns.push(TabColumn::new(Some(&named_in(labels::MSG_PART_HEADINGS, spec::OSCILLATORS)), own));
         columns
     }
 
     /// Whether an Asheville oscillator's setting shows: its Wave on the Classic model and its Shape on Continuous, its
     /// Range at the Audio speed and its Rate at an LFO's.
     fn asheville_shows(sound: &Sound, speed: &str, name: &str) -> bool {
-        let continuous = sound.part_value("oscillators", "model").as_str() == Some(CONTINUOUS);
+        let continuous = sound.part_value(spec::OSCILLATORS, spec::MODEL).as_str() == Some(CONTINUOUS);
         let audio = speed == AUDIO_SPEED;
         let model_hides = if continuous { WAVE_SUFFIX } else { SHAPE_SUFFIX };
         let speed_hides = if audio { RATE_SUFFIX } else { RANGE_SUFFIX };
@@ -1215,12 +1232,15 @@ impl InstrumentEditor {
 
     /// An Asheville oscillator's Rate at an LFO's speed: a gauge of its percent, shown with the hertz it gives there.
     fn oscillator_rate_field(sound: &Sound, speed: &str, name: &'static str, ids: &mut Ids) -> Field {
-        let percent = whole(&sound.part_value("oscillators", name));
+        let percent = whole(&sound.part_value(spec::OSCILLATORS, name));
         let hertz = hertz_shown(lfo_speed::hertz(speed, percent as f64));
-        let value = named(marks::MSG_LFO_RATE_SHOWN, &[("percent", percent.into()), ("hertz", hertz.as_str().into())]);
-        let label = part_label("oscillators", &named_in(labels::MSG_PART_SETTING_NAMES, name));
+        let value = named(
+            marks::MSG_LFO_RATE_SHOWN,
+            &[(fill::PERCENT, percent.into()), (fill::HERTZ, hertz.as_str().into())],
+        );
+        let label = part_label(spec::OSCILLATORS, &named_in(labels::MSG_PART_SETTING_NAMES, name));
         let most = lfo_speed::MOST_PERCENT as i64;
-        bounded_gauge(ids.at(Write::Part("oscillators", name)), &label, percent, (0, most), &value)
+        bounded_gauge(ids.at(Write::Part(spec::OSCILLATORS, name)), &label, percent, (0, most), &value)
     }
 
     fn envelopes_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
@@ -1248,11 +1268,11 @@ impl InstrumentEditor {
     /// An LFO's Rate: a ratio to the note where it follows the key, or else a percentage across its Speed's span, shown
     /// with the hertz it gives, such as 74% (5.0 Hz).
     fn lfo_rate_field(ids: &mut Ids, number: usize, speed: &str, keyed: bool, percent: &Data, ratio: &str) -> Field {
-        let numbered = |label: &str| named(label, &[("number", number.into())]);
+        let numbered = |label: &str| named(label, &[(fill::NUMBER, number.into())]);
         let shown_label = named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_RATE_LABEL);
         if keyed {
             return chosen(
-                ids.at(Write::Item("lfos", number, "ratio")),
+                ids.at(Write::Item(spec::LFOS, number, spec::RATIO)),
                 &numbered(labels::MSG_LFO_RATIO_LABEL),
                 lfo_speed::RATIOS,
                 &lfo_speed::RATIOS.iter().map(|ratio| ratio.to_string()).collect::<Vec<_>>(),
@@ -1262,12 +1282,18 @@ impl InstrumentEditor {
         }
         let percent = whole(percent);
         let hertz = hertz_shown(lfo_speed::hertz(speed, percent as f64));
-        let value = named(marks::MSG_LFO_RATE_SHOWN, &[("percent", percent.into()), ("hertz", hertz.as_str().into())]);
+        let value = named(
+            marks::MSG_LFO_RATE_SHOWN,
+            &[(fill::PERCENT, percent.into()), (fill::HERTZ, hertz.as_str().into())],
+        );
         let most = lfo_speed::MOST_PERCENT as i64;
         let bar = gauge_bar(percent as f64 / most as f64, BLOCK_CELLS);
-        let shown = named(marks::MSG_SOUND_GAUGE, &[("gauge", bar.as_str().into()), ("value", value.as_str().into())]);
+        let shown = named(
+            marks::MSG_SOUND_GAUGE,
+            &[(fill::GAUGE, bar.as_str().into()), (fill::VALUE, value.as_str().into())],
+        );
         Field::number(
-            ids.at(Write::Item("lfos", number, "rate_percent")),
+            ids.at(Write::Item(spec::LFOS, number, spec::RATE_PERCENT)),
             &numbered(labels::MSG_LFO_RATE_LABEL),
             Some(percent),
             Some(0),
@@ -1280,13 +1306,13 @@ impl InstrumentEditor {
 
     /// An LFO+'s Fade in: a gauge of how long its depth takes to rise after a note, 0 to 10 s, "off" at 0.
     fn fade_in_field(ids: &mut Ids, number: usize, milliseconds: i64) -> Field {
-        let label = named(labels::MSG_LFO_FADE_IN_LABEL, &[("number", number.into())]);
-        let id = ids.at(Write::Item("lfos", number, "fade_in"));
+        let label = named(labels::MSG_LFO_FADE_IN_LABEL, &[(fill::NUMBER, number.into())]);
+        let id = ids.at(Write::Item(spec::LFOS, number, spec::FADE_IN));
         if milliseconds == 0 {
             let bar = gauge_bar(0.0, BLOCK_CELLS);
             let shown = named(
                 marks::MSG_SOUND_GAUGE,
-                &[("gauge", bar.as_str().into()), ("value", marks::MSG_FADE_IN_OFF.into())],
+                &[(spec::GAUGE, bar.as_str().into()), (spec::VALUE, marks::MSG_FADE_IN_OFF.into())],
             );
             return Field::number(id, &label, Some(0), Some(0), Some(LONGEST_FADE_IN_MS), 0, Some(shown));
         }
@@ -1303,13 +1329,13 @@ impl InstrumentEditor {
 
     /// A Modulators slot's Type: what the slot holds, an LFO or a Snail.
     fn slot_type_field(sound: &Sound, ids: &mut Ids, number: usize) -> Field {
-        let label = named(labels::MSG_LFO_TYPE_LABEL, &[("number", number.into())]);
+        let label = named(labels::MSG_LFO_TYPE_LABEL, &[(fill::NUMBER, number.into())]);
         chosen(
-            ids.at(Write::Item("lfos", number, "type")),
+            ids.at(Write::Item(spec::LFOS, number, spec::TYPE)),
             &label,
             LFO_TYPES,
             &names_in(labels::MSG_LFO_TYPE_NAMES, LFO_TYPES),
-            &text(&sound.lfo_setting(number, "type")),
+            &text(&sound.lfo_setting(number, spec::TYPE)),
         )
         .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_TYPE_LABEL))
     }
@@ -1319,9 +1345,9 @@ impl InstrumentEditor {
         let percent = whole(&sound.lfo_setting(number, name));
         let (lowest, highest) = (-SNAIL_WEIGHTING_REACH, SNAIL_WEIGHTING_REACH);
         let shown = gauge_text(percent, lowest, highest, BLOCK_CELLS, marks::MSG_SIGNED_PERCENT_SHOWN, false, 1);
-        let full = named(label, &[("number", number.into())]);
+        let full = named(label, &[(fill::NUMBER, number.into())]);
         Field::number(
-            ids.at(Write::Item("lfos", number, name)),
+            ids.at(Write::Item(spec::LFOS, number, name)),
             &full,
             Some(percent),
             Some(lowest),
@@ -1337,8 +1363,8 @@ impl InstrumentEditor {
         let speed = &crate::sound_spec::SNAIL_LANES[lane];
         let held = sound.lfo_setting(number, speed.name).as_whole().map_or(speed.default, |held| held as i64);
         let shown = gauge_text(held, speed.lowest, speed.highest, BLOCK_CELLS, speed.shown, false, speed.divisor);
-        let full = named(label, &[("number", number.into())]);
-        let id = ids.at(Write::Item("lfos", number, speed.name));
+        let full = named(label, &[(fill::NUMBER, number.into())]);
+        let id = ids.at(Write::Item(spec::LFOS, number, speed.name));
         Field::number(id, &full, Some(held), Some(speed.lowest), Some(speed.highest), speed.default, Some(shown))
             .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
     }
@@ -1347,68 +1373,72 @@ impl InstrumentEditor {
     fn snail_column(sound: &Sound, ids: &mut Ids, number: usize) -> TabColumn {
         let fields = vec![
             Self::slot_type_field(sound, ids, number),
-            Self::weighting_field(sound, ids, number, "slow", labels::MSG_SNAIL_SLOW_LABEL),
-            Self::weighting_field(sound, ids, number, "slower", labels::MSG_SNAIL_SLOWER_LABEL),
+            Self::weighting_field(sound, ids, number, spec::SLOW, labels::MSG_SNAIL_SLOW_LABEL),
+            Self::weighting_field(sound, ids, number, spec::SLOWER, labels::MSG_SNAIL_SLOWER_LABEL),
             Self::lane_speed_field(sound, ids, number, 0, labels::MSG_SNAIL_SLOW_SPEED_LABEL),
             Self::lane_speed_field(sound, ids, number, 1, labels::MSG_SNAIL_SLOWER_SPEED_LABEL),
             Self::lane_speed_field(sound, ids, number, 2, labels::MSG_SNAIL_SLOWEST_SPEED_LABEL),
             Field::toggle(
-                ids.at(Write::Item("lfos", number, "on")),
-                &named(labels::MSG_LFO_ON_LABEL, &[("number", number.into())]),
-                flag(&sound.lfo_setting(number, "on")),
+                ids.at(Write::Item(spec::LFOS, number, spec::ON)),
+                &named(labels::MSG_LFO_ON_LABEL, &[(fill::NUMBER, number.into())]),
+                flag(&sound.lfo_setting(number, spec::ON)),
             )
             .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_ON_LABEL)),
         ];
-        let mut column = TabColumn::new(Some(&named(labels::MSG_LFO_LABEL, &[("number", number.into())])), fields);
+        let mut column = TabColumn::new(Some(&named(labels::MSG_LFO_LABEL, &[(fill::NUMBER, number.into())])), fields);
         column.boxed = true;
         column
     }
 
     fn lfos_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
-        let lfo = |number: usize, name: &str| sound.item("lfos", number, name, LFO_DEFAULTS);
+        let lfo = |number: usize, name: &str| sound.item(spec::LFOS, number, name, LFO_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_LFO_SHOWN_LABELS, label);
         let mut columns = Vec::new();
         for number in 1..=LFO_COUNT as usize {
-            if text(&sound.lfo_setting(number, "type")) == SNAIL_TYPE {
+            if text(&sound.lfo_setting(number, spec::TYPE)) == SNAIL_TYPE {
                 columns.push(Self::snail_column(sound, ids, number));
                 continue;
             }
-            let numbered = |label: &str| named(label, &[("number", number.into())]);
+            let numbered = |label: &str| named(label, &[(fill::NUMBER, number.into())]);
             let (shapes, speeds) = (LFO_SHAPES, lfo_speed::SPEED_NAMES);
-            let shape = text(&sound.lfo_setting(number, "shape"));
-            let speed = text(&sound.lfo_setting(number, "speed"));
-            let synced = flag(&lfo(number, "sync"));
-            let keyed = !synced && speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, "key"));
+            let shape = text(&sound.lfo_setting(number, spec::SHAPE));
+            let speed = text(&sound.lfo_setting(number, spec::SPEED));
+            let synced = flag(&lfo(number, spec::SYNC));
+            let keyed = !synced && speed == lfo_speed::AUDIO_SPEED && flag(&lfo(number, spec::KEY));
             // Synced, the Rate is a length of the beat; free, a Speed and a Rate within it.
             let rate = if synced {
                 chosen(
-                    ids.at(Write::Item("lfos", number, "division")),
+                    ids.at(Write::Item(spec::LFOS, number, spec::DIVISION)),
                     &numbered(labels::MSG_LFO_DIVISION_LABEL),
                     lfo_speed::DIVISIONS,
                     &names_in(labels::MSG_LFO_DIVISION_NAMES, lfo_speed::DIVISIONS),
-                    &text(&lfo(number, "division")),
+                    &text(&lfo(number, spec::DIVISION)),
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_DIVISION_LABEL))
             } else {
-                Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio")))
+                Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, spec::RATE_PERCENT), &text(&lfo(number, spec::RATIO)))
             };
             let mut fields = vec![
                 Self::slot_type_field(sound, ids, number),
                 chosen(
-                    ids.at(Write::Item("lfos", number, "shape")),
+                    ids.at(Write::Item(spec::LFOS, number, spec::SHAPE)),
                     &numbered(labels::MSG_LFO_SHAPE_LABEL),
                     shapes,
                     &names_in(labels::MSG_LFO_SHAPE_NAMES, shapes),
                     &shape,
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_SHAPE_LABEL)),
-                Field::toggle(ids.at(Write::Item("lfos", number, "sync")), &numbered(labels::MSG_LFO_SYNC_LABEL), synced)
-                    .with_shown_label(&shown_label(labels::MSG_LFO_SYNC_LABEL)),
+                Field::toggle(
+                    ids.at(Write::Item(spec::LFOS, number, spec::SYNC)),
+                    &numbered(labels::MSG_LFO_SYNC_LABEL),
+                    synced,
+                )
+                .with_shown_label(&shown_label(labels::MSG_LFO_SYNC_LABEL)),
             ];
             if !synced {
                 fields.push(
                     chosen(
-                        ids.at(Write::Item("lfos", number, "speed")),
+                        ids.at(Write::Item(spec::LFOS, number, spec::SPEED)),
                         &numbered(labels::MSG_LFO_SPEED_LABEL),
                         speeds,
                         &names_in(labels::MSG_LFO_SPEED_NAMES, speeds),
@@ -1420,25 +1450,25 @@ impl InstrumentEditor {
             fields.push(rate);
             if !synced && speed == lfo_speed::AUDIO_SPEED {
                 fields.push(
-                    Field::toggle(ids.at(Write::Item("lfos", number, "key")), &numbered(labels::MSG_LFO_KEY_LABEL), keyed)
+                    Field::toggle(ids.at(Write::Item(spec::LFOS, number, spec::KEY)), &numbered(labels::MSG_LFO_KEY_LABEL), keyed)
                         .with_shown_label(&shown_label(labels::MSG_LFO_KEY_LABEL)),
                 );
             }
-            fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, "fade_in"))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
+            fields.push(Self::fade_in_field(ids, number, whole(&lfo(number, spec::FADE_IN))).with_shown_label(&shown_label(labels::MSG_LFO_FADE_IN_LABEL)));
             fields.extend([chosen(
-                ids.at(Write::Item("lfos", number, "restart")),
+                ids.at(Write::Item(spec::LFOS, number, spec::RESTART)),
                 &numbered(labels::MSG_LFO_RESTART_LABEL),
                 LFO_RESTARTS,
                 &names_in(labels::MSG_LFO_RESTART_NAMES, LFO_RESTARTS),
-                &text(&lfo(number, "restart")),
+                &text(&lfo(number, spec::RESTART)),
             )
             .with_shown_label(&shown_label(labels::MSG_LFO_RESTART_LABEL))]);
             // The switch stands last, under the settings it turns on; each LFO starts on.
             fields.push(
                 Field::toggle(
-                    ids.at(Write::Item("lfos", number, "on")),
+                    ids.at(Write::Item(spec::LFOS, number, spec::ON)),
                     &numbered(labels::MSG_LFO_ON_LABEL),
-                    flag(&lfo(number, "on")),
+                    flag(&lfo(number, spec::ON)),
                 )
                 .with_shown_label(&shown_label(labels::MSG_LFO_ON_LABEL)),
             );
@@ -1452,8 +1482,11 @@ impl InstrumentEditor {
     }
 
     fn filter_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
-        let top = vec![Self::type_field(sound, "filter", ids)];
-        let mut tab = Tab::new(labels::MSG_FILTER_TAB, vec![TabColumn::new(None, Self::setting_fields(sound, "filter", ids))]);
+        let top = vec![Self::type_field(sound, spec::FILTER, ids)];
+        let mut tab = Tab::new(
+            labels::MSG_FILTER_TAB,
+            vec![TabColumn::new(None, Self::setting_fields(sound, spec::FILTER, ids))],
+        );
         tab.top = top;
         tab.not_ready = not_ready;
         tab
@@ -1462,9 +1495,9 @@ impl InstrumentEditor {
     /// The instrument's Volume, a gauge dimming everything it plays, after its effects.
     fn volume_field(sound: &Sound, ids: &mut Ids) -> Field {
         gauge(
-            ids.at(Write::Sound("volume")),
+            ids.at(Write::Sound(spec::VOLUME)),
             labels::MSG_VOLUME_LABEL,
-            whole(&sound.value("volume")),
+            whole(&sound.value(spec::VOLUME)),
             (0, MAX_VOLUME_PERCENT),
             GM_CELLS,
             marks::MSG_SOUND_PERCENT_SHOWN,
@@ -1474,9 +1507,9 @@ impl InstrumentEditor {
 
     /// The Amp tab: its type, then the instrument's Volume, then the Amp's own settings.
     fn amp_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
-        let top = vec![Self::type_field(sound, "amp", ids)];
+        let top = vec![Self::type_field(sound, spec::AMP, ids)];
         let mut fields = vec![Self::volume_field(sound, ids)];
-        fields.extend(Self::setting_fields(sound, "amp", ids));
+        fields.extend(Self::setting_fields(sound, spec::AMP, ids));
         let mut tab = Tab::new(labels::MSG_AMP_TAB, vec![TabColumn::new(None, fields)]);
         tab.top = top;
         tab.not_ready = not_ready;
@@ -1488,13 +1521,13 @@ impl InstrumentEditor {
     fn shelf_field(id: usize, label: &str, decibels: i64) -> Field {
         let shown = |decibels: i64| {
             let template = if decibels > 0 { marks::MSG_LIFT_DB_SHOWN } else { marks::MSG_DB_SHOWN };
-            named(template, &[("number", decibels.into())])
+            named(template, &[(fill::NUMBER, decibels.into())])
         };
         let share = (decibels + MOST_BAX_DECIBELS) as f64 / (2 * MOST_BAX_DECIBELS) as f64;
         let bar = gauge_bar(share, BLOCK_CELLS);
         let value = named(
             marks::MSG_SOUND_GAUGE,
-            &[("gauge", bar.as_str().into()), ("value", shown(decibels).as_str().into())],
+            &[(spec::GAUGE, bar.as_str().into()), (spec::VALUE, shown(decibels).as_str().into())],
         );
         Field::number(id, label, Some(decibels), Some(-MOST_BAX_DECIBELS), Some(MOST_BAX_DECIBELS), 0, Some(value)).with_clear(&shown(0))
     }
@@ -1502,47 +1535,51 @@ impl InstrumentEditor {
     /// A MultiTap's fields after its effect: Sync, a row for each tap of its time and level, then Feedback and Tone.
     fn multitap_fields(sound: &Sound, number: usize, ids: &mut Ids) -> Vec<Field> {
         let effect = |name: &str| sound.effect_setting(number, name);
-        let numbered = |label: &str| named(label, &[("number", number.into())]);
+        let numbered = |label: &str| named(label, &[(fill::NUMBER, number.into())]);
         let shown_label = |label: &str| named_in(labels::MSG_EFFECT_SHOWN_LABELS, label);
-        let synced = flag_or_on(&effect("sync"));
-        let analog = text(&effect("mode")) == ANALOG;
+        let synced = flag_or_on(&effect(spec::SYNC));
+        let analog = text(&effect(spec::MODE)) == ANALOG;
         let mut fields = vec![
             chosen(
-                ids.at(Write::Item("effects", number, "mode")),
+                ids.at(Write::Item(spec::EFFECTS, number, spec::MODE)),
                 &numbered(labels::MSG_EFFECT_MODE_LABEL),
                 &DELAY_MODES,
                 &names_in(labels::MSG_DELAY_MODE_NAMES, &DELAY_MODES),
-                &text(&effect("mode")),
+                &text(&effect(spec::MODE)),
             )
             .with_shown_label(&shown_label(labels::MSG_EFFECT_MODE_LABEL)),
-            Field::toggle(ids.at(Write::Item("effects", number, "sync")), &numbered(labels::MSG_EFFECT_SYNC_LABEL), synced)
-                .with_shown_label(&shown_label(labels::MSG_EFFECT_SYNC_LABEL)),
+            Field::toggle(
+                ids.at(Write::Item(spec::EFFECTS, number, spec::SYNC)),
+                &numbered(labels::MSG_EFFECT_SYNC_LABEL),
+                synced,
+            )
+            .with_shown_label(&shown_label(labels::MSG_EFFECT_SYNC_LABEL)),
         ];
         // The analog device's one clock always glides, so it has no choice of how a time changes.
         if !analog {
             fields.push(
                 chosen(
-                    ids.at(Write::Item("effects", number, "time_change")),
+                    ids.at(Write::Item(spec::EFFECTS, number, spec::TIME_CHANGE)),
                     &numbered(labels::MSG_EFFECT_TIME_CHANGE_LABEL),
                     &TIME_CHANGES,
                     &names_in(labels::MSG_TIME_CHANGE_NAMES, &TIME_CHANGES),
-                    &text(&effect("time_change")),
+                    &text(&effect(spec::TIME_CHANGE)),
                 )
                 .with_shown_label(&shown_label(labels::MSG_EFFECT_TIME_CHANGE_LABEL)),
             );
         }
         for (tap, names) in TAP_SETTINGS.iter().enumerate() {
-            let tapped = |label: &str| named(label, &[("number", number.into()), ("tap", (tap + 1).into())]);
+            let tapped = |label: &str| named(label, &[(fill::NUMBER, number.into()), (fill::TAP, (tap + 1).into())]);
             let (on, division, ms, level) = *names;
             let switch = Field::toggle(
-                ids.at(Write::Item("effects", number, on)),
+                ids.at(Write::Item(spec::EFFECTS, number, on)),
                 &tapped(labels::MSG_EFFECT_TAP_ON_LABEL),
                 flag_or_on(&effect(on)),
             );
             let time = if synced {
                 let divisions: Vec<&str> = DELAY_DIVISIONS.iter().map(|(name, _)| *name).collect();
                 chosen(
-                    ids.at(Write::Item("effects", number, division)),
+                    ids.at(Write::Item(spec::EFFECTS, number, division)),
                     &tapped(labels::MSG_EFFECT_TAP_TIME_LABEL),
                     &divisions,
                     &names_in(labels::MSG_DELAY_DIVISION_NAMES, &divisions),
@@ -1550,9 +1587,9 @@ impl InstrumentEditor {
                 )
             } else {
                 let milliseconds = whole(&effect(ms));
-                let shown = named(marks::MSG_MILLISECONDS_SHOWN, &[("number", milliseconds.into())]);
+                let shown = named(marks::MSG_MILLISECONDS_SHOWN, &[(fill::NUMBER, milliseconds.into())]);
                 Field::number(
-                    ids.at_gauge(Write::Item("effects", number, ms), TIME_STRIDES),
+                    ids.at_gauge(Write::Item(spec::EFFECTS, number, ms), TIME_STRIDES),
                     &tapped(labels::MSG_EFFECT_TAP_TIME_LABEL),
                     Some(milliseconds),
                     Some(1),
@@ -1563,10 +1600,13 @@ impl InstrumentEditor {
             };
             let percent = whole(&effect(level));
             let bar = gauge_bar(percent as f64 / MAX_PERCENT as f64, TAP_LEVEL_CELLS);
-            let value = named(marks::MSG_SOUND_PERCENT_SHOWN, &[("number", percent.into())]);
-            let shown = named(marks::MSG_NARROW_GAUGE, &[("gauge", bar.as_str().into()), ("value", value.as_str().into())]);
+            let value = named(marks::MSG_SOUND_PERCENT_SHOWN, &[(fill::NUMBER, percent.into())]);
+            let shown = named(
+                marks::MSG_NARROW_GAUGE,
+                &[(fill::GAUGE, bar.as_str().into()), (fill::VALUE, value.as_str().into())],
+            );
             let loudness = Field::number(
-                ids.at(Write::Item("effects", number, level)),
+                ids.at(Write::Item(spec::EFFECTS, number, level)),
                 &tapped(labels::MSG_EFFECT_TAP_LEVEL_LABEL),
                 Some(percent),
                 Some(0),
@@ -1575,7 +1615,7 @@ impl InstrumentEditor {
                 Some(shown),
             );
             let time = time.padded_to(if synced { DIVISION_WIDTH } else { TAP_MS_WIDTH });
-            let row_label = named(labels::MSG_TAP_SHOWN_LABEL, &[("tap", (tap + 1).into())]);
+            let row_label = named(labels::MSG_TAP_SHOWN_LABEL, &[(fill::TAP, (tap + 1).into())]);
             fields.push(
                 Field::cells(ids.next(), &tapped(labels::MSG_EFFECT_TAP_LABEL), vec![switch, time, loudness])
                     .stepped()
@@ -1584,19 +1624,19 @@ impl InstrumentEditor {
         }
         fields.push(
             chosen(
-                ids.at(Write::Item("effects", number, "feedback_from")),
+                ids.at(Write::Item(spec::EFFECTS, number, spec::FEEDBACK_FROM)),
                 &numbered(labels::MSG_EFFECT_FEEDBACK_FROM_LABEL),
                 &FEEDBACK_FROM_TAPS,
                 &names_in(labels::MSG_FEEDBACK_FROM_NAMES, &FEEDBACK_FROM_TAPS),
-                &text(&effect("feedback_from")),
+                &text(&effect(spec::FEEDBACK_FROM)),
             )
             .with_shown_label(&shown_label(labels::MSG_EFFECT_FEEDBACK_FROM_LABEL)),
         );
         fields.push(
             gauge(
-                ids.at(Write::Item("effects", number, "feedback")),
+                ids.at(Write::Item(spec::EFFECTS, number, spec::FEEDBACK)),
                 &numbered(labels::MSG_EFFECT_FEEDBACK_LABEL),
-                whole(&effect("feedback")),
+                whole(&effect(spec::FEEDBACK)),
                 (0, MAX_TAP_FEEDBACK),
                 BLOCK_CELLS,
                 marks::MSG_SOUND_PERCENT_SHOWN,
@@ -1606,9 +1646,9 @@ impl InstrumentEditor {
         );
         fields.push(
             gauge(
-                ids.at_gauge(Write::Item("effects", number, "tone"), HERTZ_STRIDES),
+                ids.at_gauge(Write::Item(spec::EFFECTS, number, spec::TONE), HERTZ_STRIDES),
                 &numbered(labels::MSG_EFFECT_TONE_LABEL),
-                whole(&effect("tone")),
+                whole(&effect(spec::TONE)),
                 (MIN_TAP_TONE, MAX_TAP_TONE),
                 BLOCK_CELLS,
                 marks::MSG_HERTZ_SHOWN,
@@ -1618,9 +1658,9 @@ impl InstrumentEditor {
         );
         fields.push(
             gauge(
-                ids.at_gauge(Write::Item("effects", number, "low_cut"), HERTZ_STRIDES),
+                ids.at_gauge(Write::Item(spec::EFFECTS, number, spec::LOW_CUT), HERTZ_STRIDES),
                 &numbered(labels::MSG_EFFECT_LOW_CUT_LABEL),
-                whole(&effect("low_cut")),
+                whole(&effect(spec::LOW_CUT)),
                 (MIN_TAP_LOW_CUT, MAX_TAP_LOW_CUT),
                 BLOCK_CELLS,
                 marks::MSG_HERTZ_SHOWN,
@@ -1632,7 +1672,7 @@ impl InstrumentEditor {
             for (name, label) in ANALOG_SETTINGS {
                 fields.push(
                     gauge(
-                        ids.at(Write::Item("effects", number, name)),
+                        ids.at(Write::Item(spec::EFFECTS, number, name)),
                         &numbered(label),
                         whole(&effect(name)),
                         (0, MAX_PERCENT),
@@ -1652,10 +1692,10 @@ impl InstrumentEditor {
         let shown_label = |label: &str| named_in(labels::MSG_EFFECT_SHOWN_LABELS, label);
         let mut columns = Vec::new();
         for number in 1..=EFFECT_BLOCKS as usize {
-            let numbered = |label: &str| named(label, &[("number", number.into())]);
-            let chosen_effect = text(&effect(number, "effect"));
+            let numbered = |label: &str| named(label, &[(fill::NUMBER, number.into())]);
+            let chosen_effect = text(&effect(number, spec::EFFECT));
             let mut fields = vec![chosen(
-                ids.at(Write::Item("effects", number, "effect")),
+                ids.at(Write::Item(spec::EFFECTS, number, spec::EFFECT)),
                 &numbered(labels::MSG_EFFECT_BLOCK_LABEL),
                 EFFECTS,
                 &names_in(labels::MSG_EFFECT_NAMES, EFFECTS),
@@ -1665,17 +1705,17 @@ impl InstrumentEditor {
                 if chosen_effect == MULTITAP {
                     fields.extend(Self::multitap_fields(sound, number, ids));
                 } else if chosen_effect == BAX {
-                    for (name, label) in [("bass", labels::MSG_EFFECT_BASS_LABEL), ("treble", labels::MSG_EFFECT_TREBLE_LABEL)] {
+                    for (name, label) in [(spec::BASS, labels::MSG_EFFECT_BASS_LABEL), (spec::TREBLE, labels::MSG_EFFECT_TREBLE_LABEL)] {
                         fields.push(
-                            Self::shelf_field(ids.at(Write::Item("effects", number, name)), &numbered(label), whole(&effect(number, name)))
+                            Self::shelf_field(ids.at(Write::Item(spec::EFFECTS, number, name)), &numbered(label), whole(&effect(number, name)))
                                 .with_shown_label(&shown_label(label)),
                         );
                     }
                 } else if chosen_effect == BITCRUSH {
-                    let bits = whole(&effect(number, "bits"));
+                    let bits = whole(&effect(number, spec::BITS));
                     fields.push(
                         Field::number(
-                            ids.at(Write::Item("effects", number, "bits")),
+                            ids.at(Write::Item(spec::EFFECTS, number, spec::BITS)),
                             &numbered(labels::MSG_EFFECT_BITS_LABEL),
                             Some(bits),
                             Some(MIN_BITS),
@@ -1687,19 +1727,19 @@ impl InstrumentEditor {
                     );
                     fields.push(
                         Field::toggle(
-                            ids.at(Write::Item("effects", number, "dither")),
+                            ids.at(Write::Item(spec::EFFECTS, number, spec::DITHER)),
                             &numbered(labels::MSG_EFFECT_DITHER_LABEL),
-                            flag(&effect(number, "dither")),
+                            flag(&effect(number, spec::DITHER)),
                         )
                         .with_shown_label(&shown_label(labels::MSG_EFFECT_DITHER_LABEL)),
                     );
-                    let rate = whole(&effect(number, "rate"));
+                    let rate = whole(&effect(number, spec::RATE));
                     let rates: Vec<String> = CRUSH_RATES.iter().map(|rate| rate.to_string()).collect();
                     let rate_names: Vec<String> = CRUSH_RATES.iter().map(|rate| rate_shown(*rate)).collect();
                     let rate_choices: Vec<&str> = rates.iter().map(String::as_str).collect();
                     fields.push(
                         chosen(
-                            ids.at(Write::Item("effects", number, "rate")),
+                            ids.at(Write::Item(spec::EFFECTS, number, spec::RATE)),
                             &numbered(labels::MSG_EFFECT_RATE_LABEL),
                             &rate_choices,
                             &rate_names,
@@ -1708,11 +1748,11 @@ impl InstrumentEditor {
                         .with_shown_label(&shown_label(labels::MSG_EFFECT_RATE_LABEL)),
                     );
                 } else {
-                    let curve = text(&effect(number, "curve"));
+                    let curve = text(&effect(number, spec::CURVE));
                     let curve = if CURVES.contains(&curve.as_str()) { curve } else { CURVES[0].to_string() };
                     fields.push(
                         chosen(
-                            ids.at(Write::Item("effects", number, "curve")),
+                            ids.at(Write::Item(spec::EFFECTS, number, spec::CURVE)),
                             &numbered(labels::MSG_EFFECT_CURVE_LABEL),
                             CURVES,
                             &names_in(labels::MSG_CURVE_NAMES, CURVES),
@@ -1722,9 +1762,9 @@ impl InstrumentEditor {
                     );
                     fields.push(
                         gauge(
-                            ids.at(Write::Item("effects", number, "amount")),
+                            ids.at(Write::Item(spec::EFFECTS, number, spec::AMOUNT)),
                             &numbered(labels::MSG_EFFECT_AMOUNT_LABEL),
-                            whole(&effect(number, "amount")),
+                            whole(&effect(number, spec::AMOUNT)),
                             (0, MAX_PERCENT),
                             BLOCK_CELLS,
                             marks::MSG_SOUND_PERCENT_SHOWN,
@@ -1735,9 +1775,9 @@ impl InstrumentEditor {
                 }
                 fields.push(
                     gauge(
-                        ids.at(Write::Item("effects", number, "mix")),
+                        ids.at(Write::Item(spec::EFFECTS, number, spec::MIX)),
                         &numbered(labels::MSG_EFFECT_MIX_LABEL),
-                        whole(&effect(number, "mix")),
+                        whole(&effect(number, spec::MIX)),
                         (0, MAX_PERCENT),
                         BLOCK_CELLS,
                         marks::MSG_SOUND_PERCENT_SHOWN,
@@ -1817,59 +1857,59 @@ impl InstrumentEditor {
     fn amount_range(amount: i64, source: &str, polarity: &str) -> String {
         let both_ways = polarity != UNIPOLAR && BIPOLAR_SOURCES.contains(&source);
         let low = if both_ways { -amount } else { 0 };
-        named(marks::MSG_PERCENT_RANGE_SHOWN, &[("low", low.into()), ("high", amount.into())])
+        named(marks::MSG_PERCENT_RANGE_SHOWN, &[(fill::LOW, low.into()), (fill::HIGH, amount.into())])
     }
 
     fn matrix_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
-        let slot = |number: usize, name: &str| sound.item("matrix", number, name, SLOT_DEFAULTS);
+        let slot = |number: usize, name: &str| sound.item(spec::MATRIX, number, name, SLOT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_SLOT_SHOWN_LABELS, label);
-        let asheville = sound.part_type("oscillators") == ASHEVILLE;
-        let snails: Snails = std::array::from_fn(|place| text(&sound.lfo_setting(place + 1, "type")) == SNAIL_TYPE);
+        let asheville = sound.part_type(spec::OSCILLATORS) == ASHEVILLE;
+        let snails: Snails = std::array::from_fn(|place| text(&sound.lfo_setting(place + 1, spec::TYPE)) == SNAIL_TYPE);
         let mut columns = Vec::new();
         for number in 1..=MATRIX_SLOTS as usize {
-            let numbered = |label: &str| named(label, &[("number", number.into())]);
-            let amount = whole(&slot(number, "amount"));
+            let numbered = |label: &str| named(label, &[(fill::NUMBER, number.into())]);
+            let amount = whole(&slot(number, spec::AMOUNT));
             let fields = vec![
                 Self::source_field(
-                    ids.at(Write::Item("matrix", number, "source")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::SOURCE)),
                     &numbered(labels::MSG_SLOT_SOURCE_LABEL),
-                    &text(&slot(number, "source")),
+                    &text(&slot(number, spec::SOURCE)),
                     asheville,
                     false,
                     &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_SOURCE_LABEL)),
                 Self::source_field(
-                    ids.at(Write::Item("matrix", number, "via")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::VIA)),
                     &numbered(labels::MSG_SLOT_VIA_LABEL),
-                    &text(&slot(number, "via")),
+                    &text(&slot(number, spec::VIA)),
                     asheville,
                     true,
                     &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_VIA_LABEL)),
                 Self::destination_field(
-                    ids.at(Write::Item("matrix", number, "destination")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::DESTINATION)),
                     &numbered(labels::MSG_SLOT_DESTINATION_LABEL),
-                    &text(&slot(number, "destination")),
+                    &text(&slot(number, spec::DESTINATION)),
                     asheville,
                     &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_DESTINATION_LABEL)),
                 chosen(
-                    ids.at(Write::Item("matrix", number, "polarity")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::POLARITY)),
                     &numbered(labels::MSG_SLOT_POLARITY_LABEL),
                     MATRIX_POLARITIES,
                     &names_in(labels::MSG_POLARITY_NAMES, MATRIX_POLARITIES),
-                    &text(&slot(number, "polarity")),
+                    &text(&slot(number, spec::POLARITY)),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_POLARITY_LABEL)),
                 bounded_gauge(
-                    ids.at(Write::Item("matrix", number, "amount")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::AMOUNT)),
                     &numbered(labels::MSG_SLOT_AMOUNT_LABEL),
                     amount,
                     (-MAX_MATRIX_AMOUNT, MAX_MATRIX_AMOUNT),
-                    &Self::amount_range(amount, &text(&slot(number, "source")), &text(&slot(number, "polarity"))),
+                    &Self::amount_range(amount, &text(&slot(number, spec::SOURCE)), &text(&slot(number, spec::POLARITY))),
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_AMOUNT_LABEL)),
             ];
@@ -1878,15 +1918,15 @@ impl InstrumentEditor {
             column.beside = vec![
                 Self::control_beside(
                     source_place,
-                    ids.at(Write::Item("matrix", number, "source_cc")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::SOURCE_CC)),
                     &numbered(labels::MSG_SLOT_SOURCE_CC_LABEL),
-                    &text(&slot(number, "source")),
+                    &text(&slot(number, spec::SOURCE)),
                 ),
                 Self::control_beside(
                     via_place,
-                    ids.at(Write::Item("matrix", number, "via_cc")),
+                    ids.at(Write::Item(spec::MATRIX, number, spec::VIA_CC)),
                     &numbered(labels::MSG_SLOT_VIA_CC_LABEL),
-                    &text(&slot(number, "via")),
+                    &text(&slot(number, spec::VIA)),
                 ),
             ];
             column.boxed = true;
@@ -1901,7 +1941,10 @@ impl InstrumentEditor {
 fn part_label(part: &str, setting: &str) -> String {
     named(
         labels::MSG_PART_SETTING_LABEL,
-        &[("part", named_in(labels::MSG_PART_NAMES, part).as_str().into()), ("setting", setting.into())],
+        &[
+            (fill::PART, named_in(labels::MSG_PART_NAMES, part).as_str().into()),
+            (fill::SETTING, setting.into()),
+        ],
     )
 }
 
@@ -1909,7 +1952,7 @@ fn rate_shown(rate: i64) -> String {
     if rate == 0 {
         marks::MSG_RATE_OFF_SHOWN.to_string()
     } else {
-        named(marks::MSG_HERTZ_SHOWN, &[("number", rate.into())])
+        named(marks::MSG_HERTZ_SHOWN, &[(fill::NUMBER, rate.into())])
     }
 }
 
@@ -1939,7 +1982,7 @@ impl Form for InstrumentEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::INSTRUMENTS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -1947,7 +1990,7 @@ impl Form for InstrumentEditor {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::INSTRUMENTS).to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(spec::WHAT, what.as_str().into()), (spec::NAME, self.name.as_str().into())],
         ))
     }
 
@@ -2031,17 +2074,19 @@ impl Form for InstrumentEditor {
         }
         // MIDI CC in a slot's Source or Via reads the CC its CC field beside names, 74 at first, stored as `cc74`.
         let controlled = match (write, &edit) {
-            (Write::Item("matrix", number, name @ ("source" | "via")), Edit::Choice(chosen)) if chosen == MIDI_CC_CHOICE => Some((number, name, DEFAULT_CC)),
-            (Write::Item("matrix", number, "source_cc"), Edit::Number(control)) => Some((number, "source", *control)),
-            (Write::Item("matrix", number, "via_cc"), Edit::Number(control)) => Some((number, "via", *control)),
-            (Write::Item("matrix", number, "source_cc"), Edit::Clear) => Some((number, "source", DEFAULT_CC)),
-            (Write::Item("matrix", number, "via_cc"), Edit::Clear) => Some((number, "via", DEFAULT_CC)),
+            (Write::Item(spec::MATRIX, number, name @ (spec::SOURCE | spec::VIA)), Edit::Choice(chosen)) if chosen == MIDI_CC_CHOICE => {
+                Some((number, name, DEFAULT_CC))
+            }
+            (Write::Item(spec::MATRIX, number, spec::SOURCE_CC), Edit::Number(control)) => Some((number, spec::SOURCE, *control)),
+            (Write::Item(spec::MATRIX, number, spec::VIA_CC), Edit::Number(control)) => Some((number, spec::VIA, *control)),
+            (Write::Item(spec::MATRIX, number, spec::SOURCE_CC), Edit::Clear) => Some((number, spec::SOURCE, DEFAULT_CC)),
+            (Write::Item(spec::MATRIX, number, spec::VIA_CC), Edit::Clear) => Some((number, spec::VIA, DEFAULT_CC)),
             _ => None,
         };
         if let Some((number, name, control)) = controlled {
             let value = Data::text(&format!("{CONTROL_PREFIX}{}", control.clamp(0, HIGHEST_CC)));
             let name_of = self.name.clone();
-            let changed = sound.with_item("matrix", number, name, value);
+            let changed = sound.with_item(spec::MATRIX, number, name, value);
             app.document.change_set(|setlist| {
                 if let Some(Item::Instrument(instrument)) = setlist.get_item_mut(Section::INSTRUMENTS, &name_of) {
                     instrument.set_written(InstrumentSetting::SOUND, Some(changed));
@@ -2094,17 +2139,17 @@ impl Form for InstrumentEditor {
             Write::Part(part, name) => set(app, InstrumentSetting::SOUND, Some(sound.with_part_value(part, name, sound_value(value)))),
             Write::Oscillator(number, name) => set(app, InstrumentSetting::SOUND, Some(sound.with_oscillator(number, name, sound_value(value)))),
             Write::Knob(place) => set(app, InstrumentSetting::SOUND, Some(sound.with_knob(place, sound_value(value)))),
-            Write::Item("effects", number, "mode") if value.as_ref().and_then(Data::as_str) == Some(ANALOG) => {
+            Write::Item(spec::EFFECTS, number, spec::MODE) if value.as_ref().and_then(Data::as_str) == Some(ANALOG) => {
                 set(
                     app,
                     InstrumentSetting::SOUND,
-                    Some(sound.with_item_values("effects", number, &analog_starting_point())),
+                    Some(sound.with_item_values(spec::EFFECTS, number, &analog_starting_point())),
                 );
             }
             Write::Item(list, number, name) => {
                 // An effect's rate is a number of hertz, chosen as its text.
                 let value = match (name, value) {
-                    ("rate", Some(Data::Text(text))) if list == "effects" => text.parse::<i128>().ok().map(Data::Whole),
+                    (spec::RATE, Some(Data::Text(text))) if list == spec::EFFECTS => text.parse::<i128>().ok().map(Data::Whole),
                     (_, value) => value,
                 };
                 set(app, InstrumentSetting::SOUND, Some(sound.with_item(list, number, name, sound_value(value))));
@@ -2125,7 +2170,7 @@ fn sound_families() -> Vec<(String, Vec<(String, usize)>)> {
                 .map(|sound| {
                     let name = labels::MSG_GM_SOUNDS.get((sound - MIN_GM_SOUND) as usize).copied().unwrap_or("");
                     (
-                        named(labels::MSG_GM_SOUND_SHOWN, &[("number", sound.into()), ("name", name.into())]),
+                        named(labels::MSG_GM_SOUND_SHOWN, &[(fill::NUMBER, sound.into()), (fill::NAME, name.into())]),
                         sound as usize,
                     )
                 })
@@ -2152,8 +2197,8 @@ mod tests {
         let cutoff = 1200;
         let sound = Sound::of(&ladder_at(cutoff));
         let mut ids = Ids { last: 0, writes: Vec::new() };
-        let field = InstrumentEditor::setting_field(&sound, "filter", "ladder", "cutoff", &mut ids);
-        let hertz = named(marks::MSG_HERTZ_SHOWN, &[("number", cutoff.into())]);
+        let field = InstrumentEditor::setting_field(&sound, spec::FILTER, spec::LADDER, spec::CUTOFF, &mut ids);
+        let hertz = named(marks::MSG_HERTZ_SHOWN, &[(fill::NUMBER, cutoff.into())]);
         assert!(field.value().ends_with(&hertz), "{}", field.value());
     }
 
@@ -2166,7 +2211,8 @@ mod tests {
         assert_eq!(field.value(), labels::MSG_MIDI_CC_CHOICE);
         let beside = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, &source);
         assert_eq!(beside.field.map(|field| field.value().to_string()), Some(control.to_string()));
-        let other = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, "lfo1");
+        let (source_place, cc_field) = (0, 2);
+        let other = InstrumentEditor::control_beside(source_place, cc_field, labels::MSG_SLOT_SOURCE_CC_LABEL, spec::LFO1);
         assert!(other.field.is_none(), "no CC field beside an LFO");
     }
 
@@ -2202,8 +2248,8 @@ mod tests {
                 .clone()
         };
         let synced = fields_of("{ effect: multitap }");
-        let numbered = |label: &str| named(label, &[("number", 1.into())]);
-        let tapped = |label: &str, tap: usize| named(label, &[("number", 1.into()), ("tap", tap.into())]);
+        let numbered = |label: &str| named(label, &[(fill::NUMBER, 1.into())]);
+        let tapped = |label: &str, tap: usize| named(label, &[(fill::NUMBER, 1.into()), (fill::TAP, tap.into())]);
         let taps: Vec<&Field> = synced.iter().filter(|field| field.is_cells()).collect();
         assert_eq!(taps.len(), 4);
         let times: Vec<String> = taps.iter().map(|tap| tap.cells[1].value().trim_end().to_string()).collect();
@@ -2211,12 +2257,12 @@ mod tests {
         assert!(taps.iter().all(|tap| tap.cells[0].is_toggle() && tap.cells[0].value() == marks::MSG_TOGGLE_ON));
         assert!(taps[0].cells[2]
             .value()
-            .ends_with(&named(marks::MSG_SOUND_PERCENT_SHOWN, &[("number", 70.into())])));
+            .ends_with(&named(marks::MSG_SOUND_PERCENT_SHOWN, &[(fill::NUMBER, 70.into())])));
         assert_eq!(taps[0].label, tapped(labels::MSG_EFFECT_TAP_LABEL, 1));
         let mix = synced.last().expect("a Mix last");
         assert_eq!(mix.label, numbered(labels::MSG_EFFECT_MIX_LABEL));
         assert!(
-            mix.value().ends_with(&named(marks::MSG_SOUND_PERCENT_SHOWN, &[("number", 35.into())])),
+            mix.value().ends_with(&named(marks::MSG_SOUND_PERCENT_SHOWN, &[(fill::NUMBER, 35.into())])),
             "{}",
             mix.value()
         );
@@ -2224,7 +2270,7 @@ mod tests {
         let first = free.iter().find(|field| field.is_cells()).expect("a tap row");
         assert_eq!(
             first.cells[1].value().trim_end(),
-            named(marks::MSG_MILLISECONDS_SHOWN, &[("number", 250.into())])
+            named(marks::MSG_MILLISECONDS_SHOWN, &[(fill::NUMBER, 250.into())])
         );
         let second_off = fields_of("{ effect: multitap, tap2_on: false }");
         let switches: Vec<bool> = second_off
@@ -2247,7 +2293,7 @@ mod tests {
 
     /// The tabs of the Instrument page of fish, by their labels, and the Engine tab's fields under its Engine and Percussion.
     fn engine_tabs(app: &App) -> (Vec<String>, Vec<Field>) {
-        let editor = InstrumentEditor { name: "fish".to_string() };
+        let editor = InstrumentEditor { name: spec::FISH.to_string() };
         let (nodes, _) = editor.built(app);
         let tabs = nodes
             .iter()
@@ -2276,7 +2322,7 @@ mod tests {
             labels_of(&fields),
             [labels::MSG_GM_SOUND_LABEL, labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL]
         );
-        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[("number", DEFAULT_PAN.into())]);
+        let center = named(marks::MSG_PAN_CENTER_SHOWN, &[(fill::NUMBER, DEFAULT_PAN.into())]);
         assert!(fields[1].value().ends_with(&center), "{}", fields[1].value());
         assert_eq!(fields[2].value(), marks::MSG_AUTO_CHANNEL_SHOWN);
         let drums = engine_app("{ name: fish, device: \"*FluidSynth\", role: percussion }", false);
@@ -2305,7 +2351,7 @@ mod tests {
 
     /// The id of one of the editor's fields by what it writes.
     fn id_of(app: &App, write: Write) -> usize {
-        let editor = InstrumentEditor { name: "fish".to_string() };
+        let editor = InstrumentEditor { name: spec::FISH.to_string() };
         editor
             .built(app)
             .1
@@ -2321,11 +2367,11 @@ mod tests {
     #[test]
     fn choosing_an_engine_sets_kind_and_device() {
         let mut app = engine_app("{ name: fish, device: \"a synthesizer\" }", false);
-        let instrument_of = |app: &App| match app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") {
+        let instrument_of = |app: &App| match app.document.get_setlist().get_item(Section::INSTRUMENTS, spec::FISH) {
             Some(Item::Instrument(instrument)) => instrument.clone(),
             _ => panic!("the instrument"),
         };
-        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
         let engine = id_of(&app, Write::EngineOf);
         editor.apply(&mut app, engine, Edit::Choice(FLUIDSYNTH.to_string()));
         assert_eq!(InstrumentEditor::engine_of(&instrument_of(&app)), FLUIDSYNTH);
@@ -2348,10 +2394,10 @@ mod tests {
             "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville, effects: [{ effect: multitap }] } }",
             false,
         );
-        let mut editor = InstrumentEditor { name: "fish".to_string() };
-        let mode = id_of(&app, Write::Item("effects", 1, "mode"));
+        let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
+        let mode = id_of(&app, Write::Item(spec::EFFECTS, 1, spec::MODE));
         editor.apply(&mut app, mode, Edit::Choice(ANALOG.to_string()));
-        let instrument = match app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") {
+        let instrument = match app.document.get_setlist().get_item(Section::INSTRUMENTS, spec::FISH) {
             Some(Item::Instrument(instrument)) => instrument.clone(),
             _ => panic!("the instrument"),
         };
@@ -2361,7 +2407,7 @@ mod tests {
         }
         let mut ids = Ids { last: 0, writes: Vec::new() };
         let fields = InstrumentEditor::effects_tab(&sound, false, &mut ids).columns[0].fields.clone();
-        let numbered = |label: &str| named(label, &[("number", 1.into())]);
+        let numbered = |label: &str| named(label, &[(fill::NUMBER, 1.into())]);
         let shown = labels_of(&fields);
         for (_, label) in ANALOG_SETTINGS {
             assert!(shown.contains(&numbered(label).as_str()), "{label}");
@@ -2377,27 +2423,31 @@ mod tests {
         use crate::keys::first_key;
         let synth = "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville } }";
         let mut played = engine_app(synth, true);
-        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
         let toggle = id_of(&played, Write::Percussion);
         editor.apply(&mut played, toggle, Edit::Toggle(true));
         let refused = named(
             llamatron_strings::errors::ERR_PERCUSSION_IN_USE,
-            &[("name", "fish".into()), ("track", "bass".into()), ("song", "song".into())],
+            &[
+                (spec::NAME, spec::FISH.into()),
+                (spec::TRACK, spec::BASS.into()),
+                (spec::SONG, spec::SONG.into()),
+            ],
         );
         assert_eq!(played.status.text(), refused);
         let unused = engine_app(synth, false);
         let mut tracker = crate::app::Tracker::new(unused.document);
-        let mut editor = InstrumentEditor { name: "fish".to_string() };
+        let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
         editor.apply(&mut tracker.app, toggle, Edit::Toggle(true));
         tracker.settle();
         assert_eq!(tracker.top().name(), "ConfirmDialog");
         tracker.press(first_key(&ConfirmKeys::SELECT));
         tracker.press(first_key(&ConfirmKeys::ANSWER));
-        let Some(Item::Instrument(changed)) = tracker.app.document.get_setlist().get_item(Section::INSTRUMENTS, "fish") else {
+        let Some(Item::Instrument(changed)) = tracker.app.document.get_setlist().get_item(Section::INSTRUMENTS, spec::FISH) else {
             panic!("the instrument")
         };
         assert_eq!(changed.get_written(InstrumentSetting::ROLE).and_then(Data::as_str), Some(PERCUSSION));
-        assert_eq!(Sound::of(changed).part_type("oscillators"), "drum");
+        assert_eq!(Sound::of(changed).part_type(spec::OSCILLATORS), spec::DRUM);
     }
 
     /// An LFO's Rate shows its percentage with the hertz it gives at its Speed; the Key switch shows only at Very High,
@@ -2412,12 +2462,16 @@ mod tests {
             let tab = InstrumentEditor::lfos_tab(&Sound::of(&instrument), false, &mut ids);
             tab.columns[0].fields.clone()
         };
-        let labelled = |fields: &[Field], label: &str| fields.iter().find(|field| field.label == named(label, &[("number", 1.into())])).cloned();
+        let labelled = |fields: &[Field], label: &str| fields.iter().find(|field| field.label == named(label, &[(fill::NUMBER, 1.into())])).cloned();
         let medium = fields_of("{ on: true, speed: medium, rate_percent: 74 }");
         let rate = labelled(&medium, labels::MSG_LFO_RATE_LABEL).expect("a Rate");
+        let percent = 74;
         let shown = named(
             marks::MSG_LFO_RATE_SHOWN,
-            &[("percent", 74.into()), ("hertz", hertz_shown(lfo_speed::hertz("medium", 74.0)).as_str().into())],
+            &[
+                (fill::PERCENT, percent.into()),
+                (fill::HERTZ, hertz_shown(lfo_speed::hertz(spec::MEDIUM, percent as f64)).as_str().into()),
+            ],
         );
         assert!(rate.value().ends_with(&shown), "{}", rate.value());
         assert!(labelled(&medium, labels::MSG_LFO_KEY_LABEL).is_none(), "no Key below Very High");
@@ -2453,7 +2507,7 @@ mod tests {
             for effect in llamatron_backend::effects::REGISTRY.iter().map(|entry| entry.name) {
                 let instrument = format!("{{ name: fish, kind: built_in, sound: {{ engine: {engine}, effects: [{{ effect: {effect} }}] }} }}");
                 let app = engine_app(&instrument, true);
-                let editor = InstrumentEditor { name: "fish".to_string() };
+                let editor = InstrumentEditor { name: spec::FISH.to_string() };
                 let (nodes, _) = editor.built(&app);
                 let tab_box = nodes
                     .iter()
@@ -2478,7 +2532,7 @@ mod tests {
     #[test]
     fn basics_tab_shows_its_one_oscillator_alone() {
         let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
-        let editor = InstrumentEditor { name: "fish".to_string() };
+        let editor = InstrumentEditor { name: spec::FISH.to_string() };
         let (nodes, _) = editor.built(&app);
         let tab_box = nodes
             .iter()
@@ -2493,7 +2547,7 @@ mod tests {
             .find(|tab| tab.label == labels::MSG_OSCILLATORS_TAB)
             .expect("the Oscillators tab");
         let headings: Vec<Option<String>> = oscillators.columns.iter().map(|column| column.heading.clone()).collect();
-        let first = named(labels::MSG_OSCILLATOR_LABEL, &[("number", 1.into())]);
+        let first = named(labels::MSG_OSCILLATOR_LABEL, &[(fill::NUMBER, 1.into())]);
         assert_eq!(headings, [Some(first)]);
     }
 
@@ -2502,16 +2556,16 @@ mod tests {
     #[test]
     fn the_matrix_offers_each_oscillators_destinations_by_the_engine() {
         let names = |asheville: bool| -> Vec<String> {
-            match InstrumentEditor::destination_field(1, labels::MSG_SLOT_DESTINATION_LABEL, "none", asheville, &NO_SNAILS).kind {
+            match InstrumentEditor::destination_field(1, labels::MSG_SLOT_DESTINATION_LABEL, spec::NONE, asheville, &NO_SNAILS).kind {
                 FieldKind::Choice { names, .. } => names.unwrap_or_default(),
                 _ => Vec::new(),
             }
         };
         let shown = |key: &str| named_in(labels::MSG_MATRIX_DESTINATION_NAMES, key);
         let (asheville, one) = (names(true), names(false));
-        assert!(asheville.contains(&shown("osc2_pitch")) && !asheville.contains(&shown("pitch")));
-        assert!(one.contains(&shown("pitch")) && !one.contains(&shown("osc2_pitch")));
-        assert!(asheville.contains(&shown("cutoff")) && one.contains(&shown("cutoff")));
+        assert!(asheville.contains(&shown(spec::OSC2_PITCH)) && !asheville.contains(&shown(spec::PITCH)));
+        assert!(one.contains(&shown(spec::PITCH)) && !one.contains(&shown(spec::OSC2_PITCH)));
+        assert!(asheville.contains(&shown(spec::CUTOFF)) && one.contains(&shown(spec::CUTOFF)));
     }
 
     /// The Mod Matrix offers what each Modulators slot holds: Mod 1 and Mod 1 rate while it holds an LFO, Mod 1 / Slow
@@ -2527,20 +2581,27 @@ mod tests {
         let name = |pairs: &[(&str, &str)], key: &str| named_in(pairs, key);
         let snail_first: Snails = [true, false, false, false];
         for (snails, holds_snail) in [(NO_SNAILS, false), (snail_first, true)] {
-            let sources = choices(InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", false, false, &snails));
+            let sources = choices(InstrumentEditor::source_field(
+                1,
+                labels::MSG_SLOT_SOURCE_LABEL,
+                spec::NONE,
+                false,
+                false,
+                &snails,
+            ));
             let destinations = choices(InstrumentEditor::destination_field(
                 1,
                 labels::MSG_SLOT_DESTINATION_LABEL,
-                "none",
+                spec::NONE,
                 false,
                 &snails,
             ));
             let has = |list: &[String], key: &str, pairs: &[(&str, &str)]| list.contains(&name(pairs, key));
-            assert_eq!(has(&sources, "lfo1_slowest_z", labels::MSG_MATRIX_SOURCE_NAMES), holds_snail);
-            assert_eq!(has(&sources, "lfo1", labels::MSG_MATRIX_SOURCE_NAMES), !holds_snail);
-            assert_eq!(has(&destinations, "lfo1_slower", labels::MSG_MATRIX_DESTINATION_NAMES), holds_snail);
-            assert_eq!(has(&destinations, "lfo1_rate", labels::MSG_MATRIX_DESTINATION_NAMES), !holds_snail);
-            assert!(has(&sources, "lfo2", labels::MSG_MATRIX_SOURCE_NAMES), "Mod 2 holds an LFO either way");
+            assert_eq!(has(&sources, spec::LFO1_SLOWEST_Z, labels::MSG_MATRIX_SOURCE_NAMES), holds_snail);
+            assert_eq!(has(&sources, spec::LFO1, labels::MSG_MATRIX_SOURCE_NAMES), !holds_snail);
+            assert_eq!(has(&destinations, spec::LFO1_SLOWER, labels::MSG_MATRIX_DESTINATION_NAMES), holds_snail);
+            assert_eq!(has(&destinations, spec::LFO1_RATE, labels::MSG_MATRIX_DESTINATION_NAMES), !holds_snail);
+            assert!(has(&sources, spec::LFO2, labels::MSG_MATRIX_SOURCE_NAMES), "Mod 2 holds an LFO either way");
         }
     }
 
@@ -2549,7 +2610,7 @@ mod tests {
     #[test]
     fn the_matrix_names_its_oscillators_and_keeps_per_note_sh_a_source() {
         let names_of = |asheville: bool, via: bool| -> Vec<String> {
-            let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", asheville, via, &NO_SNAILS);
+            let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, spec::NONE, asheville, via, &NO_SNAILS);
             match field.kind {
                 FieldKind::Choice { names, .. } => names.unwrap_or_default(),
                 _ => Vec::new(),
@@ -2571,7 +2632,7 @@ mod tests {
     #[test]
     fn each_matrix_slot_is_headed_by_its_number() {
         let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
-        let editor = InstrumentEditor { name: "fish".to_string() };
+        let editor = InstrumentEditor { name: spec::FISH.to_string() };
         let (nodes, _) = editor.built(&app);
         let tab_box = nodes
             .iter()
@@ -2583,7 +2644,7 @@ mod tests {
         let matrix = tab_box.tabs.iter().find(|tab| tab.label == labels::MSG_MATRIX_TAB).expect("the Mod Matrix tab");
         let headings: Vec<Option<String>> = matrix.columns.iter().map(|column| column.heading.clone()).collect();
         let wanted: Vec<Option<String>> = (1..=MATRIX_SLOTS as usize)
-            .map(|number| Some(named(labels::MSG_SLOT_HEADING, &[("number", number.into())])))
+            .map(|number| Some(named(labels::MSG_SLOT_HEADING, &[(fill::NUMBER, number.into())])))
             .collect();
         assert_eq!(headings, wanted);
     }

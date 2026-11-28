@@ -11,6 +11,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::schema::generated::file_format::MatrixSetting;
 use llamatron_model::schema::generated::limits::LFO_COUNT;
+use llamatron_names::spec;
 use llamatron_strings::marks;
 
 const MILLISECONDS: f64 = 1000.0;
@@ -35,23 +36,23 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
     let value = |name: &str| sound.value(name);
     let oscillators = oscillators(sound);
     let mut spec = vec![
-        ("kind", value("engine")),
-        ("volume", share(&value("volume"), PERCENT)),
-        ("voices", value("voices")),
-        ("glides", Data::Bool(!matches!(value("glides"), Data::Bool(false)))),
-        ("glide", glide(sound)),
-        ("filter_per_note", Data::Bool(value("filter_sharing").as_str() == Some("per_note"))),
-        ("disconnect_filter", Data::Bool(matches!(value("disconnect_filter"), Data::Bool(true)))),
-        ("oscillators", oscillators.clone()),
-        ("envelopes", Data::List(ENVELOPE_PARTS.iter().map(|part| envelope(sound, part)).collect())),
-        ("filter", filter(sound)),
-        ("amp", amp(sound)),
-        ("lfos", lfos(sound)),
-        ("effects", effects(sound)),
-        ("matrix", matrix(sound)),
+        (spec::KIND, value(spec::ENGINE)),
+        (spec::VOLUME, share(&value(spec::VOLUME), PERCENT)),
+        (spec::VOICES, value(spec::VOICES)),
+        (spec::GLIDES, Data::Bool(!matches!(value(spec::GLIDES), Data::Bool(false)))),
+        (spec::GLIDE, glide(sound)),
+        (spec::FILTER_PER_NOTE, Data::Bool(value(spec::FILTER_SHARING).as_str() == Some(spec::PER_NOTE))),
+        (spec::DISCONNECT_FILTER, Data::Bool(matches!(value(spec::DISCONNECT_FILTER), Data::Bool(true)))),
+        (spec::OSCILLATORS, oscillators.clone()),
+        (spec::ENVELOPES, Data::List(ENVELOPE_PARTS.iter().map(|part| envelope(sound, part)).collect())),
+        (spec::FILTER, filter(sound)),
+        (spec::AMP, amp(sound)),
+        (spec::LFOS, lfos(sound)),
+        (spec::EFFECTS, effects(sound)),
+        (spec::MATRIX, matrix(sound)),
     ];
-    if oscillators.get("type").and_then(Data::as_str) == Some("drum") {
-        spec.push(("tuned_from", Data::Whole(drums_from as i128)));
+    if oscillators.get(spec::TYPE).and_then(Data::as_str) == Some(spec::DRUM) {
+        spec.push((spec::TUNED_FROM, Data::Whole(drums_from as i128)));
     }
     mapping(spec)
 }
@@ -60,48 +61,48 @@ pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
 fn oscillators(sound: &Sound) -> Data {
     let kind = sound.part_type(OSCILLATORS);
     let setting = |name: &str| sound.part_value(OSCILLATORS, name);
-    if kind == "drum" {
-        let choke = setting("choke");
+    if kind == spec::DRUM {
+        let choke = setting(spec::CHOKE);
         let choke = if is_falsy(&choke) { Data::Null } else { choke };
         return mapping(vec![
-            ("type", Data::text(&kind)),
-            ("machine", setting("machine")),
-            ("knobs", setting("knobs")),
-            ("choke", choke),
-            ("overlap", setting("overlap")),
+            (spec::TYPE, Data::text(&kind)),
+            (spec::MACHINE, setting(spec::MACHINE)),
+            (spec::KNOBS, setting(spec::KNOBS)),
+            (spec::CHOKE, choke),
+            (spec::OVERLAP, setting(spec::OVERLAP)),
         ]);
     }
-    let mut spec = vec![("type", Data::text(&kind))];
+    let mut spec = vec![(spec::TYPE, Data::text(&kind))];
     // An engine of one oscillator carries its Detune and Fine as one tuning in cents; Basic and Asheville tune each
     // oscillator of their own.
     if ONE_OSCILLATOR_TYPES.contains(&kind.as_str()) {
-        spec.push(("cents", Data::Float(cents_with_fine(&setting("detune"), &setting("fine")))));
+        spec.push((spec::CENTS, Data::Float(cents_with_fine(&setting(spec::DETUNE), &setting(spec::FINE)))));
     }
     match kind.as_str() {
-        "sid" => spec.extend([
-            ("wave", setting("wave")),
-            ("pulse_width", share(&setting("pulse_width"), PERCENT)),
-            ("ring", setting("ring_on")),
-            ("sync", setting("sync_on")),
-            ("interval", setting("interval")),
-            ("arpeggio", setting("arpeggio")),
+        spec::SID => spec.extend([
+            (spec::WAVE, setting(spec::WAVE)),
+            (spec::PULSE_WIDTH, share(&setting(spec::PULSE_WIDTH), PERCENT)),
+            (spec::RING, setting(spec::RING_ON)),
+            (spec::SYNC, setting(spec::SYNC_ON)),
+            (spec::INTERVAL, setting(spec::INTERVAL)),
+            (spec::ARPEGGIO, setting(spec::ARPEGGIO)),
         ]),
-        "pocket" => {
-            let duty = setting("duty");
+        spec::POCKET => {
+            let duty = setting(spec::DUTY);
             let duty = DUTY_SHARES.iter().find(|(name, _)| duty.as_str() == Some(name)).map_or(0.5, |(_, part)| *part);
             spec.extend([
-                ("chip_voice", setting("chip_voice")),
-                ("duty", Data::Float(duty)),
-                ("wave_shape", setting("wave_shape")),
-                ("noise", setting("noise")),
-                ("sweep_pace", setting("sweep_pace")),
-                ("sweep_up", Data::Bool(setting("sweep_direction").as_str() == Some(UP))),
-                ("sweep_step", setting("sweep_step")),
+                (spec::CHIP_VOICE, setting(spec::CHIP_VOICE)),
+                (spec::DUTY, Data::Float(duty)),
+                (spec::WAVE_SHAPE, setting(spec::WAVE_SHAPE)),
+                (spec::NOISE, setting(spec::NOISE)),
+                (spec::SWEEP_PACE, setting(spec::SWEEP_PACE)),
+                (spec::SWEEP_UP, Data::Bool(setting(spec::SWEEP_DIRECTION).as_str() == Some(UP))),
+                (spec::SWEEP_STEP, setting(spec::SWEEP_STEP)),
             ]);
         }
-        "acid" => spec.extend([("acid_wave", setting("acid_wave")), ("tuning", setting("tuning"))]),
-        "asheville" => spec.extend(asheville(sound)),
-        _ => spec.push(("oscillators", basic_oscillators(sound))),
+        spec::ACID => spec.extend([(spec::ACID_WAVE, setting(spec::ACID_WAVE)), (spec::TUNING, setting(spec::TUNING))]),
+        spec::ASHEVILLE => spec.extend(asheville(sound)),
+        _ => spec.push((spec::OSCILLATORS, basic_oscillators(sound))),
     }
     mapping(spec)
 }
@@ -122,42 +123,42 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
     let oscillators = (1..=3)
         .map(|number| {
             let own = |name: &str| setting(&format!("osc{number}_{name}"));
-            let range = own("range");
+            let range = own(spec::RANGE);
             let half_steps = FOOTAGES.iter().find(|(name, _)| range.as_str() == Some(name)).map_or(0, |(_, steps)| *steps);
-            let sub = own("sub").as_str().and_then(|octaves| octaves.parse::<i128>().ok()).unwrap_or(0);
+            let sub = own(spec::SUB).as_str().and_then(|octaves| octaves.parse::<i128>().ok()).unwrap_or(0);
             // At an LFO's Speed the oscillator runs at its Rate's hertz whatever the note.
-            let speed = own("speed").as_str().unwrap_or(AUDIO_SPEED).to_string();
+            let speed = own(spec::SPEED).as_str().unwrap_or(AUDIO_SPEED).to_string();
             let hertz = if speed == AUDIO_SPEED {
                 Data::Null
             } else {
-                Data::Float(lfo_speed::hertz(&speed, own("rate").as_whole().unwrap_or(0) as f64))
+                Data::Float(lfo_speed::hertz(&speed, own(spec::RATE).as_whole().unwrap_or(0) as f64))
             };
             mapping(vec![
-                ("hertz", hertz),
-                ("range", Data::Whole(half_steps)),
-                ("wave", own("wave")),
-                ("shape", share(&own("shape"), PERCENT)),
-                ("cents", Data::Float(cents_with_fine(&own("tune"), &own("fine")))),
-                ("mix", Data::Float(own("mix").as_whole().unwrap_or(0) as f64 / PANEL_TOP)),
-                ("sub", Data::Whole(sub)),
-                ("on", own("on")),
+                (spec::HERTZ, hertz),
+                (spec::RANGE, Data::Whole(half_steps)),
+                (spec::WAVE, own(spec::WAVE)),
+                (spec::SHAPE, share(&own(spec::SHAPE), PERCENT)),
+                (spec::CENTS, Data::Float(cents_with_fine(&own(spec::TUNE), &own(spec::FINE)))),
+                (spec::MIX, Data::Float(own(spec::MIX).as_whole().unwrap_or(0) as f64 / PANEL_TOP)),
+                (spec::SUB, Data::Whole(sub)),
+                (spec::ON, own(spec::ON)),
             ])
         })
         .collect();
-    let feedback = if setting("feedback_on") == Data::Bool(true) {
-        panel("feedback")
+    let feedback = if setting(spec::FEEDBACK_ON) == Data::Bool(true) {
+        panel(spec::FEEDBACK)
     } else {
         Data::Float(0.0)
     };
     vec![
-        ("oscillators", Data::List(oscillators)),
-        ("model", setting("model")),
-        ("character", setting("character")),
-        ("noise", panel("noise_level")),
-        ("ring", panel("ring")),
-        ("snap", setting("tune_snap")),
-        ("drift", panel("drift")),
-        ("feedback", feedback),
+        (spec::OSCILLATORS, Data::List(oscillators)),
+        (spec::MODEL, setting(spec::MODEL)),
+        (spec::CHARACTER, setting(spec::CHARACTER)),
+        (spec::NOISE, panel(spec::NOISE_LEVEL)),
+        (spec::RING, panel(spec::RING)),
+        (spec::SNAP, setting(spec::TUNE_SNAP)),
+        (spec::DRIFT, panel(spec::DRIFT)),
+        (spec::FEEDBACK, feedback),
     ]
 }
 
@@ -183,12 +184,12 @@ fn basic_oscillators(sound: &Sound) -> Data {
         .min(BASIC_OSCILLATORS);
     let mut sounding = Vec::new();
     for number in 1..=count {
-        let waveform = sound.oscillator(number, "waveform");
-        if waveform.as_str() == Some("off") {
+        let waveform = sound.oscillator(number, spec::WAVEFORM);
+        if waveform.as_str() == Some(spec::OFF) {
             continue;
         }
-        let level = share(&sound.oscillator(number, "level"), PERCENT);
-        let cents = cents_with_fine(&sound.oscillator(number, "detune"), &sound.oscillator(number, "fine"));
+        let level = share(&sound.oscillator(number, spec::LEVEL), PERCENT);
+        let cents = cents_with_fine(&sound.oscillator(number, spec::DETUNE), &sound.oscillator(number, spec::FINE));
         sounding.push(Data::List(vec![waveform, Data::Float(cents), level]));
     }
     Data::List(sounding)
@@ -210,7 +211,7 @@ fn default_of(kind: &str, name: &str) -> Data {
 
 /// The voice's Glide time, in seconds, the Voice column's on every engine, Oh3's included.
 fn glide(sound: &Sound) -> Data {
-    share(&sound.value("glide"), MILLISECONDS)
+    share(&sound.value(spec::GLIDE), MILLISECONDS)
 }
 
 /// The envelope type that is no envelope, as the backend names it.
@@ -224,60 +225,64 @@ fn envelope(sound: &Sound, part: &str) -> Data {
     match kind.as_str() {
         // Off, which only Env2 and Env3 may be, has no settings: the backend holds it at nothing.
         NO_ENVELOPE => mapping(vec![typed]),
-        "sid_adsr" => mapping(vec![
+        spec::SID_ADSR => mapping(vec![
             typed,
-            ("attack", setting("attack")),
-            ("decay", setting("decay")),
-            ("sustain", setting("sustain")),
-            ("release", setting("release")),
+            (spec::ATTACK, setting(spec::ATTACK)),
+            (spec::DECAY, setting(spec::DECAY)),
+            (spec::SUSTAIN, setting(spec::SUSTAIN)),
+            (spec::RELEASE, setting(spec::RELEASE)),
         ]),
-        "vactrol" => {
+        spec::VACTROL => {
             // The backend's vactrol is struck by a flash, or lit while the key is held.
-            let drive = if setting("trigger").as_str() == Some("gate") { "gate" } else { "strike" };
+            let drive = if setting(spec::TRIGGER).as_str() == Some(spec::GATE) {
+                spec::GATE
+            } else {
+                spec::STRIKE
+            };
             mapping(vec![
                 typed,
-                ("response", share(&setting("response"), PERCENT)),
-                ("drive", Data::text(drive)),
-                ("strike_width", share(&setting("trigger_time"), TENTHS_OF_MILLISECONDS)),
-                ("memory", share(&setting("memory"), PERCENT)),
-                ("age", share(&setting("age"), PERCENT)),
-                ("stability", share(&setting("stability"), PERCENT)),
+                (spec::RESPONSE, share(&setting(spec::RESPONSE), PERCENT)),
+                (spec::DRIVE, Data::text(drive)),
+                (spec::STRIKE_WIDTH, share(&setting(spec::TRIGGER_TIME), TENTHS_OF_MILLISECONDS)),
+                (spec::MEMORY, share(&setting(spec::MEMORY), PERCENT)),
+                (spec::AGE, share(&setting(spec::AGE), PERCENT)),
+                (spec::STABILITY, share(&setting(spec::STABILITY), PERCENT)),
             ])
         }
-        "acid_gate" => {
+        spec::ACID_GATE => {
             // On Stock the modded settings play the circuit's own values, the type's defaults, whatever is written.
             let modded = setting(CIRCUIT).as_str() == Some(MODDED);
-            let chosen = |name: &str| if modded { setting(name) } else { default_of("acid_gate", name) };
+            let chosen = |name: &str| if modded { setting(name) } else { default_of(spec::ACID_GATE, name) };
             mapping(vec![
                 typed,
-                ("accent", share(&setting("accent"), PERCENT)),
-                ("accent_threshold", setting("accent_threshold")),
-                ("accent_sweep", share(&chosen("accent_sweep"), PERCENT)),
-                ("accent_decay", share(&chosen("accent_decay"), MILLISECONDS)),
-                ("amp_decay", share(&chosen("amp_decay"), MILLISECONDS)),
-                ("soft_attack", share(&chosen("soft_attack"), TENTHS_OF_MILLISECONDS)),
+                (spec::ACCENT, share(&setting(spec::ACCENT), PERCENT)),
+                (spec::ACCENT_THRESHOLD, setting(spec::ACCENT_THRESHOLD)),
+                (spec::ACCENT_SWEEP, share(&chosen(spec::ACCENT_SWEEP), PERCENT)),
+                (spec::ACCENT_DECAY, share(&chosen(spec::ACCENT_DECAY), MILLISECONDS)),
+                (spec::AMP_DECAY, share(&chosen(spec::AMP_DECAY), MILLISECONDS)),
+                (spec::SOFT_ATTACK, share(&chosen(spec::SOFT_ATTACK), TENTHS_OF_MILLISECONDS)),
             ])
         }
-        "chip_steps" => mapping(vec![
+        spec::CHIP_STEPS => mapping(vec![
             typed,
-            ("start_level", setting("start_level")),
-            ("level_pace", setting("level_pace")),
-            ("level_up", Data::Bool(setting("level_direction").as_str() == Some(UP))),
+            (spec::START_LEVEL, setting(spec::START_LEVEL)),
+            (spec::LEVEL_PACE, setting(spec::LEVEL_PACE)),
+            (spec::LEVEL_UP, Data::Bool(setting(spec::LEVEL_DIRECTION).as_str() == Some(UP))),
         ]),
         _ => {
             // The snappy ADSR, AR or ASR: an AR or ASR has neither hold nor decay, and falls at its release.
-            let release = share(&setting("release"), MILLISECONDS);
-            let full = kind == "adsr";
+            let release = share(&setting(spec::RELEASE), MILLISECONDS);
+            let full = kind == spec::ADSR;
             let or_none = |name: &str, scale: f64, otherwise: Data| if full { share(&setting(name), scale) } else { otherwise };
             mapping(vec![
                 typed,
-                ("attack", share(&setting("attack"), MILLISECONDS)),
-                ("attack_curve", setting("attack_curve")),
-                ("release", release.clone()),
-                ("hold", or_none("hold", MILLISECONDS, Data::Float(0.0))),
-                ("decay", or_none("decay", MILLISECONDS, release)),
-                ("snap", or_none("snap", PERCENT, Data::Float(0.0))),
-                ("sustain", or_none("sustain", PERCENT, Data::Float(0.0))),
+                (spec::ATTACK, share(&setting(spec::ATTACK), MILLISECONDS)),
+                (spec::ATTACK_CURVE, setting(spec::ATTACK_CURVE)),
+                (spec::RELEASE, release.clone()),
+                (spec::HOLD, or_none(spec::HOLD, MILLISECONDS, Data::Float(0.0))),
+                (spec::DECAY, or_none(spec::DECAY, MILLISECONDS, release)),
+                (spec::SNAP, or_none(spec::SNAP, PERCENT, Data::Float(0.0))),
+                (spec::SUSTAIN, or_none(spec::SUSTAIN, PERCENT, Data::Float(0.0))),
             ])
         }
     }
@@ -292,11 +297,11 @@ fn amp(sound: &Sound) -> Data {
     }
     let setting = |name: &str| sound.part_value(AMP, name);
     mapping(vec![
-        ("type", Data::text(&sound.part_type(AMP))),
-        ("response", share(&setting("response"), PERCENT)),
-        ("drive", share(&setting("drive"), PERCENT)),
-        ("bleed", share(&setting("bleed"), PERCENT)),
-        ("character", share(&setting("amp_character"), PERCENT)),
+        (spec::TYPE, Data::text(&sound.part_type(AMP))),
+        (spec::RESPONSE, share(&setting(spec::RESPONSE), PERCENT)),
+        (spec::DRIVE, share(&setting(spec::DRIVE), PERCENT)),
+        (spec::BLEED, share(&setting(spec::BLEED), PERCENT)),
+        (spec::CHARACTER, share(&setting(spec::AMP_CHARACTER), PERCENT)),
     ])
 }
 
@@ -305,19 +310,19 @@ fn amp(sound: &Sound) -> Data {
 fn gate(sound: &Sound, part: &str) -> Data {
     let setting = |name: &str| sound.part_value(part, name);
     mapping(vec![
-        ("type", Data::text(LOW_PASS_GATE)),
-        ("trigger", setting("trigger")),
-        ("trigger_time", share(&setting("trigger_time"), TENTHS_OF_MILLISECONDS)),
-        ("mode", setting("gate_mode")),
-        ("signal", setting("signal")),
-        ("ping_time", share(&setting("ping_time"), TENTHS_OF_MILLISECONDS)),
-        ("resonance", share(&setting("resonance"), PERCENT)),
-        ("open", setting("open")),
-        ("key_track", share(&setting("key_track"), PERCENT)),
-        ("response", share(&setting("response"), PERCENT)),
-        ("memory", share(&setting("memory"), PERCENT)),
-        ("age", share(&setting("age"), PERCENT)),
-        ("stability", share(&setting("stability"), PERCENT)),
+        (spec::TYPE, Data::text(LOW_PASS_GATE)),
+        (spec::TRIGGER, setting(spec::TRIGGER)),
+        (spec::TRIGGER_TIME, share(&setting(spec::TRIGGER_TIME), TENTHS_OF_MILLISECONDS)),
+        (spec::MODE, setting(spec::GATE_MODE)),
+        (spec::SIGNAL, setting(spec::SIGNAL)),
+        (spec::PING_TIME, share(&setting(spec::PING_TIME), TENTHS_OF_MILLISECONDS)),
+        (spec::RESONANCE, share(&setting(spec::RESONANCE), PERCENT)),
+        (spec::OPEN, setting(spec::OPEN)),
+        (spec::KEY_TRACK, share(&setting(spec::KEY_TRACK), PERCENT)),
+        (spec::RESPONSE, share(&setting(spec::RESPONSE), PERCENT)),
+        (spec::MEMORY, share(&setting(spec::MEMORY), PERCENT)),
+        (spec::AGE, share(&setting(spec::AGE), PERCENT)),
+        (spec::STABILITY, share(&setting(spec::STABILITY), PERCENT)),
     ])
 }
 
@@ -326,42 +331,42 @@ fn filter(sound: &Sound) -> Data {
     let setting = |name: &str| sound.part_value(FILTER, name);
     let typed = ("type", Data::text(&kind));
     match kind.as_str() {
-        "none" => mapping(vec![typed]),
-        "low_pass_gate" => gate(sound, FILTER),
+        spec::NONE => mapping(vec![typed]),
+        spec::LOW_PASS_GATE => gate(sound, FILTER),
         _ => {
-            let mode = if kind == "multimode" || kind == "sallen_key" {
-                setting("mode")
+            let mode = if kind == spec::MULTIMODE || kind == spec::SALLEN_KEY {
+                setting(spec::MODE)
             } else {
-                Data::text("low")
+                Data::text(spec::LOW)
             };
-            let poles = if kind == "ladder" {
-                Data::Whole((whole(&setting("slope")).div_euclid(DB_A_POLE)) as i128)
+            let poles = if kind == spec::LADDER {
+                Data::Whole((whole(&setting(spec::SLOPE)).div_euclid(DB_A_POLE)) as i128)
             } else {
                 Data::Whole(FOUR_POLES as i128)
             };
             mapping(vec![
                 typed,
-                ("mode", mode),
-                ("poles", poles),
-                ("cutoff", setting("cutoff")),
-                ("resonance", share(&setting("resonance"), PERCENT)),
-                ("env_amount", share(&setting("env_amount"), PERCENT)),
-                ("key_track", share(&setting("key_track"), PERCENT)),
-                ("drive", share(&setting("drive"), PERCENT)),
+                (spec::MODE, mode),
+                (spec::POLES, poles),
+                (spec::CUTOFF, setting(spec::CUTOFF)),
+                (spec::RESONANCE, share(&setting(spec::RESONANCE), PERCENT)),
+                (spec::ENV_AMOUNT, share(&setting(spec::ENV_AMOUNT), PERCENT)),
+                (spec::KEY_TRACK, share(&setting(spec::KEY_TRACK), PERCENT)),
+                (spec::DRIVE, share(&setting(spec::DRIVE), PERCENT)),
                 // Only the Ladder gives back the bass its Resonance thins; the others keep their own response.
                 (
-                    "bass_compensation",
-                    if kind == "ladder" {
-                        share(&setting("bass_compensation"), PERCENT)
+                    spec::BASS_COMPENSATION,
+                    if kind == spec::LADDER {
+                        share(&setting(spec::BASS_COMPENSATION), PERCENT)
                     } else {
                         Data::Float(0.0)
                     },
                 ),
                 // The Diode's Filter FM, the oscillator moving the cutoff for growl, is a modification: none on Stock.
                 (
-                    "filter_fm",
-                    if kind == "diode" && setting(CIRCUIT).as_str() == Some(MODDED) {
-                        share(&setting("filter_fm"), PERCENT)
+                    spec::FILTER_FM,
+                    if kind == spec::DIODE && setting(CIRCUIT).as_str() == Some(MODDED) {
+                        share(&setting(spec::FILTER_FM), PERCENT)
                     } else {
                         Data::Float(0.0)
                     },
@@ -392,7 +397,7 @@ pub struct LaneSpeed {
 /// about how long a trip of the lane's from one side to the other takes.
 pub const SNAIL_LANES: [LaneSpeed; 3] = [
     LaneSpeed {
-        name: "slow_speed",
+        name: spec::SLOW_SPEED,
         seconds_a_unit: 1.0,
         lowest: 5,
         highest: 60,
@@ -401,7 +406,7 @@ pub const SNAIL_LANES: [LaneSpeed; 3] = [
         divisor: 1,
     },
     LaneSpeed {
-        name: "slower_speed",
+        name: spec::SLOWER_SPEED,
         seconds_a_unit: 6.0,
         lowest: 10,
         highest: 100,
@@ -410,7 +415,7 @@ pub const SNAIL_LANES: [LaneSpeed; 3] = [
         divisor: 10,
     },
     LaneSpeed {
-        name: "slowest_speed",
+        name: spec::SLOWEST_SPEED,
         seconds_a_unit: 60.0,
         lowest: 10,
         highest: 60,
@@ -428,42 +433,42 @@ fn lfos(sound: &Sound) -> Data {
     for number in 1..=LFO_COUNT as usize {
         // Each setting as the slot's Type plays it: an LFO leaves an LFO+'s own settings out (Sound::lfo_setting).
         let setting = |name: &str| sound.lfo_setting(number, name);
-        if is_falsy(&setting("on")) || !read.contains(&number) {
+        if is_falsy(&setting(spec::ON)) || !read.contains(&number) {
             lfos.push(Data::Null);
             continue;
         }
         // A Snail has its two weightings, each a fraction either way, and each lane's speed, the seconds its switch
         // chooses.
-        if setting("type").as_str() == Some(SNAIL_TYPE) {
+        if setting(spec::TYPE).as_str() == Some(SNAIL_TYPE) {
             let seconds = SNAIL_LANES.iter().map(|lane| {
                 let held = setting(lane.name).as_whole().map_or(lane.default, |held| held as i64);
                 Data::Float(held as f64 * lane.seconds_a_unit)
             });
             lfos.push(mapping(vec![
-                ("type", Data::text(SNAIL_TYPE)),
-                ("slow", share(&setting("slow"), PERCENT)),
-                ("slower", share(&setting("slower"), PERCENT)),
-                ("seconds", Data::List(seconds.collect())),
+                (spec::TYPE, Data::text(SNAIL_TYPE)),
+                (spec::SLOW, share(&setting(spec::SLOW), PERCENT)),
+                (spec::SLOWER, share(&setting(spec::SLOWER), PERCENT)),
+                (spec::SECONDS, Data::List(seconds.collect())),
             ]));
             continue;
         }
-        let speed = setting("speed").as_str().unwrap_or(lfo_speed::DEFAULT_SPEED).to_string();
-        let percent = setting("rate_percent").as_whole().unwrap_or(0) as f64;
+        let speed = setting(spec::SPEED).as_str().unwrap_or(lfo_speed::DEFAULT_SPEED).to_string();
+        let percent = setting(spec::RATE_PERCENT).as_whole().unwrap_or(0) as f64;
         let mut lfo = vec![
-            ("shape", setting("shape")),
-            ("rate", Data::Float(lfo_speed::hertz(&speed, percent))),
-            ("restart", setting("restart")),
-            ("fade_in", share(&setting("fade_in"), MILLISECONDS)),
+            (spec::SHAPE, setting(spec::SHAPE)),
+            (spec::RATE, Data::Float(lfo_speed::hertz(&speed, percent))),
+            (spec::RESTART, setting(spec::RESTART)),
+            (spec::FADE_IN, share(&setting(spec::FADE_IN), MILLISECONDS)),
         ];
         // A synced LFO's cycle is a length of the beat, which the backend times by the song's tempo.
-        if setting("sync") == Data::Bool(true) {
-            let division = setting("division").as_str().unwrap_or(lfo_speed::DEFAULT_DIVISION).to_string();
-            lfo.push(("quarters", Data::Float(lfo_speed::quarters_of(&division))));
+        if setting(spec::SYNC) == Data::Bool(true) {
+            let division = setting(spec::DIVISION).as_str().unwrap_or(lfo_speed::DEFAULT_DIVISION).to_string();
+            lfo.push((spec::QUARTERS, Data::Float(lfo_speed::quarters_of(&division))));
         }
         // At audio rate an LFO may follow the key, running at its ratio times each note's frequency.
-        if speed == lfo_speed::AUDIO_SPEED && setting("key") == Data::Bool(true) {
-            let ratio = setting("ratio").as_str().map(lfo_speed::ratio_multiple).unwrap_or(1.0);
-            lfo.push(("key_ratio", Data::Float(ratio)));
+        if speed == lfo_speed::AUDIO_SPEED && setting(spec::KEY) == Data::Bool(true) {
+            let ratio = setting(spec::RATIO).as_str().map(lfo_speed::ratio_multiple).unwrap_or(1.0);
+            lfo.push((spec::KEY_RATIO, Data::Float(ratio)));
         }
         lfos.push(mapping(lfo));
     }
@@ -472,7 +477,7 @@ fn lfos(sound: &Sound) -> Data {
 
 /// The effects in order, every setting given, shares as fractions, the empty ones left out.
 fn effects(sound: &Sound) -> Data {
-    let count = sound.value("effects").as_list().map_or(0, <[Data]>::len);
+    let count = sound.value(spec::EFFECTS).as_list().map_or(0, <[Data]>::len);
     let mut effects = Vec::new();
     for number in 1..=count {
         let names: Vec<&str> = match EFFECT_DEFAULTS {
@@ -480,18 +485,18 @@ fn effects(sound: &Sound) -> Data {
             _ => Vec::new(),
         };
         let mut effect = mapping(names.iter().map(|name| (*name, sound.effect_setting(number, name))).collect());
-        if effect.get("effect").and_then(Data::as_str) == Some("none") {
+        if effect.get(spec::EFFECT).and_then(Data::as_str) == Some(spec::NONE) {
             continue;
         }
-        if effect.get("effect").and_then(Data::as_str) == Some(MULTITAP) {
-            put(&mut effect, "taps", taps(sound, number));
-            let feedback = share(&sound.effect_setting(number, "feedback"), PERCENT);
-            set(&mut effect, "feedback", feedback);
-            let from = sound.effect_setting(number, "feedback_from");
+        if effect.get(spec::EFFECT).and_then(Data::as_str) == Some(MULTITAP) {
+            put(&mut effect, spec::TAPS, taps(sound, number));
+            let feedback = share(&sound.effect_setting(number, spec::FEEDBACK), PERCENT);
+            set(&mut effect, spec::FEEDBACK, feedback);
+            let from = sound.effect_setting(number, spec::FEEDBACK_FROM);
             let tap = from.as_str().and_then(|tap| tap.parse::<i128>().ok()).unwrap_or(4);
-            set(&mut effect, "feedback_from", Data::Whole(tap));
+            set(&mut effect, spec::FEEDBACK_FROM, Data::Whole(tap));
         }
-        for name in ["amount", "mix", "darkness", "noise", "drive", "wow", "flutter"] {
+        for name in [spec::AMOUNT, spec::MIX, spec::DARKNESS, spec::NOISE, spec::DRIVE, spec::WOW, spec::FLUTTER] {
             let scaled = effect.get(name).map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
             set(&mut effect, name, scaled);
         }
@@ -522,22 +527,22 @@ pub const DELAY_DIVISIONS: [(&str, f64); 13] = [
 /// A MultiTap's four taps as the backend reads them: each a share of a quarter note while Sync is on, else seconds, and
 /// its level as a fraction, and whether it sounds.
 fn taps(sound: &Sound, number: usize) -> Data {
-    let synced = !matches!(sound.effect_setting(number, "sync"), Data::Bool(false));
+    let synced = !matches!(sound.effect_setting(number, spec::SYNC), Data::Bool(false));
     let taps = (1..=4)
         .map(|tap| {
             let setting = |name: &str| sound.effect_setting(number, &format!("tap{tap}_{name}"));
             let time = if synced {
-                let division = setting("division");
+                let division = setting(spec::DIVISION);
                 let quarters = DELAY_DIVISIONS
                     .iter()
                     .find(|(name, _)| division.as_str() == Some(name))
                     .map_or(1.0, |(_, quarters)| *quarters);
-                ("quarters", Data::Float(quarters))
+                (spec::QUARTERS, Data::Float(quarters))
             } else {
-                ("seconds", share(&setting("ms"), MILLISECONDS))
+                (spec::SECONDS, share(&setting(spec::MS), MILLISECONDS))
             };
-            let on = Data::Bool(!matches!(setting("on"), Data::Bool(false)));
-            mapping(vec![time, ("level", share(&setting("level"), PERCENT)), ("on", on)])
+            let on = Data::Bool(!matches!(setting(spec::ON), Data::Bool(false)));
+            mapping(vec![time, (spec::LEVEL, share(&setting(spec::LEVEL), PERCENT)), (spec::ON, on)])
         })
         .collect();
     Data::List(taps)
@@ -545,10 +550,10 @@ fn taps(sound: &Sound, number: usize) -> Data {
 
 /// The Modulators slots a Mod Matrix route reads, by number, as its source or its via.
 fn lfos_read(sound: &Sound) -> Vec<usize> {
-    let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
+    let count = sound.value(spec::MATRIX).as_list().map_or(0, <[Data]>::len);
     let mut read = Vec::new();
     for slot in 1..=count {
-        let settings = every_setting(sound, "matrix", slot, SLOT_DEFAULTS);
+        let settings = every_setting(sound, spec::MATRIX, slot, SLOT_DEFAULTS);
         for end in [MatrixSetting::SOURCE, MatrixSetting::VIA] {
             let number = settings
                 .get(end)
@@ -566,12 +571,12 @@ fn lfos_read(sound: &Sound) -> Vec<usize> {
 
 /// The matrix's slots, each amount a fraction either way.
 fn matrix(sound: &Sound) -> Data {
-    let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
+    let count = sound.value(spec::MATRIX).as_list().map_or(0, <[Data]>::len);
     let mut slots = Vec::new();
     for number in 1..=count {
-        let mut slot = every_setting(sound, "matrix", number, SLOT_DEFAULTS);
-        let scaled = slot.get("amount").map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
-        set(&mut slot, "amount", scaled);
+        let mut slot = every_setting(sound, spec::MATRIX, number, SLOT_DEFAULTS);
+        let scaled = slot.get(spec::AMOUNT).map(|value| share(value, PERCENT)).unwrap_or(Data::Float(0.0));
+        set(&mut slot, spec::AMOUNT, scaled);
         slots.push(slot);
     }
     Data::List(slots)
