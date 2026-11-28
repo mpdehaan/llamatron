@@ -19,7 +19,8 @@ built.
 
 - **The support folder consolidated**: after the expert reviews, the tools in `internal_tools/` are reviewed: those that
   overlap merged, those not used or not used for a long time removed, and nothing kept only for rebuilding the retired
-  Python program, its frozen answers standing in for it, unless the song wizard's port in Rust needs it.
+  Python program, its frozen answers standing in for it, unless the song wizard's port in Rust needs it; and which of the
+  tools that stay are rewritten in Rust, likely many.
 
 ## The Model
 
