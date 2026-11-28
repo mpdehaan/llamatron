@@ -19,6 +19,7 @@ use crate::audio::wav;
 pub mod sending;
 
 use crate::drums::{self, Hit};
+use crate::dsp::{MILLISECONDS_A_SECOND, NANOSECONDS_A_MILLISECOND, NANOSECONDS_A_SECOND};
 use crate::engine::{Engine, Event, MidiEvent, FORGET, NOTE_ON};
 use crate::fluid::{Fluid, FluidProblem};
 use crate::instrument::patch::{Drum, Patch, VELOCITY_STEP};
@@ -32,14 +33,29 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-/// How many nanoseconds make a millisecond, for the statistics' times.
-const NANOSECONDS_A_MILLISECOND: f64 = 1e6;
-
 const REPORT_EVERY: Duration = Duration::from_millis(500);
 const OFFLINE_CHUNK: usize = 128;
-const MILLISECONDS: f64 = 1000.0;
 /// FluidSynth's gain where the tracker gives none, the one its own process played at.
-const FLUID_GAIN: f64 = 0.55;
+pub const FLUID_GAIN: f64 = 0.55;
+/// Where each field stands in the tracker's messages: a note's when, kind, instrument, pitch and velocity; a MIDI
+/// event's when, status and two data bytes; a sound's place after its message's name and instrument; FluidSynth's
+/// library, SoundFont and gain; and a render's seconds after its path.
+const NOTE_INSTRUMENT_PLACE: usize = 2;
+const NOTE_PITCH_PLACE: usize = 3;
+const NOTE_VELOCITY_PLACE: usize = 4;
+const MIDI_FIRST_PLACE: usize = 2;
+const MIDI_SECOND_PLACE: usize = 3;
+const SOUND_PLACE: usize = 2;
+const SOUNDFONT_PLACE: usize = 2;
+const FLUID_GAIN_PLACE: usize = 3;
+const RENDER_SECONDS_PLACE: usize = 2;
+/// A MIDI byte's highest value; the velocity's eighths a hit is rendered at the middle of, by halving a step; and how
+/// often the watcher looks for its parent, in milliseconds.
+const BYTE_TOP: f64 = 255.0;
+const HALVES: i64 = 2;
+const PARENT_LOOK_MILLISECONDS: u64 = 250;
+/// The shortest time a load is divided by, so that two looks at once divide by nothing.
+const SHORTEST_LOOK_SECONDS: f64 = 1e-9;
 
 /// Where messages to the tracker go, shared by the reader and the reporter: written to the daemon's standard output, or
 /// handed to a front end running the backend in its own process.
@@ -94,7 +110,7 @@ impl HitStore {
                 &drum.machine,
                 &drum.knobs,
                 drum.recipe_pitch(pitch),
-                (step * VELOCITY_STEP + VELOCITY_STEP / 2) as f64,
+                (step * VELOCITY_STEP + VELOCITY_STEP / HALVES) as f64,
                 rate,
             )
         });
@@ -120,9 +136,9 @@ fn notes_of(value: Option<&Value>) -> Vec<Note> {
             Some(Note {
                 when: number(0)?,
                 kind: number(1)? as i64,
-                instrument: number(2)? as usize,
-                pitch: number(3)?,
-                velocity: number(4).unwrap_or(0.0),
+                instrument: number(NOTE_INSTRUMENT_PLACE)? as usize,
+                pitch: number(NOTE_PITCH_PLACE)?,
+                velocity: number(NOTE_VELOCITY_PLACE).unwrap_or(0.0),
             })
         })
         .collect()
@@ -150,7 +166,7 @@ pub fn play(block: usize, device: Option<&str>, output: Output, input: &mut dyn 
         "playing at {} Hz, a block of {} frames, notes held back {:.2} ms",
         player.rate,
         player.block,
-        player.delay * MILLISECONDS
+        player.delay * MILLISECONDS_A_SECOND
     );
     tell(&output, &message(protocol::READY, vec![player.rate.into(), player.delay.into()]));
     let reporting = Arc::new(AtomicBool::new(true));
@@ -188,7 +204,7 @@ fn take_message(received: &Value, player: &mut Player, hits: &mut HitStore, outp
             if number < 0.0 {
                 return true;
             }
-            let patch = Box::new(Patch::compiled(item(received, 2).unwrap_or(&Value::Nil), player.rate));
+            let patch = Box::new(Patch::compiled(item(received, SOUND_PLACE).unwrap_or(&Value::Nil), player.rate));
             hits.set_instrument(number as usize, &patch);
             player.send(Command::Instrument {
                 number: number as usize,
@@ -264,12 +280,12 @@ fn midi_of(value: Option<&Value>) -> Vec<Midi> {
         .filter_map(|midi| {
             let items = midi.as_array()?;
             let number = |place: usize| items.get(place).and_then(as_number);
-            let byte = |place: usize| number(place).map(|whole| whole.clamp(0.0, 255.0) as u8);
+            let byte = |place: usize| number(place).map(|whole| whole.clamp(0.0, BYTE_TOP) as u8);
             Some(Midi {
                 when: number(0)?,
                 status: byte(1)?,
-                first: byte(2).unwrap_or(0),
-                second: byte(3).unwrap_or(0),
+                first: byte(MIDI_FIRST_PLACE).unwrap_or(0),
+                second: byte(MIDI_SECOND_PLACE).unwrap_or(0),
             })
         })
         .collect()
@@ -278,8 +294,8 @@ fn midi_of(value: Option<&Value>) -> Vec<Midi> {
 /// FluidSynth made ready from a soundfont message: its library, its SoundFont and its gain.
 fn fluid_of(received: &Value, rate: f64) -> Result<Box<Fluid>, FluidProblem> {
     let library = item(received, 1).and_then(Value::as_str).unwrap_or("");
-    let soundfont = item(received, 2).and_then(Value::as_str).unwrap_or("");
-    let gain = item(received, 3).and_then(as_number).unwrap_or(FLUID_GAIN);
+    let soundfont = item(received, SOUNDFONT_PLACE).and_then(Value::as_str).unwrap_or("");
+    let gain = item(received, FLUID_GAIN_PLACE).and_then(as_number).unwrap_or(FLUID_GAIN);
     let fluid = Fluid::load(library, soundfont, rate, gain)?;
     log::info!("FluidSynth ready with {soundfont}");
     Ok(Box::new(fluid))
@@ -302,8 +318,8 @@ pub(crate) fn start_reporter(player: &Player, output: Output, reporting: Arc<Ato
             std::thread::sleep(REPORT_EVERY);
             let now = crate::audio::clock::now();
             let busy = statistics.busy_ns.load(Ordering::Relaxed);
-            let load = (busy - last_busy) as f64 / 1e9 / (now - last_time).max(1e-9);
-            let peak = statistics.window_longest_ns.swap(0, Ordering::Relaxed) as f64 / 1e9 / budget;
+            let load = (busy - last_busy) as f64 / NANOSECONDS_A_SECOND / (now - last_time).max(SHORTEST_LOOK_SECONDS);
+            let peak = statistics.window_longest_ns.swap(0, Ordering::Relaxed) as f64 / NANOSECONDS_A_SECOND / budget;
             last_busy = busy;
             last_time = now;
             let report = mapping(vec![
@@ -325,7 +341,7 @@ pub(crate) fn statistics_of(player: &Player) -> Value {
     mapping(vec![
         (wire::RATE, player.rate.into()),
         (wire::BLOCK, (player.block as u64).into()),
-        (wire::DELAY_MS, (player.delay * MILLISECONDS).into()),
+        (wire::DELAY_MS, (player.delay * MILLISECONDS_A_SECOND).into()),
         (wire::CHUNKS, count(&statistics.chunks)),
         (wire::UNDERFLOWS, count(&statistics.stream_errors)),
         (wire::LATE_NOTES, count(&statistics.late)),
@@ -334,7 +350,7 @@ pub(crate) fn statistics_of(player: &Player) -> Value {
             (statistics.longest_ns.load(Ordering::Relaxed) as f64 / NANOSECONDS_A_MILLISECOND).into(),
         ),
         (wire::P99_CALLBACK_MS, statistics.p99_ms().into()),
-        (wire::BUDGET_MS, (player.block as f64 / player.rate * MILLISECONDS).into()),
+        (wire::BUDGET_MS, (player.block as f64 / player.rate * MILLISECONDS_A_SECOND).into()),
         (wire::FAILURES, count(&statistics.failures)),
         (wire::RUNAWAYS, count(&statistics.runaways)),
         (wire::FAULTS, count(&statistics.faults)),
@@ -361,7 +377,7 @@ pub fn render(rate: f64, output: Output, input: &mut dyn protocol::Inbox) -> i32
             protocol::INSTRUMENT => {
                 let number = item(&received, 1).and_then(as_number).unwrap_or(-1.0);
                 if number >= 0.0 {
-                    let patch = Box::new(Patch::compiled(item(&received, 2).unwrap_or(&Value::Nil), rate));
+                    let patch = Box::new(Patch::compiled(item(&received, SOUND_PLACE).unwrap_or(&Value::Nil), rate));
                     hits.set_instrument(number as usize, &patch);
                     engine.set_instrument(number as usize, patch);
                 }
@@ -409,7 +425,7 @@ pub fn render(rate: f64, output: Output, input: &mut dyn protocol::Inbox) -> i32
             }
             protocol::RENDER => {
                 let path = item(&received, 1).and_then(Value::as_str).unwrap_or("").to_string();
-                let seconds = item(&received, 2).and_then(as_number).unwrap_or(0.0);
+                let seconds = item(&received, RENDER_SECONDS_PLACE).and_then(as_number).unwrap_or(0.0);
                 let answer = render_file(&mut engine, &path, seconds);
                 tell(&output, &answer);
                 engine = Engine::new(rate, None);
@@ -459,7 +475,7 @@ pub fn watch_parent() {
     // SAFETY: getppid has no preconditions.
     let parent = unsafe { libc::getppid() };
     std::thread::spawn(move || loop {
-        std::thread::sleep(Duration::from_millis(250));
+        std::thread::sleep(Duration::from_millis(PARENT_LOOK_MILLISECONDS));
         // SAFETY: as above.
         if unsafe { libc::getppid() } != parent {
             log::info!("the tracker has gone; exiting");

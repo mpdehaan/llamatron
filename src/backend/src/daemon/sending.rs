@@ -27,13 +27,11 @@ use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
 /// Where each field stands in the tracker's lists: a port's group after its name and kind, FluidSynth's gain after its
-/// library and SoundFont, a forget's time after its tag, and an instrument's sound after its port and channel; and
-/// FluidSynth's gain where the tracker sends none.
+/// library and SoundFont, a forget's time after its tag, and an instrument's sound after its port and channel.
 const PORT_GROUP_PLACE: usize = 2;
 const FLUID_GAIN_PLACE: usize = 2;
 const FORGET_AFTER_PLACE: usize = 2;
 const SOUND_PLACE: usize = 2;
-const DEFAULT_FLUID_GAIN: f64 = 0.55;
 
 pub const OPEN: &str = wire::OPEN;
 pub const START: &str = wire::START;
@@ -159,7 +157,7 @@ fn load_fluid(opened: &Value, player: &mut Player, rate: f64) -> Result<(), Fail
         return Ok(());
     };
     let text = |place: usize| given.get(place).and_then(Value::as_str).unwrap_or("");
-    let gain = given.get(FLUID_GAIN_PLACE).and_then(as_number).unwrap_or(DEFAULT_FLUID_GAIN);
+    let gain = given.get(FLUID_GAIN_PLACE).and_then(as_number).unwrap_or(super::FLUID_GAIN);
     let fluid = Fluid::load(text(0), text(1), rate, gain).map_err(|problem| Failed(wire::FLUIDSYNTH, problem.to_string()))?;
     log::info!("FluidSynth ready with {}", text(1));
     player.send(Command::Fluid(Box::new(fluid)));

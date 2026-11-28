@@ -24,9 +24,10 @@ pub const SEMITONES_AN_OCTAVE: f64 = 12.0;
 pub const DECIBEL_BASE: f64 = 10.0;
 pub const DECIBELS_A_DECADE: f64 = 20.0;
 pub const DECIBELS_A_POWER_DECADE: f64 = 10.0;
-/// A nanosecond's share of a second, and a millisecond's.
+/// A nanosecond's share of a second, and a millisecond's, and a millisecond's nanoseconds.
 pub const NANOSECONDS_A_SECOND: f64 = 1e9;
 pub const MILLISECONDS_A_SECOND: f64 = 1000.0;
+pub const NANOSECONDS_A_MILLISECOND: f64 = 1e6;
 /// The xorshift's three shifts, Marsaglia's, which the backend's quick noises step by; the shift and the mantissa's bits
 /// by which its state becomes a number from -1 to 1; and how a note's random number from -1 to 1 becomes the seed of a
 /// noise of its own.

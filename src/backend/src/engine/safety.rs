@@ -17,7 +17,7 @@
 //! - and a latch: three faults within a second, or the limiter pulling down 20 dB for half a second, fade the output to
 //!   silence until the tracker's silence (Ctrl+T) clears it.
 
-use crate::dsp::{Biquad, BUTTERWORTH_FOUR_Q, BUTTERWORTH_Q, HIGHEST_SHARE};
+use crate::dsp::{Biquad, BUTTERWORTH_FOUR_Q, BUTTERWORTH_Q, DECIBELS_A_DECADE, DECIBEL_BASE, HIGHEST_SHARE};
 use crate::engine::MOST_FRAMES;
 
 pub const RUNAWAY: f32 = 16.0;
@@ -37,19 +37,29 @@ const FAULT_WINDOW_SECONDS: f64 = 1.0;
 const HARD_LIMITING_DB: f64 = 20.0;
 const HARD_LIMITING_SECONDS: f64 = 0.5;
 const UNMUTE_SECONDS: f64 = 0.05;
+/// The guard's filter's sections, a high pass and the low pass's two, and the quietest level it reads, so that silence
+/// divides by nothing.
+const SECTIONS: usize = 3;
+const QUIETEST: f64 = 1e-12;
 
 /// Whether an instrument's chunk is a fault: a number not finite, or far louder than any patch makes.
 pub fn is_runaway(buffer: &[f32]) -> bool {
     buffer.iter().any(|sample| !sample.is_finite() || sample.abs() > RUNAWAY)
 }
 
+/// A gain's decibels, a silent gain's held at the quietest the guard reads.
 fn decibels(gain: f64) -> f64 {
-    20.0 * gain.max(1e-12).log10()
+    DECIBELS_A_DECADE * gain.max(QUIETEST).log10()
+}
+
+/// A gain of some decibels.
+fn gain_of(decibels: f64) -> f64 {
+    DECIBEL_BASE.powf(decibels / DECIBELS_A_DECADE)
 }
 
 /// The output's guard.
 pub struct OutputGuard {
-    sections: [Biquad; 3],
+    sections: [Biquad; SECTIONS],
     gain: f64,
     loudness: f64,
     turned: f64,
@@ -164,10 +174,10 @@ impl OutputGuard {
         }
         let mut lowest = 1.0_f64;
         for place in (0..count).rev() {
-            lowest = lowest.min((CEILING / self.work[place].abs().max(1e-12)).min(1.0));
+            lowest = lowest.min((CEILING / self.work[place].abs().max(QUIETEST)).min(1.0));
             self.ahead[place] = lowest;
         }
-        let released = self.gain * 10f64.powf(RELEASE_DB_PER_SECOND * count as f64 / self.rate / 20.0);
+        let released = self.gain * gain_of(RELEASE_DB_PER_SECOND * count as f64 / self.rate);
         let end = 1.0_f64.min(released).min(self.ahead[count - 1]);
         let mut least = 1.0_f64;
         for place in 0..count {
@@ -203,11 +213,9 @@ impl OutputGuard {
         let seconds = count as f64 / self.rate;
         let before = self.turned;
         if self.loudness > LOUDEST {
-            self.turned = 10f64
-                .powf(-MOST_TURNED_DOWN_DB / 20.0)
-                .max(self.turned * 10f64.powf(-TURN_DOWN_DB_PER_SECOND * seconds / 20.0));
+            self.turned = gain_of(-MOST_TURNED_DOWN_DB).max(self.turned * gain_of(-TURN_DOWN_DB_PER_SECOND * seconds));
         } else if self.turned < 1.0 {
-            self.turned = 1.0_f64.min(self.turned * 10f64.powf(TURN_UP_DB_PER_SECOND * seconds / 20.0));
+            self.turned = 1.0_f64.min(self.turned * gain_of(TURN_UP_DB_PER_SECOND * seconds));
         }
         if before == 1.0 && self.turned == 1.0 {
             return;
@@ -243,23 +251,38 @@ impl OutputGuard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::RATE;
 
+    /// The chunk the tests guard at a time, in samples.
+    const CHUNK: usize = 128;
+
+    /// A square four times full scale, a hundred cycles a chunk's worth, comes out no louder than the backstop.
     #[test]
     fn a_full_scale_square_comes_out_under_the_ceiling() {
-        let mut guard = OutputGuard::new(48000.0);
+        let (chunks, half_cycle, halves, level, exact) = (100, 50, 2, 4.0, 1e-6);
+        let mut guard = OutputGuard::new(RATE);
         let mut most: f32 = 0.0;
-        for chunk in 0..100 {
-            let mut mix: Vec<f32> = (0..128).map(|place| if (chunk * 128 + place) / 50 % 2 == 0 { 4.0 } else { -4.0 }).collect();
+        for chunk in 0..chunks {
+            let mut mix: Vec<f32> = (0..CHUNK)
+                .map(|place| {
+                    if ((chunk * CHUNK + place) / half_cycle).is_multiple_of(halves) {
+                        level
+                    } else {
+                        -level
+                    }
+                })
+                .collect();
             guard.guard(&mut mix);
             most = mix.iter().fold(most, |most, sample| most.max(sample.abs()));
         }
-        assert!(most <= BACKSTOP as f32 + 1e-6, "{most}");
+        assert!(most <= BACKSTOP as f32 + exact, "{most}");
     }
 
+    /// Three faults within a second latch the output, muted until cleared.
     #[test]
     fn three_faults_within_a_second_latch_the_output_until_cleared() {
-        let mut guard = OutputGuard::new(48000.0);
-        for _ in 0..3 {
+        let mut guard = OutputGuard::new(RATE);
+        for _ in 0..FAULTS_TO_LATCH {
             guard.fault();
         }
         assert!(guard.is_muted());
@@ -267,10 +290,11 @@ mod tests {
         assert!(!guard.is_muted());
     }
 
+    /// A sample that is not a number comes out as silence.
     #[test]
     fn a_number_not_finite_becomes_silence() {
-        let mut guard = OutputGuard::new(48000.0);
-        let mut mix = vec![f32::NAN; 128];
+        let mut guard = OutputGuard::new(RATE);
+        let mut mix = vec![f32::NAN; CHUNK];
         guard.guard(&mut mix);
         assert!(mix.iter().all(|sample| *sample == 0.0));
     }

@@ -23,11 +23,10 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-/// The percentile of callback times reported, the 99th, out of a hundred; a millisecond's nanoseconds; and how long the
-/// player idles between looks while nothing plays, in milliseconds.
+/// The percentile of callback times reported, the 99th, out of a hundred; and how long the player idles between looks
+/// while nothing plays, in milliseconds.
 const PERCENTILE: u64 = 99;
 const PERCENT: u64 = 100;
-const NANOSECONDS_A_MILLISECOND: f64 = 1e6;
 const IDLE_MILLISECONDS: u64 = 2;
 
 const COMMANDS: usize = 1 << 16;
@@ -170,7 +169,7 @@ impl Statistics {
         for (bin, count) in counts.iter().enumerate() {
             seen += count;
             if total > 0 && seen * PERCENT >= total * PERCENTILE {
-                return ((bin as u64 + 1) * HISTOGRAM_STEP_NS) as f64 / NANOSECONDS_A_MILLISECOND;
+                return ((bin as u64 + 1) * HISTOGRAM_STEP_NS) as f64 / crate::dsp::NANOSECONDS_A_MILLISECOND;
             }
         }
         0.0
