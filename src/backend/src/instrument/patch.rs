@@ -16,9 +16,11 @@
 
 use crate::drums::Hit;
 use crate::dsp::Random;
+use crate::dsp::SEMITONES_AN_OCTAVE;
 use crate::effects::{self, Effect};
 use crate::engine::MOST_FRAMES;
 use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
+use crate::envelopes::{ENV1_PLACE, ENV2_PLACE, ENV3_PLACE, ENVELOPE_COUNT};
 use crate::filters::gate::{GateNote, GatePart, GateState};
 use crate::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
 use crate::instrument::amp::{self, AmpPart};
@@ -37,6 +39,7 @@ const MIDDLE_C: f64 = 60.0;
 /// The two places a low-pass gate can stand in a voice: the Filter's, which the Amp follows, and the Amp's own.
 const FILTER_GATE: usize = 0;
 const AMP_GATE: usize = 1;
+const GATE_COUNT: usize = 2;
 /// The rate from which an LFO is heard as a tone, and moves a cutoff at audio rate.
 const AUDIO_RATE_HERTZ: f64 = 20.0;
 /// The most of a cycle a Key LFO moves a sample: just under half, the highest frequency a sample rate can hold.
@@ -67,10 +70,10 @@ pub struct Voice {
     last_wave: f64,
     /// The most the modulation bent the pitch up over the last chunk, in half steps, from which the next chooses its table.
     reach: f64,
-    envelopes: [EnvelopeState; 3],
+    envelopes: [EnvelopeState; ENVELOPE_COUNT],
     filter: FilterState,
     /// The voice's low-pass gates, in the Filter's place and the Amp's.
-    gates: [GateState; 2],
+    gates: [GateState; GATE_COUNT],
     glide_from: f64,
     glide_at: i64,
     random: f64,
@@ -82,7 +85,7 @@ pub struct Voice {
 
 impl Voice {
     /// Where each of its three envelopes started from: 0 for a fresh note, or where a restruck voice's had reached.
-    pub fn envelope_starts(&self) -> [f64; 3] {
+    pub fn envelope_starts(&self) -> [f64; ENVELOPE_COUNT] {
         std::array::from_fn(|place| self.envelopes[place].start_level)
     }
 
@@ -129,9 +132,9 @@ impl Voice {
             lfo_cycles: [0.0; LFO_COUNT],
             reach: 0.0,
             last_wave: 0.0,
-            envelopes: [EnvelopeState::default(); 3],
+            envelopes: [EnvelopeState::default(); ENVELOPE_COUNT],
             filter: FilterState::default(),
-            gates: [GateState::default(); 2],
+            gates: [GateState::default(); GATE_COUNT],
             glide_from: pitch,
             glide_at: start,
             random: 0.0,
@@ -145,13 +148,13 @@ impl Voice {
 /// A voice of parts.
 pub struct Modular {
     oscillator: OscillatorPart,
-    envelopes: [EnvelopePart; 3],
-    memory: [EnvelopeMemory; 3],
+    envelopes: [EnvelopePart; ENVELOPE_COUNT],
+    memory: [EnvelopeMemory; ENVELOPE_COUNT],
     filter: Option<FilterPart>,
     /// A low-pass gate in the Filter's place, followed by the Amp, and one in the Amp's place, the voice's last stage.
-    gates: [Option<GatePart>; 2],
+    gates: [Option<GatePart>; GATE_COUNT],
     /// What each gate's own cell remembers of the notes before, as the envelopes' memories do.
-    gate_memory: [EnvelopeMemory; 2],
+    gate_memory: [EnvelopeMemory; GATE_COUNT],
     /// The Amp the voice ends in, which Env 1 opens (amp.rs), unless a low-pass gate stands in its place.
     amp: AmpPart,
     own_filter: bool,
@@ -339,7 +342,7 @@ impl Patch {
         // the acid gate, so that it accents in any slot, not only Env1's.
         voice.accent_depth = 0.0;
         voice.short_decay = None;
-        for place in 0..3 {
+        for place in 0..ENVELOPE_COUNT {
             let (state, depth, short) = modular.envelopes[place].start(&mut modular.memory[place], voice.level, seconds);
             voice.envelopes[place] = state;
             voice.accent_depth = voice.accent_depth.max(depth);
@@ -443,13 +446,13 @@ impl Patch {
         let wants_env2 = modular.reads_env2 && (modular.own_filter || is_newest || modular.matrix_reads_env2);
         // What each envelope's level is scaled by to light an amp or a gate: the note's velocity, unless the envelope
         // takes velocity itself.
-        let velocity_of: [f64; 3] = std::array::from_fn(|place| if modular.envelopes[place].takes_velocity() { 1.0 } else { voice.level });
+        let velocity_of: [f64; ENVELOPE_COUNT] = std::array::from_fn(|place| if modular.envelopes[place].takes_velocity() { 1.0 } else { voice.level });
         // The oscillator is needed unless the first gate the sound meets is fed a ping alone.
         let first_gate = modular.gates[FILTER_GATE].as_ref().or(modular.gates[AMP_GATE].as_ref());
         let wants_oscillator = first_gate.is_none_or(|gate| gate.feeds_oscillator);
         // The envelopes' levels with velocity, which light a gate, worked out only where a gate stands, so that the
         // many voices with none pay nothing for it.
-        let lit_of = |levels: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|place| levels[place] * velocity_of[place]) };
+        let lit_of = |levels: &[f64; ENVELOPE_COUNT]| -> [f64; ENVELOPE_COUNT] { std::array::from_fn(|place| levels[place] * velocity_of[place]) };
         let snail_reads = &modular.snail_reads;
         let mut sources = Sources {
             velocity: voice.level,
@@ -471,12 +474,12 @@ impl Patch {
                 released: voice.release_at.map(|released| (released - voice.start) as f64 / rate),
             };
             let short = voice.short_decay;
-            sources.envelopes[0] = modular.envelopes[0].level(&mut voice.envelopes[0], note, None);
+            sources.envelopes[ENV1_PLACE] = modular.envelopes[ENV1_PLACE].level(&mut voice.envelopes[ENV1_PLACE], note, None);
             if wants_env2 {
-                sources.envelopes[1] = modular.envelopes[1].level(&mut voice.envelopes[1], note, short);
+                sources.envelopes[ENV2_PLACE] = modular.envelopes[ENV2_PLACE].level(&mut voice.envelopes[ENV2_PLACE], note, short);
             }
             if modular.reads_env3 {
-                sources.envelopes[2] = modular.envelopes[2].level(&mut voice.envelopes[2], note, None);
+                sources.envelopes[ENV3_PLACE] = modular.envelopes[ENV3_PLACE].level(&mut voice.envelopes[ENV3_PLACE], note, None);
             }
             sources.oscillator = voice.last_wave;
             sources.oscs = voice.oscillator.sides;
@@ -535,7 +538,7 @@ impl Patch {
                     octaves += sources.envelopes[1] * (filter.amount + voice.accent_depth) * ENVELOPE_OCTAVES;
                 }
                 if filter.key_track != 0.0 {
-                    octaves += filter.key_track * (voice.pitch - MIDDLE_C) / 12.0;
+                    octaves += filter.key_track * (voice.pitch - MIDDLE_C) / SEMITONES_AN_OCTAVE;
                 }
                 if modular.own_filter {
                     wave = filter.process(&mut voice.filter, wave, octaves, moved.resonance);
@@ -658,19 +661,19 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     let env2_sweeps = env2_to_filter && filter.as_ref().is_some_and(|filter| filter.amount != 0.0 || can_accent);
     Modular {
         oscillator,
-        envelopes: [envelope(0), envelope(1), envelope(2)],
-        memory: [EnvelopeMemory::default(); 3],
+        envelopes: [envelope(ENV1_PLACE), envelope(ENV2_PLACE), envelope(ENV3_PLACE)],
+        memory: [EnvelopeMemory::default(); ENVELOPE_COUNT],
         own_filter: gates[FILTER_GATE].is_some() || truth(spec, spec::FILTER_PER_NOTE, true),
-        reads_env2: env2_sweeps || matrix_reads_env2 || gates_read(1),
+        reads_env2: env2_sweeps || matrix_reads_env2 || gates_read(ENV2_PLACE),
         env2_to_filter,
         matrix_reads_env2,
         snail_reads,
         noted_weights: [[0.0; WEIGHTED_COUNT]; LFO_COUNT],
-        reads_env3: matrix.uses(Source::Env3) || gates_read(2),
+        reads_env3: matrix.uses(Source::Env3) || gates_read(ENV3_PLACE),
         tuning_cents,
         filter,
         gates,
-        gate_memory: [EnvelopeMemory::default(); 2],
+        gate_memory: [EnvelopeMemory::default(); GATE_COUNT],
         amp: amp::compiled(amp_spec),
         shared: FilterState::default(),
         shared_octaves: vec![0.0; MOST_FRAMES],
@@ -687,16 +690,18 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::RATE;
 
     /// The filter's coefficients are worked out every sample where the Mod Matrix moves its cutoff at audio rate, by the
     /// oscillator or an LFO past hearing's bottom, and every few samples where only a slow source moves it.
     #[test]
     fn an_audio_rate_route_to_the_cutoff_works_the_filter_out_every_sample() {
+        let half_amount = 0.5;
         let every_sample = |source: &str, lfo_hertz: f64| {
             let route = Value::Map(vec![
                 (spec::SOURCE.into(), source.into()),
                 (spec::DESTINATION.into(), spec::CUTOFF.into()),
-                (spec::AMOUNT.into(), 0.5.into()),
+                (spec::AMOUNT.into(), half_amount.into()),
             ]);
             let lfo = Value::Map(vec![(spec::RATE.into(), lfo_hertz.into())]);
             let spec = Value::Map(vec![
@@ -704,7 +709,7 @@ mod tests {
                 (spec::MATRIX.into(), Value::Array(vec![route])),
                 (spec::LFOS.into(), Value::Array(vec![lfo])),
             ]);
-            let Sound::Modular(modular) = Patch::compiled(&spec, 48000.0).sound else {
+            let Sound::Modular(modular) = Patch::compiled(&spec, RATE).sound else {
                 panic!("a modular sound")
             };
             modular.filter.expect("a filter").every_sample

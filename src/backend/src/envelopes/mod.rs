@@ -14,6 +14,12 @@ pub mod chip_steps;
 pub mod sid_adsr;
 pub mod vactrol;
 
+/// The envelopes a voice has, Env 1 to Env 3, and each one's place among them.
+pub const ENVELOPE_COUNT: usize = 3;
+pub const ENV1_PLACE: usize = 0;
+pub const ENV2_PLACE: usize = 1;
+pub const ENV3_PLACE: usize = 2;
+
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Entry};
 use llamatron_names::spec;

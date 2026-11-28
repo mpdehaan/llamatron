@@ -14,9 +14,7 @@ use llamatron_names::spec;
 use rmpv::Value;
 
 use crate::dsp::UNIPOLAR_HALVING;
-/// The envelopes a voice has, and Env 3's place among them.
-const ENVELOPE_COUNT: usize = 3;
-const ENV3_PLACE: usize = 2;
+use crate::envelopes::{ENV3_PLACE, ENVELOPE_COUNT};
 
 /// What a matrix slot reads.
 #[derive(Clone, Copy, PartialEq, Eq)]

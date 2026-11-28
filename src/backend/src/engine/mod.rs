@@ -27,6 +27,10 @@ const VELOCITY_TOP: f64 = 127.0;
 
 /// The most frames a chunk of audio holds, which every buffer that a chunk fills is made for.
 pub const MOST_FRAMES: usize = 8192;
+/// The tempo a song is taken to play at until it says, in quarter notes a minute, and a minute's seconds, which turn a
+/// tempo into a beat's length.
+pub const FIRST_TEMPO: f64 = 120.0;
+pub const SECONDS_A_MINUTE: f64 = 60.0;
 
 pub const NOTE_ON: i64 = 0;
 pub const NOTE_OFF: i64 = 1;

@@ -12,6 +12,7 @@
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::effects::bucket_brigade::{BucketBrigade, Design};
+use crate::engine::{FIRST_TEMPO, SECONDS_A_MINUTE};
 use crate::protocol::values::{as_number, field, list, number, truth, word};
 use llamatron_names::spec;
 use rmpv::Value;
@@ -47,9 +48,6 @@ const MOST_TAIL_REPEATS: f64 = 200.0;
 const TAIL_MARGIN_SECONDS: f64 = 0.05;
 /// The most feedback, short of a repeat as loud as the last, so that it can never run away.
 const MOST_FEEDBACK: f64 = 0.9;
-/// The tempo synced taps follow until the song says, and seconds to a minute.
-const FIRST_TEMPO: f64 = 120.0;
-const SECONDS_PER_MINUTE: f64 = 60.0;
 /// The shortest time a tap reads, in samples: the interpolation reads one sample newer than its own.
 const SHORTEST_DELAY: f64 = 2.0;
 /// A Fade lasts half the delay, held between these, in seconds; a change under half a sample is no change.
@@ -213,7 +211,7 @@ impl MultiTap {
         let longest = (self.line.len() - HERMITE_POINTS) as f64;
         std::array::from_fn(|place| {
             let seconds = match self.taps[place].time {
-                TapTime::Quarters(quarters) => quarters * SECONDS_PER_MINUTE / tempo.max(1.0),
+                TapTime::Quarters(quarters) => quarters * SECONDS_A_MINUTE / tempo.max(1.0),
                 TapTime::Seconds(seconds) => seconds,
             };
             (seconds * self.rate).clamp(SHORTEST_DELAY, longest)
@@ -407,7 +405,7 @@ mod tests {
     }
 
     fn beat(quarters: f64, tempo: f64) -> usize {
-        (quarters * SECONDS_PER_MINUTE / tempo * RATE).round() as usize
+        (quarters * SECONDS_A_MINUTE / tempo * RATE).round() as usize
     }
 
     /// A click comes back at each tap's time, an eighth, a quarter, a dotted quarter and a half note at 120, at the tap's

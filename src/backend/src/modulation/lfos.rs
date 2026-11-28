@@ -10,7 +10,7 @@
 
 use crate::dsp::blep::{blep, naive_triangle, sine};
 use crate::dsp::Random;
-use crate::engine::MOST_FRAMES;
+use crate::engine::{FIRST_TEMPO, MOST_FRAMES, SECONDS_A_MINUTE};
 use crate::modulation::matrix::{BankSource, RateRoute, WeightRoute};
 use crate::modulation::snail::{Snail, OUTPUT_COUNT, WEIGHTED_COUNT};
 use crate::protocol::values::{number, word};
@@ -145,10 +145,6 @@ fn snail_of(spec: &Value, instrument: u64, place: usize) -> Option<Snail> {
     let trips = std::array::from_fn(|lane| given.and_then(|seconds| seconds.get(lane)).and_then(crate::protocol::values::as_number));
     Some(Snail::seeded(snail_seed(instrument, place), weightings, trips))
 }
-
-/// The tempo a song is taken to play at until it says, in quarter notes a minute.
-const FIRST_TEMPO: f64 = 120.0;
-const SECONDS_PER_MINUTE: f64 = 60.0;
 
 impl LfoBank {
     /// The bank a spec's list of slots describes, at a sample rate.
@@ -431,7 +427,7 @@ impl LfoBank {
 
 /// The cycles a sample of an LFO lasting some quarter notes a cycle moves on at a tempo.
 fn tempo_step(tempo: f64, quarters: f64, rate: f64) -> f64 {
-    tempo.max(1.0) / SECONDS_PER_MINUTE / quarters.max(f64::MIN_POSITIVE) / rate
+    tempo.max(1.0) / SECONDS_A_MINUTE / quarters.max(f64::MIN_POSITIVE) / rate
 }
 
 /// How far an LFO fading in over some seconds has risen at an age into its note, from 0 to 1 along an S curve, so that

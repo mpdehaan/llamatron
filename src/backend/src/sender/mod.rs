@@ -21,9 +21,19 @@ use std::time::Duration;
 const SPIN_SECONDS: f64 = 0.0015;
 const SLEEP_SLICE_SECONDS: f64 = 0.0005;
 /// The records' version, first in each batch, and a record's size: seconds, tag, port, channel, kind, number, value, as the
-/// tracker packs them (sender_process/process.py, `RECORD`).
+/// tracker packs them.
 const RECORDS_VERSION: u8 = 1;
 const RECORD_BYTES: usize = 17;
+/// Where each field of a record starts: the seconds, a double of eight bytes, first; the tag, four bytes, after them;
+/// then a byte each for the port, the channel, the kind, the number and the value.
+const SECONDS_BYTES: usize = 8;
+const TAG_AT: usize = SECONDS_BYTES;
+const TAG_BYTES: usize = 4;
+const PORT_AT: usize = TAG_AT + TAG_BYTES;
+const CHANNEL_AT: usize = PORT_AT + 1;
+const KIND_AT: usize = CHANNEL_AT + 1;
+const NUMBER_AT: usize = KIND_AT + 1;
+const VALUE_AT: usize = NUMBER_AT + 1;
 
 /// What the reader asks of the sender's thread.
 pub enum SenderCommand {
@@ -53,18 +63,18 @@ pub fn events_of(records: &[u8]) -> Vec<Sent> {
         .0
         .iter()
         .map(|record| {
-            let mut seconds = [0u8; 8];
-            seconds.copy_from_slice(&record[..8]);
-            let mut tag = [0u8; 4];
-            tag.copy_from_slice(&record[8..12]);
+            let mut seconds = [0u8; SECONDS_BYTES];
+            seconds.copy_from_slice(&record[..TAG_AT]);
+            let mut tag = [0u8; TAG_BYTES];
+            tag.copy_from_slice(&record[TAG_AT..PORT_AT]);
             Sent {
                 seconds: f64::from_le_bytes(seconds),
                 tag: u32::from_le_bytes(tag),
-                port: record[12] as usize,
-                channel: record[13],
-                kind: record[14],
-                number: record[15],
-                value: record[16],
+                port: record[PORT_AT] as usize,
+                channel: record[CHANNEL_AT],
+                kind: record[KIND_AT],
+                number: record[NUMBER_AT],
+                value: record[VALUE_AT],
             }
         })
         .collect()
@@ -138,28 +148,36 @@ mod tests {
     use engine::{NOTE_OFF, NOTE_ON};
     use outputs::Output;
 
+    /// The made-up note the tests send: its tag, channel, pitch and velocity, and when it starts in the record test.
+    const TAG: u32 = 7;
+    const CHANNEL: u8 = 2;
+    const PITCH: u8 = 60;
+    const VELOCITY: u8 = 100;
+    const STARTS: f64 = 1.5;
+
+    /// A record as the tracker packs it, of the made-up note's tag, port 0, channel and velocity.
     fn record(seconds: f64, kind: u8, number: u8) -> Vec<u8> {
         let mut bytes = seconds.to_le_bytes().to_vec();
-        bytes.extend_from_slice(&7u32.to_le_bytes());
-        bytes.extend_from_slice(&[0, 2, kind, number, 100]);
+        bytes.extend_from_slice(&TAG.to_le_bytes());
+        bytes.extend_from_slice(&[0, CHANNEL, kind, number, VELOCITY]);
         bytes
     }
 
     #[test]
     fn records_read_back_as_the_tracker_packed_them() {
         let mut batch = vec![RECORDS_VERSION];
-        batch.extend(record(1.5, NOTE_ON, 60));
+        batch.extend(record(STARTS, NOTE_ON, PITCH));
         let events = events_of(&batch);
         assert_eq!(
             events,
             vec![Sent {
-                seconds: 1.5,
-                tag: 7,
+                seconds: STARTS,
+                tag: TAG,
                 port: 0,
-                channel: 2,
+                channel: CHANNEL,
                 kind: NOTE_ON,
-                number: 60,
-                value: 100
+                number: PITCH,
+                value: VELOCITY
             }]
         );
     }
@@ -180,22 +198,23 @@ mod tests {
             port: 0,
             channel: 0,
             kind: NOTE_ON,
-            number: 60,
-            value: 100,
+            number: PITCH,
+            value: VELOCITY,
         }]);
+        let long_after = 50.0;
         engine.add(vec![Sent {
-            seconds: 50.0,
+            seconds: long_after,
             tag: 1,
             port: 0,
             channel: 0,
             kind: NOTE_OFF,
-            number: 60,
+            number: PITCH,
             value: 0,
         }]);
         engine.send_due();
         engine.stop_tag(1);
         let sent: Vec<Vec<u8>> = engine.recordings()[0].iter().map(|item| item.1.clone()).collect();
-        assert_eq!(sent, vec![vec![NOTE_ON, 60, 100], vec![NOTE_OFF, 60, 0]]);
+        assert_eq!(sent, vec![vec![NOTE_ON, PITCH, VELOCITY], vec![NOTE_OFF, PITCH, 0]]);
         assert_eq!(engine.next_action(), None);
     }
 }
