@@ -370,3 +370,7 @@ pub const WIDE: &str = "wide";
 pub const WORN: &str = "worn";
 pub const WOW: &str = "wow";
 pub const WRAP: &str = "wrap";
+/// An oscillator's range written as the length of an organ pipe, eight feet: at the note.
+pub const RANGE_EIGHT: &str = "8";
+pub const OH3: &str = "oh3";
+pub const VERY_HIGH: &str = "very_high";

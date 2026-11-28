@@ -12,40 +12,32 @@ use llamatron_backend::filters;
 use llamatron_backend::instrument::amp;
 use llamatron_backend::modulation::{lfos, matrix};
 use llamatron_backend::oscillators;
-use llamatron_model::file::data::{load, Data};
-use llamatron_model::objects::setlist::Instrument;
+use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{DRUM_MACHINES, EFFECTS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
-use llamatron_names::file_format;
 use llamatron_names::scenario;
+use llamatron_names::spec;
 use llamatron_tracker::generated::sounds::PART_TYPES;
-use llamatron_tracker::instrument_sound::Sound;
-use llamatron_tracker::sound_spec::synth_spec;
 use std::collections::BTreeSet;
 
-/// Where the drums sound from, which a spec needs and these tests do not.
-const DRUMS_FROM: i64 = 36;
-/// A choice that leaves a slot empty, written as its own name.
-const NOTHING: &str = file_format::MatrixSource::NONE;
+mod support;
+use support::{list, settings, spec_of};
 
-/// The spec the tracker writes for a sound written as a set file writes one.
-fn spec_of(sound: &str) -> Data {
-    let text = format!("{{ name: tried, kind: built_in, role: normal, sound: {sound} }}");
-    let data = load(&text).expect("the scenario's sound is YAML");
-    let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
-    synth_spec(&Sound::of(&instrument), DRUMS_FROM)
-}
+/// A choice that leaves a slot empty, written as its own name.
+const NOTHING: &str = spec::NONE;
+/// How many envelope slots a sound has.
+const ENVELOPE_SLOTS: usize = 3;
 
 /// A spec's part's type, as the backend reads it.
 fn written_type(spec: &Data, part: &str) -> String {
     let found = if let Some(slot) = part.strip_prefix(scenario::ENV) {
         let place: usize = slot.parse::<usize>().expect("an envelope slot's number") - 1;
-        spec.get(file_format::SoundSetting::ENVELOPES)
+        spec.get(spec::ENVELOPES)
             .and_then(Data::as_list)
             .and_then(|envelopes| envelopes.get(place))
-            .and_then(|envelope| envelope.get(file_format::ScaleSetting::TYPE))
+            .and_then(|envelope| envelope.get(spec::TYPE))
             .cloned()
     } else {
-        spec.get(part).and_then(|written| written.get(file_format::ScaleSetting::TYPE)).cloned()
+        spec.get(part).and_then(|written| written.get(spec::TYPE)).cloned()
     };
     found.and_then(|name| name.as_str().map(str::to_string)).unwrap_or_else(|| NOTHING.to_string())
 }
@@ -53,36 +45,32 @@ fn written_type(spec: &Data, part: &str) -> String {
 /// The names a backend registry holds for a part of a voice.
 fn registered(part: &str) -> BTreeSet<&'static str> {
     match part {
-        file_format::SoundSetting::OSCILLATORS => oscillators::REGISTRY.iter().map(|entry| entry.name).collect(),
-        file_format::SoundSetting::FILTER => filters::REGISTRY.iter().map(|entry| entry.name).collect(),
-        file_format::MatrixDestination::AMP => amp::TYPES.iter().map(|choice| choice.name).collect(),
+        spec::OSCILLATORS => oscillators::REGISTRY.iter().map(|entry| entry.name).collect(),
+        spec::FILTER => filters::REGISTRY.iter().map(|entry| entry.name).collect(),
+        spec::AMP => amp::TYPES.iter().map(|choice| choice.name).collect(),
         envelope if envelope.starts_with(scenario::ENV) => envelopes::REGISTRY.iter().map(|entry| entry.name).collect(),
         other => panic!("the part {other} has no registry these tests know of"),
     }
 }
 
-/// The sound of a part set to a type, written as a set file writes one.
-fn sound_with(part: &str, kind: &str) -> String {
+/// The sound of the basic engine with a part set to a type, the other envelope slots ADSRs.
+fn sound_with(part: &str, kind: &str) -> Data {
+    let typed = |name: &str| settings(&[(spec::TYPE, Data::text(name))]);
+    let engine = (spec::ENGINE, Data::text(spec::BASIC));
     if let Some(slot) = part.strip_prefix(scenario::ENV) {
         let place: usize = slot.parse::<usize>().expect("an envelope slot's number") - 1;
-        let slots: Vec<String> = (0..3)
-            .map(|number| {
-                if number == place {
-                    format!("{{ type: {kind} }}")
-                } else {
-                    "{ type: adsr }".to_string()
-                }
-            })
+        let slots = (0..ENVELOPE_SLOTS)
+            .map(|number| typed(if number == place { kind } else { spec::ADSR }))
             .collect();
-        return format!("{{ engine: basic, envelopes: [{}] }}", slots.join(", "));
+        return settings(&[engine, (spec::ENVELOPES, list(slots))]);
     }
-    format!("{{ engine: basic, {part}: {{ type: {kind} }} }}")
+    settings(&[engine, (part, typed(kind))])
 }
 
 /// Which registry a part's types are held in: the three envelope slots share one.
 fn registry_of(part: &str) -> &str {
     if part.starts_with(scenario::ENV) {
-        file_format::SoundSetting::ENVELOPES
+        spec::ENVELOPES
     } else {
         part
     }
@@ -96,7 +84,7 @@ fn every_part_type_offered_is_registered_and_every_registered_type_is_offered() 
     for (part, kinds, _) in PART_TYPES {
         let registry = registered(part);
         for kind in kinds.iter() {
-            let name = written_type(&spec_of(&sound_with(part, kind)), part);
+            let name = written_type(&spec_of(sound_with(part, kind)), part);
             assert!(
                 registry.contains(name.as_str()),
                 "{part} offers {kind}, written as {name}, which no registry holds"
@@ -119,12 +107,13 @@ fn every_effect_offered_is_registered_and_every_registered_effect_is_offered() {
     let registered: BTreeSet<&str> = effects::REGISTRY.iter().map(|entry| entry.name).collect();
     assert_eq!(offered, registered);
     for name in &offered {
-        let spec = spec_of(&format!("{{ engine: basic, effects: [{{ effect: {name} }}] }}"));
-        let written = spec
-            .get(file_format::SoundSetting::EFFECTS)
+        let effect = settings(&[(spec::EFFECT, Data::text(name))]);
+        let written_spec = spec_of(settings(&[(spec::ENGINE, Data::text(spec::BASIC)), (spec::EFFECTS, list(vec![effect]))]));
+        let written = written_spec
+            .get(spec::EFFECTS)
             .and_then(Data::as_list)
             .and_then(|blocks| blocks.first())
-            .and_then(|block| block.get(file_format::EffectSetting::EFFECT))
+            .and_then(|block| block.get(spec::EFFECT))
             .and_then(Data::as_str);
         assert_eq!(written, Some(*name), "the effect {name} is written as itself");
     }

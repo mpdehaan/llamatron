@@ -2185,12 +2185,41 @@ fn sound_families() -> Vec<(String, Vec<(String, usize)>)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use llamatron_names::file_format::{
+        FileLayout, InstrumentKind, InstrumentRole, InstrumentSetting, ScaleKind, ScaleSetting, Section, SongSetting, TrackSetting,
+    };
+
+    /// A map of settings, built as data.
+    fn map(pairs: &[(&str, Data)]) -> Data {
+        Data::Map(pairs.iter().map(|(key, value)| (Data::text(key), value.clone())).collect())
+    }
+
+    /// A sound of an engine with more of its settings.
+    fn sound_of(engine: &str, more: &[(&str, Data)]) -> Data {
+        let mut pairs = vec![(spec::ENGINE, Data::text(engine))];
+        pairs.extend(more.iter().cloned());
+        map(&pairs)
+    }
+
+    /// A built-in instrument, made up for a test, called fish, playing a sound.
+    fn built_in_fish(sound: Data) -> Data {
+        map(&[
+            (FileLayout::NAME, Data::text(spec::FISH)),
+            (InstrumentSetting::KIND, Data::text(InstrumentKind::BUILT_IN)),
+            (InstrumentSetting::ROLE, Data::text(InstrumentRole::NORMAL)),
+            (InstrumentSetting::SOUND, sound),
+        ])
+    }
+
+    /// The instrument data describes.
+    fn instrument_of(data: Data) -> Instrument {
+        Instrument::from_data(&data).expect("the scenario's instrument is valid")
+    }
 
     /// A built-in instrument on a ladder filter at a cutoff in hertz.
     fn ladder_at(cutoff: i64) -> Instrument {
-        let text = format!("{{ name: lead, kind: built_in, role: normal, sound: {{ engine: basic, filter: {{ type: ladder, cutoff: {cutoff} }} }} }}");
-        let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-        Instrument::from_data(&data).expect("the scenario's instrument is valid")
+        let filter = map(&[(spec::TYPE, Data::text(spec::LADDER)), (spec::CUTOFF, Data::Whole(cutoff.into()))]);
+        instrument_of(built_in_fish(sound_of(spec::BASIC, &[(spec::FILTER, filter)])))
     }
 
     /// The cutoff is a frequency, so its field shows hertz, never a percent.
@@ -2222,9 +2251,7 @@ mod tests {
     #[test]
     fn the_filter_sharing_shows_only_with_more_than_one_voice() {
         let shows = |voices: i64| {
-            let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, voices: {voices} }} }}");
-            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+            let instrument = instrument_of(built_in_fish(sound_of(spec::BASIC, &[(spec::VOICES, Data::Whole(voices.into()))])));
             let sound = Sound::of(&instrument);
             let mut ids = Ids { last: 0, writes: Vec::new() };
             InstrumentEditor::voice_fields(&sound, &mut ids)
@@ -2240,16 +2267,16 @@ mod tests {
     /// a falling figure untouched, the taps on 1/8, 1/4, 1/4d and 1/2. With Sync off each tap's time is in milliseconds.
     #[test]
     fn multitap_shows_its_taps_as_rows_of_switch_time_and_level() {
-        let fields_of = |effect: &str| {
-            let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, effects: [{effect}] }} }}");
-            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+        let fields_of = |more: &[(&str, Data)]| {
+            let mut effect = vec![(spec::EFFECT, Data::text(spec::MULTITAP))];
+            effect.extend(more.iter().cloned());
+            let instrument = instrument_of(built_in_fish(sound_of(spec::BASIC, &[(spec::EFFECTS, Data::List(vec![map(&effect)]))])));
             let mut ids = Ids { last: 0, writes: Vec::new() };
             InstrumentEditor::effects_tab(&Sound::of(&instrument), false, &mut ids).columns[0]
                 .fields
                 .clone()
         };
-        let synced = fields_of("{ effect: multitap }");
+        let synced = fields_of(&[]);
         let numbered = |label: &str| named(label, &[(fill::NUMBER, 1.into())]);
         let tapped = |label: &str, tap: usize| named(label, &[(fill::NUMBER, 1.into()), (fill::TAP, tap.into())]);
         let taps: Vec<&Field> = synced.iter().filter(|field| field.is_cells()).collect();
@@ -2268,13 +2295,13 @@ mod tests {
             "{}",
             mix.value()
         );
-        let free = fields_of("{ effect: multitap, sync: false }");
+        let free = fields_of(&[(spec::SYNC, Data::Bool(false))]);
         let first = free.iter().find(|field| field.is_cells()).expect("a tap row");
         assert_eq!(
             first.cells[1].value().trim_end(),
             named(marks::MSG_MILLISECONDS_SHOWN, &[(fill::NUMBER, 250.into())])
         );
-        let second_off = fields_of("{ effect: multitap, tap2_on: false }");
+        let second_off = fields_of(&[(spec::TAP2_ON, Data::Bool(false))]);
         let switches: Vec<bool> = second_off
             .iter()
             .filter(|field| field.is_cells())
@@ -2283,14 +2310,49 @@ mod tests {
         assert_eq!(switches, [true, false, true, true]);
     }
 
-    /// A set of one song with an instrument of the YAML given, called fish, and a track called bass playing it or not.
-    fn engine_app(instrument: &str, played: bool) -> App {
-        let track = if played { "{ name: bass, instrument: fish }" } else { "{ name: bass }" };
-        let text = format!(
-            "scales:\n  - {{ name: C Major, root: C, type: major }}\ninstruments:\n  - {instrument}\nsongs:\n  - name: song\n    scale: C Major\n    tracks: [{track}]\n    scenes: [{{ name: one }}]\n"
-        );
-        let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text).expect("the scenario's set is valid");
+    /// A set of one song with the instrument given, called fish, and a track called bass playing it or not.
+    fn engine_app(instrument: Data, played: bool) -> App {
+        let (scale, root) = ("C Major", "C");
+        let named_map = |name: &str, more: &[(&str, Data)]| {
+            let mut pairs = vec![(FileLayout::NAME, Data::text(name))];
+            pairs.extend(more.iter().cloned());
+            map(&pairs)
+        };
+        let track = if played {
+            named_map(spec::BASS, &[(TrackSetting::INSTRUMENT, Data::text(spec::FISH))])
+        } else {
+            named_map(spec::BASS, &[])
+        };
+        let set = map(&[
+            (
+                Section::SCALES,
+                Data::List(vec![named_map(
+                    scale,
+                    &[(ScaleSetting::ROOT, Data::text(root)), (ScaleSetting::TYPE, Data::text(ScaleKind::MAJOR))],
+                )]),
+            ),
+            (Section::INSTRUMENTS, Data::List(vec![instrument])),
+            (
+                Section::SONGS,
+                Data::List(vec![named_map(
+                    spec::SONG,
+                    &[
+                        (SongSetting::SCALE, Data::text(scale)),
+                        (Section::TRACKS, Data::List(vec![track])),
+                        (Section::SCENES, Data::List(vec![named_map(words::ONE, &[])])),
+                    ],
+                )]),
+            ),
+        ]);
+        let setlist = llamatron_model::objects::setlist::Setlist::read_data(set).expect("the scenario's set is valid");
         App::new(crate::document::Document::new(setlist, None))
+    }
+
+    /// An instrument called fish with the settings given.
+    fn fish(more: &[(&str, Data)]) -> Data {
+        let mut pairs = vec![(FileLayout::NAME, Data::text(spec::FISH))];
+        pairs.extend(more.iter().cloned());
+        map(&pairs)
     }
 
     /// The tabs of the Instrument page of fish, by their labels, and the Engine tab's fields under its Engine and Percussion.
@@ -2317,7 +2379,14 @@ mod tests {
     /// and no GM sound; an outside device its Device, Channel, keyswitch lead and latency; LlamaSynth its Voice settings.
     #[test]
     fn the_engine_tab_shows_its_engines_own_fields() {
-        let fluid = engine_app("{ name: fish, device: \"*FluidSynth\", gm_sound: 1 }", false);
+        let outside_device = "a synthesizer";
+        let fluid = engine_app(
+            fish(&[
+                (InstrumentSetting::DEVICE, Data::text(FLUIDSYNTH_DEVICE)),
+                (InstrumentSetting::GM_SOUND, Data::Whole(1)),
+            ]),
+            false,
+        );
         let (tabs, fields) = engine_tabs(&fluid);
         assert_eq!(tabs, [labels::MSG_ENGINE_TAB]);
         assert_eq!(
@@ -2327,11 +2396,24 @@ mod tests {
         let center = named(marks::MSG_PAN_CENTER_SHOWN, &[(fill::NUMBER, DEFAULT_PAN.into())]);
         assert!(fields[1].value().ends_with(&center), "{}", fields[1].value());
         assert_eq!(fields[2].value(), marks::MSG_AUTO_CHANNEL_SHOWN);
-        let drums = engine_app("{ name: fish, device: \"*FluidSynth\", role: percussion }", false);
+        let drums = engine_app(
+            fish(&[
+                (InstrumentSetting::DEVICE, Data::text(FLUIDSYNTH_DEVICE)),
+                (InstrumentSetting::ROLE, Data::text(InstrumentRole::PERCUSSION)),
+            ]),
+            false,
+        );
         let (_, fields) = engine_tabs(&drums);
         assert_eq!(labels_of(&fields), [labels::MSG_PAN_LABEL, labels::MSG_CHANNEL_LABEL]);
         assert_eq!(fields[1].value(), marks::MSG_DRUM_CHANNEL_SHOWN);
-        let outside = engine_app("{ name: fish, device: \"a synthesizer\", channel: 3 }", false);
+        let outside_channel = 3;
+        let outside = engine_app(
+            fish(&[
+                (InstrumentSetting::DEVICE, Data::text(outside_device)),
+                (InstrumentSetting::CHANNEL, Data::Whole(outside_channel)),
+            ]),
+            false,
+        );
         let (_, fields) = engine_tabs(&outside);
         let expected = [
             labels::MSG_DEVICE_LABEL,
@@ -2340,12 +2422,12 @@ mod tests {
             labels::MSG_LATENCY_LABEL,
         ];
         assert_eq!(labels_of(&fields), expected);
-        let synth = engine_app("{ name: fish, kind: built_in, role: normal, sound: { engine: asheville } }", false);
+        let synth = engine_app(built_in_fish(sound_of(spec::ASHEVILLE, &[])), false);
         let (tabs, fields) = engine_tabs(&synth);
         assert_eq!(tabs.first().map(String::as_str), Some(labels::MSG_ENGINE_TAB));
         assert!(tabs.iter().any(|tab| tab == labels::MSG_OSCILLATORS_TAB));
         assert!(labels_of(&fields).contains(&labels::MSG_VOICES_LABEL));
-        let off = engine_app("{ name: fish, kind: \"off\" }", false);
+        let off = engine_app(fish(&[(InstrumentSetting::KIND, Data::text(InstrumentKind::OFF))]), false);
         let (tabs, fields) = engine_tabs(&off);
         assert_eq!(tabs, [labels::MSG_ENGINE_TAB]);
         assert!(fields.is_empty());
@@ -2368,7 +2450,8 @@ mod tests {
     /// LlamaSynth the built-in synths, Off nothing played.
     #[test]
     fn choosing_an_engine_sets_kind_and_device() {
-        let mut app = engine_app("{ name: fish, device: \"a synthesizer\" }", false);
+        let outside_device = "a synthesizer";
+        let mut app = engine_app(fish(&[(InstrumentSetting::DEVICE, Data::text(outside_device))]), false);
         let instrument_of = |app: &App| match app.document.get_setlist().get_item(Section::INSTRUMENTS, spec::FISH) {
             Some(Item::Instrument(instrument)) => instrument.clone(),
             _ => panic!("the instrument"),
@@ -2392,10 +2475,8 @@ mod tests {
     /// from the third, shows the device's five gauges and hides Time change, which the device's one clock settles.
     #[test]
     fn choosing_analog_starts_multitap_on_its_warm_dotted_echo() {
-        let mut app = engine_app(
-            "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville, effects: [{ effect: multitap }] } }",
-            false,
-        );
+        let multitap = map(&[(spec::EFFECT, Data::text(spec::MULTITAP))]);
+        let mut app = engine_app(built_in_fish(sound_of(spec::ASHEVILLE, &[(spec::EFFECTS, Data::List(vec![multitap]))])), false);
         let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
         let mode = id_of(&app, Write::Item(spec::EFFECTS, 1, spec::MODE));
         editor.apply(&mut app, mode, Edit::Choice(ANALOG.to_string()));
@@ -2423,8 +2504,8 @@ mod tests {
     fn percussion_changes_only_while_unused_after_asking() {
         use crate::keybindings::ConfirmDialog as ConfirmKeys;
         use crate::keys::first_key;
-        let synth = "{ name: fish, kind: built_in, role: normal, sound: { engine: asheville } }";
-        let mut played = engine_app(synth, true);
+        let synth = built_in_fish(sound_of(spec::ASHEVILLE, &[]));
+        let mut played = engine_app(synth.clone(), true);
         let mut editor = InstrumentEditor { name: spec::FISH.to_string() };
         let toggle = id_of(&played, Write::Percussion);
         editor.apply(&mut played, toggle, Edit::Toggle(true));
@@ -2456,18 +2537,20 @@ mod tests {
     /// and with Key on the Rate is a ratio to the note.
     #[test]
     fn an_lfo_rate_shows_its_hertz_and_key_shows_only_at_audio_rate() {
-        let fields_of = |lfo: &str| {
-            let text = format!("{{ name: synth, kind: built_in, role: normal, sound: {{ engine: basic, lfos: [{lfo}] }} }}");
-            let data = llamatron_model::file::data::load(&text).expect("the scenario's instrument is YAML");
-            let instrument = Instrument::from_data(&data).expect("the scenario's instrument is valid");
+        let fields_of = |lfo: &[(&str, Data)]| {
+            let instrument = instrument_of(built_in_fish(sound_of(spec::BASIC, &[(spec::LFOS, Data::List(vec![map(lfo)]))])));
             let mut ids = Ids { last: 0, writes: Vec::new() };
             let tab = InstrumentEditor::lfos_tab(&Sound::of(&instrument), false, &mut ids);
             tab.columns[0].fields.clone()
         };
         let labelled = |fields: &[Field], label: &str| fields.iter().find(|field| field.label == named(label, &[(fill::NUMBER, 1.into())])).cloned();
-        let medium = fields_of("{ on: true, speed: medium, rate_percent: 74 }");
+        let percent: i64 = 74;
+        let medium = fields_of(&[
+            (spec::ON, Data::Bool(true)),
+            (spec::SPEED, Data::text(spec::MEDIUM)),
+            (spec::RATE_PERCENT, Data::Whole(percent.into())),
+        ]);
         let rate = labelled(&medium, labels::MSG_LFO_RATE_LABEL).expect("a Rate");
-        let percent = 74;
         let shown = named(
             marks::MSG_LFO_RATE_SHOWN,
             &[
@@ -2477,10 +2560,16 @@ mod tests {
         );
         assert!(rate.value().ends_with(&shown), "{}", rate.value());
         assert!(labelled(&medium, labels::MSG_LFO_KEY_LABEL).is_none(), "no Key below Very High");
-        let keyed = fields_of("{ on: true, speed: very_high, key: true, ratio: \"2:1\" }");
+        let twice = "2:1";
+        let keyed = fields_of(&[
+            (spec::ON, Data::Bool(true)),
+            (spec::SPEED, Data::text(spec::VERY_HIGH)),
+            (spec::KEY, Data::Bool(true)),
+            (spec::RATIO, Data::text(twice)),
+        ]);
         assert!(labelled(&keyed, labels::MSG_LFO_KEY_LABEL).is_some());
         let ratio = labelled(&keyed, labels::MSG_LFO_RATIO_LABEL).expect("a ratio in the Rate's place");
-        assert_eq!(ratio.value(), "2:1");
+        assert_eq!(ratio.value(), twice);
     }
 
     /// The filter's types are listed by name with (none) first, and an envelope's by name.
@@ -2507,8 +2596,8 @@ mod tests {
         let engines = ENGINES_OF_ROLE.iter().flat_map(|(_, engines)| engines.iter().copied());
         for engine in engines {
             for effect in llamatron_backend::effects::REGISTRY.iter().map(|entry| entry.name) {
-                let instrument = format!("{{ name: fish, kind: built_in, sound: {{ engine: {engine}, effects: [{{ effect: {effect} }}] }} }}");
-                let app = engine_app(&instrument, true);
+                let effects = Data::List(vec![map(&[(spec::EFFECT, Data::text(effect))])]);
+                let app = engine_app(built_in_fish(sound_of(engine, &[(spec::EFFECTS, effects)])), true);
                 let editor = InstrumentEditor { name: spec::FISH.to_string() };
                 let (nodes, _) = editor.built(&app);
                 let tab_box = nodes
@@ -2533,7 +2622,7 @@ mod tests {
     /// Basic's Oscillators tab shows its one oscillator's column and nothing more: no column of settings it has none of.
     #[test]
     fn basics_tab_shows_its_one_oscillator_alone() {
-        let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
+        let app = engine_app(built_in_fish(sound_of(spec::BASIC, &[])), true);
         let editor = InstrumentEditor { name: spec::FISH.to_string() };
         let (nodes, _) = editor.built(&app);
         let tab_box = nodes
@@ -2633,7 +2722,7 @@ mod tests {
     /// Each Mod Matrix slot is headed by its number, Slot 1 to the last.
     #[test]
     fn each_matrix_slot_is_headed_by_its_number() {
-        let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
+        let app = engine_app(built_in_fish(sound_of(spec::BASIC, &[])), true);
         let editor = InstrumentEditor { name: spec::FISH.to_string() };
         let (nodes, _) = editor.built(&app);
         let tab_box = nodes

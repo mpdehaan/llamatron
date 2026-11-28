@@ -4,8 +4,9 @@
 //! llamatron's version, which About shows and every saved file records, and when it was built.
 //!
 //! The version is 1.1 and a build number, such as 1.1.1. The build number goes up once per push that changes the
-//! program, written here by internal_tools/bump_version.py, which writes the build date and time with it; the user
-//! chooses the first two. Versions are compared number by number, never as decimals, so 1.1.10 comes after 1.1.9.
+//! program, written here whole by internal_tools/bump_version.py from its template,
+//! internal_tools/templates/version.rs.template, never by hand, with the build date and time; the user chooses the
+//! first two. Versions are compared number by number, never as decimals, so 1.1.10 comes after 1.1.9.
 
 /// The program's version, which every saved file records.
 pub const PROGRAM_VERSION: &str = "1.1.7";

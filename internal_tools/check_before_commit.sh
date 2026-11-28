@@ -70,4 +70,4 @@ fi
 # The architecture diagram is made from the code, and fails the check where it is out of date.
 .venv/bin/python internal_tools/make_diagrams.py --check || { echo 'the architecture diagram is out of date: run internal_tools/make_diagrams.py'; exit 1; }
 # Every path a document names must still exist.
-exec .venv/bin/python -m unittest -q python.tests.test_doc_paths python.tests.test_record python.tests.test_check_named_values
+exec .venv/bin/python -m unittest -q python.tests.test_doc_paths python.tests.test_record python.tests.test_check_named_values python.tests.test_bump_version

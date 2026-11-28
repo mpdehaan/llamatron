@@ -1,0 +1,579 @@
+# The trials of the synth controls test's controls tried apart from a part's own settings: the SID's arpeggio, the
+# vactrol's memory, the Voice column, the LFOs, the Mod Matrix and the effects. Each is a sound before and after,
+# the second differing from the first in the one control named.
+trials:
+- name: sid arpeggio
+  before: {engine: sid}
+  after:
+    engine: sid
+    oscillators:
+      type: sid
+      arpeggio: [0, 4, 7]
+- name: basic wave
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: pulse}
+- name: basic fine
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw, fine: 35}
+- name: basic detune
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw, detune: 15}
+- name: basic level
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: square}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: square, level: 20}
+- name: lfo on
+  before:
+    engine: basic
+    lfos:
+    - {'on': false}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo shape
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, shape: sine}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, shape: square}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: matrix osc
+  before:
+    engine: basic
+    matrix:
+    - {source: osc, via: none, destination: pitch, amount: 0}
+  after:
+    engine: basic
+    matrix:
+    - {source: osc, via: none, destination: pitch, amount: 40}
+- name: matrix asheville osc
+  before:
+    engine: asheville
+    matrix:
+    - {source: osc2, via: none, destination: pitch, amount: 0}
+  after:
+    engine: asheville
+    matrix:
+    - {source: osc2, via: none, destination: pitch, amount: 40}
+- name: lfo rate
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, rate_percent: 10}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, rate_percent: 90}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo speed
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, speed: low, rate_percent: 50}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, speed: very_high, rate_percent: 50}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo key
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, speed: very_high, rate_percent: 0, key: false}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, speed: very_high, rate_percent: 0, key: true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo smooth random
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, shape: sample_and_hold}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, shape: smooth_random}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo fade in
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, fade_in: 0}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, fade_in: 3000}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo sync
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, speed: medium, sync: false}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, sync: true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: lfo division
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, sync: true, division: 1/4}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, sync: true, division: 1/16}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: matrix polarity
+  before:
+    engine: basic
+    lfos:
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30, polarity: bipolar}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30, polarity: unipolar}
+- name: lfo ratio
+  before:
+    engine: basic
+    lfos:
+    - {'on': true, speed: very_high, key: true, ratio: '1:1'}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true, speed: very_high, key: true, ratio: '3:1'}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+- name: matrix source
+  before:
+    engine: basic
+    matrix:
+    - {source: env3, via: none, destination: cutoff, amount: 40}
+  after:
+    engine: basic
+    matrix:
+    - {source: velocity, via: none, destination: cutoff, amount: 40}
+- name: matrix via
+  before:
+    engine: basic
+    matrix:
+    - {source: env2, via: none, destination: amp, amount: -40}
+  after:
+    engine: basic
+    matrix:
+    - {source: env2, via: velocity, destination: amp, amount: -40}
+- name: matrix destination
+  before:
+    engine: basic
+    matrix:
+    - {source: env2, via: none, destination: pitch, amount: 40}
+  after:
+    engine: basic
+    matrix:
+    - {source: env2, via: none, destination: resonance, amount: 40}
+- name: matrix amount
+  before:
+    engine: basic
+    matrix:
+    - {source: env2, via: none, destination: pitch, amount: 10}
+  after:
+    engine: basic
+    matrix:
+    - {source: env2, via: none, destination: pitch, amount: 60}
+- name: matrix pulse width
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: pulse}
+    lfos:
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pulse_width, amount: 0}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: pulse}
+    lfos:
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pulse_width, amount: 60}
+- name: sid ring with sync
+  before:
+    engine: sid
+    oscillators: {type: sid, wave: triangle, sync_on: true, interval: 7}
+  after:
+    engine: sid
+    oscillators: {type: sid, wave: triangle, sync_on: true, ring_on: true, interval: 7}
+- name: matrix interval
+  before:
+    engine: sid
+    oscillators: {type: sid, wave: saw, sync_on: true, interval: 7}
+    matrix:
+    - {source: env2, via: none, destination: interval, amount: 0}
+  after:
+    engine: sid
+    oscillators: {type: sid, wave: saw, sync_on: true, interval: 7}
+    matrix:
+    - {source: env2, via: none, destination: interval, amount: 60}
+- name: matrix fine
+  before:
+    engine: sid
+    oscillators: {type: sid, wave: saw}
+    matrix:
+    - {source: lfo1, via: none, destination: fine, amount: 0}
+    lfos:
+    - {'on': true}
+  after:
+    engine: sid
+    oscillators: {type: sid, wave: saw}
+    matrix:
+    - {source: lfo1, via: none, destination: fine, amount: 80}
+    lfos:
+    - {'on': true}
+- name: matrix detune
+  before:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw, detune: 10}
+    matrix:
+    - {source: env2, via: none, destination: detune, amount: 0}
+  after:
+    engine: basic
+    oscillators:
+      type: basic
+      oscillators:
+      - {waveform: saw, detune: 10}
+    matrix:
+    - {source: env2, via: none, destination: detune, amount: 80}
+- name: filter ladder bass compensation
+  before:
+    engine: basic
+    filter: {type: ladder, cutoff: 400, resonance: 90, bass_compensation: 100}
+  after:
+    engine: basic
+    filter: {type: ladder, cutoff: 400, resonance: 90, bass_compensation: 0}
+- name: effect drive
+  before: {engine: basic}
+  after:
+    engine: basic
+    effects:
+    - {effect: drive, curve: hard, amount: 80}
+- name: effect drive curve
+  before:
+    engine: basic
+    effects:
+    - {effect: drive, curve: soft, amount: 80}
+  after:
+    engine: basic
+    effects:
+    - {effect: drive, curve: fold, amount: 80}
+- name: effect drive mix
+  before:
+    engine: basic
+    effects:
+    - {effect: drive, curve: hard, amount: 80, mix: 100}
+  after:
+    engine: basic
+    effects:
+    - {effect: drive, curve: hard, amount: 80, mix: 20}
+- name: effect bitcrush bits
+  before:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 16}
+  after:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 3}
+- name: effect bitcrush dither
+  before:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 6, dither: false}
+  after:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 6, dither: true}
+- name: effect bitcrush rate
+  before:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 16, rate: 0}
+  after:
+    engine: basic
+    effects:
+    - {effect: bitcrush, bits: 16, rate: 4000}
+- name: effect bax bass
+  before:
+    engine: basic
+    effects:
+    - {effect: bax}
+  after:
+    engine: basic
+    effects:
+    - {effect: bax, bass: 12}
+- name: effect bax treble
+  before:
+    engine: basic
+    effects:
+    - {effect: bax}
+  after:
+    engine: basic
+    effects:
+    - {effect: bax, treble: -12}
+- name: effect multitap
+  before: {engine: asheville}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap}
+- name: effect multitap sync
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: true}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap1_ms: 90}
+- name: effect multitap tap time
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, tap1_division: 1/16}
+- name: effect multitap tap ms
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap1_ms: 90}
+- name: effect multitap tap level
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, tap1_level: 0}
+- name: effect multitap feedback
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200, feedback: 90}
+- name: effect multitap tone
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200, feedback: 90}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200, feedback: 90, tone: 500}
+- name: effect multitap tap on
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, tap1_on: false}
+- name: effect multitap feedback from
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap1_ms: 120, feedback: 90}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap1_ms: 120, feedback: 90, feedback_from: '1'}
+- name: effect multitap low cut
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200, feedback: 90}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, sync: false, tap4_ms: 200, feedback: 90, low_cut: 2000}
+- name: effect multitap mode
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+- name: effect multitap darkness
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60, darkness: 100}
+- name: effect multitap noise
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60, noise: 100}
+- name: effect multitap drive
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60, drive: 100}
+- name: effect multitap wow
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60, wow: 100}
+- name: effect multitap flutter
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mode: analog, feedback: 60, flutter: 100}
+- name: effect multitap mix
+  before:
+    engine: asheville
+    effects:
+    - {effect: multitap}
+  after:
+    engine: asheville
+    effects:
+    - {effect: multitap, mix: 100}
+- name: env2 disconnect filter
+  before:
+    engine: basic
+    filter: {type: ladder, cutoff: 300, env_amount: 80}
+  after:
+    engine: basic
+    filter: {type: ladder, cutoff: 300, env_amount: 80}
+    disconnect_filter: true
+- name: matrix lfo rate
+  before:
+    engine: basic
+    lfos:
+    - {'on': true}
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+  after:
+    engine: basic
+    lfos:
+    - {'on': true}
+    - {'on': true}
+    matrix:
+    - {source: lfo1, via: none, destination: pitch, amount: 30}
+    - {source: lfo2, via: none, destination: lfo1_rate, amount: 80}

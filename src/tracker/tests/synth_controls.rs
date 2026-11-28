@@ -13,6 +13,9 @@ use llamatron_names::scenario;
 use llamatron_names::spec;
 use llamatron_tracker::generated::sounds::{SettingKind, MODDED_SETTINGS, PART_TYPES, SETTING_KINDS, TYPE_SETTINGS, TYPE_SETTING_KINDS};
 use llamatron_tracker::instrument_sound::Sound;
+use support::{built_in, list, settings};
+
+mod support;
 
 /// The sample rate the notes are played at, the note, its velocity, how long it is held and how long it rings after.
 const RATE: f64 = 48000.0;
@@ -23,16 +26,83 @@ const RINGING_SECONDS: f64 = 0.5;
 const CHUNK: usize = 256;
 /// How far a first note runs on into a second, as a glided step's does.
 const OVERLAP_SECONDS: f64 = 0.02;
-/// The default drum octave, where the built-in drums play at their own pitch.
-const DRUMS_FROM: i64 = 36;
+use support::DRUMS_FROM;
+/// The data file of the trials of the controls tried apart, beside the tests, and its keys.
+const TRIALS_FILE: &str = "tests/data/sounds/synth_trials.yml";
+const TRIALS: &str = "trials";
+const TRIAL_NAME: &str = "name";
+const BEFORE: &str = "before";
+const AFTER: &str = "after";
+/// The sound each part is tried in, where the part does not replace it: a saw through a Ladder at a cutoff Env2
+/// moves, each envelope an ADSR held long enough to hear, and Env3 bending the pitch a little.
+const TRIED_ATTACK_MS: i128 = 10;
+const TRIED_DECAY_MS: i128 = 200;
+const TRIED_SUSTAIN_PERCENT: i128 = 50;
+const TRIED_RELEASE_MS: i128 = 200;
+const TRIED_CUTOFF_HERTZ: i128 = 1500;
+const TRIED_RESONANCE_PERCENT: i128 = 30;
+const TRIED_ENV_AMOUNT_PERCENT: i128 = 50;
+const TRIED_PITCH_AMOUNT_PERCENT: i128 = 20;
+/// The basic oscillator's detune, in cents, so that its tried pulse beats.
+const TRIED_DETUNE_CENTS: i128 = 7;
 /// How different two playings must be, as a share of the louder's energy, to count as a different sound.
 const LEAST_CHANGE: f64 = 1e-6;
 
-/// An instrument of a sound written as a set file writes one.
-fn instrument(sound: &str) -> Instrument {
-    let text = format!("{{ name: tried, kind: built_in, role: normal, sound: {sound} }}");
-    let data = load(&text).expect("the scenario's sound is YAML");
-    Instrument::from_data(&data).expect("the scenario's instrument is valid")
+/// An instrument playing a sound built as data.
+fn instrument(sound: Data) -> Instrument {
+    built_in(sound)
+}
+
+/// A sound's settings, each a name and a value.
+fn sound(pairs: &[(&str, Data)]) -> Data {
+    settings(pairs)
+}
+
+/// A setting's text value.
+fn text(value: &str) -> Data {
+    Data::text(value)
+}
+
+/// A setting's whole-number value.
+fn whole(value: i128) -> Data {
+    Data::Whole(value)
+}
+
+/// A setting's switch.
+fn switch(on: bool) -> Data {
+    Data::Bool(on)
+}
+
+/// A part of a sound by its type alone.
+fn typed(kind: &str) -> Data {
+    sound(&[(spec::TYPE, text(kind))])
+}
+
+/// A Mod Matrix slot from a source to a destination at an amount in percent, with no via.
+fn route(source: &str, destination: &str, amount: i128) -> Data {
+    sound(&[
+        (spec::SOURCE, text(source)),
+        (spec::VIA, text(spec::NONE)),
+        (spec::DESTINATION, text(destination)),
+        (spec::AMOUNT, whole(amount)),
+    ])
+}
+
+/// The trials of the controls tried apart, from their data file: each control's name, and a sound before and after.
+fn trials() -> Vec<(String, Data, Data)> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(TRIALS_FILE);
+    let held = std::fs::read_to_string(&path).expect("the trials' file reads");
+    let data = load(&held).expect("the trials' file is YAML");
+    let entries = data.get(TRIALS).and_then(Data::as_list).expect("the trials' list");
+    entries
+        .iter()
+        .map(|entry| {
+            let name = entry.get(TRIAL_NAME).and_then(Data::as_str).expect("a trial's name").to_string();
+            let before = entry.get(BEFORE).cloned().expect("a trial's sound before");
+            let after = entry.get(AFTER).cloned().expect("a trial's sound after");
+            (name, before, after)
+        })
+        .collect()
 }
 
 /// The instrument with its sound replaced.
@@ -141,44 +211,62 @@ fn values_of(kind: SettingKind) -> Vec<Data> {
 
 /// The sound a type of part is tried in: a synth whose other parts let the part be heard, such as a held envelope's
 /// sustain or a filter at a cutoff Env2 moves.
-fn tried_in(part: &str, part_type: &str) -> String {
-    let oscillators = if part == file_format::SoundSetting::OSCILLATORS {
+fn tried_in(part: &str, part_type: &str) -> Data {
+    let oscillators = if part == spec::OSCILLATORS {
         match part_type {
-            file_format::OscillatorType::BASIC => "{ type: basic, oscillators: [{ waveform: pulse, detune: 7 }] }".to_string(),
-            file_format::OscillatorType::SID => "{ type: sid, wave: pulse }".to_string(),
-            other => format!("{{ type: {other} }}"),
+            spec::BASIC => sound(&[
+                (spec::TYPE, text(spec::BASIC)),
+                (
+                    spec::OSCILLATORS,
+                    list(vec![sound(&[(spec::WAVEFORM, text(spec::PULSE)), (spec::DETUNE, whole(TRIED_DETUNE_CENTS))])]),
+                ),
+            ]),
+            spec::SID => sound(&[(spec::TYPE, text(spec::SID)), (spec::WAVE, text(spec::PULSE))]),
+            other => typed(other),
         }
     } else {
-        "{ type: basic, oscillators: [{ waveform: saw }] }".to_string()
+        sound(&[
+            (spec::TYPE, text(spec::BASIC)),
+            (spec::OSCILLATORS, list(vec![sound(&[(spec::WAVEFORM, text(spec::SAW))])])),
+        ])
     };
     let envelope = |place: &str| {
         if part == place {
-            format!("{{ type: {part_type} }}")
+            typed(part_type)
         } else {
-            "{ type: adsr, attack: 10, decay: 200, sustain: 50, release: 200 }".to_string()
+            sound(&[
+                (spec::TYPE, text(spec::ADSR)),
+                (spec::ATTACK, whole(TRIED_ATTACK_MS)),
+                (spec::DECAY, whole(TRIED_DECAY_MS)),
+                (spec::SUSTAIN, whole(TRIED_SUSTAIN_PERCENT)),
+                (spec::RELEASE, whole(TRIED_RELEASE_MS)),
+            ])
         }
     };
-    let filter = if part == file_format::SoundSetting::FILTER {
-        format!("{{ type: {part_type}, env_amount: 50, key_track: 0 }}")
+    let filter = if part == spec::FILTER {
+        sound(&[
+            (spec::TYPE, text(part_type)),
+            (spec::ENV_AMOUNT, whole(TRIED_ENV_AMOUNT_PERCENT)),
+            (spec::KEY_TRACK, whole(0)),
+        ])
     } else {
-        "{ type: ladder, cutoff: 1500, resonance: 30, env_amount: 50 }".to_string()
+        sound(&[
+            (spec::TYPE, text(spec::LADDER)),
+            (spec::CUTOFF, whole(TRIED_CUTOFF_HERTZ)),
+            (spec::RESONANCE, whole(TRIED_RESONANCE_PERCENT)),
+            (spec::ENV_AMOUNT, whole(TRIED_ENV_AMOUNT_PERCENT)),
+        ])
     };
-    let amp = if part == file_format::MatrixDestination::AMP {
-        format!("{{ type: {part_type} }}")
-    } else {
-        "{ type: clean }".to_string()
-    };
-    let engine = if part_type == file_format::TrackSetting::DRUM {
-        file_format::TrackSetting::DRUM
-    } else {
-        file_format::OscillatorType::BASIC
-    };
-    format!(
-        "{{ engine: {engine}, oscillators: {oscillators}, envelopes: [{}, {}, {}], filter: {filter}, amp: {amp}, matrix: [{{ source: env3, via: none, destination: pitch, amount: 20 }}] }}",
-        envelope(file_format::SoundPart::ENV1),
-        envelope(file_format::SoundPart::ENV2),
-        envelope(file_format::SoundPart::ENV3)
-    )
+    let amp = if part == spec::AMP { typed(part_type) } else { typed(spec::CLEAN) };
+    let engine = if part_type == spec::DRUM { spec::DRUM } else { spec::BASIC };
+    sound(&[
+        (spec::ENGINE, text(engine)),
+        (spec::OSCILLATORS, oscillators),
+        (spec::ENVELOPES, list(vec![envelope(spec::ENV1), envelope(spec::ENV2), envelope(spec::ENV3)])),
+        (spec::FILTER, filter),
+        (spec::AMP, amp),
+        (spec::MATRIX, list(vec![route(spec::ENV3, spec::PITCH, TRIED_PITCH_AMOUNT_PERCENT)])),
+    ])
 }
 
 /// The settings a setting only sounds in company of, written first: the second oscillator Interval sets the pitch of,
@@ -267,7 +355,7 @@ fn every_synth_control_changes_the_sound() {
 /// The controls of one type of part that change nothing, each named by its part, type and setting.
 fn unwired_controls(part: &str, part_type: &str) -> Vec<String> {
     let mut unwired = Vec::new();
-    let plain = instrument(&tried_in(part, part_type));
+    let plain = instrument(tried_in(part, part_type));
     let settings = TYPE_SETTINGS.iter().find(|(kind, _)| *kind == part_type).map_or(&[][..], |(_, names)| *names);
     for setting in settings {
         if tried_apart(part_type, setting) {
@@ -291,77 +379,14 @@ fn unwired_controls(part: &str, part_type: &str) -> Vec<String> {
     unwired
 }
 
-/// Two sounds as set files write them, the second differing from the first in one control, and what that control is.
-type Trial = (&'static str, &'static str, &'static str);
-
-/// The trials of the controls tried apart from a part's own settings: the SID's arpeggio, the vactrol's memory, the
-/// Voice column, the LFOs, the Mod Matrix and the effects.
-const TRIALS: &[Trial] = &[
-    ("sid arpeggio", "{ engine: sid }", "{ engine: sid, oscillators: { type: sid, arpeggio: [0, 4, 7] } }"),
-    ("basic wave", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] } }"),
-    ("basic fine", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, fine: 35 }] } }"),
-    ("basic detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 15 }] } }"),
-    ("basic level", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: square }] } }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: square, level: 20 }] } }"),
-    ("lfo on", "{ engine: basic, lfos: [{ \"on\": false }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo shape", "{ engine: basic, lfos: [{ \"on\": true, shape: sine }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, shape: square }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("matrix osc", "{ engine: basic, matrix: [{ source: osc, via: none, destination: pitch, amount: 0 }] }", "{ engine: basic, matrix: [{ source: osc, via: none, destination: pitch, amount: 40 }] }"),
-    ("matrix asheville osc", "{ engine: asheville, matrix: [{ source: osc2, via: none, destination: pitch, amount: 0 }] }", "{ engine: asheville, matrix: [{ source: osc2, via: none, destination: pitch, amount: 40 }] }"),
-    ("lfo rate", "{ engine: basic, lfos: [{ \"on\": true, rate_percent: 10 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, rate_percent: 90 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo speed", "{ engine: basic, lfos: [{ \"on\": true, speed: low, rate_percent: 50 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, speed: very_high, rate_percent: 50 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo key", "{ engine: basic, lfos: [{ \"on\": true, speed: very_high, rate_percent: 0, key: false }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, speed: very_high, rate_percent: 0, key: true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo smooth random", "{ engine: basic, lfos: [{ \"on\": true, shape: sample_and_hold }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, shape: smooth_random }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo fade in", "{ engine: basic, lfos: [{ \"on\": true, fade_in: 0 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, fade_in: 3000 }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo sync", "{ engine: basic, lfos: [{ \"on\": true, speed: medium, sync: false }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, sync: true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("lfo division", "{ engine: basic, lfos: [{ \"on\": true, sync: true, division: \"1/4\" }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, sync: true, division: \"1/16\" }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("matrix polarity", "{ engine: basic, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30, polarity: bipolar }] }", "{ engine: basic, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30, polarity: unipolar }] }"),
-    ("lfo ratio", "{ engine: basic, lfos: [{ \"on\": true, speed: very_high, key: true, ratio: \"1:1\" }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true, speed: very_high, key: true, ratio: \"3:1\" }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }"),
-    ("matrix source", "{ engine: basic, matrix: [{ source: env3, via: none, destination: cutoff, amount: 40 }] }", "{ engine: basic, matrix: [{ source: velocity, via: none, destination: cutoff, amount: 40 }] }"),
-    ("matrix via", "{ engine: basic, matrix: [{ source: env2, via: none, destination: amp, amount: -40 }] }", "{ engine: basic, matrix: [{ source: env2, via: velocity, destination: amp, amount: -40 }] }"),
-    ("matrix destination", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 40 }] }", "{ engine: basic, matrix: [{ source: env2, via: none, destination: resonance, amount: 40 }] }"),
-    ("matrix amount", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 10 }] }", "{ engine: basic, matrix: [{ source: env2, via: none, destination: pitch, amount: 60 }] }"),
-    ("matrix pulse width", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] }, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 0 }] }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: pulse }] }, lfos: [{ \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pulse_width, amount: 60 }] }"),
-    ("sid ring with sync", "{ engine: sid, oscillators: { type: sid, wave: triangle, sync_on: true, interval: 7 } }", "{ engine: sid, oscillators: { type: sid, wave: triangle, sync_on: true, ring_on: true, interval: 7 } }"),
-    ("matrix interval", "{ engine: sid, oscillators: { type: sid, wave: saw, sync_on: true, interval: 7 }, matrix: [{ source: env2, via: none, destination: interval, amount: 0 }] }", "{ engine: sid, oscillators: { type: sid, wave: saw, sync_on: true, interval: 7 }, matrix: [{ source: env2, via: none, destination: interval, amount: 60 }] }"),
-    ("matrix fine", "{ engine: sid, oscillators: { type: sid, wave: saw }, matrix: [{ source: lfo1, via: none, destination: fine, amount: 0 }], lfos: [{ \"on\": true }] }", "{ engine: sid, oscillators: { type: sid, wave: saw }, matrix: [{ source: lfo1, via: none, destination: fine, amount: 80 }], lfos: [{ \"on\": true }] }"),
-    ("matrix detune", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 0 }] }", "{ engine: basic, oscillators: { type: basic, oscillators: [{ waveform: saw, detune: 10 }] }, matrix: [{ source: env2, via: none, destination: detune, amount: 80 }] }"),
-    ("filter ladder bass compensation", "{ engine: basic, filter: { type: ladder, cutoff: 400, resonance: 90, bass_compensation: 100 } }", "{ engine: basic, filter: { type: ladder, cutoff: 400, resonance: 90, bass_compensation: 0 } }"),
-    ("effect drive", "{ engine: basic }", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80 }] }"),
-    ("effect drive curve", "{ engine: basic, effects: [{ effect: drive, curve: soft, amount: 80 }] }", "{ engine: basic, effects: [{ effect: drive, curve: fold, amount: 80 }] }"),
-    ("effect drive mix", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 100 }] }", "{ engine: basic, effects: [{ effect: drive, curve: hard, amount: 80, mix: 20 }] }"),
-    ("effect bitcrush bits", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 3 }] }"),
-    ("effect bitcrush dither", "{ engine: basic, effects: [{ effect: bitcrush, bits: 6, dither: false }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 6, dither: true }] }"),
-    ("effect bitcrush rate", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 0 }] }", "{ engine: basic, effects: [{ effect: bitcrush, bits: 16, rate: 4000 }] }"),
-    ("effect bax bass", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, bass: 12 }] }"),
-    ("effect bax treble", "{ engine: basic, effects: [{ effect: bax }] }", "{ engine: basic, effects: [{ effect: bax, treble: -12 }] }"),
-    ("effect multitap", "{ engine: asheville }", "{ engine: asheville, effects: [{ effect: multitap }] }"),
-    ("effect multitap sync", "{ engine: asheville, effects: [{ effect: multitap, sync: true }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 90 }] }"),
-    ("effect multitap tap time", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, tap1_division: \"1/16\" }] }"),
-    ("effect multitap tap ms", "{ engine: asheville, effects: [{ effect: multitap, sync: false }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 90 }] }"),
-    ("effect multitap tap level", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, tap1_level: 0 }] }"),
-    ("effect multitap feedback", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90 }] }"),
-    ("effect multitap tone", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90, tone: 500 }] }"),
-    ("effect multitap tap on", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, tap1_on: false }] }"),
-    ("effect multitap feedback from", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 120, feedback: 90 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap1_ms: 120, feedback: 90, feedback_from: \"1\" }] }"),
-    ("effect multitap low cut", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90 }] }", "{ engine: asheville, effects: [{ effect: multitap, sync: false, tap4_ms: 200, feedback: 90, low_cut: 2000 }] }"),
-    ("effect multitap mode", "{ engine: asheville, effects: [{ effect: multitap, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }"),
-    ("effect multitap darkness", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60, darkness: 100 }] }"),
-    ("effect multitap noise", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60, noise: 100 }] }"),
-    ("effect multitap drive", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60, drive: 100 }] }"),
-    ("effect multitap wow", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60, wow: 100 }] }"),
-    ("effect multitap flutter", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60 }] }", "{ engine: asheville, effects: [{ effect: multitap, mode: analog, feedback: 60, flutter: 100 }] }"),
-    ("effect multitap mix", "{ engine: asheville, effects: [{ effect: multitap }] }", "{ engine: asheville, effects: [{ effect: multitap, mix: 100 }] }"),
-    ("env2 disconnect filter", "{ engine: basic, filter: { type: ladder, cutoff: 300, env_amount: 80 } }", "{ engine: basic, filter: { type: ladder, cutoff: 300, env_amount: 80 }, disconnect_filter: true }"),
-    ("matrix lfo rate", "{ engine: basic, lfos: [{ \"on\": true }, { \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }] }", "{ engine: basic, lfos: [{ \"on\": true }, { \"on\": true }], matrix: [{ source: lfo1, via: none, destination: pitch, amount: 30 }, { source: lfo2, via: none, destination: lfo1_rate, amount: 80 }] }"),
-];
-
 /// The controls tried apart each change the sound, and the vactrol's memory carries from one note into the next.
 #[test]
 fn every_control_tried_apart_changes_the_sound() {
     // The trials run side by side, one thread a trial, since each plays a note twice.
-    let mut unwired: Vec<&str> = std::thread::scope(|scope| {
-        let running: Vec<_> = TRIALS
-            .iter()
-            .map(|(control, first, second)| scope.spawn(move || (*control, differs(&played(&instrument(first)), &played(&instrument(second))))))
+    let mut unwired: Vec<String> = std::thread::scope(|scope| {
+        let running: Vec<_> = trials()
+            .into_iter()
+            .map(|(control, first, second)| scope.spawn(move || (control, differs(&played(&instrument(first)), &played(&instrument(second))))))
             .collect();
         running
             .into_iter()
@@ -370,58 +395,72 @@ fn every_control_tried_apart_changes_the_sound() {
             .map(|(control, _)| control)
             .collect()
     });
-    let remembering = |memory: &str| {
-        let sound = format!("{{ engine: basic, envelopes: [{{ type: vactrol, memory: {memory} }}] }}");
-        played_notes(&instrument(&sound), &[PITCH, PITCH])
+    let (forgetting, most_memory) = (0, 100);
+    let basic = (spec::ENGINE, text(spec::BASIC));
+    let remembering = |memory: i128| {
+        let vactrol = sound(&[(spec::TYPE, text(spec::VACTROL)), (spec::MEMORY, whole(memory))]);
+        played_notes(&instrument(sound(&[basic.clone(), (spec::ENVELOPES, list(vec![vactrol]))])), &[PITCH, PITCH])
     };
-    if !differs(&remembering("0"), &remembering("100")) {
-        unwired.push("env1 vactrol memory");
+    if !differs(&remembering(forgetting), &remembering(most_memory)) {
+        unwired.push("env1 vactrol memory".to_string());
     }
     // Restart is heard from the second note on: Each note starts the LFO again with it, On play lets it run on.
+    let (slow_rate_percent, vibrato_percent) = (20, 30);
     let restarting = |restart: &str| {
-        let sound = format!("{{ engine: basic, lfos: [{{ \"on\": true, rate_percent: 20, restart: {restart} }}], matrix: [{{ source: lfo1, via: none, destination: pitch, amount: 30 }}] }}");
-        played_notes(&instrument(&sound), &[PITCH, PITCH])
+        let lfo = sound(&[
+            (spec::ON, switch(true)),
+            (spec::RATE_PERCENT, whole(slow_rate_percent)),
+            (spec::RESTART, text(restart)),
+        ]);
+        let routed = route(spec::LFO1, spec::PITCH, vibrato_percent);
+        played_notes(
+            &instrument(sound(&[basic.clone(), (spec::LFOS, list(vec![lfo])), (spec::MATRIX, list(vec![routed]))])),
+            &[PITCH, PITCH],
+        )
     };
     if !differs(&restarting(spec::ON_PLAY), &restarting(spec::EACH_NOTE)) {
-        unwired.push("lfo restart");
+        unwired.push("lfo restart".to_string());
     }
     // A gate's own cell remembers the note before as the vactrol envelope does, in the Filter's place and the Amp's.
-    let gate_remembering = |part: &str, kind: &str, memory: &str| {
-        let sound = format!("{{ engine: basic, {part}: {{ type: {kind}, memory: {memory} }} }}");
-        played_notes(&instrument(&sound), &[PITCH, PITCH])
+    let gate_remembering = |part: &str, kind: &str, memory: i128| {
+        let gate = sound(&[(spec::TYPE, text(kind)), (spec::MEMORY, whole(memory))]);
+        played_notes(&instrument(sound(&[basic.clone(), (part, gate)])), &[PITCH, PITCH])
     };
     for (part, kind, control) in [
-        (
-            file_format::SoundSetting::FILTER,
-            file_format::FilterType::LOW_PASS_GATE,
-            "filter low_pass_gate memory",
-        ),
-        (file_format::MatrixDestination::AMP, scenario::LOW_PASS_GATE_AMP, "amp low_pass_gate_amp memory"),
+        (spec::FILTER, spec::LOW_PASS_GATE, "filter low_pass_gate memory"),
+        (spec::AMP, scenario::LOW_PASS_GATE_AMP, "amp low_pass_gate_amp memory"),
     ] {
-        if !differs(&gate_remembering(part, kind, "0"), &gate_remembering(part, kind, "100")) {
-            unwired.push(control);
+        if !differs(&gate_remembering(part, kind, forgetting), &gate_remembering(part, kind, most_memory)) {
+            unwired.push(control.to_string());
         }
     }
     // Oh3's slide is heard where a note overlaps the next a fifth higher, as a glided step does: its Glide time at
     // two ends, and the Glide switch on against off.
-    let sliding = |glide: &str, glides: bool| {
-        let sound = format!("{{ engine: oh3, glides: {glides}, glide: {glide}, oscillators: {{ type: acid }} }}");
-        slid(&instrument(&sound), PITCH, PITCH + 7.0)
+    let (quick_glide_ms, slow_glide_ms, a_fifth) = (30, 300, 7.0);
+    let sliding = |glide: i128, glides: bool| {
+        let acid = sound(&[
+            (spec::ENGINE, text(spec::OH3)),
+            (spec::GLIDES, switch(glides)),
+            (spec::GLIDE, whole(glide)),
+            (spec::OSCILLATORS, typed(spec::ACID)),
+        ]);
+        slid(&instrument(acid), PITCH, PITCH + a_fifth)
     };
-    if !differs(&sliding("30", true), &sliding("300", true)) {
-        unwired.push("voice glide");
+    if !differs(&sliding(quick_glide_ms, true), &sliding(slow_glide_ms, true)) {
+        unwired.push("voice glide".to_string());
     }
-    if !differs(&sliding("300", true), &sliding("300", false)) {
-        unwired.push("voice glides");
+    if !differs(&sliding(slow_glide_ms, true), &sliding(slow_glide_ms, false)) {
+        unwired.push("voice glides".to_string());
     }
     // Volume is the engine's, applied to the patch's buffer as it mixes, so it is read from the compiled patch.
-    let volume = |percent: &str| {
-        let sound = Sound::of(&instrument(&format!("{{ engine: basic, volume: {percent} }}")));
-        let value = llamatron_tracker::msgpack::value_of(&llamatron_tracker::sound_spec::synth_spec(&sound, DRUMS_FROM));
+    let (loud_percent, quiet_percent) = (80, 20);
+    let volume = |percent: i128| {
+        let played_sound = Sound::of(&instrument(sound(&[basic.clone(), (spec::VOLUME, whole(percent))])));
+        let value = llamatron_tracker::msgpack::value_of(&llamatron_tracker::sound_spec::synth_spec(&played_sound, DRUMS_FROM));
         Patch::compiled(&value, RATE).volume
     };
-    if volume("80") == volume("20") {
-        unwired.push("voice volume");
+    if volume(loud_percent) == volume(quiet_percent) {
+        unwired.push("voice volume".to_string());
     }
     assert!(unwired.is_empty(), "these controls change nothing: {unwired:#?}");
 }
@@ -436,14 +475,20 @@ fn energy_after(playing: &[f32], seconds: f64) -> f64 {
 #[test]
 fn every_effect_at_full_mix_sounds() {
     let after_the_note = HELD_SECONDS + 0.05;
-    let dry = played(&instrument("{ engine: asheville }"));
-    let delayed = played(&instrument("{ engine: asheville, effects: [{ effect: multitap, mix: 100 }] }"));
+    let full_mix = 100;
+    let asheville = (spec::ENGINE, text(spec::ASHEVILLE));
+    let through = |effect: &str| {
+        let block = sound(&[(spec::EFFECT, text(effect)), (spec::MIX, whole(full_mix))]);
+        played(&instrument(sound(&[asheville.clone(), (spec::EFFECTS, list(vec![block]))])))
+    };
+    let dry = played(&instrument(sound(std::slice::from_ref(&asheville))));
+    let delayed = through(spec::MULTITAP);
     assert!(
         energy_after(&delayed, after_the_note) > energy_after(&dry, after_the_note),
         "MultiTap's echoes ring on after the note"
     );
     for effect in llamatron_backend::effects::REGISTRY.iter().map(|entry| entry.name) {
-        let wet = played(&instrument(&format!("{{ engine: asheville, effects: [{{ effect: {effect}, mix: 100 }}] }}")));
+        let wet = through(effect);
         let audible_share = 0.01;
         assert!(
             energy_after(&wet, 0.0) > energy_after(&dry, 0.0) * audible_share,
@@ -487,11 +532,14 @@ fn every_drum_knob_changes_the_hit() {
 /// highest, routed to the cutoff, sounds different, and a CC the matrix does not read changes nothing.
 #[test]
 fn a_midi_cc_in_the_matrix_moves_its_destination() {
-    let sound = "{ engine: basic, matrix: [{ source: cc74, via: none, destination: cutoff, amount: 80 }] }";
-    let instrument = instrument(sound);
+    let (cutoff_cc, other_cc, lowest, highest, amount) = (74, 20, 0.0, 127.0, 80);
+    let control = format!("{}{cutoff_cc}", spec::CC);
+    let instrument = instrument(sound(&[
+        (spec::ENGINE, text(spec::BASIC)),
+        (spec::MATRIX, list(vec![route(&control, spec::CUTOFF, amount)])),
+    ]));
     let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(&instrument), DRUMS_FROM);
     let value = llamatron_tracker::msgpack::value_of(&spec);
-    let (cutoff_cc, other_cc, lowest, highest) = (74, 20, 0.0, 127.0);
     let at = |number: usize, control: f64| {
         let mut patch = Patch::compiled(&value, RATE);
         patch.set_control(number, control);
@@ -523,12 +571,13 @@ fn every_engine_slides_a_glided_step_without_striking_it_again() {
     let (first, second) = (PITCH, PITCH + 7.0);
     let held = (HELD_SECONDS * RATE) as i64;
     let overlap = (OVERLAP_SECONDS * RATE) as i64;
-    let first_voice = 1;
+    let (first_voice, glide_ms) = (1, 60);
     for engine_name in llamatron_model::schema::generated::file_format::SOUND_ENGINES
         .iter()
         .filter(|name| **name != file_format::TrackSetting::DRUM)
     {
-        let instrument = instrument(&format!("{{ engine: {engine_name}, voices: 1, glide: 60 }}"));
+        let one_voice_gliding = sound(&[(spec::ENGINE, text(engine_name)), (spec::VOICES, whole(1)), (spec::GLIDE, whole(glide_ms))]);
+        let instrument = instrument(one_voice_gliding);
         let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(&instrument), DRUMS_FROM);
         let value = llamatron_tracker::msgpack::value_of(&spec);
         let mut engine = llamatron_backend::engine::Engine::new(RATE, None);
@@ -562,18 +611,42 @@ fn every_engine_slides_a_glided_step_without_striking_it_again() {
 #[test]
 fn oscillators_in_tune_mix_rather_than_lock() {
     let notes = [PITCH; 8];
-    let energy = |waves: &str| {
-        let sound = format!(
-            "{{ engine: asheville, oscillators: {{ type: asheville, osc1_range: \"8\", osc2_range: \"8\", {waves}, osc1_tune: 0, osc2_tune: 0, osc3_on: false, drift: 0 }}, filter: {{ type: none }} }}"
-        );
-        let out = played_notes(&instrument(&sound), &notes);
+    let (eight_foot, quiet_mix) = (spec::RANGE_EIGHT, 10);
+    let energy = |waves: &[(&str, Data)]| {
+        let mut oscillators = vec![
+            (spec::TYPE, text(spec::ASHEVILLE)),
+            (spec::OSC1_RANGE, text(eight_foot)),
+            (spec::OSC2_RANGE, text(eight_foot)),
+            (spec::OSC1_TUNE, whole(0)),
+            (spec::OSC2_TUNE, whole(0)),
+            (spec::OSC3_ON, switch(false)),
+            (spec::DRIFT, whole(0)),
+        ];
+        oscillators.extend(waves.iter().cloned());
+        let played_sound = sound(&[
+            (spec::ENGINE, text(spec::ASHEVILLE)),
+            (spec::OSCILLATORS, sound(&oscillators)),
+            (spec::FILTER, typed(spec::NONE)),
+        ]);
+        let out = played_notes(&instrument(played_sound), &notes);
         let note = out.len() / notes.len();
         (0..notes.len())
             .map(|n| out[n * note..(n + 1) * note].iter().map(|sample| (*sample as f64).powi(2)).sum::<f64>())
             .collect::<Vec<f64>>()
     };
-    let saw = energy("osc1_wave: saw, osc1_mix: 10, osc2_on: false");
-    let mixed = energy("osc1_wave: saw, osc1_mix: 10, osc2_wave: square, osc2_mix: 10");
+    let saw_alone = [
+        (spec::OSC1_WAVE, text(spec::SAW)),
+        (spec::OSC1_MIX, whole(quiet_mix)),
+        (spec::OSC2_ON, switch(false)),
+    ];
+    let saw_and_square = [
+        (spec::OSC1_WAVE, text(spec::SAW)),
+        (spec::OSC1_MIX, whole(quiet_mix)),
+        (spec::OSC2_WAVE, text(spec::SQUARE)),
+        (spec::OSC2_MIX, whole(quiet_mix)),
+    ];
+    let saw = energy(&saw_alone);
+    let mixed = energy(&saw_and_square);
     let average = |energies: &[f64]| energies.iter().sum::<f64>() / energies.len() as f64;
     assert!(average(&mixed) > 2.0 * average(&saw), "{} against {}", average(&mixed), average(&saw));
     let spread = mixed.iter().cloned().fold(f64::MIN, f64::max) / mixed.iter().cloned().fold(f64::MAX, f64::min);
@@ -595,13 +668,32 @@ fn window_levels(samples: &[f32]) -> Vec<f64> {
 /// each wandering and jittering on its own, and hold one steady level with Drift at nothing.
 #[test]
 fn ashevilles_drift_makes_oscillators_in_tune_beat() {
-    let sound = |drift: i64| {
-        format!(
-            "{{ engine: asheville, oscillators: {{ type: asheville, osc1_range: \"8\", osc2_range: \"8\", osc3_range: \"8\", osc1_wave: saw, osc2_wave: saw, osc3_wave: saw, osc1_tune: 0, osc2_tune: 0, osc3_tune: 0, drift: {drift} }}, envelopes: [{{ type: adsr, attack: 1, decay: 0, sustain: 100, release: 50 }}, {{ type: none }}, {{ type: none }}], filter: {{ type: none }} }}"
-        )
+    let (full_sustain, short_release_ms) = (100, 50);
+    let drifting = |drift: i128| {
+        let mut oscillators = vec![(spec::TYPE, text(spec::ASHEVILLE)), (spec::DRIFT, whole(drift))];
+        for (range, wave, tune) in [
+            (spec::OSC1_RANGE, spec::OSC1_WAVE, spec::OSC1_TUNE),
+            (spec::OSC2_RANGE, spec::OSC2_WAVE, spec::OSC2_TUNE),
+            (spec::OSC3_RANGE, spec::OSC3_WAVE, spec::OSC3_TUNE),
+        ] {
+            oscillators.extend([(range, text(spec::RANGE_EIGHT)), (wave, text(spec::SAW)), (tune, whole(0))]);
+        }
+        let held = sound(&[
+            (spec::TYPE, text(spec::ADSR)),
+            (spec::ATTACK, whole(1)),
+            (spec::DECAY, whole(0)),
+            (spec::SUSTAIN, whole(full_sustain)),
+            (spec::RELEASE, whole(short_release_ms)),
+        ]);
+        sound(&[
+            (spec::ENGINE, text(spec::ASHEVILLE)),
+            (spec::OSCILLATORS, sound(&oscillators)),
+            (spec::ENVELOPES, list(vec![held, typed(spec::NONE), typed(spec::NONE)])),
+            (spec::FILTER, typed(spec::NONE)),
+        ])
     };
-    let swing = |drift: i64| {
-        let levels = window_levels(&played(&instrument(&sound(drift))));
+    let swing = |drift: i128| {
+        let levels = window_levels(&played(&instrument(drifting(drift))));
         let (most, least) = levels
             .iter()
             .fold((f64::MIN, f64::MAX), |(most, least), level| (most.max(*level), least.min(*level)));
@@ -627,17 +719,12 @@ fn every_engine_plays_the_same_twice_within_its_headroom() {
         .filter(|(role, _)| *role == normal)
         .flat_map(|(_, engines)| engines.iter().copied());
     for engine in engines {
-        let plain = format!("{{ engine: {engine} }}");
-        let first = played(&instrument(&plain));
-        assert_eq!(first, played(&instrument(&plain)), "{engine} plays the same twice");
+        let plain = sound(&[(spec::ENGINE, text(engine))]);
+        let first = played(&instrument(plain.clone()));
+        assert_eq!(first, played(&instrument(plain)), "{engine} plays the same twice");
         let peak = first.iter().fold(0.0f32, |most, sample| most.max(sample.abs()));
         assert!(peak > 0.0 && peak < headroom, "{engine}: {peak}");
     }
-}
-
-/// A map of a sound's settings, built as data.
-fn settings(pairs: &[(&str, Data)]) -> Data {
-    Data::Map(pairs.iter().map(|(key, value)| (Data::text(key), value.clone())).collect())
 }
 
 /// An instrument of the basic engine whose first Modulators slot holds a Snail weighted as given, and whose Mod Matrix
@@ -667,16 +754,6 @@ fn snail_at_speed(weighting: i64, seconds: i64, routes: &[Data]) -> Instrument {
         (file_format::InstrumentSetting::SOUND, sound),
     ]);
     Instrument::from_data(&instrument).expect("the scenario's instrument is valid")
-}
-
-/// A Mod Matrix slot from a source to a destination at an amount in percent.
-fn route(source: &str, destination: &str, amount: i64) -> Data {
-    settings(&[
-        (file_format::MatrixSetting::SOURCE, Data::text(source)),
-        (file_format::MatrixSetting::VIA, Data::text(file_format::MatrixSource::NONE)),
-        (file_format::MatrixSetting::DESTINATION, Data::text(destination)),
-        (file_format::MatrixSetting::AMOUNT, Data::Whole(amount.into())),
-    ])
 }
 
 /// Slow's Y over a minute, as the instrument the tracker sends plays it: a weighting leans so slow a circuit over many
@@ -765,7 +842,7 @@ fn a_snail_moves_its_destinations_and_its_settings_move_it() {
 #[test]
 fn ashevilles_oscillators_are_moved_one_by_one() {
     let (amount, lfo) = (30, "lfo1");
-    let asheville = |destination: &str, amount: i64| {
+    let asheville = |destination: &str, amount: i128| {
         let oscillator = |on: bool| settings(&[(file_format::LfoSetting::ON, Data::Bool(on))]);
         let sound = settings(&[
             (file_format::SoundSetting::ENGINE, Data::text(file_format::OscillatorType::ASHEVILLE)),
