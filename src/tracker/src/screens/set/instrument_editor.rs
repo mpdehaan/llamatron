@@ -1753,7 +1753,7 @@ impl InstrumentEditor {
                 .with_shown_label(&shown_label(labels::MSG_SLOT_AMOUNT_LABEL)),
             ];
             let (source_place, via_place) = (0, 1);
-            let mut column = TabColumn::new(None, fields);
+            let mut column = TabColumn::new(Some(&numbered(labels::MSG_SLOT_HEADING)), fields);
             column.beside = vec![
                 Self::control_beside(
                     source_place,
@@ -2397,5 +2397,26 @@ mod tests {
         }
         assert_eq!(three.iter().filter(|name| **name == first).count(), 1, "Osc 1 once on Asheville: {three:?}");
         assert!(one.contains(&per_note) && !names_of(false, true).contains(&per_note));
+    }
+
+    /// Each Mod Matrix slot is headed by its number, Slot 1 to the last.
+    #[test]
+    fn each_matrix_slot_is_headed_by_its_number() {
+        let app = engine_app("{ name: fish, kind: built_in, sound: { engine: basic } }", true);
+        let editor = InstrumentEditor { name: "fish".to_string() };
+        let (nodes, _) = editor.built(&app);
+        let tab_box = nodes
+            .iter()
+            .find_map(|node| match node {
+                Node::TabBox(tab_box) => Some(tab_box),
+                _ => None,
+            })
+            .expect("a tab box");
+        let matrix = tab_box.tabs.iter().find(|tab| tab.label == labels::MSG_MATRIX_TAB).expect("the Mod Matrix tab");
+        let headings: Vec<Option<String>> = matrix.columns.iter().map(|column| column.heading.clone()).collect();
+        let wanted: Vec<Option<String>> = (1..=MATRIX_SLOTS as usize)
+            .map(|number| Some(named(labels::MSG_SLOT_HEADING, &[("number", number.into())])))
+            .collect();
+        assert_eq!(headings, wanted);
     }
 }

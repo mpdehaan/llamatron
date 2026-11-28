@@ -494,6 +494,7 @@ pub const MSG_RATE_LABEL: &str = "Rate";
 pub const MSG_CURVE_LABEL: &str = "Curve";
 pub const MSG_AMOUNT_LABEL: &str = "Amount";
 pub const MSG_LFO_LABEL: &str = "LFO {number}";
+pub const MSG_SLOT_HEADING: &str = "Slot {number}";
 pub const MSG_LFO_ON_LABEL: &str = "LFO {number} on";
 /// The labels of Asheville's oscillator columns, beneath each column's heading.
 pub static MSG_ASHEVILLE_COLUMN_LABELS: &[(&str, &str)] = &[("speed", "Speed"), ("rate", "Rate"), ("range", "Range"), ("wave", "Wave"), ("shape", "Shape"), ("tune", "Tune"), ("fine", "Fine"), ("mix", "Mix"), ("sub", "Sub"), ("on", "On")];
