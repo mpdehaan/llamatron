@@ -148,7 +148,20 @@ fn swung(value: f64) -> f64 {
 }
 
 /// A circuit's state: the charge on its first capacitor, its RC node, and the charge on its second capacitor, in volts.
-type State = [f64; 3];
+type State = [f64; STATE_VARIABLES];
+/// A state's three variables, by their places: the first capacitor's charge, the RC node, the second's charge.
+const STATE_VARIABLES: usize = 3;
+const X_CHARGE: usize = 0;
+const NODE: usize = 1;
+const Y_CHARGE: usize = 2;
+/// An output's place among a circuit's three: X, Y and Z.
+const Z_OUTPUT: usize = 2;
+/// The span of a weighting from -1 to 1, by which it becomes a share from 0 to 1.
+const WEIGHTING_SPAN: f64 = 2.0;
+/// RK4's halving of a step for its middle slopes, the weight of those two, and the sum of the four slopes' weights.
+const RK4_HALVING: f64 = 2.0;
+const RK4_MIDDLE_WEIGHT: f64 = 2.0;
+const RK4_WEIGHTS: f64 = 6.0;
 
 /// What a state gives at its outputs, X, Y and Z, in volts, and the summing nodes' voltages where an op-amp is at a rail.
 struct Read {
@@ -164,13 +177,13 @@ struct Read {
 #[inline]
 fn read(parts: &Parts, state: &State) -> Read {
     let x = swung(state[0]);
-    let y = swung(state[2]);
+    let y = swung(state[Y_CHARGE]);
     Read {
         x,
         y,
         z: swung(-parts.gain * y),
         at_x: x - state[0],
-        at_y: y - state[2],
+        at_y: y - state[Y_CHARGE],
     }
 }
 
@@ -231,7 +244,7 @@ impl Circuit {
         [
             (x / swings[0]).clamp(-1.0, 1.0),
             (y / swings[1]).clamp(-1.0, 1.0),
-            (z / swings[2]).clamp(-1.0, 1.0),
+            (z / swings[Z_OUTPUT]).clamp(-1.0, 1.0),
         ]
     }
 
@@ -240,22 +253,27 @@ impl Circuit {
     fn step(&mut self, weighting: f64) {
         let weighting = weighting.clamp(-1.0, 1.0);
         let parts = self.parts;
-        let resistance = parts.fixed + parts.knob * (weighting + 1.0) / 2.0;
+        let resistance = parts.fixed + parts.knob * (weighting + 1.0) / WEIGHTING_SPAN;
         let bias = if parts.knob > 0.0 { MOST_BIAS * weighting } else { 0.0 };
         let h = parts.step;
-        let at =
-            |state: &State, slope: &State, share: f64| -> State { [state[0] + share * slope[0], state[1] + share * slope[1], state[2] + share * slope[2]] };
+        let at = |state: &State, slope: &State, share: f64| -> State {
+            [
+                state[X_CHARGE] + share * slope[X_CHARGE],
+                state[NODE] + share * slope[NODE],
+                state[Y_CHARGE] + share * slope[Y_CHARGE],
+            ]
+        };
         let k1 = slopes(parts, &self.state, resistance, bias);
-        let k2 = slopes(parts, &at(&self.state, &k1, h / 2.0), resistance, bias);
-        let k3 = slopes(parts, &at(&self.state, &k2, h / 2.0), resistance, bias);
+        let k2 = slopes(parts, &at(&self.state, &k1, h / RK4_HALVING), resistance, bias);
+        let k3 = slopes(parts, &at(&self.state, &k2, h / RK4_HALVING), resistance, bias);
         let k4 = slopes(parts, &at(&self.state, &k3, h), resistance, bias);
-        for place in 0..3 {
-            self.state[place] += h / 6.0 * (k1[place] + 2.0 * k2[place] + 2.0 * k3[place] + k4[place]);
+        for place in 0..STATE_VARIABLES {
+            self.state[place] += h / RK4_WEIGHTS * (k1[place] + RK4_MIDDLE_WEIGHT * k2[place] + RK4_MIDDLE_WEIGHT * k3[place] + k4[place]);
         }
         let escaped = self.state.iter().any(|value| !value.is_finite())
-            || self.state[1].abs() > MOST_NODE
-            || self.state[0].abs() > MOST_CHARGE
-            || self.state[2].abs() > MOST_CHARGE;
+            || self.state[NODE].abs() > MOST_NODE
+            || self.state[X_CHARGE].abs() > MOST_CHARGE
+            || self.state[Y_CHARGE].abs() > MOST_CHARGE;
         if escaped {
             self.state = self.start;
         }
@@ -358,8 +376,11 @@ mod tests {
     /// The share of reads on the upper lobe, where Y is above 0, and the mean time between two switches of lobe, in seconds.
     fn share_and_cycle(on_upper: &[bool]) -> (f64, f64) {
         let upper = on_upper.iter().filter(|upper| **upper).count() as f64 / on_upper.len() as f64;
-        let switches = on_upper.windows(2).filter(|pair| pair[0] != pair[1]).count().max(1) as f64;
-        let cycle = 2.0 * on_upper.len() as f64 * READ_EVERY / switches;
+        let pair = 2;
+        let switches = on_upper.windows(pair).filter(|pair| pair[0] != pair[1]).count().max(1) as f64;
+        // A cycle is two switches, one to each side.
+        let switches_a_cycle = 2.0;
+        let cycle = switches_a_cycle * on_upper.len() as f64 * READ_EVERY / switches;
         (upper, cycle)
     }
 
@@ -369,21 +390,26 @@ mod tests {
     fn slow_wanders_between_its_lobes_about_every_twenty_seconds() {
         let (seconds, seed) = (4000.0, 7);
         let (centre, cycle) = share_and_cycle(&lobes(0, seed, 0.0, seconds));
-        assert!((15.0..30.0).contains(&cycle), "cycle {cycle}");
+        let (shortest_cycle, longest_cycle) = (15.0, 30.0);
+        assert!((shortest_cycle..longest_cycle).contains(&cycle), "cycle {cycle}");
         let (low, _) = share_and_cycle(&lobes(0, seed, -1.0, seconds));
         let (high, _) = share_and_cycle(&lobes(0, seed, 1.0, seconds));
-        assert!(low < centre - 0.05 && high > centre + 0.05, "{low} {centre} {high}");
-        assert_ne!(lobes(0, seed, 0.0, 600.0), lobes(0, seed + 1, 0.0, 600.0));
+        let (leaned, ten_minutes) = (0.05, 600.0);
+        assert!(low < centre - leaned && high > centre + leaned, "{low} {centre} {high}");
+        assert_ne!(lobes(0, seed, 0.0, ten_minutes), lobes(0, seed + 1, 0.0, ten_minutes));
     }
 
     /// Slower and Slowest stay chaotic and bounded at their own slower cycles, held by the op-amps' rails.
     #[test]
     fn slower_and_slowest_keep_their_own_slow_cycles() {
         let seed = 7;
-        let (_, slower) = share_and_cycle(&lobes(1, seed, 0.0, 6000.0));
-        assert!((80.0..180.0).contains(&slower), "slower {slower}");
-        let (_, slowest) = share_and_cycle(&lobes(2, seed, 0.0, 30000.0));
-        assert!(slowest > 900.0, "slowest {slowest}");
+        let (slower_place, slowest_place) = (1, 2);
+        let (slower_heard, shortest_slower, longest_slower) = (6000.0, 80.0, 180.0);
+        let (slowest_heard, shortest_slowest) = (30000.0, 900.0);
+        let (_, slower) = share_and_cycle(&lobes(slower_place, seed, 0.0, slower_heard));
+        assert!((shortest_slower..longest_slower).contains(&slower), "slower {slower}");
+        let (_, slowest) = share_and_cycle(&lobes(slowest_place, seed, 0.0, slowest_heard));
+        assert!(slowest > shortest_slowest, "slowest {slowest}");
     }
 
     /// A Snail reads the same whatever the size of the samples it is moved by, since its clock is its own.
@@ -391,14 +417,16 @@ mod tests {
     fn a_snail_follows_its_own_clock_whatever_the_sample_rate() {
         let heard = 30.0;
         let path = |rate: f64| {
-            let mut snail = Snail::seeded(3, [0.0, 0.0], [None; CIRCUIT_COUNT]);
+            let seed = 3;
+            let mut snail = Snail::seeded(seed, [0.0, 0.0], [None; CIRCUIT_COUNT]);
             let mut outputs = [0.0; OUTPUT_COUNT];
             for _ in 0..(heard * rate) as usize {
                 snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
             }
             outputs[1]
         };
-        assert!((path(44_100.0) - path(48_000.0)).abs() < 0.02);
+        let (one_rate, other_rate, near) = (44_100.0, 48_000.0, 0.02);
+        assert!((path(one_rate) - path(other_rate)).abs() < near);
     }
 
     /// A Snail's outputs move by fine, unrounded amounts from one sample to the next, never standing still for a step
@@ -406,9 +434,10 @@ mod tests {
     #[test]
     fn a_snails_outputs_move_finely_and_smoothly() {
         let rate = 48_000.0;
-        let heard = (5.0 * rate) as usize;
+        let (heard_seconds, seed) = (5.0, 5);
+        let heard = (heard_seconds * rate) as usize;
         let most_change = 1e-4;
-        let mut snail = Snail::seeded(5, [0.0, 0.0], [None; CIRCUIT_COUNT]);
+        let mut snail = Snail::seeded(seed, [0.0, 0.0], [None; CIRCUIT_COUNT]);
         let mut outputs = [0.0; OUTPUT_COUNT];
         snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
         let mut last = outputs[0];
@@ -422,7 +451,8 @@ mod tests {
             }
             last = outputs[0];
         }
-        assert!(moved_samples > heard * 9 / 10, "Slow X moved on {moved_samples} of {heard} samples");
+        let (nine, tenths) = (9, 10);
+        assert!(moved_samples > heard * nine / tenths, "Slow X moved on {moved_samples} of {heard} samples");
     }
 
     /// A Snail hearing one output works it out exactly as one hearing all, and leaves the lanes nothing reads unstepped.
@@ -436,8 +466,9 @@ mod tests {
             }
             outputs
         };
-        let everything = run(&mut Snail::seeded(9, [0.0, 0.0], [None; CIRCUIT_COUNT]));
-        let mut one = Snail::seeded(9, [0.0, 0.0], [None; CIRCUIT_COUNT]);
+        let seed = 9;
+        let everything = run(&mut Snail::seeded(seed, [0.0, 0.0], [None; CIRCUIT_COUNT]));
+        let mut one = Snail::seeded(seed, [0.0, 0.0], [None; CIRCUIT_COUNT]);
         one.hear_only(&[slow_x]);
         let alone = run(&mut one);
         assert_eq!(alone[slow_x], everything[slow_x]);
@@ -446,7 +477,7 @@ mod tests {
             one.circuits[1..].iter().all(|circuit| circuit.state == circuit.start),
             "the unread lanes never step"
         );
-        let reseeded = one.reseeded(9);
+        let reseeded = one.reseeded(seed);
         assert!(reseeded.circuits[1].heard.iter().all(|heard| !heard), "a reseeded Snail hears what it heard");
     }
 
@@ -469,6 +500,7 @@ mod tests {
         let (_, built) = share_and_cycle(&path(CIRCUITS[0].trip));
         let (_, quick) = share_and_cycle(&path(fast));
         let ratio = built / quick;
-        assert!((2.0..4.5).contains(&ratio), "built {built} quick {quick}");
+        let (least, most) = (2.0, 4.5);
+        assert!((least..most).contains(&ratio), "built {built} quick {quick}");
     }
 }
