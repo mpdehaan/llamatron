@@ -1568,7 +1568,7 @@ fn shots() -> Vec<Shot> {
         synth("filter_diode", "filter diode", FILTER_FIELD),
         synth("filter_ota", "filter ota", FILTER_FIELD),
         synth("filter_low_pass_gate", "filter low pass gate", FILTER_FIELD),
-        synth("synth_lfos", "wobble lead", "LFO 1"),
+        synth("synth_lfos", "wobble lead", "LFO 1 shape"),
         synth("synth_filter", "wobble lead", FILTER_FIELD),
         synth("synth_effects", "wobble lead", "FX 1"),
         synth("synth_matrix", "wobble lead", "Slot 1 source"),
