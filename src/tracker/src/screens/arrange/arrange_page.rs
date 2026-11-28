@@ -1635,7 +1635,7 @@ mod tests {
     use llamatron_model::objects::setlist::Setlist;
 
     /// A song of two tracks, lead and bass, and two scenes, verse and chorus, with tune on lead in the verse alone.
-    const TWO_BY_TWO_SET: &str = "patterns:\n  tune: { steps: 4 }\nsongs:\n  - name: song\n    tracks: [{ name: lead }, { name: bass }]\n    scenes:\n      - name: verse\n        clips: [{ track: lead, pattern: tune }]\n      - name: chorus\n";
+    const TWO_BY_TWO_SET: &str = include_str!("../../../tests/data/two_by_two_set.yml");
 
     fn arranged() -> (App, ArrangePage) {
         let setlist = Setlist::read_text(TWO_BY_TWO_SET, None).expect("the scenario's set is valid");
@@ -1677,7 +1677,7 @@ mod tests {
 
     /// A song whose file holds a drum track, kick, before its melodic ones, lead and bass, with a drum pattern beat on kick
     /// and a melodic pattern tune on lead in the verse.
-    const DRUMS_FIRST_SET: &str = "patterns:\n  tune: { steps: 4 }\n  beat: { steps: 4, drum: true }\nsongs:\n  - name: song\n    tracks: [{ name: kick, drum: true }, { name: lead }, { name: bass }]\n    scenes:\n      - name: verse\n        clips: [{ track: kick, pattern: beat }, { track: lead, pattern: tune }]\n      - name: chorus\n";
+    const DRUMS_FIRST_SET: &str = include_str!("../../../tests/data/drums_first_set.yml");
 
     fn drums_first() -> (App, ArrangePage) {
         let setlist = Setlist::read_text(DRUMS_FIRST_SET, None).expect("the scenario's set is valid");
@@ -1690,8 +1690,7 @@ mod tests {
     }
 
     /// A song of drum tracks alone, kick and hat, and one scene, verse.
-    const DRUMS_ONLY_SET: &str =
-        "songs:\n  - name: song\n    tracks: [{ name: kick, drum: true }, { name: hat, drum: true }]\n    scenes:\n      - name: verse\n";
+    const DRUMS_ONLY_SET: &str = include_str!("../../../tests/data/drums_only_set.yml");
 
     fn drums_only() -> (App, ArrangePage) {
         let setlist = Setlist::read_text(DRUMS_ONLY_SET, None).expect("the scenario's set is valid");

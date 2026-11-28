@@ -829,7 +829,7 @@ mod tests {
     /// default, and both oscillators lose their Slide time and Circuit, whatever version saved the file.
     #[test]
     fn an_acid_slide_time_becomes_its_glide_time() {
-        let file = "version: 1.1.1\ninstruments:\n  - { name: modded, kind: built_in, sound: { engine: fishline, oscillators: { type: acid, circuit: modded, slide_time: 200 } } }\n  - { name: stock, kind: built_in, sound: { engine: fishline, glide: 90, oscillators: { type: acid, circuit: stock, slide_time: 300 } } }\n";
+        let file = include_str!("../../tests/data/migrations/an_acid_slide_time_becomes_its_glide_time.yml");
         let (data, conversion) = migrated(load(file).expect("the file reads"), None);
         assert!(conversion.moved);
         let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");
@@ -847,7 +847,7 @@ mod tests {
     /// An LFO's rate in tenths of a hertz becomes the Speed and Rate percent giving it again, 5.0 Hz Medium at 74%.
     #[test]
     fn an_lfo_rate_in_tenths_becomes_its_speed_and_percent() {
-        let file = "version: 1.1.1\ninstruments:\n  - { name: lead, kind: built_in, sound: { engine: sid, lfos: [{ on: true, rate: 50 }, ~] } }\n";
+        let file = include_str!("../../tests/data/migrations/an_lfo_rate_in_tenths_becomes_its_speed_and_percent.yml");
         let (data, conversion) = migrated(load(file).expect("the file reads"), None);
         assert!(conversion.moved);
         let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");
@@ -867,7 +867,7 @@ mod tests {
     /// low-pass gate, then the note's amp lit by Env 1, moves to the Amp tab lit by Env 1; a set of 1.1.3 is left alone.
     #[test]
     fn the_vactrol_and_the_gate_move_to_their_new_layout() {
-        let older = "version: 1.1.2\ninstruments:\n  - { name: pluck, kind: built_in, sound: { engine: basic, envelopes: [{ type: vactrol, cell: lazy, light: gate, strike_width: 30 }], filter: { type: low_pass_gate, gate_mode: lowpass, input: ping, ping_width: 15 } } }\n";
+        let older = include_str!("../../tests/data/migrations/the_vactrol_and_the_gate_move_to_their_new_layout.yml");
         let (data, conversion) = migrated(load(older).expect("the file reads"), None);
         assert!(conversion.moved);
         let sound = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
@@ -892,8 +892,7 @@ mod tests {
         assert_eq!(text(amp, SIGNAL).as_deref(), Some("ping"));
         assert_eq!(whole(amp, PING_TIME), Some(ping));
         assert_eq!(text(amp, TRIGGER).as_deref(), Some(ENV1));
-        let newer =
-            "version: 1.1.3\ninstruments:\n  - { name: pluck, kind: built_in, sound: { engine: basic, filter: { type: low_pass_gate, trigger: env2 } } }\n";
+        let newer = include_str!("../../tests/data/migrations/the_vactrol_and_the_gate_move_to_their_new_layout_newer.yml");
         let (data, conversion) = migrated(load(newer).expect("the file reads"), None);
         assert!(!conversion.moved);
         let sound = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
@@ -907,7 +906,7 @@ mod tests {
     /// alone is Each scene; both off is On play; an LFO already with a Restart, or a set of 1.1.4, is left alone.
     #[test]
     fn an_lfos_retrigger_and_each_scene_become_its_restart() {
-        let older = "version: 1.1.3\ninstruments:\n  - { name: wobble, kind: built_in, sound: { engine: basic, lfos: [{ \"on\": true }, { retrigger: false, each_scene: true }, { retrigger: false }, { restart: never }] } }\n";
+        let older = include_str!("../../tests/data/migrations/an_lfos_retrigger_and_each_scene_become_its_restart.yml");
         let (data, conversion) = migrated(load(older).expect("the file reads"), None);
         assert!(conversion.moved);
         let lfos = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments")[0]
@@ -922,7 +921,7 @@ mod tests {
         assert_eq!(restart(2).as_deref(), Some(ON_PLAY));
         assert_eq!(restart(3).as_deref(), Some("never"));
         assert!(lfos.iter().all(|lfo| lfo.get(RETRIGGER).is_none() && lfo.get(EACH_SCENE).is_none()));
-        let newer = "version: 1.1.4\ninstruments:\n  - { name: wobble, kind: built_in, sound: { engine: basic, lfos: [{ \"on\": true }] } }\n";
+        let newer = include_str!("../../tests/data/migrations/an_lfos_retrigger_and_each_scene_become_its_restart_2.yml");
         let (_, conversion) = migrated(load(newer).expect("the file reads"), None);
         assert!(!conversion.moved);
     }
@@ -930,7 +929,7 @@ mod tests {
     /// A sound on the acid bass engine by its old name, fishline, is renamed oh3; other engines are left alone.
     #[test]
     fn the_fishline_engine_is_renamed_oh3() {
-        let file = "version: 1.1.1\ninstruments:\n  - { name: acid, kind: built_in, sound: { engine: fishline } }\n  - { name: chip, kind: built_in, sound: { engine: sid } }\n";
+        let file = include_str!("../../tests/data/migrations/the_fishline_engine_is_renamed_oh3.yml");
         let (data, conversion) = migrated(load(file).expect("the file reads"), None);
         assert!(conversion.moved);
         let instruments = data.get(INSTRUMENTS).and_then(Data::as_list).expect("instruments");

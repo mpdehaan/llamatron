@@ -1,0 +1,5 @@
+songs:
+  - name: song
+    tracks: [{ name: kick, drum: true }, { name: hat, drum: true }]
+    scenes:
+      - name: verse

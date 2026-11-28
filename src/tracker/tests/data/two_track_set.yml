@@ -1,0 +1,4 @@
+songs:
+  - name: song
+    tracks: [{ name: bass }, { name: lead }]
+    scenes: [{ name: one }]

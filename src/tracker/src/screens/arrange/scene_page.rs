@@ -380,7 +380,7 @@ mod tests {
     use llamatron_model::objects::setlist::Setlist;
 
     /// A song of one track and two scenes, intro and verse.
-    const TWO_SCENE_SET: &str = "songs:\n  - name: song\n    tracks: [{ name: lead }]\n    scenes: [{ name: intro }, { name: verse }]\n";
+    const TWO_SCENE_SET: &str = include_str!("../../../tests/data/two_scene_set.yml");
 
     /// Type a new name into the rename prompt over the old one, and press ENTER.
     fn type_name(tracker: &mut Tracker, old: &str, new: &str) {

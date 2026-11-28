@@ -1,0 +1,6 @@
+instruments:
+  - { name: kit, device: "*FluidSynth", role: percussion }
+songs:
+  - name: song
+    tracks: [{ name: drums, drum: true }, { name: lead }, { name: played, drum: true, instrument: kit }]
+    scenes: [{ name: one }]

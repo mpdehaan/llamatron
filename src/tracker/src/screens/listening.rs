@@ -196,7 +196,7 @@ mod tests {
     use super::*;
 
     /// A song of a drum track and a notes track, neither with an instrument, and a drum track with one.
-    const TRACKS_SET: &str = "instruments:\n  - { name: kit, device: \"*FluidSynth\", role: percussion }\nsongs:\n  - name: song\n    tracks: [{ name: drums, drum: true }, { name: lead }, { name: played, drum: true, instrument: kit }]\n    scenes: [{ name: one }]\n";
+    const TRACKS_SET: &str = include_str!("../../tests/data/tracks_set.yml");
 
     /// Listen on a drum track with no instrument plays FluidSynth's drum kit without asking, where FluidSynth is installed;
     /// a notes track, a drum track with an instrument of its own, or no FluidSynth, still go the usual way.

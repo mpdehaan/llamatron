@@ -445,8 +445,7 @@ mod tests {
     use llamatron_model::objects::setlist::Setlist;
 
     /// A set of one song with generators of three kinds, named so that their order by name mixes the kinds.
-    const MIXED_KINDS_SET: &str =
-        "songs:\n  - name: song\n    scenes: [{ name: one }]\narps:\n  zip: {}\n  Bounce: {}\ndrifts:\n  climb: {}\nchains:\n  alpha: []\n";
+    const MIXED_KINDS_SET: &str = include_str!("../../../tests/data/mixed_kinds_set.yml");
 
     fn mixed_kinds_app() -> App {
         let setlist = Setlist::read_text(MIXED_KINDS_SET, None).expect("the scenario's set is valid");

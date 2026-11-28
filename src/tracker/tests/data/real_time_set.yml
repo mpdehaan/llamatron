@@ -1,0 +1,6 @@
+instruments:
+  - { name: synth, kind: built_in }
+songs:
+  - name: song
+    tracks: [{ name: lead, instrument: synth }]
+    scenes: [{ name: one }]

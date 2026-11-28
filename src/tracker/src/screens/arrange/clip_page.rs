@@ -843,7 +843,7 @@ mod tests {
     use llamatron_model::objects::setlist::Setlist;
 
     /// A song of one track whose one scene plays the pattern tune.
-    const ONE_CLIP_SET: &str = "patterns:\n  tune: { steps: 4 }\nsongs:\n  - name: song\n    tracks: [{ name: lead }]\n    scenes:\n      - name: one\n        clips: [{ track: lead, pattern: tune }]\n";
+    const ONE_CLIP_SET: &str = include_str!("../../../tests/data/one_clip_set.yml");
 
     fn clip_name(tracker: &Tracker) -> Option<String> {
         let song = tracker.app.document.song();

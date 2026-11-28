@@ -466,7 +466,7 @@ mod tests {
     use llamatron_model::objects::setlist::Setlist;
 
     /// A song of two tracks, bass and lead, and one scene.
-    const TWO_TRACK_SET: &str = "songs:\n  - name: song\n    tracks: [{ name: bass }, { name: lead }]\n    scenes: [{ name: one }]\n";
+    const TWO_TRACK_SET: &str = include_str!("../../../tests/data/two_track_set.yml");
 
     /// The tracker on the track editor of the bass track.
     fn on_the_bass_track() -> Tracker {

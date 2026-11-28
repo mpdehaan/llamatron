@@ -176,7 +176,7 @@ mod tests {
     }
 
     /// A set that plays in real time, its one track playing a built-in synth, of one song and one scene.
-    const REAL_TIME_SET: &str = "instruments:\n  - { name: synth, kind: built_in }\nsongs:\n  - name: song\n    tracks: [{ name: lead, instrument: synth }]\n    scenes: [{ name: one }]\n";
+    const REAL_TIME_SET: &str = include_str!("../../tests/data/real_time_set.yml");
 
     /// On Arrange, Z shows the first mode, Z again the next, and ESC brings the clips back.
     #[test]

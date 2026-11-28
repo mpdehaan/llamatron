@@ -1472,7 +1472,7 @@ mod tests {
     use super::*;
 
     /// A song with a pattern written for a scale of seven notes, as every pattern the tracker makes is.
-    const SCALE_LENGTH_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\npatterns:\n  tune: { steps: 4, scale_length: 7, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    tracks: [{ name: lead }]\n    scenes:\n      - { name: one, clips: [{ track: lead, pattern: tune }] }\n";
+    const SCALE_LENGTH_SET: &str = include_str!("../tests/data/scale_length_set.yml");
 
     /// A pattern's scale length changes no note, so a song using such a pattern renders.
     #[test]

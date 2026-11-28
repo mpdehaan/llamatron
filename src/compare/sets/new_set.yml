@@ -1,0 +1,26 @@
+step_size: 1/16
+default_octave: 5
+default_drum_octave: 3
+octave_labels: live
+
+scales:
+  - { name: scale-1, root: C, type: major }
+
+patterns:
+  - name: pattern-1
+    steps: 16
+    group: track-1
+    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]
+
+songs:
+  - name: untitled
+    tempo: 120
+    scale: scale-1
+
+    tracks:
+      - { name: track-1 }
+
+    scenes:
+      - name: scene-1
+        clips:
+          - { track: track-1, pattern: pattern-1 }

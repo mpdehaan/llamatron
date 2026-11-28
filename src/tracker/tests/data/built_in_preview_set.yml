@@ -1,0 +1,12 @@
+scales:
+  - { name: C Major, root: C, type: major }
+instruments:
+  - { name: lead synth, kind: built_in, role: normal, sound: { engine: oh3 } }
+patterns:
+  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }
+songs:
+  - name: song
+    scale: C Major
+    preview_instrument: lead synth
+    tracks: [{ name: lead }]
+    scenes: [{ name: one }]

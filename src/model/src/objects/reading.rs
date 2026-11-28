@@ -384,22 +384,29 @@ impl Song {
 mod tests {
     use super::*;
 
-    /// An instrument read from its YAML.
-    fn instrument(text: &str) -> Instrument {
-        let data = crate::file::data::load(text).expect("the scenario's instrument is YAML");
-        Instrument::from_data(&data).expect("the scenario's instrument is valid")
+    /// A piano on an outside device, its Pan set or left alone, built as the file's data.
+    fn piano(pan: Option<i64>) -> Instrument {
+        let (name, device) = ("piano", "FluidSynth");
+        let mut pairs = vec![
+            (Data::text(crate::schema::generated::file_format::FileLayout::NAME), Data::text(name)),
+            (Data::text(InstrumentSetting::DEVICE), Data::text(device)),
+        ];
+        if let Some(pan) = pan {
+            pairs.push((Data::text(InstrumentSetting::PAN), Data::Whole(pan as i128)));
+        }
+        Instrument::from_data(&Data::Map(pairs)).expect("the scenario's instrument is valid")
     }
 
     /// Pan sends CC 10 only once set, its percent rounded to the nearest of the CC's values, the middle at 64; an
     /// instrument that never set it stands at 50%.
     #[test]
     fn a_pan_sends_the_cc_value_nearest_its_percent() {
-        let control = |pan: i64| instrument(&format!("{{ name: piano, device: FluidSynth, pan: {pan} }}")).pan_control();
+        let control = |pan: i64| piano(Some(pan)).pan_control();
         let (left, middle, right) = (0, 50, 100);
         assert_eq!(control(left), Some(0));
         assert_eq!(control(middle), Some(64));
         assert_eq!(control(right), Some(127));
-        let unset = instrument("{ name: piano, device: FluidSynth }");
+        let unset = piano(None);
         assert_eq!(unset.pan_control(), None);
         assert_eq!(unset.get_pan(), defaults::DEFAULT_PAN);
     }

@@ -1,0 +1,10 @@
+songs:
+  - name: song
+    scenes: [{ name: one }]
+arps:
+  zip: {}
+  Bounce: {}
+drifts:
+  climb: {}
+chains:
+  alpha: []

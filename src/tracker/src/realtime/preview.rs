@@ -658,7 +658,7 @@ mod tests {
     use super::*;
 
     /// A song whose Preview instrument is a built-in synth, and a pattern to listen to.
-    const BUILT_IN_PREVIEW_SET: &str = "scales:\n  - { name: C Major, root: C, type: major }\ninstruments:\n  - { name: lead synth, kind: built_in, role: normal, sound: { engine: oh3 } }\npatterns:\n  tune: { steps: 4, rows: { degree: [1, 2, 3, 4] } }\nsongs:\n  - name: song\n    scale: C Major\n    preview_instrument: lead synth\n    tracks: [{ name: lead }]\n    scenes: [{ name: one }]\n";
+    const BUILT_IN_PREVIEW_SET: &str = include_str!("../../tests/data/built_in_preview_set.yml");
 
     /// Listening to an instrument plays its preview pattern: the copy's one scene holds the preview's clip.
     #[test]

@@ -666,7 +666,7 @@ fn exported_live(setlist: &llamatron_model::objects::setlist::Setlist) -> llamat
 }
 
 /// A new set, as the Python's Setlist.new() makes one.
-const NEW_SET: &str = "step_size: 1/16\ndefault_octave: 5\ndefault_drum_octave: 3\noctave_labels: live\n\nscales:\n  - { name: scale-1, root: C, type: major }\n\npatterns:\n  - name: pattern-1\n    steps: 16\n    group: track-1\n    degree: [1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~, 1, ~, ~, ~]\n\nsongs:\n  - name: untitled\n    tempo: 120\n    scale: scale-1\n\n    tracks:\n      - { name: track-1 }\n\n    scenes:\n      - name: scene-1\n        clips:\n          - { track: track-1, pattern: pattern-1 }\n";
+const NEW_SET: &str = include_str!("../sets/new_set.yml");
 
 /// Data as JSON, which the harness reads back as YAML.
 fn json_written(data: &Data, out: &mut String) {
