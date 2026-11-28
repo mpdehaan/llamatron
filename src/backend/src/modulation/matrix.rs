@@ -6,6 +6,7 @@
 //! that its slots stay free. Empty slots and those of no amount are left out when it is compiled.
 
 use crate::modulation::lfos::LFO_COUNT;
+use crate::modulation::snail::{OUTPUT_COUNT, WEIGHTED_COUNT};
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
 use rmpv::Value;
@@ -17,6 +18,8 @@ pub enum Source {
     Env2,
     Env3,
     Lfo(usize),
+    /// One of a Snail's nine outputs, by its slot's place and the output's.
+    Snail(usize, usize),
     Velocity,
     Random,
     /// The voice's own oscillator, as it sounded a sample before: an audio-rate source, for FM and AM from the voice itself.
@@ -31,7 +34,7 @@ pub enum Source {
 impl Source {
     /// Whether the source swings from -1 to 1, as an LFO does, rather than rising from 0 to 1, as an envelope does.
     pub fn is_bipolar(self) -> bool {
-        matches!(self, Source::Lfo(_) | Source::Random | Source::Oscillator | Source::Osc(_))
+        matches!(self, Source::Lfo(_) | Source::Snail(..) | Source::Random | Source::Oscillator | Source::Osc(_))
     }
 }
 
@@ -57,6 +60,80 @@ const RATE_OCTAVES: f64 = 2.0;
 pub const RATE_DESTINATIONS: [&str; LFO_COUNT] = ["lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
 /// The LFO sources, by their places.
 const LFO_SOURCES: [&str; LFO_COUNT] = ["lfo1", "lfo2", "lfo3", "lfo4"];
+/// The destinations that move a Snail's weightings, Slow's and Slower's, by the Snail's place.
+pub const WEIGHT_DESTINATIONS: [[&str; WEIGHTED_COUNT]; LFO_COUNT] = [
+    ["lfo1_slow", "lfo1_slower"],
+    ["lfo2_slow", "lfo2_slower"],
+    ["lfo3_slow", "lfo3_slower"],
+    ["lfo4_slow", "lfo4_slower"],
+];
+
+/// A source the modulators themselves can read, since they belong to the instrument rather than to a note: an LFO by its
+/// place, or one of a Snail's outputs by its slot's place and the output's.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum BankSource {
+    Lfo(usize),
+    Snail(usize, usize),
+}
+
+/// A bank source by its name, or None for a source of a note, such as an envelope.
+fn bank_source(name: &str) -> Option<BankSource> {
+    match source_named(name)? {
+        Source::Lfo(place) => Some(BankSource::Lfo(place)),
+        Source::Snail(slot, output) => Some(BankSource::Snail(slot, output)),
+        _ => None,
+    }
+}
+
+/// A Mod Matrix route that moves a Snail's weighting: what it reads, what scales it or None, the Snail and the circuit
+/// it weights, and how far it moves the weighting at its source's full value.
+#[derive(Clone, Copy)]
+pub struct WeightRoute {
+    pub(crate) source: BankSource,
+    pub(crate) via: Option<BankSource>,
+    pub(crate) slot: usize,
+    pub(crate) circuit: usize,
+    pub(crate) reach: f64,
+    pub(crate) offset: f64,
+}
+
+/// The matrix's routes that move a Snail's weighting, from its slots; a route whose source or via is a note's moves none.
+pub fn weight_routes(slots: &[Value]) -> Vec<WeightRoute> {
+    let mut routes = Vec::new();
+    for slot in slots {
+        let amount = number(slot, "amount", 0.0);
+        let destination = word(slot, "destination", "none");
+        let Some((place, circuit)) = WEIGHT_DESTINATIONS
+            .iter()
+            .enumerate()
+            .find_map(|(place, names)| names.iter().position(|name| *name == destination).map(|circuit| (place, circuit)))
+        else {
+            continue;
+        };
+        let Some(source) = bank_source(word(slot, "source", "none")) else { continue };
+        let via = match word(slot, "via", "none") {
+            "none" => None,
+            name => match bank_source(name) {
+                Some(via) => Some(via),
+                None => continue,
+            },
+        };
+        if amount == 0.0 {
+            continue;
+        }
+        let unipolar = word(slot, "polarity", "bipolar") == "unipolar";
+        let (reach, offset) = if unipolar { (amount / 2.0, amount / 2.0) } else { (amount, 0.0) };
+        routes.push(WeightRoute {
+            source,
+            via,
+            slot: place,
+            circuit,
+            reach,
+            offset,
+        });
+    }
+    routes
+}
 
 /// A Mod Matrix route that moves an LFO's rate: the LFO it reads, an LFO scaling it or None, the LFO it moves, and how
 /// many octaves it moves at its source's full value. Only an LFO moves a rate, since the LFOs are the instrument's, not a
@@ -149,6 +226,150 @@ pub static SOURCES: &[Named<Source>] = &[
     Named {
         name: "lfo4",
         value: Source::Lfo(3),
+    },
+    Named {
+        name: "lfo1_slow_x",
+        value: Source::Snail(0, 0),
+    },
+    Named {
+        name: "lfo1_slow_y",
+        value: Source::Snail(0, 1),
+    },
+    Named {
+        name: "lfo1_slow_z",
+        value: Source::Snail(0, 2),
+    },
+    Named {
+        name: "lfo1_slower_x",
+        value: Source::Snail(0, 3),
+    },
+    Named {
+        name: "lfo1_slower_y",
+        value: Source::Snail(0, 4),
+    },
+    Named {
+        name: "lfo1_slower_z",
+        value: Source::Snail(0, 5),
+    },
+    Named {
+        name: "lfo1_slowest_x",
+        value: Source::Snail(0, 6),
+    },
+    Named {
+        name: "lfo1_slowest_y",
+        value: Source::Snail(0, 7),
+    },
+    Named {
+        name: "lfo1_slowest_z",
+        value: Source::Snail(0, 8),
+    },
+    Named {
+        name: "lfo2_slow_x",
+        value: Source::Snail(1, 0),
+    },
+    Named {
+        name: "lfo2_slow_y",
+        value: Source::Snail(1, 1),
+    },
+    Named {
+        name: "lfo2_slow_z",
+        value: Source::Snail(1, 2),
+    },
+    Named {
+        name: "lfo2_slower_x",
+        value: Source::Snail(1, 3),
+    },
+    Named {
+        name: "lfo2_slower_y",
+        value: Source::Snail(1, 4),
+    },
+    Named {
+        name: "lfo2_slower_z",
+        value: Source::Snail(1, 5),
+    },
+    Named {
+        name: "lfo2_slowest_x",
+        value: Source::Snail(1, 6),
+    },
+    Named {
+        name: "lfo2_slowest_y",
+        value: Source::Snail(1, 7),
+    },
+    Named {
+        name: "lfo2_slowest_z",
+        value: Source::Snail(1, 8),
+    },
+    Named {
+        name: "lfo3_slow_x",
+        value: Source::Snail(2, 0),
+    },
+    Named {
+        name: "lfo3_slow_y",
+        value: Source::Snail(2, 1),
+    },
+    Named {
+        name: "lfo3_slow_z",
+        value: Source::Snail(2, 2),
+    },
+    Named {
+        name: "lfo3_slower_x",
+        value: Source::Snail(2, 3),
+    },
+    Named {
+        name: "lfo3_slower_y",
+        value: Source::Snail(2, 4),
+    },
+    Named {
+        name: "lfo3_slower_z",
+        value: Source::Snail(2, 5),
+    },
+    Named {
+        name: "lfo3_slowest_x",
+        value: Source::Snail(2, 6),
+    },
+    Named {
+        name: "lfo3_slowest_y",
+        value: Source::Snail(2, 7),
+    },
+    Named {
+        name: "lfo3_slowest_z",
+        value: Source::Snail(2, 8),
+    },
+    Named {
+        name: "lfo4_slow_x",
+        value: Source::Snail(3, 0),
+    },
+    Named {
+        name: "lfo4_slow_y",
+        value: Source::Snail(3, 1),
+    },
+    Named {
+        name: "lfo4_slow_z",
+        value: Source::Snail(3, 2),
+    },
+    Named {
+        name: "lfo4_slower_x",
+        value: Source::Snail(3, 3),
+    },
+    Named {
+        name: "lfo4_slower_y",
+        value: Source::Snail(3, 4),
+    },
+    Named {
+        name: "lfo4_slower_z",
+        value: Source::Snail(3, 5),
+    },
+    Named {
+        name: "lfo4_slowest_x",
+        value: Source::Snail(3, 6),
+    },
+    Named {
+        name: "lfo4_slowest_y",
+        value: Source::Snail(3, 7),
+    },
+    Named {
+        name: "lfo4_slowest_z",
+        value: Source::Snail(3, 8),
     },
     Named {
         name: "velocity",
@@ -245,6 +466,8 @@ pub struct Route {
 pub struct Sources {
     pub envelopes: [f64; 3],
     pub lfos: [f64; LFO_COUNT],
+    /// Each Snail's outputs, by its slot, those the matrix reads.
+    pub snails: [[f64; OUTPUT_COUNT]; LFO_COUNT],
     pub velocity: f64,
     pub random: f64,
     /// The voice's oscillator a sample before, from -1 to 1.
@@ -263,6 +486,7 @@ impl Sources {
             Source::Env2 => self.envelopes[1],
             Source::Env3 => self.envelopes[2],
             Source::Lfo(place) => self.lfos[place],
+            Source::Snail(slot, output) => self.snails[slot][output],
             Source::Velocity => self.velocity,
             Source::Random => self.random,
             Source::Oscillator => self.oscillator,
@@ -336,6 +560,21 @@ impl ModMatrix {
     /// Whether any route reads a source, so that a voice works out only what is read.
     pub fn uses(&self, source: Source) -> bool {
         self.routes.iter().any(|route| route.source == source || route.via == Some(source))
+    }
+
+    /// Every Snail output a route reads, by its slot and its place, each once, so that a voice copies only those.
+    pub fn snail_outputs_read(&self) -> Vec<(usize, usize)> {
+        let mut read = Vec::new();
+        for route in &self.routes {
+            for source in [Some(route.source), route.via].into_iter().flatten() {
+                if let Source::Snail(slot, output) = source {
+                    if !read.contains(&(slot, output)) {
+                        read.push((slot, output));
+                    }
+                }
+            }
+        }
+        read
     }
 
     #[inline]

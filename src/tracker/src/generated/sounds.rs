@@ -594,7 +594,10 @@ pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[
     ("level", Preset::Whole(100)),
 ]);
 pub static LFO_DEFAULTS: Preset = Preset::Map(&[
+    ("type", Preset::Text("lfo")),
     ("on", Preset::Flag(true)),
+    ("slow", Preset::Whole(0)),
+    ("slower", Preset::Whole(0)),
     ("sync", Preset::Flag(false)),
     ("fade_in", Preset::Whole(0)),
     ("division", Preset::Text("1/4")),

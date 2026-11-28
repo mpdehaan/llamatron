@@ -160,6 +160,8 @@ pub struct Modular {
     env2_to_filter: bool,
     reads_env2: bool,
     matrix_reads_env2: bool,
+    /// The Snail outputs the matrix reads, by slot and place, which each voice copies a sample at a time.
+    snail_reads: Vec<(usize, usize)>,
     /// The oscillators' own tuning in cents, an engine of one oscillator's Detune and Fine together.
     tuning_cents: f64,
     reads_env3: bool,
@@ -217,8 +219,10 @@ pub const CONTROL_COUNT: usize = 128;
 const CONTROL_TOP: f64 = 127.0;
 
 impl Patch {
-    /// Seed what makes the instrument's filter a unit of its own, its parts' spread, by its number.
+    /// Seed what makes the instrument a unit of its own by its number: its filter's parts' spread, its oscillators'
+    /// drift, and the paths its Snails wander.
     pub fn seed_unit(&mut self, number: usize) {
+        self.lfos.seed(number as u64 + 1);
         if let Sound::Modular(modular) = &mut self.sound {
             if let Some(filter) = modular.filter.as_mut() {
                 filter.ladder.unit = crate::filters::ladder::LadderUnit::seeded(number as u64 + 1);
@@ -254,7 +258,9 @@ impl Patch {
             glides: truth(spec, "glides", true),
             glide: number(spec, "glide", 0.0),
             effects: effects::compiled(list(spec, "effects"), rate),
-            lfos: LfoBank::compiled(list(spec, "lfos"), rate).with_rate_routes(matrix::rate_routes(list(spec, "matrix"))),
+            lfos: LfoBank::compiled(list(spec, "lfos"), rate)
+                .with_rate_routes(matrix::rate_routes(list(spec, "matrix")))
+                .with_weight_routes(matrix::weight_routes(list(spec, "matrix"))),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
             tail_left: 0,
@@ -426,6 +432,7 @@ impl Patch {
         // The envelopes' levels with velocity, which light a gate, worked out only where a gate stands, so that the
         // many voices with none pay nothing for it.
         let lit_of = |levels: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|place| levels[place] * velocity_of[place]) };
+        let snail_reads = &modular.snail_reads;
         let mut sources = Sources {
             velocity: voice.level,
             random: voice.random,
@@ -459,6 +466,9 @@ impl Patch {
                     Some(step) => bank.key_lfo_value(number, &mut voice.lfo_cycles[number], step),
                     None => values[offset + place],
                 };
+            }
+            for (slot, output) in snail_reads.iter().copied() {
+                sources.snails[slot][output] = bank.snail_now[slot].get(offset + place).map_or(0.0, |outputs| outputs[output]);
             }
             if fading {
                 for (lfo, fade) in sources.lfos.iter_mut().zip(fades.iter()) {
@@ -613,6 +623,7 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
             .any(|route| route.destination == Destination::Cutoff && (audio_rate(route.source) || route.via.is_some_and(audio_rate)));
     }
     let matrix_reads_env2 = matrix.uses(Source::Env2);
+    let snail_reads = matrix.snail_outputs_read();
     let env2_to_filter = !truth(spec, "disconnect_filter", false);
     // Env2 sweeps the cutoff only through an Env amount or an accent's extra sweep; with neither, nothing hears it, and
     // its level is never worked out.
@@ -626,6 +637,7 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
         reads_env2: env2_sweeps || matrix_reads_env2 || gates_read(1),
         env2_to_filter,
         matrix_reads_env2,
+        snail_reads,
         reads_env3: matrix.uses(Source::Env3) || gates_read(2),
         tuning_cents,
         filter,

@@ -370,8 +370,11 @@ fn filter(sound: &Sound) -> Data {
     }
 }
 
-/// How a Mod Matrix source names an LFO, followed by its number.
+/// How a Mod Matrix source names a Modulators slot, followed by its number and, for one of a Snail's outputs, the
+/// output's name.
 const LFO_SOURCE_PREFIX: &str = "lfo";
+/// A slot's Type that holds a Snail.
+const SNAIL_TYPE: &str = "snail";
 
 /// The LFOs in their places, every slot of the four, None for one that is off or that no Mod Matrix route reads, so that
 /// the matrix finds each by its number and the engine works out only the LFOs something hears.
@@ -383,6 +386,15 @@ fn lfos(sound: &Sound) -> Data {
         let setting = |name: &str| sound.lfo_setting(number, name);
         if is_falsy(&setting("on")) || !read.contains(&number) {
             lfos.push(Data::Null);
+            continue;
+        }
+        // A Snail has only its two weightings, each a fraction either way.
+        if setting("type").as_str() == Some(SNAIL_TYPE) {
+            lfos.push(mapping(vec![
+                ("type", Data::text(SNAIL_TYPE)),
+                ("slow", share(&setting("slow"), PERCENT)),
+                ("slower", share(&setting("slower"), PERCENT)),
+            ]));
             continue;
         }
         let speed = setting("speed").as_str().unwrap_or(lfo_speed::DEFAULT_SPEED).to_string();
@@ -481,8 +493,7 @@ fn taps(sound: &Sound, number: usize) -> Data {
     Data::List(taps)
 }
 
-/// The matrix's slots, each amount a fraction either way.
-/// The LFOs a Mod Matrix route reads, by number, as its source or its via.
+/// The Modulators slots a Mod Matrix route reads, by number, as its source or its via.
 fn lfos_read(sound: &Sound) -> Vec<usize> {
     let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
     let mut read = Vec::new();
@@ -493,6 +504,7 @@ fn lfos_read(sound: &Sound) -> Vec<usize> {
                 .get(end)
                 .and_then(Data::as_str)
                 .and_then(|name| name.strip_prefix(LFO_SOURCE_PREFIX))
+                .and_then(|rest| rest.split('_').next())
                 .and_then(|number| number.parse::<usize>().ok());
             if let Some(number) = number {
                 read.push(number);
@@ -502,6 +514,7 @@ fn lfos_read(sound: &Sound) -> Vec<usize> {
     read
 }
 
+/// The matrix's slots, each amount a fraction either way.
 fn matrix(sound: &Sound) -> Data {
     let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
     let mut slots = Vec::new();

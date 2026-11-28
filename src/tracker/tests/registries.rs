@@ -148,6 +148,7 @@ fn every_matrix_source_and_destination_offered_is_registered_and_every_registere
         .iter()
         .map(|choice| choice.name)
         .chain(matrix::RATE_DESTINATIONS.iter().copied())
+        .chain(matrix::WEIGHT_DESTINATIONS.iter().flatten().copied())
         .collect();
     assert_eq!(destinations, registered_destinations);
 }

@@ -604,3 +604,57 @@ fn every_engine_plays_the_same_twice_within_its_headroom() {
         assert!(peak > 0.0 && peak < headroom, "{engine}: {peak}");
     }
 }
+
+/// A map of a sound's settings, built as data.
+fn settings(pairs: &[(&str, Data)]) -> Data {
+    Data::Map(pairs.iter().map(|(key, value)| (Data::text(key), value.clone())).collect())
+}
+
+/// An instrument of the basic engine whose first Modulators slot holds a Snail weighted as given, and whose Mod Matrix
+/// routes as the slots given say.
+fn snail_instrument(weighting: i64, routes: &[Data]) -> Instrument {
+    let (engine, snail) = ("basic", "snail");
+    let sound = settings(&[
+        ("engine", Data::text(engine)),
+        (
+            "lfos",
+            Data::List(vec![settings(&[("type", Data::text(snail)), ("slow", Data::Whole(weighting.into()))])]),
+        ),
+        ("matrix", Data::List(routes.to_vec())),
+    ]);
+    let instrument = settings(&[
+        ("name", Data::text("tried")),
+        ("kind", Data::text("built_in")),
+        ("role", Data::text("normal")),
+        ("sound", sound),
+    ]);
+    Instrument::from_data(&instrument).expect("the scenario's instrument is valid")
+}
+
+/// A Mod Matrix slot from a source to a destination at an amount in percent.
+fn route(source: &str, destination: &str, amount: i64) -> Data {
+    settings(&[
+        ("source", Data::text(source)),
+        ("via", Data::text("none")),
+        ("destination", Data::text(destination)),
+        ("amount", Data::Whole(amount.into())),
+    ])
+}
+
+/// A Snail in a Modulators slot is heard as a person plays it: each of its outputs moves the cutoff through the Mod
+/// Matrix, and its Slow gauge changes the path Slow takes.
+#[test]
+fn a_snail_moves_its_destinations_and_its_slow_gauge_moves_it() {
+    let (cutoff, full, centre, leaning) = ("cutoff", 100, 0, 100);
+    let silent = played(&snail_instrument(centre, &[route("lfo1_slow_x", cutoff, 0)]));
+    for circuit in ["slow", "slower", "slowest"] {
+        for axis in ["x", "y", "z"] {
+            let output = format!("lfo1_{circuit}_{axis}");
+            let heard = played(&snail_instrument(centre, &[route(&output, cutoff, full)]));
+            assert!(differs(&silent, &heard), "{output} moves the cutoff");
+        }
+    }
+    let routed = [route("lfo1_slow_y", cutoff, full)];
+    let centred = played(&snail_instrument(centre, &routed));
+    assert!(differs(&centred, &played(&snail_instrument(leaning, &routed))), "the Slow gauge moves Slow");
+}

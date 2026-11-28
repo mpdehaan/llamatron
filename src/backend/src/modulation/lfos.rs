@@ -5,12 +5,14 @@
 //! scene does; their values over a chunk are worked out once before the voices read them. An LFO+ may also fade in after
 //! each note, which each voice applies by its own age, and may follow the song's tempo, its cycle a division of the beat.
 //! A Mod Matrix slot may move an LFO's rate by an LFO, another or itself: those routes are the bank's, read a sample at a
-//! time as the LFOs advance.
+//! time as the LFOs advance. A slot may hold a Snail in place of an LFO (`snail`), its nine outputs worked out over the
+//! chunk as the LFOs' are, its weightings moved by the bank's own sources.
 
 use crate::dsp::blep::blep;
 use crate::dsp::Random;
 use crate::engine::MOST_FRAMES;
-use crate::modulation::matrix::RateRoute;
+use crate::modulation::matrix::{BankSource, RateRoute, WeightRoute};
+use crate::modulation::snail::{Snail, OUTPUT_COUNT, WEIGHTED_COUNT};
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
 use rmpv::Value;
@@ -93,6 +95,14 @@ pub static SHAPES: &[Named<Shape>] = &[
 /// An instrument's four LFOs, None for one that is off, and what each gave the chunk now playing.
 pub struct LfoBank {
     lfos: Vec<Option<Lfo>>,
+    /// The Snails, in the slots that hold one, each with its seed by its slot, and the outputs it gave each sample of
+    /// the chunk now playing.
+    snails: Vec<Option<Snail>>,
+    pub snail_now: Vec<Vec<[f64; OUTPUT_COUNT]>>,
+    /// The Mod Matrix's routes that move a Snail's weighting, and what each Snail gave the sample before, which those
+    /// routes read.
+    weight_routes: Vec<WeightRoute>,
+    snail_last: [[f64; OUTPUT_COUNT]; LFO_COUNT],
     held: Vec<f64>,
     pub now: Vec<Vec<f64>>,
     /// The Mod Matrix's routes that move an LFO's rate by other LFOs, or by itself, and what each LFO gave the sample
@@ -107,18 +117,38 @@ pub struct LfoBank {
     stopped: bool,
 }
 
+/// What a slot holds when its spec names a type: a Snail; any other is an LFO.
+const SNAIL_TYPE: &str = "snail";
+/// The settings of a Snail's weightings, Slow's and Slower's, each a fraction from -1 to 1.
+const WEIGHTINGS: [&str; WEIGHTED_COUNT] = ["slow", "slower"];
+
+/// The seed of a slot's Snail, from its instrument's number and its slot's place, so that two Snails differ.
+fn snail_seed(instrument: u64, place: usize) -> u64 {
+    instrument.wrapping_mul(LFO_COUNT as u64).wrapping_add(place as u64)
+}
+
+/// A slot's Snail where its spec names one, seeded by an instrument's number.
+fn snail_of(spec: &Value, instrument: u64, place: usize) -> Option<Snail> {
+    if spec.is_nil() || word(spec, "type", "lfo") != SNAIL_TYPE {
+        return None;
+    }
+    let weightings = std::array::from_fn(|circuit| number(spec, WEIGHTINGS[circuit], 0.0).clamp(-1.0, 1.0));
+    Some(Snail::seeded(snail_seed(instrument, place), weightings))
+}
+
 /// The tempo a song is taken to play at until it says, in quarter notes a minute.
 const FIRST_TEMPO: f64 = 120.0;
 const SECONDS_PER_MINUTE: f64 = 60.0;
 
 impl LfoBank {
+    /// The bank a spec's list of slots describes, at a sample rate.
     pub fn compiled(specs: &[Value], rate: f64) -> LfoBank {
         let mut random = Random::new(HELD_SEED);
         let held = (0..HELD_VALUES).map(|_| random.between(-1.0, 1.0)).collect();
         let lfos = (0..LFO_COUNT)
             .map(|place| {
                 let spec = specs.get(place)?;
-                if spec.is_nil() {
+                if spec.is_nil() || word(spec, "type", "lfo") == SNAIL_TYPE {
                     return None;
                 }
                 let shape = registry::named(SHAPES, word(spec, "shape", SINE)).unwrap_or(Shape::Sine);
@@ -143,8 +173,24 @@ impl LfoBank {
                 })
             })
             .collect();
+        let no_spec = Value::Nil;
+        let snails: Vec<Option<Snail>> = (0..LFO_COUNT).map(|place| snail_of(specs.get(place).unwrap_or(&no_spec), 0, place)).collect();
+        let snail_now = snails
+            .iter()
+            .map(|snail| {
+                if snail.is_some() {
+                    vec![[0.0; OUTPUT_COUNT]; MOST_FRAMES]
+                } else {
+                    Vec::new()
+                }
+            })
+            .collect();
         LfoBank {
             lfos,
+            snails,
+            snail_now,
+            weight_routes: Vec::new(),
+            snail_last: [[0.0; OUTPUT_COUNT]; LFO_COUNT],
             held,
             now: (0..LFO_COUNT).map(|_| vec![0.0; MOST_FRAMES]).collect(),
             rate_routes: Vec::new(),
@@ -155,10 +201,13 @@ impl LfoBank {
         }
     }
 
-    /// Playback of the instrument started: from silence, every On play LFO starts its cycle from zero; while something
-    /// already plays it, nothing restarts.
+    /// Playback of the instrument started: from silence, every On play LFO starts its cycle from zero and every Snail
+    /// from where it was first heard; while something already plays it, nothing restarts.
     pub fn play_started(&mut self) {
         if self.players == 0 {
+            for snail in self.snails.iter_mut().flatten() {
+                snail.restart();
+            }
             for lfo in self.lfos.iter_mut().flatten() {
                 if lfo.restart == Restart::OnPlay {
                     lfo.cycles = 0.0;
@@ -194,7 +243,22 @@ impl LfoBank {
 
     /// Whether any LFO is on and moving: none stands still while playback is stopped.
     pub fn is_on(&self) -> bool {
-        !self.stopped && self.lfos.iter().any(Option::is_some)
+        !self.stopped && (self.lfos.iter().any(Option::is_some) || self.snails.iter().any(Option::is_some))
+    }
+
+    /// Seed every Snail by its instrument's number, so that two instruments' Snails wander differently.
+    pub fn seed(&mut self, instrument: u64) {
+        for (place, snail) in self.snails.iter_mut().enumerate() {
+            if let Some(snail) = snail.as_mut() {
+                *snail = Snail::seeded(snail_seed(instrument, place), snail.weightings);
+            }
+        }
+    }
+
+    /// The bank with the Mod Matrix's routes that move its Snails' weightings.
+    pub fn with_weight_routes(mut self, routes: Vec<WeightRoute>) -> LfoBank {
+        self.weight_routes = routes;
+        self
     }
 
     /// The bank with the Mod Matrix's routes that move its LFOs' rates.
@@ -208,8 +272,16 @@ impl LfoBank {
         let frames = frames.min(MOST_FRAMES);
         if !self.rate_routes.is_empty() {
             self.advance_moving_rates(frames);
-            return;
+        } else {
+            self.advance_lfos(frames);
         }
+        if self.snails.iter().any(Option::is_some) {
+            self.advance_snails(frames);
+        }
+    }
+
+    /// Work out the chunk ahead of the LFOs whose rates nothing moves.
+    fn advance_lfos(&mut self, frames: usize) {
         for (lfo, values) in self.lfos.iter_mut().zip(self.now.iter_mut()) {
             // A Key LFO follows each note's own pitch, so each voice works out its own (key_lfo_value).
             let Some(lfo) = lfo.as_mut().filter(|lfo| lfo.ratio.is_none()) else {
@@ -254,6 +326,44 @@ impl LfoBank {
                 now[place][sample] = value;
                 last[place] = value;
                 lfo.cycles = (lfo.cycles + step) % HELD_VALUES as f64;
+            }
+        }
+    }
+
+    /// Work out the chunk ahead of the Snails, a sample at a time, every Snail together: each weighting moved by what
+    /// its routes read, an LFO's value at the sample or a Snail's output at the sample before, so that the order of the
+    /// slots never matters.
+    fn advance_snails(&mut self, frames: usize) {
+        let seconds = 1.0 / self.rate;
+        let LfoBank {
+            snails,
+            snail_now,
+            weight_routes,
+            snail_last,
+            now,
+            ..
+        } = self;
+        let read = |source: BankSource, sample: usize, last: &[[f64; OUTPUT_COUNT]; LFO_COUNT]| match source {
+            BankSource::Lfo(place) => now[place][sample],
+            BankSource::Snail(slot, output) => last[slot][output],
+        };
+        for sample in 0..frames {
+            let mut moved = [[0.0; WEIGHTED_COUNT]; LFO_COUNT];
+            for route in weight_routes.iter() {
+                let mut value = read(route.source, sample, snail_last) * route.reach + route.offset;
+                if let Some(via) = route.via {
+                    value *= read(via, sample, snail_last);
+                }
+                moved[route.slot][route.circuit] += value;
+            }
+            for (place, snail) in snails.iter_mut().enumerate() {
+                let Some(snail) = snail.as_mut() else { continue };
+                snail.advance(seconds, moved[place], &mut snail_now[place][sample]);
+            }
+            for (place, outputs) in snail_now.iter().enumerate() {
+                if let Some(outputs) = outputs.get(sample) {
+                    snail_last[place] = *outputs;
+                }
             }
         }
     }
@@ -454,5 +564,29 @@ mod tests {
         assert_eq!(faded_in(fade, fade), 1.0);
         assert_eq!(faded_in(0.0, 0.0), 1.0);
         assert!(bank(&[("fade_in", fade.into())]).fades()[0] == fade);
+    }
+
+    /// A Mod Matrix route from an LFO to a Snail's Slow weighting moves the path Slow takes, leaning it the whole time
+    /// where the route is Unipolar.
+    #[test]
+    fn an_lfo_routed_to_a_snails_weighting_moves_its_path() {
+        let heard_seconds = 60.0;
+        let specs = [Value::Map(vec![("type".into(), "snail".into())]), Value::Map(vec![("rate".into(), 0.5.into())])];
+        let route = Value::Map(vec![
+            ("source".into(), "lfo2".into()),
+            ("destination".into(), "lfo1_slow".into()),
+            ("amount".into(), 1.0.into()),
+            ("polarity".into(), "unipolar".into()),
+        ]);
+        let slow_y = |slots: &[Value]| {
+            let mut bank = LfoBank::compiled(&specs, RATE).with_weight_routes(crate::modulation::matrix::weight_routes(slots));
+            let mut path = Vec::new();
+            for _ in 0..(heard_seconds * RATE / MOST_FRAMES as f64) as usize {
+                bank.advance(MOST_FRAMES);
+                path.push(bank.snail_now[0][0][1]);
+            }
+            path
+        };
+        assert_ne!(slow_y(&[]), slow_y(&[route]));
     }
 }

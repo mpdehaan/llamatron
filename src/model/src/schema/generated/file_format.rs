@@ -815,6 +815,7 @@ pub static WAVE_SHAPES: &[&str] = &["triangle", "saw", "square", "sine", "organ"
 pub static NOISES: &[&str] = &["long", "short"];
 pub static LFO_SHAPES: &[&str] = &["sine", "triangle", "saw_up", "saw_down", "square", "sample_and_hold", "smooth_random"];
 /// When a modulator's cycle starts again.
+pub static LFO_TYPES: &[&str] = &["lfo", "snail"];
 pub static LFO_RESTARTS: &[&str] = &["each_note", "each_scene", "on_play", "never"];
 pub static EFFECTS: &[&str] = &["none", "bax", "bitcrush", "drive", "multitap"];
 pub static FILTER_TYPES: &[&str] = &["none", "ladder", "multimode", "sallen_key", "diode", "ota", "low_pass_gate"];
@@ -828,12 +829,12 @@ pub static FILTER_SHARINGS: &[&str] = &["per_note", "shared"];
 pub static GATE_MODES: &[&str] = &["vca", "lowpass", "both"];
 pub static GATE_INPUTS: &[&str] = &["oscillator", "ping", "both"];
 pub static LADDER_SLOPES: &[i64] = &[6, 12, 18, 24];
-pub static MATRIX_SOURCES: &[&str] = &["none", "env1", "env2", "env3", "lfo1", "lfo2", "lfo3", "lfo4", "velocity", "random", "osc", "osc1", "osc2", "osc3"];
+pub static MATRIX_SOURCES: &[&str] = &["none", "env1", "env2", "env3", "lfo1", "lfo2", "lfo3", "lfo4", "lfo1_slow_x", "lfo1_slow_y", "lfo1_slow_z", "lfo1_slower_x", "lfo1_slower_y", "lfo1_slower_z", "lfo1_slowest_x", "lfo1_slowest_y", "lfo1_slowest_z", "lfo2_slow_x", "lfo2_slow_y", "lfo2_slow_z", "lfo2_slower_x", "lfo2_slower_y", "lfo2_slower_z", "lfo2_slowest_x", "lfo2_slowest_y", "lfo2_slowest_z", "lfo3_slow_x", "lfo3_slow_y", "lfo3_slow_z", "lfo3_slower_x", "lfo3_slower_y", "lfo3_slower_z", "lfo3_slowest_x", "lfo3_slowest_y", "lfo3_slowest_z", "lfo4_slow_x", "lfo4_slow_y", "lfo4_slow_z", "lfo4_slower_x", "lfo4_slower_y", "lfo4_slower_z", "lfo4_slowest_x", "lfo4_slowest_y", "lfo4_slowest_z", "velocity", "random", "osc", "osc1", "osc2", "osc3"];
 /// How a Mod Matrix route reads its source: from minus its amount to plus it, or from nothing to its amount.
 pub static MATRIX_POLARITIES: &[&str] = &["bipolar", "unipolar"];
 /// The sources that swing from -1 to 1 rather than rising from 0 to 1.
-pub static BIPOLAR_SOURCES: &[&str] = &["lfo1", "lfo2", "lfo3", "lfo4", "random", "osc", "osc1", "osc2", "osc3"];
-pub static MATRIX_DESTINATIONS: &[&str] = &["none", "pitch", "pulse_width", "detune", "fine", "interval", "cutoff", "resonance", "amp", "lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate"];
+pub static BIPOLAR_SOURCES: &[&str] = &["lfo1", "lfo2", "lfo3", "lfo4", "lfo1_slow_x", "lfo1_slow_y", "lfo1_slow_z", "lfo1_slower_x", "lfo1_slower_y", "lfo1_slower_z", "lfo1_slowest_x", "lfo1_slowest_y", "lfo1_slowest_z", "lfo2_slow_x", "lfo2_slow_y", "lfo2_slow_z", "lfo2_slower_x", "lfo2_slower_y", "lfo2_slower_z", "lfo2_slowest_x", "lfo2_slowest_y", "lfo2_slowest_z", "lfo3_slow_x", "lfo3_slow_y", "lfo3_slow_z", "lfo3_slower_x", "lfo3_slower_y", "lfo3_slower_z", "lfo3_slowest_x", "lfo3_slowest_y", "lfo3_slowest_z", "lfo4_slow_x", "lfo4_slow_y", "lfo4_slow_z", "lfo4_slower_x", "lfo4_slower_y", "lfo4_slower_z", "lfo4_slowest_x", "lfo4_slowest_y", "lfo4_slowest_z", "random", "osc", "osc1", "osc2", "osc3"];
+pub static MATRIX_DESTINATIONS: &[&str] = &["none", "pitch", "pulse_width", "detune", "fine", "interval", "cutoff", "resonance", "amp", "lfo1_rate", "lfo2_rate", "lfo3_rate", "lfo4_rate", "lfo1_slow", "lfo1_slower", "lfo2_slow", "lfo2_slower", "lfo3_slow", "lfo3_slower", "lfo4_slow", "lfo4_slower"];
 pub static FILTER_MODES: &[&str] = &["low", "band", "high", "notch"];
 pub static SALLEN_KEY_MODES: &[&str] = &["low", "high"];
 pub static CURVES: &[&str] = &["soft", "warm", "hard", "fold", "wrap"];

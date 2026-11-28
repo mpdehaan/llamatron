@@ -23,7 +23,7 @@ use llamatron_model::objects::lfo_speed;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
-    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_RESTARTS, LFO_SHAPES, MATRIX_DESTINATIONS,
+    InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS,
     MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
@@ -38,6 +38,28 @@ const GM_CELLS: usize = 12;
 const BLOCK_CELLS: usize = 8;
 /// A Mod Matrix route's Polarity that moves its destination from nothing to its amount.
 const UNIPOLAR: &str = "unipolar";
+/// Which Modulators slots hold a Snail, by place, and none holding one.
+type Snails = [bool; LFO_COUNT as usize];
+#[cfg(test)]
+const NO_SNAILS: Snails = [false; LFO_COUNT as usize];
+/// How a Mod Matrix source or destination names a Modulators slot, followed by its number.
+const SLOT_PREFIX: &str = "lfo";
+
+/// Whether the Mod Matrix offers a source or destination for what its Modulators slot holds: an LFO's value and rate
+/// where the slot holds an LFO, a Snail's outputs and weightings where it holds a Snail; any other always.
+fn offered_by_slots(name: &str, snails: &Snails) -> bool {
+    let Some(rest) = name.strip_prefix(SLOT_PREFIX) else { return true };
+    let (number, after) = rest.split_at(rest.find('_').unwrap_or(rest.len()));
+    let Some(holds_snail) = number.parse::<usize>().ok().and_then(|number| snails.get(number.wrapping_sub(1))) else {
+        return true;
+    };
+    let lfo_own = after.is_empty() || after == RATE_SUFFIX;
+    lfo_own != *holds_snail
+}
+
+/// A Modulators slot's Type that holds a Snail, and how far either way its weightings reach, in percent.
+const SNAIL_TYPE: &str = "snail";
+const SNAIL_WEIGHTING_REACH: i64 = 100;
 /// The longest an LFO+ takes to fade in, in milliseconds.
 const LONGEST_FADE_IN_MS: i64 = 10_000;
 const MAX_PERCENT: i64 = 100;
@@ -1262,11 +1284,64 @@ impl InstrumentEditor {
         )
     }
 
+    /// A Modulators slot's Type: what the slot holds, an LFO or a Snail.
+    fn slot_type_field(sound: &Sound, ids: &mut Ids, number: usize) -> Field {
+        let label = named(labels::MSG_LFO_TYPE_LABEL, &[("number", number.into())]);
+        chosen(
+            ids.at(Write::Item("lfos", number, "type")),
+            &label,
+            LFO_TYPES,
+            &names_in(labels::MSG_LFO_TYPE_NAMES, LFO_TYPES),
+            &text(&sound.lfo_setting(number, "type")),
+        )
+        .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_TYPE_LABEL))
+    }
+
+    /// A Snail's weighting of one circuit: a gauge from -100% to +100%, 0 the circuit at its knob's centre.
+    fn weighting_field(sound: &Sound, ids: &mut Ids, number: usize, name: &'static str, label: &str) -> Field {
+        let percent = whole(&sound.lfo_setting(number, name));
+        let (lowest, highest) = (-SNAIL_WEIGHTING_REACH, SNAIL_WEIGHTING_REACH);
+        let shown = gauge_text(percent, lowest, highest, BLOCK_CELLS, marks::MSG_SIGNED_PERCENT_SHOWN, false, 1);
+        let full = named(label, &[("number", number.into())]);
+        Field::number(
+            ids.at(Write::Item("lfos", number, name)),
+            &full,
+            Some(percent),
+            Some(lowest),
+            Some(highest),
+            0,
+            Some(shown),
+        )
+        .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
+    }
+
+    /// A slot holding a Snail: its Type, Slow's and Slower's weightings, and its switch.
+    fn snail_column(sound: &Sound, ids: &mut Ids, number: usize) -> TabColumn {
+        let fields = vec![
+            Self::slot_type_field(sound, ids, number),
+            Self::weighting_field(sound, ids, number, "slow", labels::MSG_SNAIL_SLOW_LABEL),
+            Self::weighting_field(sound, ids, number, "slower", labels::MSG_SNAIL_SLOWER_LABEL),
+            Field::toggle(
+                ids.at(Write::Item("lfos", number, "on")),
+                &named(labels::MSG_LFO_ON_LABEL, &[("number", number.into())]),
+                flag(&sound.lfo_setting(number, "on")),
+            )
+            .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, labels::MSG_LFO_ON_LABEL)),
+        ];
+        let mut column = TabColumn::new(Some(&named(labels::MSG_LFO_LABEL, &[("number", number.into())])), fields);
+        column.boxed = true;
+        column
+    }
+
     fn lfos_tab(sound: &Sound, not_ready: bool, ids: &mut Ids) -> Tab {
         let lfo = |number: usize, name: &str| sound.item("lfos", number, name, LFO_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_LFO_SHOWN_LABELS, label);
         let mut columns = Vec::new();
         for number in 1..=LFO_COUNT as usize {
+            if text(&sound.lfo_setting(number, "type")) == SNAIL_TYPE {
+                columns.push(Self::snail_column(sound, ids, number));
+                continue;
+            }
             let numbered = |label: &str| named(label, &[("number", number.into())]);
             let (shapes, speeds) = (LFO_SHAPES, lfo_speed::SPEED_NAMES);
             let shape = text(&sound.lfo_setting(number, "shape"));
@@ -1287,6 +1362,7 @@ impl InstrumentEditor {
                 Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio")))
             };
             let mut fields = vec![
+                Self::slot_type_field(sound, ids, number),
                 chosen(
                     ids.at(Write::Item("lfos", number, "shape")),
                     &numbered(labels::MSG_LFO_SHAPE_LABEL),
@@ -1651,10 +1727,11 @@ impl InstrumentEditor {
     /// A Mod Matrix slot's Source or Via: the usual sources, then MIDI CC, whose number is set in the CC field beside it.
     /// An engine of one oscillator offers it as Osc 1, and Asheville each of its three by number; Per Note S&H, held for the
     /// whole note, is a source and never a Via.
-    fn source_field(id: usize, label: &str, current: &str, asheville: bool, via: bool) -> Field {
+    fn source_field(id: usize, label: &str, current: &str, asheville: bool, via: bool, snails: &Snails) -> Field {
         let sources: Vec<&str> = MATRIX_SOURCES
             .iter()
             .copied()
+            .filter(|source| *source == current || offered_by_slots(source, snails))
             .filter(|source| {
                 if asheville {
                     *source != ONE_OSCILLATOR_SOURCE
@@ -1669,6 +1746,22 @@ impl InstrumentEditor {
         choices.push(if control_number(current).is_some() { current } else { MIDI_CC_CHOICE });
         names.push(labels::MSG_MIDI_CC_CHOICE.to_string());
         chosen(id, label, &choices, &names, current)
+    }
+
+    /// A Mod Matrix slot's Destination: every destination, each Modulators slot's offered as what it holds.
+    fn destination_field(id: usize, label: &str, current: &str, snails: &Snails) -> Field {
+        let destinations: Vec<&str> = MATRIX_DESTINATIONS
+            .iter()
+            .copied()
+            .filter(|destination| *destination == current || offered_by_slots(destination, snails))
+            .collect();
+        chosen(
+            id,
+            label,
+            &destinations,
+            &names_in(labels::MSG_MATRIX_DESTINATION_NAMES, &destinations),
+            current,
+        )
     }
 
     /// The CC field beside a slot's Source or Via: the CC's number, typed or stepped from 0 to 127, where it reads a MIDI
@@ -1698,6 +1791,7 @@ impl InstrumentEditor {
         let slot = |number: usize, name: &str| sound.item("matrix", number, name, SLOT_DEFAULTS);
         let shown_label = |label: &str| named_in(labels::MSG_SLOT_SHOWN_LABELS, label);
         let asheville = sound.part_type("oscillators") == ASHEVILLE;
+        let snails: Snails = std::array::from_fn(|place| text(&sound.lfo_setting(place + 1, "type")) == SNAIL_TYPE);
         let mut columns = Vec::new();
         for number in 1..=MATRIX_SLOTS as usize {
             let numbered = |label: &str| named(label, &[("number", number.into())]);
@@ -1709,6 +1803,7 @@ impl InstrumentEditor {
                     &text(&slot(number, "source")),
                     asheville,
                     false,
+                    &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_SOURCE_LABEL)),
                 Self::source_field(
@@ -1717,14 +1812,14 @@ impl InstrumentEditor {
                     &text(&slot(number, "via")),
                     asheville,
                     true,
+                    &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_VIA_LABEL)),
-                chosen(
+                Self::destination_field(
                     ids.at(Write::Item("matrix", number, "destination")),
                     &numbered(labels::MSG_SLOT_DESTINATION_LABEL),
-                    MATRIX_DESTINATIONS,
-                    &names_in(labels::MSG_MATRIX_DESTINATION_NAMES, MATRIX_DESTINATIONS),
                     &text(&slot(number, "destination")),
+                    &snails,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_DESTINATION_LABEL)),
                 chosen(
@@ -2033,7 +2128,7 @@ mod tests {
     fn a_midi_cc_source_shows_its_number_beside() {
         let control = 74;
         let source = format!("{CONTROL_PREFIX}{control}");
-        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source, false, false);
+        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source, false, false, &NO_SNAILS);
         assert_eq!(field.value(), labels::MSG_MIDI_CC_CHOICE);
         let beside = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, &source);
         assert_eq!(beside.field.map(|field| field.value().to_string()), Some(control.to_string()));
@@ -2368,12 +2463,36 @@ mod tests {
         assert_eq!(headings, [Some(first)]);
     }
 
+    /// The Mod Matrix offers what each Modulators slot holds: Mod 1 and Mod 1 rate while it holds an LFO, Mod 1 / Slow
+    /// X and the rest of a Snail's outputs, and Mod 1 / Slow and Mod 1 / Slower, while it holds a Snail.
+    #[test]
+    fn the_matrix_offers_what_each_modulators_slot_holds() {
+        let choices = |field: Field| -> Vec<String> {
+            match field.kind {
+                FieldKind::Choice { names, .. } => names.unwrap_or_default(),
+                _ => Vec::new(),
+            }
+        };
+        let name = |pairs: &[(&str, &str)], key: &str| named_in(pairs, key);
+        let snail_first: Snails = [true, false, false, false];
+        for (snails, holds_snail) in [(NO_SNAILS, false), (snail_first, true)] {
+            let sources = choices(InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", false, false, &snails));
+            let destinations = choices(InstrumentEditor::destination_field(1, labels::MSG_SLOT_DESTINATION_LABEL, "none", &snails));
+            let has = |list: &[String], key: &str, pairs: &[(&str, &str)]| list.contains(&name(pairs, key));
+            assert_eq!(has(&sources, "lfo1_slowest_z", labels::MSG_MATRIX_SOURCE_NAMES), holds_snail);
+            assert_eq!(has(&sources, "lfo1", labels::MSG_MATRIX_SOURCE_NAMES), !holds_snail);
+            assert_eq!(has(&destinations, "lfo1_slower", labels::MSG_MATRIX_DESTINATION_NAMES), holds_snail);
+            assert_eq!(has(&destinations, "lfo1_rate", labels::MSG_MATRIX_DESTINATION_NAMES), !holds_snail);
+            assert!(has(&sources, "lfo2", labels::MSG_MATRIX_SOURCE_NAMES), "Mod 2 holds an LFO either way");
+        }
+    }
+
     /// The Mod Matrix offers each oscillator by its number: Osc 1 alone on an engine of one oscillator, Osc 1 to Osc 3 on
     /// Asheville, never the two together; Per Note S&H is a source and never a Via.
     #[test]
     fn the_matrix_names_its_oscillators_and_keeps_per_note_sh_a_source() {
         let names_of = |asheville: bool, via: bool| -> Vec<String> {
-            let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", asheville, via);
+            let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", asheville, via, &NO_SNAILS);
             match field.kind {
                 FieldKind::Choice { names, .. } => names.unwrap_or_default(),
                 _ => Vec::new(),
