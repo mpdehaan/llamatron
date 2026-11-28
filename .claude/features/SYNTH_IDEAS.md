@@ -37,9 +37,9 @@ The professor's research is in `.claude/notes/synthesis/`.
     later: the jerk systems, Aizawa, Halvorsen, Dadras, the logistic and Hénon maps, the Duffing oscillator, the
     rungler (a shift register clocked and fed by its own oscillators).
   - **Snail**: three slow chaotic circuits, Slow, Slower and Slowest (about 20 seconds, 75 seconds and 35 minutes
-    a cycle), each travelling around two strange attractors, Slow and Slower with a Lean setting which attractor it
-    lingers around, Slowest with none; each circuit's X, Y and Z (Y inverted) as outputs, and the two Leans as
-    destinations. Never restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked
+    a cycle), each travelling around two strange attractors, Slow and Slower each with a gauge of its name setting which
+    attractor it lingers around, Slowest with none; each circuit's X, Y and Z (Y inverted) as outputs, and the two
+    gauges as destinations. Never restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked
     before building.
   - **Tide**: a function generator of four related outputs, read from open firmware (MIT, `pichenettes/eurorack`,
     `tides2/`): a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
