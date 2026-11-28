@@ -12,6 +12,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 0. SYNTH_IDEAS: Tape-style saturation researched (after the expert reviews).
 0. OTHER_IDEAS: The support folder consolidated (after the expert reviews).
 0. OTHER_IDEAS: The code's churn studied (after the expert reviews are discussed).
+0. OTHER_IDEAS: Constants of one meaning defined once (after the expert reviews are discussed).
 1. SYNTH_IDEAS: Synths on several threads.
 2. SYNTH_IDEAS: Steps, a per-frame table for every engine; SID closer to its chip; Glissando and LFO extras.
 3. OTHER_IDEAS: Page tests that read the page.

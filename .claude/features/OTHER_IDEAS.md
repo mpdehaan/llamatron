@@ -26,6 +26,10 @@ built.
   file has changed in git, and reports what the most changed files suggest: a restructuring that would read more
   plainly to a person, or that would need fewer changes as the program grows.
 
+- **Constants of one meaning defined once**: after the expert reviews are discussed, an agent reads every constant in
+  the program for those defined twice with one meaning, and plans how to define each once without breaking anything,
+  never joining constants whose values only happen to agree.
+
 ## The Model
 
 - **CC ramps** on a scene (954, 955 open).
