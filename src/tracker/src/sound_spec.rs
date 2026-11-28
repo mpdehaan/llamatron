@@ -10,8 +10,8 @@ use crate::instrument_sound::Sound;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::schema::generated::file_format::MatrixSetting;
-use llamatron_model::schema::generated::file_format::SNAIL_SPEEDS;
 use llamatron_model::schema::generated::limits::LFO_COUNT;
+use llamatron_strings::marks;
 
 const MILLISECONDS: f64 = 1000.0;
 const TENTHS_OF_MILLISECONDS: f64 = 10000.0;
@@ -376,11 +376,49 @@ fn filter(sound: &Sound) -> Data {
 const LFO_SOURCE_PREFIX: &str = "lfo";
 /// A slot's Type that holds a Snail.
 const SNAIL_TYPE: &str = "snail";
-/// A Snail's lanes' speed switches, Slow's, Slower's and Slowest's, and the seconds each switch's fast, middle and slow
-/// give, primes so that a lane's trips rarely line up with a song's sections; the middle is the default.
-pub const SNAIL_LANE_SPEEDS: [&str; 3] = ["slow_speed", "slower_speed", "slowest_speed"];
-pub const SNAIL_SPEED_SECONDS: [[i64; 3]; 3] = [[7, 23, 61], [61, 127, 307], [601, 1801, 3607]];
-const MIDDLE_SPEED: usize = 1;
+/// A Snail's lane's speed: its setting, held as a whole number of its unit, the seconds a unit lasts, its lowest,
+/// highest and default in its units, and how its value is shown.
+pub struct LaneSpeed {
+    pub name: &'static str,
+    pub seconds_a_unit: f64,
+    pub lowest: i64,
+    pub highest: i64,
+    pub default: i64,
+    pub shown: &'static str,
+    pub divisor: i64,
+}
+
+/// Slow's speed in seconds, 5 to 60; Slower's in tenths of a minute, 1 to 10 minutes; Slowest's in minutes, 10 to 60:
+/// about how long a trip of the lane's from one side to the other takes.
+pub const SNAIL_LANES: [LaneSpeed; 3] = [
+    LaneSpeed {
+        name: "slow_speed",
+        seconds_a_unit: 1.0,
+        lowest: 5,
+        highest: 60,
+        default: 30,
+        shown: marks::MSG_SECONDS_SHOWN,
+        divisor: 1,
+    },
+    LaneSpeed {
+        name: "slower_speed",
+        seconds_a_unit: 6.0,
+        lowest: 10,
+        highest: 100,
+        default: 50,
+        shown: marks::MSG_TENTH_MINUTES_SHOWN,
+        divisor: 10,
+    },
+    LaneSpeed {
+        name: "slowest_speed",
+        seconds_a_unit: 60.0,
+        lowest: 10,
+        highest: 60,
+        default: 30,
+        shown: marks::MSG_MINUTES_SHOWN,
+        divisor: 1,
+    },
+];
 
 /// The LFOs in their places, every slot of the four, None for one that is off or that no Mod Matrix route reads, so that
 /// the matrix finds each by its number and the engine works out only the LFOs something hears.
@@ -397,12 +435,9 @@ fn lfos(sound: &Sound) -> Data {
         // A Snail has its two weightings, each a fraction either way, and each lane's speed, the seconds its switch
         // chooses.
         if setting("type").as_str() == Some(SNAIL_TYPE) {
-            let seconds = SNAIL_LANE_SPEEDS.iter().zip(SNAIL_SPEED_SECONDS.iter()).map(|(name, choices)| {
-                let place = SNAIL_SPEEDS
-                    .iter()
-                    .position(|speed| setting(name).as_str() == Some(speed))
-                    .unwrap_or(MIDDLE_SPEED);
-                Data::Whole(choices[place].into())
+            let seconds = SNAIL_LANES.iter().map(|lane| {
+                let held = setting(lane.name).as_whole().map_or(lane.default, |held| held as i64);
+                Data::Float(held as f64 * lane.seconds_a_unit)
             });
             lfos.push(mapping(vec![
                 ("type", Data::text(SNAIL_TYPE)),

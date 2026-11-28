@@ -24,7 +24,7 @@ use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_PAN;
 use llamatron_model::schema::generated::file_format::{
     InstrumentSetting, Section, BIPOLAR_SOURCES, CURVES, EFFECTS, FILTER_SHARINGS, FLUIDSYNTH_DEVICE, LFO_RESTARTS, LFO_SHAPES, LFO_TYPES, MATRIX_DESTINATIONS,
-    MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS, SNAIL_SPEEDS,
+    MATRIX_POLARITIES, MATRIX_SOURCES, OSCILLATOR_WAVEFORMS,
 };
 use llamatron_model::schema::generated::limits::{
     EFFECT_BLOCKS, KNOB_COUNT, LFO_COUNT, MATRIX_SLOTS, MAX_BITS, MAX_DETUNE_CENTS, MAX_GLIDE_MS, MAX_GM_SOUND, MAX_INSTRUMENT_LATENCY, MAX_KEYSWITCH_LEAD,
@@ -1315,22 +1315,15 @@ impl InstrumentEditor {
         .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
     }
 
-    /// A Snail's lane's speed switch: fast, middle or slow, each shown as the seconds a trip of the lane takes.
+    /// A Snail's lane's speed: a gauge of about how long a trip of the lane takes, in its own unit.
     fn lane_speed_field(sound: &Sound, ids: &mut Ids, number: usize, lane: usize, label: &str) -> Field {
-        let name = crate::sound_spec::SNAIL_LANE_SPEEDS[lane];
-        let seconds = crate::sound_spec::SNAIL_SPEED_SECONDS[lane];
-        let names: Vec<String> = seconds
-            .iter()
-            .map(|seconds| named(marks::MSG_SECONDS_SHOWN, &[("number", (*seconds).into())]))
-            .collect();
-        chosen(
-            ids.at(Write::Item("lfos", number, name)),
-            &named(label, &[("number", number.into())]),
-            SNAIL_SPEEDS,
-            &names,
-            &text(&sound.lfo_setting(number, name)),
-        )
-        .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
+        let speed = &crate::sound_spec::SNAIL_LANES[lane];
+        let held = sound.lfo_setting(number, speed.name).as_whole().map_or(speed.default, |held| held as i64);
+        let shown = gauge_text(held, speed.lowest, speed.highest, BLOCK_CELLS, speed.shown, false, speed.divisor);
+        let full = named(label, &[("number", number.into())]);
+        let id = ids.at(Write::Item("lfos", number, speed.name));
+        Field::number(id, &full, Some(held), Some(speed.lowest), Some(speed.highest), speed.default, Some(shown))
+            .with_shown_label(&named_in(labels::MSG_LFO_SHOWN_LABELS, label))
     }
 
     /// A slot holding a Snail: its Type, its two weightings A and B together, each lane's speed, and its switch.

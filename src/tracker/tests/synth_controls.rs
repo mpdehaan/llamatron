@@ -613,16 +613,17 @@ fn settings(pairs: &[(&str, Data)]) -> Data {
 /// An instrument of the basic engine whose first Modulators slot holds a Snail weighted as given, and whose Mod Matrix
 /// routes as the slots given say.
 fn snail_instrument(weighting: i64, routes: &[Data]) -> Instrument {
-    snail_at_speed(weighting, "middle", routes)
+    let default_seconds = 30;
+    snail_at_speed(weighting, default_seconds, routes)
 }
 
-/// The same instrument, its Snail's Slow lane at a speed of its switch.
-fn snail_at_speed(weighting: i64, speed: &str, routes: &[Data]) -> Instrument {
+/// The same instrument, its Snail's Slow lane's trips lasting about some seconds.
+fn snail_at_speed(weighting: i64, seconds: i64, routes: &[Data]) -> Instrument {
     let (engine, snail) = ("basic", "snail");
     let snail_slot = settings(&[
         ("type", Data::text(snail)),
         ("slow", Data::Whole(weighting.into())),
-        ("slow_speed", Data::text(speed)),
+        ("slow_speed", Data::Whole(seconds.into())),
     ]);
     let sound = settings(&[
         ("engine", Data::text(engine)),
@@ -711,6 +712,7 @@ fn a_snail_moves_its_destinations_and_its_settings_move_it() {
             assert!(differs(&silent, &heard), "{output} moves the cutoff");
         }
     }
+    let quickest_seconds = 5;
     let routed = [route("lfo1_slow_y", cutoff, full)];
     assert_ne!(
         slow_path(&snail_instrument(centre, &routed)),
@@ -719,7 +721,7 @@ fn a_snail_moves_its_destinations_and_its_settings_move_it() {
     );
     assert_ne!(
         slow_path(&snail_instrument(centre, &routed)),
-        slow_path(&snail_at_speed(centre, "fast", &routed)),
+        slow_path(&snail_at_speed(centre, quickest_seconds, &routed)),
         "the Slow speed moves Slow"
     );
 }

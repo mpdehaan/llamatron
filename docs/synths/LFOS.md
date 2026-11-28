@@ -80,15 +80,15 @@ of the circuit. For Mod 2 they are listed as
 | --- | --- | --- |
 | A | -100% to +100% (+0%) | how long Slow lingers on each side: toward +100%, its Y stays above the middle longer, at +0% the circuit as built |
 | B | -100% to +100% (+0%) | the same for Slower |
-| Slow speed | 7 s, 23 s or 61 s (23 s) | about how long a trip of Slow's from one side to the other takes |
-| Slower speed | 61 s, 127 s or 307 s (127 s) | the same for Slower |
-| Slowest speed | 601 s, 1801 s or 3607 s (1801 s) | the same for Slowest |
+| Slow speed | 5 s to 60 s (30 s) | about how long a trip of Slow's from one side to the other takes |
+| Slower speed | 1 min to 10 min, in tenths (5.0 min) | the same for Slower |
+| Slowest speed | 10 min to 60 min (30 min) | the same for Slowest |
 | On | on or off | whether the Snail runs |
 
 Each speed runs its lane's circuit faster or slower, so that it wanders the
 same way at another pace; being chaotic, a trip is only about that long, one
-taking half as long as the next. The times are prime numbers of seconds, so
-that a lane's trips rarely line up with a song's sections.
+taking half as long as the next, so that a lane never falls into step with a
+song's sections.
 
 A and B are also Mod Matrix destinations, `Mod 2 / A` and `Mod 2 / B`, which
 every source can move: an LFO, a Snail or a MIDI CC at once, and a note's own
