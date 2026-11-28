@@ -20,6 +20,11 @@ use safety::OutputGuard;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 
+/// The channels FluidSynth renders into, left and right, interleaved; and a velocity's top, by which a note's velocity
+/// becomes a share.
+const STEREO: usize = 2;
+const VELOCITY_TOP: f64 = 127.0;
+
 /// The most frames a chunk of audio holds, which every buffer that a chunk fills is made for.
 pub const MOST_FRAMES: usize = 8192;
 
@@ -161,7 +166,7 @@ impl Engine {
             events: BinaryHeap::with_capacity(MOST_EVENTS),
             fluid: None,
             midi: BinaryHeap::with_capacity(MOST_EVENTS),
-            fluid_scratch: vec![0.0; 2 * MOST_FRAMES],
+            fluid_scratch: vec![0.0; STEREO * MOST_FRAMES],
             right_guard: OutputGuard::new(rate),
             voices: Vec::with_capacity(MOST_VOICES),
             order: 0,
@@ -501,7 +506,14 @@ impl Engine {
             return;
         }
         self.next_voice += 1;
-        let mut voice = Voice::new(self.next_voice, instrument, event.pitch, event.sample, event.velocity / 127.0, event.hit.take());
+        let mut voice = Voice::new(
+            self.next_voice,
+            instrument,
+            event.pitch,
+            event.sample,
+            event.velocity / VELOCITY_TOP,
+            event.hit.take(),
+        );
         // A one-voice instrument struck again while its last note still sounds restrikes in place, from where it was.
         if voice.hit.is_none() && patch.voices == 1 {
             let sounding = self
@@ -597,10 +609,25 @@ impl Engine {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::{RATE, TENTH_SECOND};
     use rmpv::Value;
 
+    /// The voices a basic test instrument has; its envelopes' quick attack and short release, and its glide, in seconds;
+    /// the velocity its notes play at; the notes the tests play, middle C and the C under it; and the chunk the engine
+    /// renders.
+    const FOUR_VOICES: i64 = 4;
+    const QUICK_ATTACK: f64 = 0.001;
+    const SHORT_RELEASE: f64 = 0.05;
+    const GLIDE_SECONDS: f64 = 0.06;
+    const VELOCITY: f64 = 100.0;
+    const MIDDLE_C: f64 = 60.0;
+    const LOW_C: f64 = 48.0;
+    const CHUNK: usize = 128;
+    /// Forty chunks, long enough for a note to sound and be released.
+    const FORTY_CHUNKS: usize = 40;
+
     fn basic() -> Box<Patch> {
-        basic_with_voices(4)
+        basic_with_voices(FOUR_VOICES)
     }
 
     fn basic_with_voices(voices: i64) -> Box<Patch> {
@@ -613,16 +640,16 @@ mod tests {
         ]);
         let envelope = Value::Map(vec![
             (spec::TYPE.into(), spec::ADSR.into()),
-            (spec::ATTACK.into(), 0.001.into()),
-            (spec::RELEASE.into(), 0.05.into()),
+            (spec::ATTACK.into(), QUICK_ATTACK.into()),
+            (spec::RELEASE.into(), SHORT_RELEASE.into()),
         ]);
         let spec = Value::Map(vec![
             (spec::OSCILLATORS.into(), oscillators),
             (spec::ENVELOPES.into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
             (spec::VOICES.into(), voices.into()),
-            (spec::GLIDE.into(), 0.06.into()),
+            (spec::GLIDE.into(), GLIDE_SECONDS.into()),
         ]);
-        Box::new(Patch::compiled(&spec, 48000.0))
+        Box::new(Patch::compiled(&spec, RATE))
     }
 
     fn note(sample: i64, kind: i64, pitch: f64) -> Event {
@@ -632,7 +659,7 @@ mod tests {
             kind,
             instrument: 0,
             pitch,
-            velocity: 100.0,
+            velocity: VELOCITY,
             hit: None,
         }
     }
@@ -653,8 +680,8 @@ mod tests {
         ]);
         let envelope = Value::Map(vec![
             (spec::TYPE.into(), spec::ADSR.into()),
-            (spec::ATTACK.into(), 0.001.into()),
-            (spec::RELEASE.into(), 0.05.into()),
+            (spec::ATTACK.into(), QUICK_ATTACK.into()),
+            (spec::RELEASE.into(), SHORT_RELEASE.into()),
         ]);
         let low_cutoff = 200.0;
         let filter = Value::Map(vec![
@@ -669,9 +696,9 @@ mod tests {
             (spec::DISCONNECT_FILTER.into(), disconnected.into()),
             (spec::MATRIX.into(), Value::Array(routes)),
         ]);
-        let mut engine = Engine::new(48000.0, None);
-        engine.set_instrument(0, Box::new(Patch::compiled(&spec, 48000.0)));
-        engine.schedule(note(0, NOTE_ON, 48.0));
+        let mut engine = Engine::new(RATE, None);
+        engine.set_instrument(0, Box::new(Patch::compiled(&spec, RATE)));
+        engine.schedule(note(0, NOTE_ON, LOW_C));
         let chunk = 512;
         let (mut left, mut right) = (vec![0.0; chunk], vec![0.0; chunk]);
         engine.render(0, &mut left, &mut right);
@@ -715,13 +742,14 @@ mod tests {
                 Value::Array(vec![Value::Array(vec![spec::SAW.into(), 0.into(), 1.0.into()])]),
             ),
         ]);
+        let (quickest_release, echo_seconds, feedback, note_seconds, echo_ends, heard) = (0.01, 0.5, 0.5, 0.1, 0.6, 0.01);
         let envelope = Value::Map(vec![
             (spec::TYPE.into(), spec::ADSR.into()),
-            (spec::ATTACK.into(), 0.001.into()),
-            (spec::RELEASE.into(), 0.01.into()),
+            (spec::ATTACK.into(), QUICK_ATTACK.into()),
+            (spec::RELEASE.into(), quickest_release.into()),
         ]);
         let half_second_tap = Value::Map(vec![
-            (spec::SECONDS.into(), 0.5.into()),
+            (spec::SECONDS.into(), echo_seconds.into()),
             (spec::LEVEL.into(), 1.0.into()),
             (spec::ON.into(), true.into()),
         ]);
@@ -733,7 +761,7 @@ mod tests {
                 spec::TAPS.into(),
                 Value::Array(vec![half_second_tap, silent_tap.clone(), silent_tap.clone(), silent_tap]),
             ),
-            (spec::FEEDBACK.into(), 0.5.into()),
+            (spec::FEEDBACK.into(), feedback.into()),
             (spec::MIX.into(), 1.0.into()),
         ]);
         if let Value::Map(pairs) = &mut spec {
@@ -744,14 +772,14 @@ mod tests {
         let rate = 48000.0;
         let mut engine = Engine::new(rate, None);
         engine.set_instrument(0, Box::new(Patch::compiled(&spec, rate)));
-        let note_ends = (0.1 * rate) as i64;
-        engine.schedule(note(0, NOTE_ON, 60.0));
-        engine.schedule(note(note_ends, NOTE_OFF, 60.0));
+        let note_ends = (note_seconds * rate) as i64;
+        engine.schedule(note(0, NOTE_ON, MIDDLE_C));
+        engine.schedule(note(note_ends, NOTE_OFF, MIDDLE_C));
         let chunk = 512;
         let (mut left, mut right) = (vec![0.0; chunk], vec![0.0; chunk]);
         let mut loudest_echo = 0.0f32;
-        let echo_from = (0.5 * rate) as i64;
-        let echo_to = (0.6 * rate) as i64;
+        let echo_from = (echo_seconds * rate) as i64;
+        let echo_to = (echo_ends * rate) as i64;
         let mut start = 0;
         while start < (1.0 * rate) as i64 {
             engine.render(start, &mut left, &mut right);
@@ -760,31 +788,33 @@ mod tests {
             }
             start += chunk as i64;
         }
-        assert!(loudest_echo > 0.01, "the echo is heard: {loudest_echo}");
+        assert!(loudest_echo > heard, "the echo is heard: {loudest_echo}");
     }
 
     #[test]
     fn a_note_begins_on_its_exact_sample() {
-        let mut engine = Engine::new(48000.0, None);
+        let mut engine = Engine::new(RATE, None);
         engine.set_instrument(0, basic());
-        engine.schedule(note(70, NOTE_ON, 60.0));
-        let mut mix = vec![0.0; 128];
-        let mut right = vec![0.0; 128];
+        let (begins, settled) = (70, 72);
+        engine.schedule(note(begins, NOTE_ON, MIDDLE_C));
+        let mut mix = vec![0.0; CHUNK];
+        let mut right = vec![0.0; CHUNK];
         engine.render(0, &mut mix, &mut right);
         // The guard's high pass lets nothing through before the note, and the note sounds from its sample.
-        assert!(mix[..70].iter().all(|sample| *sample == 0.0));
-        assert!(mix[72..].iter().any(|sample| *sample != 0.0));
+        assert!(mix[..begins as usize].iter().all(|sample| *sample == 0.0));
+        assert!(mix[settled as usize..].iter().any(|sample| *sample != 0.0));
     }
 
     #[test]
     fn a_released_note_falls_silent_and_its_voice_is_freed() {
-        let mut engine = Engine::new(48000.0, None);
+        let mut engine = Engine::new(RATE, None);
         engine.set_instrument(0, basic());
-        engine.schedule(note(0, NOTE_ON, 60.0));
-        engine.schedule(note(4800, NOTE_OFF, 60.0));
-        let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
-        for chunk in 0..200 {
-            engine.render(chunk * 128, &mut left, &mut right);
+        engine.schedule(note(0, NOTE_ON, MIDDLE_C));
+        engine.schedule(note(TENTH_SECOND as i64, NOTE_OFF, MIDDLE_C));
+        let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
+        let chunks: usize = 200;
+        for chunk in 0..chunks {
+            engine.render((chunk * CHUNK) as i64, &mut left, &mut right);
         }
         assert_eq!(engine.voices.len(), 0);
     }
@@ -795,18 +825,19 @@ mod tests {
     fn a_one_voice_instrument_slides_only_into_a_real_overlap() {
         let (start, next, low, high) = (0, 4800, 48.0, 55.0);
         let sounding_voice = |late: i64| {
-            let mut engine = Engine::new(48000.0, None);
+            let mut engine = Engine::new(RATE, None);
             engine.set_instrument(0, basic_with_voices(1));
             engine.schedule(note(start, NOTE_ON, low));
             engine.schedule(note(next, NOTE_ON, high));
             engine.schedule(note(next + late, NOTE_OFF, low));
-            let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
-            for chunk in 0..40 {
-                engine.render(chunk * 128, &mut left, &mut right);
+            let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
+            for chunk in 0..FORTY_CHUNKS {
+                engine.render((chunk * CHUNK) as i64, &mut left, &mut right);
             }
             engine.voices.iter().filter(|voice| voice.cut_at.is_none()).map(|voice| voice.id).max()
         };
-        let (jitter, overlap, first_voice) = (20, 1000, Some(1));
+        let (jitter, overlap) = (20, 1000);
+        let first_voice = Some(1);
         assert_ne!(sounding_voice(jitter), first_voice, "struck afresh on a voice of its own");
         assert_eq!(sounding_voice(overlap), first_voice, "slid on the first note's voice");
     }
@@ -816,12 +847,12 @@ mod tests {
     fn a_one_voice_instrument_plays_a_chords_lowest_note() {
         let (low, middle, high) = (48.0, 52.0, 55.0);
         for order in [[high, low, middle], [low, high, middle], [middle, high, low]] {
-            let mut engine = Engine::new(48000.0, None);
+            let mut engine = Engine::new(RATE, None);
             engine.set_instrument(0, basic_with_voices(1));
             for pitch in order {
                 engine.schedule(note(0, NOTE_ON, pitch));
             }
-            let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
+            let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
             engine.render(0, &mut left, &mut right);
             let sounding: Vec<f64> = engine.sounding().into_iter().map(|(_, pitch)| pitch).collect();
             assert_eq!(sounding, vec![low], "{order:?}");
@@ -832,17 +863,18 @@ mod tests {
     /// where it had fallen rather than from silence beside a cut voice, so that it does not click.
     #[test]
     fn a_one_voice_instrument_restruck_rises_from_where_it_was() {
-        let mut engine = Engine::new(48000.0, None);
+        let mut engine = Engine::new(RATE, None);
         let mut patch = basic_with_voices(1);
         patch.glides = false;
         engine.set_instrument(0, patch);
         let (pitch, released, again) = (60.0, 4800, 4900);
         engine.schedule(note(0, NOTE_ON, pitch));
         engine.schedule(note(released, NOTE_OFF, pitch));
-        engine.schedule(note(again, NOTE_ON, pitch + 2.0));
-        let (mut left, mut right) = (vec![0.0; 128], vec![0.0; 128]);
-        for chunk in 0..40 {
-            engine.render(chunk * 128, &mut left, &mut right);
+        let a_tone = 2.0;
+        engine.schedule(note(again, NOTE_ON, pitch + a_tone));
+        let (mut left, mut right) = (vec![0.0; CHUNK], vec![0.0; CHUNK]);
+        for chunk in 0..FORTY_CHUNKS {
+            engine.render((chunk * CHUNK) as i64, &mut left, &mut right);
         }
         assert_eq!(engine.voices.len(), 1, "one voice, not a cut one fading beside a new one");
         assert!(engine.voices[0].envelope_starts()[0] > 0.0, "Env1 rose from where it was");
