@@ -17,6 +17,9 @@ use llamatron_model::objects::naming::name_order;
 use llamatron_model::schema::generated::file_format::{Section, CHAIN_KIND};
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 use std::cell::Cell;
 
@@ -51,15 +54,15 @@ enum Listed {
 pub fn label_of(kind: &str) -> &'static str {
     use llamatron_strings::plugin_texts::*;
     match kind {
-        "arp" => arp::MSG_LABEL,
-        "chords" => chords::MSG_LABEL,
-        "drift" => drift::MSG_LABEL,
-        "guitarify" => guitarify::MSG_LABEL,
-        "hocket" => hocket::MSG_LABEL,
-        "musician" => musician::MSG_LABEL,
-        "phrasing" => phrasing::MSG_LABEL,
-        "shapes" => shapes::MSG_LABEL,
-        "timing" => timing::MSG_LABEL,
+        words::ARP => arp::MSG_LABEL,
+        words::CHORDS => chords::MSG_LABEL,
+        spec::DRIFT => drift::MSG_LABEL,
+        words::GUITARIFY => guitarify::MSG_LABEL,
+        words::HOCKET => hocket::MSG_LABEL,
+        words::MUSICIAN => musician::MSG_LABEL,
+        words::PHRASING => phrasing::MSG_LABEL,
+        words::SHAPES => shapes::MSG_LABEL,
+        words::TIMING => timing::MSG_LABEL,
         _ => labels::MSG_CHAIN_LABEL,
     }
 }
@@ -143,12 +146,12 @@ impl GeneratorsPage {
             return;
         };
         if item.is(&Keys::RENAME) {
-            let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[("label", label.into())]);
+            let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[(fill::LABEL, label.into())]);
             crate::screens::rename::ask_rename(app, section, name, &prompt);
         } else if item.is(&Keys::COPY) {
             match app.document.copy_named(section, name) {
                 Ok(new) => {
-                    app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
+                    app.say(&named(messages::MSG_COPIED_TO, &[(fill::NAME, new.as_str().into())]));
                     *self.going_to.borrow_mut() = Some((kind.to_string(), new));
                 }
                 Err(problem) => app.refuse(&problem),
@@ -156,7 +159,7 @@ impl GeneratorsPage {
         } else {
             let what = named(
                 llamatron_strings::legends::MSG_GENERATOR_WHAT,
-                &[("label", label.into()), ("name", name.into())],
+                &[(fill::LABEL, label.into()), (fill::NAME, name.into())],
             );
             let mut lines = Vec::new();
             let uses = uses_of(app.document.get_setlist(), section, name);
@@ -166,11 +169,11 @@ impl GeneratorsPage {
                 if uses.len() > MOST_USES_SHOWN {
                     lines.push(named(
                         llamatron_strings::errors::ERR_AND_MORE,
-                        &[("count", (uses.len() - MOST_USES_SHOWN).into())],
+                        &[(fill::COUNT, (uses.len() - MOST_USES_SHOWN).into())],
                     ));
                 }
             }
-            let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
+            let question = named(messages::MSG_DELETE_QUESTION, &[(fill::WHAT, what.as_str().into())]);
             let name = name.to_string();
             let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, lines, false, true).then(Box::new(
                 move |app: &mut App, _: &crate::screens::dialogs::Answer| {
@@ -245,7 +248,7 @@ impl GeneratorsPage {
         if !matches.is_empty() && !matches.contains(&self.cursor.get()) {
             self.cursor.set(matches[0]);
         }
-        app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+        app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, self.typed.as_str().into())]));
     }
 
     fn matches(&self, app: &App) -> Vec<usize> {
@@ -285,12 +288,12 @@ impl GeneratorsPage {
         match places.iter().position(|each| *each == place) {
             None => self.cursor.set(places[0]),
             Some(at) => {
-                let step: i64 = if key == "up" { -1 } else { 1 };
+                let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
                 self.cursor.set(places[(at as i64 + step).clamp(0, places.len() as i64 - 1) as usize]);
             }
         }
         if self.searching {
-            app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+            app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, self.typed.as_str().into())]));
         }
     }
 }
@@ -303,11 +306,11 @@ impl Page for GeneratorsPage {
     fn place_kind(&self, app: &App) -> String {
         // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
         if self.searching {
-            return "searching".to_string();
+            return words::SEARCHING.to_string();
         }
         match self.listed(app) {
             Listed::Generator(kind, _) => format!("generator {kind}"),
-            Listed::New => "plus".to_string(),
+            Listed::New => llamatron_names::keys::PLUS.to_string(),
         }
     }
 
@@ -372,7 +375,7 @@ impl Page for GeneratorsPage {
             self.searching = true;
             self.typed.clear();
             self.place_before_search = self.cursor.get();
-            app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", "".into())]));
+            app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, "".into())]));
         } else if item.is(&Keys::SEARCH_CANCEL) {
             self.searching = false;
             self.cursor.set(self.place_before_search);
@@ -459,12 +462,12 @@ mod tests {
         let page = GeneratorsPage::new(&app);
         let rows = page.rows(&app);
         let shown: Vec<(&str, &str)> = rows.iter().map(|(_, cells)| (cells[0].as_str(), cells[1].as_str())).collect();
-        let arpeggiator = label_of("arp");
+        let arpeggiator = label_of(words::ARP);
         let expected = vec![
-            ("alpha", labels::MSG_CHAIN_LABEL),
+            (words::ALPHA, labels::MSG_CHAIN_LABEL),
             ("Bounce", arpeggiator),
-            ("climb", label_of("drift")),
-            ("zip", arpeggiator),
+            (words::CLIMB, label_of(spec::DRIFT)),
+            (words::ZIP, arpeggiator),
             (marks::MSG_NEW_ROW, ""),
         ];
         assert_eq!(shown, expected);

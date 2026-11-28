@@ -18,6 +18,8 @@ use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::values::note::Note;
 use llamatron_model::values::scale::ScaleType;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, messages, named};
 
 const NAME: usize = 0;
@@ -85,7 +87,7 @@ impl ScalePage {
         if parts.is_empty() {
             return messages::MSG_SCALE_UNUSED_NOTE.to_string();
         }
-        named(messages::MSG_SCALE_USES_NOTE, &[("uses", in_a_sentence(&parts).as_str().into())])
+        named(messages::MSG_SCALE_USES_NOTE, &[(fill::USES, in_a_sentence(&parts).as_str().into())])
     }
 }
 
@@ -115,7 +117,7 @@ impl Form for ScalePage {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::SCALES.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -123,7 +125,7 @@ impl Form for ScalePage {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::SCALES).to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         ))
     }
 
@@ -150,9 +152,9 @@ impl Form for ScalePage {
         let notes = named(
             messages::MSG_SCALE_NOTES_DETAIL,
             &[
-                ("root", root.as_str().into()),
-                ("kind", scale_label(&kind).as_str().into()),
-                ("notes", scale_notes(&root, &kind).as_str().into()),
+                (fill::ROOT, root.as_str().into()),
+                (fill::KIND, scale_label(&kind).as_str().into()),
+                (fill::NOTES, scale_notes(&root, &kind).as_str().into()),
             ],
         );
         let half_steps = scale_kind_name(&kind).map_or(Vec::new(), |kind| kind.get_shape().to_vec());
@@ -243,28 +245,47 @@ const KIND_PAGES: &[(&str, &[KindColumn])] = &[
             &[(
                 labels::MSG_SCALE_GROUP_MODES,
                 &[
-                    "major",
-                    "ionian",
-                    "dorian",
-                    "phrygian",
-                    "lydian",
-                    "mixolydian",
-                    "minor",
-                    "aeolian",
-                    "natural_minor",
-                    "locrian",
+                    file_format::Quality::MAJOR,
+                    file_format::ScaleKind::IONIAN,
+                    file_format::ScaleKind::DORIAN,
+                    file_format::ScaleKind::PHRYGIAN,
+                    file_format::ScaleKind::LYDIAN,
+                    file_format::ScaleKind::MIXOLYDIAN,
+                    file_format::NamedProgression::MINOR,
+                    file_format::ScaleKind::AEOLIAN,
+                    file_format::ScaleKind::NATURAL_MINOR,
+                    file_format::ScaleKind::LOCRIAN,
                 ],
             )],
             &[
-                (labels::MSG_SCALE_GROUP_MINOR_AND_MAJOR, &["harmonic_minor", "melodic_minor", "harmonic_major"]),
+                (
+                    labels::MSG_SCALE_GROUP_MINOR_AND_MAJOR,
+                    &[
+                        file_format::ScaleKind::HARMONIC_MINOR,
+                        file_format::ScaleKind::MELODIC_MINOR,
+                        file_format::ScaleKind::HARMONIC_MAJOR,
+                    ],
+                ),
                 (
                     labels::MSG_SCALE_GROUP_SYMMETRIC,
-                    &["chromatic", "whole_tone", "whole_half_diminished", "half_whole_diminished", "augmented"],
+                    &[
+                        file_format::ScaleKind::CHROMATIC,
+                        file_format::ScaleKind::WHOLE_TONE,
+                        file_format::ScaleKind::WHOLE_HALF_DIMINISHED,
+                        file_format::ScaleKind::HALF_WHOLE_DIMINISHED,
+                        file_format::Quality::AUGMENTED,
+                    ],
                 ),
             ],
             &[(
                 labels::MSG_SCALE_GROUP_PENTATONIC_AND_BLUES,
-                &["major_pentatonic", "minor_pentatonic", "blues", "major_blues", "egyptian"],
+                &[
+                    file_format::ScaleKind::MAJOR_PENTATONIC,
+                    file_format::ScaleKind::MINOR_PENTATONIC,
+                    file_format::ScaleKind::BLUES,
+                    file_format::ScaleKind::MAJOR_BLUES,
+                    file_format::ScaleKind::EGYPTIAN,
+                ],
             )],
         ],
     ),
@@ -275,34 +296,54 @@ const KIND_PAGES: &[(&str, &[KindColumn])] = &[
                 (
                     labels::MSG_SCALE_GROUP_MELODIC_MINOR,
                     &[
-                        "melodic_minor",
-                        "dorian_flat2",
-                        "lydian_augmented",
-                        "lydian_dominant",
-                        "mixolydian_flat6",
-                        "locrian_natural2",
-                        "altered",
+                        file_format::ScaleKind::MELODIC_MINOR,
+                        file_format::ScaleKind::DORIAN_FLAT2,
+                        file_format::ScaleKind::LYDIAN_AUGMENTED,
+                        file_format::ScaleKind::LYDIAN_DOMINANT,
+                        file_format::ScaleKind::MIXOLYDIAN_FLAT6,
+                        file_format::ScaleKind::LOCRIAN_NATURAL2,
+                        file_format::ScaleKind::ALTERED,
                     ],
                 ),
-                (labels::MSG_SCALE_GROUP_JAZZ, &["bebop_dominant", "bebop_major", "prometheus"]),
+                (
+                    labels::MSG_SCALE_GROUP_JAZZ,
+                    &[
+                        file_format::ScaleKind::BEBOP_DOMINANT,
+                        file_format::ScaleKind::BEBOP_MAJOR,
+                        file_format::ScaleKind::PROMETHEUS,
+                    ],
+                ),
             ],
             &[(
                 labels::MSG_SCALE_GROUP_MIDDLE_EAST_AND_EUROPE,
                 &[
-                    "phrygian_dominant",
-                    "double_harmonic",
-                    "hungarian_minor",
-                    "hungarian_major",
-                    "ukrainian_dorian",
-                    "persian",
-                    "neapolitan_minor",
-                    "neapolitan_major",
-                    "enigmatic",
+                    file_format::ScaleKind::PHRYGIAN_DOMINANT,
+                    file_format::ScaleKind::DOUBLE_HARMONIC,
+                    file_format::ScaleKind::HUNGARIAN_MINOR,
+                    file_format::ScaleKind::HUNGARIAN_MAJOR,
+                    file_format::ScaleKind::UKRAINIAN_DORIAN,
+                    file_format::ScaleKind::PERSIAN,
+                    file_format::ScaleKind::NEAPOLITAN_MINOR,
+                    file_format::ScaleKind::NEAPOLITAN_MAJOR,
+                    file_format::ScaleKind::ENIGMATIC,
                 ],
             )],
             &[
-                (labels::MSG_SCALE_GROUP_EAST_ASIA, &["hirajoshi", "in_sen", "iwato", "kumoi", "yo", "ryukyu"]),
-                (labels::MSG_SCALE_GROUP_INDIA, &["todi", "marwa", "purvi"]),
+                (
+                    labels::MSG_SCALE_GROUP_EAST_ASIA,
+                    &[
+                        file_format::ScaleKind::HIRAJOSHI,
+                        file_format::ScaleKind::IN_SEN,
+                        file_format::ScaleKind::IWATO,
+                        file_format::ScaleKind::KUMOI,
+                        file_format::ScaleKind::YO,
+                        file_format::ScaleKind::RYUKYU,
+                    ],
+                ),
+                (
+                    labels::MSG_SCALE_GROUP_INDIA,
+                    &[file_format::ScaleKind::TODI, file_format::ScaleKind::MARWA, file_format::ScaleKind::PURVI],
+                ),
             ],
         ],
     ),
@@ -387,12 +428,16 @@ fn kind_picker(root: &str, kind: &str) -> Edit {
             let notes = scale_notes(root, each);
             named(
                 messages::MSG_SCALE_NOTES_DETAIL,
-                &[("root", root.into()), ("kind", label.as_str().into()), ("notes", notes.as_str().into())],
+                &[
+                    (fill::ROOT, root.into()),
+                    (fill::KIND, label.as_str().into()),
+                    (fill::NOTES, notes.as_str().into()),
+                ],
             )
         })
         .collect();
     Edit::AskGrid {
-        title: named(messages::MSG_KIND_TITLE, &[("root", root.into())]),
+        title: named(messages::MSG_KIND_TITLE, &[(fill::ROOT, root.into())]),
         options: shown,
         current: place_of(kind),
         choices: kinds,

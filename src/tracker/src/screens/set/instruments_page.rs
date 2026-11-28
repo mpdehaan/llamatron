@@ -16,6 +16,8 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::schema::generated::defaults::DEFAULT_CHANNEL;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SoundSetting};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
 const COLUMNS: [ListColumn; 4] = [
@@ -61,7 +63,7 @@ pub fn plays_through(instrument: &Instrument) -> String {
                 .unwrap_or(FIRST_ENGINE);
             named(
                 labels::MSG_BUILT_IN_SHOWN,
-                &[("engine", named_in(labels::MSG_ENGINE_NAMES, engine).as_str().into())],
+                &[(fill::ENGINE, named_in(labels::MSG_ENGINE_NAMES, engine).as_str().into())],
             )
         }
         OFF => marks::MSG_INSTRUMENT_OFF_SHOWN.to_string(),
@@ -128,7 +130,7 @@ impl Listing for InstrumentsPage {
     /// ENTER opens the instrument's page; adding asks its role, then makes it, off, and opens its page.
     fn named(&self) -> Option<NamedWords> {
         Some(NamedWords {
-            section: "instruments",
+            section: file_format::Section::INSTRUMENTS,
             rename_prompt: llamatron_strings::messages::MSG_RENAME_INSTRUMENT_PROMPT,
             what: llamatron_strings::legends::MSG_INSTRUMENT_WHAT,
         })
@@ -146,7 +148,7 @@ impl Listing for InstrumentsPage {
                 let taken: Vec<String> = setlist.items(Section::INSTRUMENTS).iter().map(|(name, _)| name.clone()).collect();
                 let name = llamatron_model::objects::naming::new_name(llamatron_strings::names::MSG_NEW_INSTRUMENT_WORD, &taken);
                 let data = Data::Map(vec![
-                    (Data::text(InstrumentSetting::KIND), Data::text("off")),
+                    (Data::text(InstrumentSetting::KIND), Data::text(file_format::InstrumentKind::OFF)),
                     (Data::text(InstrumentSetting::ROLE), Data::text(role)),
                 ]);
                 let Ok(instrument) = Instrument::from_data(&data) else { return };

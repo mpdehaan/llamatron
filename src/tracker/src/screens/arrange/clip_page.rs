@@ -26,6 +26,10 @@ use llamatron_model::schema::generated::file_format::{
     ClipSlotSetting, PatternSetting, Section, SetlistSetting, TrackSetting, FOLLOW_ACTION_CHOICES, PATTERN_ORDERS,
 };
 use llamatron_model::schema::generated::limits::{MAX_CLIP_NAME_LENGTH, MAX_CLIP_REPEAT, MAX_NAME_LENGTH};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::spec;
 use llamatron_strings::{errors, labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
@@ -206,8 +210,8 @@ impl ClipPage {
         let Some(name) = self.pattern_names(app).get(carrying.place).cloned() else {
             return;
         };
-        let row = named(messages::MSG_MOVING_ROW, &[("name", name.as_str().into())]);
-        app.say(&named(messages::MSG_MOVING, &[("what", row.as_str().into())]));
+        let row = named(messages::MSG_MOVING_ROW, &[(fill::NAME, name.as_str().into())]);
+        app.say(&named(messages::MSG_MOVING, &[(fill::WHAT, row.as_str().into())]));
     }
 
     /// Carry the picked-up pattern one place up or down the list, every carry of one move making one undo step.
@@ -342,7 +346,7 @@ impl ClipPage {
                     let lines = vec![
                         named(
                             llamatron_strings::errors::ERR_GRAB_CIRCLE,
-                            &[("track", chosen.as_str().into()), ("circle", shown.as_str().into())],
+                            &[(fill::TRACK, chosen.as_str().into()), (fill::CIRCLE, shown.as_str().into())],
                         ),
                         llamatron_strings::errors::ERR_REMOVE_OTHER_GRAB.to_string(),
                     ];
@@ -388,7 +392,7 @@ impl ClipPage {
     fn scene_name(&self, app: &App) -> String {
         self.scene(app)
             .and_then(Scene::get_name)
-            .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[("number", (self.index + 1).into())]))
+            .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[(fill::NUMBER, (self.index + 1).into())]))
     }
 
     fn name_shown(clip: &ClipSlot) -> String {
@@ -403,7 +407,7 @@ impl ClipPage {
                 let cut: String = name.chars().take(MAX_NAME_LENGTH as usize - 1).collect();
                 format!("{cut}{}", marks::MSG_NAME_CUT)
             }
-            None => named(marks::MSG_CLIP_NAMED_FOR_PATTERN, &[("pattern", clip.get_pattern_name().as_str().into())]),
+            None => named(marks::MSG_CLIP_NAMED_FOR_PATTERN, &[(fill::PATTERN, clip.get_pattern_name().as_str().into())]),
         }
     }
 
@@ -435,8 +439,8 @@ impl ClipPage {
             .get_setlist()
             .get_pattern(&clip.get_pattern_name())
             .and_then(|pattern| pattern.get_direction())
-            .unwrap_or_else(|| "forward".to_string());
-        named(marks::MSG_PATTERN_DIRECTION_SHOWN, &[("direction", words(&direction).as_str().into())])
+            .unwrap_or_else(|| file_format::Direction::FORWARD.to_string());
+        named(marks::MSG_PATTERN_DIRECTION_SHOWN, &[(fill::DIRECTION, words(&direction).as_str().into())])
     }
 
     fn settings_tab(&self, app: &App, clip: &ClipSlot) -> Tab {
@@ -489,7 +493,7 @@ impl ClipPage {
             .to_string();
         let action_name = named_in(labels::MSG_FOLLOW_ACTION_NAMES, &action);
         let shown = if written_action.is_none() {
-            named(marks::MSG_FROM_SET_SHOWN, &[("value", action_name.as_str().into())])
+            named(marks::MSG_FROM_SET_SHOWN, &[(fill::VALUE, action_name.as_str().into())])
         } else {
             action_name
         };
@@ -516,7 +520,7 @@ impl ClipPage {
                 let scale = scene_scale
                     .or_else(|| app.document.song().get_scale_name())
                     .unwrap_or_else(|| messages::MSG_NO_SCALE.to_string());
-                named(marks::MSG_SCENE_SCALE_SHOWN, &[("scale", scale.as_str().into())])
+                named(marks::MSG_SCENE_SCALE_SHOWN, &[(fill::SCALE, scale.as_str().into())])
             }
         };
         let grab = clip
@@ -554,7 +558,7 @@ impl ClipPage {
             .is_some_and(|built_ins| built_in_on(built_ins.get(kind)));
         if clip_on && track_on {
             let word = tab_label_of(kind).to_lowercase();
-            tab.remarks = vec![named(messages::MSG_BUILT_IN_OVERRIDES_TRACKS, &[("word", word.as_str().into())])];
+            tab.remarks = vec![named(messages::MSG_BUILT_IN_OVERRIDES_TRACKS, &[(fill::WORD, word.as_str().into())])];
         }
         tab
     }
@@ -600,7 +604,7 @@ impl Form for ClipPage {
             labels::Crumb::ARRANGE.to_string(),
             named(
                 labels::MSG_CLIP_CRUMB,
-                &[("scene", scene.as_str().into()), ("track", self.track.as_str().into())],
+                &[(fill::SCENE, scene.as_str().into()), (fill::TRACK, self.track.as_str().into())],
             ),
         ]
     }
@@ -609,12 +613,12 @@ impl Form for ClipPage {
         let scene = self.scene_name(app);
         let name = named(
             labels::MSG_CLIP_CAPTION_NAME,
-            &[("scene", scene.as_str().into()), ("track", self.track.as_str().into())],
+            &[(fill::SCENE, scene.as_str().into()), (fill::TRACK, self.track.as_str().into())],
         );
         let what = labels::MSG_CLIP_CAPTION_WORD.to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, name.as_str().into())],
         ))
     }
 
@@ -679,7 +683,7 @@ impl Form for ClipPage {
         let mut lines = vec![Text::styled(
             &named(
                 messages::MSG_CLIP_LENGTH_NOTE,
-                &[("length", length.as_str().into()), ("scene", scene_length.as_str().into())],
+                &[(fill::LENGTH, length.as_str().into()), (fill::SCENE, scene_length.as_str().into())],
             ),
             Style::DIM,
         )];
@@ -694,7 +698,7 @@ impl Form for ClipPage {
             let any = clip.get_pattern_names().iter().any(|name| {
                 setlist.get_pattern(name).is_some_and(|pattern| {
                     pattern
-                        .row("grab")
+                        .row(file_format::Row::GRAB)
                         .is_some_and(|steps| steps.iter().any(|step| matches!(step, Data::Bool(true))))
                 })
             });
@@ -825,7 +829,7 @@ fn lined_up(rows: &[(String, String)]) -> Vec<String> {
             let padded = format!("{name:<widest$}");
             named(
                 marks::MSG_COLUMN_LINE,
-                &[("name", padded.as_str().into()), ("description", description.as_str().into())],
+                &[(fill::NAME, padded.as_str().into()), (fill::DESCRIPTION, description.as_str().into())],
             )
             .trim_end()
             .to_string()
@@ -847,7 +851,7 @@ mod tests {
 
     fn clip_name(tracker: &Tracker) -> Option<String> {
         let song = tracker.app.document.song();
-        let clip = song.scenes()[0].get_clip_slot("lead").expect("the clip");
+        let clip = song.scenes()[0].get_clip_slot(llamatron_names::words::LEAD).expect("the clip");
         clip.get_written(ClipSlotSetting::NAME).and_then(Data::as_str).map(str::to_string)
     }
 
@@ -856,19 +860,21 @@ mod tests {
     fn enter_on_the_name_names_the_clip_and_bksp_gives_back_the_patterns() {
         let setlist = Setlist::read_text(ONE_CLIP_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
-        tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
+        tracker
+            .app
+            .show_page(Box::new(FieldPage::new(ClipPage::new(0, llamatron_names::words::LEAD.to_string()))));
         tracker.settle();
         assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
         tracker.press(first_key(&FieldKeys::ENTER));
-        let shown = named(marks::MSG_CLIP_NAMED_FOR_PATTERN, &[("pattern", "tune".into())]);
+        let shown = named(marks::MSG_CLIP_NAMED_FOR_PATTERN, &[(fill::PATTERN, spec::TUNE.into())]);
         for _ in shown.chars() {
             tracker.press(first_key(&PromptKeys::ERASE));
         }
-        for character in "hook".chars() {
+        for character in llamatron_names::words::HOOK.chars() {
             tracker.press(&character.to_string());
         }
         tracker.press(first_key(&PromptKeys::DONE));
-        assert_eq!(clip_name(&tracker), Some("hook".to_string()));
+        assert_eq!(clip_name(&tracker), Some(llamatron_names::words::HOOK.to_string()));
         tracker.press(first_key(&FieldKeys::CLEAR));
         assert_eq!(clip_name(&tracker), None);
     }
@@ -888,9 +894,9 @@ mod tests {
     #[test]
     fn a_grab_into_a_circle_is_refused_in_a_dialog_naming_it() {
         let mut tracker = grab_into_a_circle();
-        let page = ClipPage::new(0, "lead".to_string());
+        let page = ClipPage::new(0, llamatron_names::words::LEAD.to_string());
         let pages = tracker.depth();
-        page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Choice("bass".to_string()));
+        page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Choice(file_format::Row::BASS.to_string()));
         tracker.settle();
         assert_eq!(tracker.depth(), pages + 1);
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
@@ -898,7 +904,7 @@ mod tests {
         assert!(screen.iter().any(|line| line.contains(llamatron_strings::errors::ERR_CIRCULAR_GRAB_TITLE)));
         assert!(screen.iter().any(|line| line.contains(&circle)), "the circle shown: {screen:#?}");
         let song = tracker.app.document.song();
-        let lead = song.scenes()[0].get_clip_slot("lead").expect("the lead's clip");
+        let lead = song.scenes()[0].get_clip_slot(llamatron_names::words::LEAD).expect("the lead's clip");
         assert_eq!(lead.get_written(ClipSlotSetting::GRAB_TRACK), None);
     }
 
@@ -908,7 +914,9 @@ mod tests {
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
-        tracker.app.show_page(Box::new(FieldPage::new(ClipPage::new(0, "lead".to_string()))));
+        tracker
+            .app
+            .show_page(Box::new(FieldPage::new(ClipPage::new(0, llamatron_names::words::LEAD.to_string()))));
         tracker.settle();
         tracker
     }
@@ -916,7 +924,7 @@ mod tests {
     /// The patterns the clip's list holds, in order.
     fn clip_patterns(tracker: &Tracker) -> Vec<String> {
         tracker.app.document.song().scenes()[0]
-            .get_clip_slot("lead")
+            .get_clip_slot(llamatron_names::words::LEAD)
             .expect("the clip")
             .get_pattern_names()
     }
@@ -939,13 +947,13 @@ mod tests {
             shown.iter().all(|text| line.contains(text))
         };
         for _ in 0..most_presses {
-            tracker.press("up");
+            tracker.press(llamatron_names::keys::UP);
         }
         for _ in 0..most_presses {
             if here(tracker) {
                 return;
             }
-            tracker.press("down");
+            tracker.press(llamatron_names::keys::DOWN);
         }
         panic!("no row shows {shown:?}");
     }
@@ -954,12 +962,12 @@ mod tests {
     #[test]
     fn bksp_takes_a_pattern_out_and_keeps_the_last() {
         let mut tracker = clip_of_two_patterns();
-        go_to(&mut tracker, &["hook"]);
+        go_to(&mut tracker, &[llamatron_names::words::HOOK]);
         tracker.press(first_key(&FieldKeys::CLEAR));
-        assert_eq!(clip_patterns(&tracker), ["tune"]);
-        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, "tune"]);
+        assert_eq!(clip_patterns(&tracker), [spec::TUNE]);
+        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, spec::TUNE]);
         tracker.press(first_key(&FieldKeys::CLEAR));
-        assert_eq!(clip_patterns(&tracker), ["tune"]);
+        assert_eq!(clip_patterns(&tracker), [spec::TUNE]);
         assert_eq!(tracker.app.status.text(), llamatron_strings::errors::ERR_CLIP_NEEDS_A_PATTERN);
     }
 
@@ -968,14 +976,14 @@ mod tests {
     #[test]
     fn move_carries_a_pattern_down_the_list_in_one_undo() {
         let mut tracker = clip_of_two_patterns();
-        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, "tune"]);
+        go_to(&mut tracker, &[labels::MSG_PATTERNS_LABEL, spec::TUNE]);
         tracker.press(first_key(&Keys::MOVE_PATTERN));
-        tracker.press("down");
+        tracker.press(llamatron_names::keys::DOWN);
         tracker.press(first_key(&Keys::DROP));
-        assert_eq!(clip_patterns(&tracker), ["hook", "tune"]);
-        assert!(cursor_line(&tracker).contains("tune"), "the cursor goes with the pattern");
+        assert_eq!(clip_patterns(&tracker), [llamatron_names::words::HOOK, spec::TUNE]);
+        assert!(cursor_line(&tracker).contains(spec::TUNE), "the cursor goes with the pattern");
         tracker.press(first_key(&crate::keybindings::Page::UNDO));
-        assert_eq!(clip_patterns(&tracker), ["tune", "hook"]);
+        assert_eq!(clip_patterns(&tracker), [spec::TUNE, llamatron_names::words::HOOK]);
     }
 
     /// A asks whether to add an existing pattern or a new one: the existing ones offered are of the clip's kind, and a
@@ -987,20 +995,23 @@ mod tests {
         tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
         assert!(
-            screen.iter().any(|line| line.contains("bridge")) && !screen.iter().any(|line| line.contains("beat")),
+            screen.iter().any(|line| line.contains(file_format::SectionKind::BRIDGE)) && !screen.iter().any(|line| line.contains(llamatron_names::words::BEAT)),
             "{screen:#?}"
         );
-        for letter in "bridge".chars() {
+        for letter in file_format::SectionKind::BRIDGE.chars() {
             tracker.press(&letter.to_string());
         }
         tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
-        assert_eq!(clip_patterns(&tracker), ["tune", "hook", "bridge"]);
+        assert_eq!(
+            clip_patterns(&tracker),
+            [spec::TUNE, llamatron_names::words::HOOK, file_format::SectionKind::BRIDGE]
+        );
         tracker.press(first_key(&Keys::ADD_PATTERN));
-        tracker.press("down");
+        tracker.press(llamatron_names::keys::DOWN);
         tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
         tracker.press(first_key(&PromptKeys::DONE));
         let added = clip_patterns(&tracker).last().cloned().expect("a pattern");
-        assert!(added.starts_with("lead"), "{added}");
+        assert!(added.starts_with(llamatron_names::words::LEAD), "{added}");
         assert!(tracker.app.document.get_setlist().get_pattern(&added).is_some());
     }
 
@@ -1008,7 +1019,7 @@ mod tests {
     #[test]
     fn grab_track_with_no_other_track_says_to_add_one() {
         let mut tracker = clip_of_two_patterns();
-        let page = ClipPage::new(0, "lead".to_string());
+        let page = ClipPage::new(0, llamatron_names::words::LEAD.to_string());
         page.write_edit(&mut tracker.app, GRAB_TRACK, &Edit::Enter);
         tracker.settle();
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();

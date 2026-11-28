@@ -12,6 +12,8 @@ use llamatron_exporters::midi::song_file;
 use llamatron_importers::reading::read_midi;
 use llamatron_math::rational::Rational;
 use llamatron_model::objects::setlist::Setlist;
+use llamatron_names::scenario;
+use llamatron_names::spec;
 use llamatron_tracker::realtime::timeline::{song_timeline, Route};
 
 /// The slots' notes in the scenario's Keyswitch Map: sustain and staccato; legato has none.
@@ -24,7 +26,7 @@ fn keyswitched() -> Grid {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/keyswitched.yml");
     let text = std::fs::read_to_string(path).expect("the scenario's set is there");
     let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
-    let song = setlist.get_song("song").expect("the song");
+    let song = setlist.get_song(spec::SONG).expect("the song");
     SongRealizer::new(&setlist, song, Some(SEED)).render().expect("the song renders")
 }
 
@@ -51,9 +53,9 @@ fn each_slot_sends_its_note_as_long_as_the_note_is_written() {
     let lead = Rational::new(1, 200);
     let sustain = (Rational::ZERO, quarter(2), SUSTAIN_NOTE);
     let staccato = (quarter(2), quarter(3), STACCATO_NOTE);
-    assert_eq!(switches(&grid, "lead"), [sustain, staccato]);
-    assert_eq!(switches(&grid, "early"), [sustain, (quarter(2) - lead, quarter(3), STACCATO_NOTE)]);
-    assert!(switches(&grid, "sampled").is_empty());
+    assert_eq!(switches(&grid, scenario::LEAD), [sustain, staccato]);
+    assert_eq!(switches(&grid, scenario::EARLY), [sustain, (staccato.0 - lead, staccato.1, STACCATO_NOTE)]);
+    assert!(switches(&grid, scenario::SAMPLED).is_empty());
 }
 
 /// The MIDI file carries the keyswitch notes beside the tune's, and the General MIDI file, which a player would sound
@@ -62,9 +64,9 @@ fn each_slot_sends_its_note_as_long_as_the_note_is_written() {
 fn the_midi_file_carries_keyswitches_and_the_general_midi_file_leaves_them_out() {
     let grid = keyswitched();
     let pitches = |general_midi: bool| -> Vec<i64> {
-        let (_, bytes) = song_file(&grid, "song", general_midi).expect("the file writes");
+        let (_, bytes) = song_file(&grid, spec::SONG, general_midi).expect("the file writes");
         let contents = read_midi(&bytes).expect("the file reads back");
-        let lead = contents.parts.iter().find(|part| part.name == "lead").expect("the lead's part");
+        let lead = contents.parts.iter().find(|part| part.name == scenario::LEAD).expect("the lead's part");
         lead.notes.iter().map(|note| note.pitch).collect()
     };
     let midi = pitches(false);
@@ -87,11 +89,15 @@ fn real_time_sends_a_port_the_keyswitch_before_its_note() {
         sound: None,
         early: 0.0,
     };
-    let events = song_timeline(&grid, &[("lead".to_string(), route(true)), ("sampled".to_string(), route(false))]).expect("a timeline");
-    let lead: Vec<_> = events.iter().filter(|event| event.tag.track == "lead").collect();
+    let events = song_timeline(
+        &grid,
+        &[(scenario::LEAD.to_string(), route(true)), (scenario::SAMPLED.to_string(), route(false))],
+    )
+    .expect("a timeline");
+    let lead: Vec<_> = events.iter().filter(|event| event.tag.track == scenario::LEAD).collect();
     let first_on = lead.iter().find(|event| event.value > 0).expect("a note on");
     assert!(first_on.switch && first_on.number == SUSTAIN_NOTE);
-    let sampled_switches = events.iter().filter(|event| event.tag.track == "sampled" && event.switch).count();
+    let sampled_switches = events.iter().filter(|event| event.tag.track == scenario::SAMPLED && event.switch).count();
     assert_eq!(sampled_switches, 0);
 }
 

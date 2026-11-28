@@ -13,6 +13,8 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::generated::file_format::{SceneSetting, SongSetting, TrackSetting, STATEMENT_OF_ROW};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 
 /// A note of the scene: its track's place in the song, when it starts and ends in whole notes from the scene's start, its
@@ -42,14 +44,14 @@ pub struct SceneNotes {
 const PROBABILITY: &str = "probability";
 /// A scene's and a clip's Shapes settings, which work after the patterns.
 const SHAPE_SETTINGS: [&str; 8] = [
-    "density_start",
-    "density_end",
-    "density_over",
-    "density_then",
-    "articulate_start",
-    "articulate_end",
-    "articulate_over",
-    "articulate_then",
+    file_format::SceneSetting::DENSITY_START,
+    file_format::SceneSetting::DENSITY_END,
+    file_format::SceneSetting::DENSITY_OVER,
+    file_format::SceneSetting::DENSITY_THEN,
+    file_format::SceneSetting::ARTICULATE_START,
+    file_format::SceneSetting::ARTICULATE_END,
+    file_format::SceneSetting::ARTICULATE_OVER,
+    file_format::SceneSetting::ARTICULATE_THEN,
 ];
 const CHAINS: &str = "chains";
 const TRACKS: &str = "tracks";
@@ -239,7 +241,7 @@ pub fn effective_values(song: &Song, index: usize) -> Option<Effective> {
         marks::MSG_SCENE_VIEW_FROM_SONG
     };
     if llamatron_engine::realizer::ramps_tempo(scene, song) {
-        tempo = named(marks::MSG_SCENE_VIEW_TEMPO_RAMPS, &[("tempo", tempo.as_str().into())]);
+        tempo = named(marks::MSG_SCENE_VIEW_TEMPO_RAMPS, &[(fill::TEMPO, tempo.as_str().into())]);
         tempo_source = marks::MSG_SCENE_VIEW_FROM_SCENE;
     }
     let own_scale = written(SceneSetting::SCALE).and_then(Data::as_str).map(str::to_string);
@@ -262,7 +264,11 @@ pub fn effective_values(song: &Song, index: usize) -> Option<Effective> {
     };
     let mut clip_scales = Vec::new();
     for name in song.get_track_names() {
-        if let Some(clip_scale) = scene.get_clip_slot(name).and_then(|clip| clip.get_written("scale")).and_then(Data::as_str) {
+        if let Some(clip_scale) = scene
+            .get_clip_slot(name)
+            .and_then(|clip| clip.get_written(file_format::SongSetting::SCALE))
+            .and_then(Data::as_str)
+        {
             if Some(clip_scale.to_string()) != scale {
                 clip_scales.push((name.to_string(), clip_scale.to_string()));
             }

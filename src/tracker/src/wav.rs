@@ -13,6 +13,9 @@ use llamatron_engine::realizer::Grid;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, TrackSetting, FLUIDSYNTH_DEVICE};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, named};
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -180,11 +183,11 @@ fn render_fluidsynth(folder: &Path, midi: &[u8]) -> Result<PathBuf, String> {
         .arg(soundfont_path())
         .arg(&file)
         .output()
-        .map_err(|error| named(errors::ERR_FLUIDSYNTH_RENDER_FAILED, &[("problem", error.to_string().as_str().into())]))?;
+        .map_err(|error| named(errors::ERR_FLUIDSYNTH_RENDER_FAILED, &[(fill::PROBLEM, error.to_string().as_str().into())]))?;
     if !finished.status.success() || !played.is_file() {
         let said = if finished.stderr.is_empty() { &finished.stdout } else { &finished.stderr };
         let problem = String::from_utf8_lossy(said).trim().to_string();
-        return Err(named(errors::ERR_FLUIDSYNTH_RENDER_FAILED, &[("problem", problem.as_str().into())]));
+        return Err(named(errors::ERR_FLUIDSYNTH_RENDER_FAILED, &[(fill::PROBLEM, problem.as_str().into())]));
     }
     Ok(played)
 }
@@ -192,20 +195,23 @@ fn render_fluidsynth(folder: &Path, midi: &[u8]) -> Result<PathBuf, String> {
 /// Render the built-in tracks through the backend's renderer, run here on this thread, into a WAV file of floats, as
 /// fast as it can.
 fn render_built_in(tracks: &[(Data, llamatron_exporters::midi::TimedTrack)], seconds: f64, path: &Path) -> Result<(), String> {
-    let failed = |answer: &str| named(errors::ERR_SYNTH_DAEMON_RENDER_FAILED, &[("answer", answer.into())]);
+    let failed = |answer: &str| named(errors::ERR_SYNTH_DAEMON_RENDER_FAILED, &[(fill::ANSWER, answer.into())]);
     let (to_renderer, mut inbox) = std::sync::mpsc::channel::<rmpv::Value>();
     let message = |items: Vec<Data>| crate::msgpack::value_of(&Data::List(items));
     for (number, (spec, timed)) in tracks.iter().enumerate() {
         let number = Data::Whole(number as i128);
-        let _ = to_renderer.send(message(vec![Data::text("instrument"), number.clone(), spec.clone()]));
-        let _ = to_renderer.send(message(vec![Data::text("notes"), Data::List(offline_notes(&number, timed))]));
+        let _ = to_renderer.send(message(vec![Data::text(file_format::TrackSetting::INSTRUMENT), number.clone(), spec.clone()]));
+        let _ = to_renderer.send(message(vec![
+            Data::text(file_format::SetlistSetting::NOTES),
+            Data::List(offline_notes(&number, timed)),
+        ]));
     }
     let _ = to_renderer.send(message(vec![
-        Data::text("render"),
+        Data::text(words::RENDER),
         Data::text(&path.display().to_string()),
         Data::Float(seconds),
     ]));
-    let _ = to_renderer.send(message(vec![Data::text("close")]));
+    let _ = to_renderer.send(message(vec![Data::text(words::CLOSE)]));
     drop(to_renderer);
     let answers = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
     let kept = answers.clone();
@@ -218,7 +224,7 @@ fn render_built_in(tracks: &[(Data, llamatron_exporters::midi::TimedTrack)], sec
     let answers = answers.lock().map(|held| held.clone()).unwrap_or_default();
     let rendered = answers
         .iter()
-        .any(|answer| answer.as_array().and_then(|items| items.first()).and_then(rmpv::Value::as_str) == Some("rendered"));
+        .any(|answer| answer.as_array().and_then(|items| items.first()).and_then(rmpv::Value::as_str) == Some(words::RENDERED));
     if !rendered {
         let said = answers.last().map(ToString::to_string).unwrap_or_default();
         return Err(failed(&said));

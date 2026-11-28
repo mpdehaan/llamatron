@@ -14,6 +14,7 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{DrawSetting, DRAW_DIRECTIONS, DRAW_NAMES};
 use llamatron_model::schema::generated::limits::{MAX_DRAW_SLOTS, MAX_DRAW_VALUE, MIN_DRAW_SLOTS, MIN_DRAW_VALUE};
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, messages, named};
 
 const DEFAULT_SLOT_COUNT: usize = 8;
@@ -68,10 +69,10 @@ impl DrawsPage {
                 .titled(&named(
                     messages::MSG_DRAW_SLOT_PROMPT,
                     &[
-                        ("name", name.into()),
-                        ("place", (slot + 1).into()),
-                        ("lowest", lowest.into()),
-                        ("highest", highest.into()),
+                        (fill::NAME, name.into()),
+                        (fill::PLACE, (slot + 1).into()),
+                        (fill::LOWEST, lowest.into()),
+                        (fill::HIGHEST, highest.into()),
                     ],
                 ))
             })
@@ -295,11 +296,11 @@ mod tests {
                 .iter()
                 .map(|line| line.text())
                 .any(|line| line.starts_with(&format!("{}+", crate::drawing::SELECTED_MARK)));
-            tracker.press(if heading { first_key(&FieldKeys::ENTER) } else { "down" });
+            tracker.press(if heading { first_key(&FieldKeys::ENTER) } else { llamatron_names::keys::DOWN });
         }
         assert!(on_strip(&tracker), "the cursor reaches the strip");
         let pages = tracker.depth();
-        tracker.press("space");
+        tracker.press(llamatron_names::keys::SPACE);
         assert_eq!(tracker.depth(), pages + 1, "Space opens the prompt");
     }
 }

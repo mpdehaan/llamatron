@@ -18,7 +18,22 @@ use llamatron_model::schema::generated::file_format::{GENERATOR_ENABLED, GENERAT
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named};
+
+/// The highest a shape's start or end may be, in percent, for Density and for Swell.
+const MOST_DENSITY_PERCENT: i64 = 100;
+const MOST_SWELL_PERCENT: i64 = 200;
+/// The intervals, in semitones above a chord's root, that tell its quality: a minor and a major third, and a
+/// diminished, perfect and augmented fifth.
+const MINOR_THIRD: i64 = 3;
+const MAJOR_THIRD: i64 = 4;
+const DIMINISHED_FIFTH: i64 = 6;
+const PERFECT_FIFTH: i64 = 7;
+const AUGMENTED_FIFTH: i64 = 8;
 
 const NAME: usize = 0;
 /// The id of the generator's Enabled toggle, the first field made after its name.
@@ -35,14 +50,14 @@ pub struct PluginEditor {
 pub fn caption_word(kind: &str) -> &'static str {
     use llamatron_strings::plugin_texts::*;
     match kind {
-        "arp" => arp::MSG_CAPTION_WORD,
-        "chords" => chords::MSG_CAPTION_WORD,
-        "drift" => drift::MSG_CAPTION_WORD,
-        "guitarify" => guitarify::MSG_CAPTION_WORD,
-        "hocket" => hocket::MSG_CAPTION_WORD,
-        "musician" => musician::MSG_CAPTION_WORD,
-        "phrasing" => phrasing::MSG_CAPTION_WORD,
-        "shapes" => shapes::MSG_CAPTION_WORD,
+        words::ARP => arp::MSG_CAPTION_WORD,
+        words::CHORDS => chords::MSG_CAPTION_WORD,
+        spec::DRIFT => drift::MSG_CAPTION_WORD,
+        words::GUITARIFY => guitarify::MSG_CAPTION_WORD,
+        words::HOCKET => hocket::MSG_CAPTION_WORD,
+        words::MUSICIAN => musician::MSG_CAPTION_WORD,
+        words::PHRASING => phrasing::MSG_CAPTION_WORD,
+        words::SHAPES => shapes::MSG_CAPTION_WORD,
         _ => timing::MSG_CAPTION_WORD,
     }
 }
@@ -302,7 +317,9 @@ impl<'a> Made<'a> {
     /// The musician's kind, which plays the instrument named: whether it plays pitches, and how it gives way and holds its notes.
     fn musician_kind(&self) -> (&'static str, bool, &'static str, &'static str) {
         use crate::generated::tables::MUSICIAN_KINDS;
-        let instrument = self.written("instrument").map_or("rhythm guitarist".to_string(), data_text);
+        let instrument = self
+            .written(file_format::TrackSetting::INSTRUMENT)
+            .map_or("rhythm guitarist".to_string(), data_text);
         *MUSICIAN_KINDS.iter().find(|(name, ..)| *name == instrument).unwrap_or(&MUSICIAN_KINDS[0])
     }
 
@@ -313,8 +330,8 @@ impl<'a> Made<'a> {
         }
         let (_, _, gives_way, notes) = self.musician_kind();
         match setting {
-            "gives_way" => gives_way.to_string(),
-            "notes" => notes.to_string(),
+            words::GIVES_WAY => gives_way.to_string(),
+            file_format::SetlistSetting::NOTES => notes.to_string(),
             _ => crate::generated::tables::MUSICIAN_DEFAULTS
                 .iter()
                 .find(|(name, _)| *name == setting)
@@ -327,29 +344,29 @@ impl<'a> Made<'a> {
         if condition == crate::generated::tables::PLAYS_PITCHES {
             return self.musician_kind().1;
         }
-        self.written("tune_from").is_some()
+        self.written(words::TUNE_FROM).is_some()
     }
 
     /// A drift's rows, a value each, with a cell for each of its two versions.
     fn drift_rows(&mut self) -> Vec<Field> {
         let order = [
-            "velocity",
-            "probability",
-            "degree",
-            "degree_random",
-            "scale",
-            "scale_probability",
-            "root",
-            "root_probability",
+            file_format::TrackSetting::VELOCITY,
+            file_format::Row::PROBABILITY,
+            file_format::Row::DEGREE,
+            file_format::DriftValue::DEGREE_RANDOM,
+            file_format::SongSetting::SCALE,
+            file_format::DriftValue::SCALE_PROBABILITY,
+            file_format::ScaleSetting::ROOT,
+            file_format::DriftValue::ROOT_PROBABILITY,
         ];
         let mut rows = Vec::new();
         for value in order {
             let label = named_in(labels::MSG_DRIFT_VALUE_LABELS, value);
             let mut cells = Vec::new();
-            for version in ["a", "b"] {
+            for version in [file_format::DriftVersion::A, file_format::Accidental::FLAT] {
                 let setting = format!("{version}_{value}");
                 let cell_id = self.id();
-                let cell = if value == "scale" || value == "root" {
+                let cell = if value == file_format::SongSetting::SCALE || value == file_format::ScaleSetting::ROOT {
                     let current = self.written(&setting).map_or(marks::MSG_NONE_SHOWN.to_string(), data_text);
                     Field::custom(cell_id, &label, &current)
                         .with_adjust()
@@ -381,7 +398,7 @@ impl<'a> Made<'a> {
             .iter()
             .filter_map(|scene| scene.get_written(SceneSetting::SECTION).and_then(Data::as_str).map(str::to_string))
             .collect();
-        let by_section = self.written("by_section");
+        let by_section = self.written(words::BY_SECTION);
         let own = |kind: &str, name: &str| {
             by_section
                 .and_then(|sections| sections.get(kind))
@@ -416,7 +433,7 @@ impl<'a> Made<'a> {
             let mut cells = vec![Field::toggle(toggle_id, plays.1, on)];
             let played_id = self.id();
             if on {
-                let current = own(kind, played.0).map_or("whole".to_string(), |value| data_text(&value));
+                let current = own(kind, played.0).map_or(words::WHOLE.to_string(), |value| data_text(&value));
                 cells.push(Field::custom(played_id, played.1, &current).with_adjust().with_enter(legends::What::CHOOSE));
             } else {
                 cells.push(Field::custom(played_id, played.1, marks::MSG_SITS_OUT_SHOWN));
@@ -436,44 +453,49 @@ impl<'a> Made<'a> {
             .find(|(name, ..)| *name == DEFAULT_BAR)
             .expect("the default bar is ready-made");
         let texts = |value: Option<&Data>| value.and_then(Data::as_list).map(|items| items.iter().map(data_text).collect::<Vec<_>>());
-        let bar = texts(self.written("bar")).unwrap_or_else(|| default_strokes.iter().map(|stroke| stroke.to_string()).collect());
-        let accents: Vec<bool> = if self.written("bar").is_none() && self.written("accents").is_none() {
+        let bar = texts(self.written(file_format::GuitarifySetting::BAR)).unwrap_or_else(|| default_strokes.iter().map(|stroke| stroke.to_string()).collect());
+        let accents: Vec<bool> = if self.written(file_format::GuitarifySetting::BAR).is_none() && self.written(file_format::GuitarifySetting::ACCENTS).is_none()
+        {
             default_accents.to_vec()
         } else {
             let written: Vec<bool> = self
-                .written("accents")
+                .written(file_format::GuitarifySetting::ACCENTS)
                 .and_then(Data::as_list)
                 .map_or(Vec::new(), |items| items.iter().map(|item| matches!(item, Data::Bool(true))).collect());
             (0..bar.len()).map(|place| written.get(place).copied().unwrap_or(false)).collect()
         };
-        let cell = self.written("cell").map_or(default_cell.to_string(), data_text);
+        let cell = self.written(file_format::GuitarifySetting::CELL).map_or(default_cell.to_string(), data_text);
         let ready = READY_BARS.iter().find(|(_, ready_cell, strokes, ready_accents)| {
             *ready_cell == cell && strokes.iter().map(|stroke| stroke.to_string()).collect::<Vec<_>>() == bar && ready_accents.to_vec() == accents
         });
         let name = ready.map_or(labels::MSG_OWN_BAR.to_string(), |(name, ..)| named_in(labels::MSG_READY_BAR_NAMES, name));
         named(
             marks::MSG_GUITAR_BAR_SHOWN,
-            &[("name", name.as_str().into()), ("count", bar.len().into()), ("cell", cell.as_str().into())],
+            &[
+                (fill::NAME, name.as_str().into()),
+                (fill::COUNT, bar.len().into()),
+                (fill::CELL, cell.as_str().into()),
+            ],
         )
     }
 
     /// A shape's section: its heading, then its start and end, each a percentage, how long it takes, and what it does then.
     fn shape_fields(&mut self, id: usize, shape: &str) -> Vec<Field> {
         let (lowest, highest) = match shape {
-            "density" => (0, 100),
-            "swell" => (0, 200),
+            file_format::Shape::DENSITY => (0, MOST_DENSITY_PERCENT),
+            file_format::Shape::SWELL => (0, MOST_SWELL_PERCENT),
             _ => (10, 200),
         };
         let name = named_in(labels::MSG_SHAPE_NAMES, shape);
         let setting = |part: &str| format!("{shape}_{part}");
-        let label = |part: &str| named(&named_in(labels::MSG_SHAPE_FIELD_LABELS, part), &[("shape", name.as_str().into())]);
+        let label = |part: &str| named(&named_in(labels::MSG_SHAPE_FIELD_LABELS, part), &[(fill::SHAPE, name.as_str().into())]);
         let part_label = |part: &str| named_in(labels::MSG_SHAPE_PART_LABELS, part);
         let is_set = SHAPE_PARTS.iter().any(|part| self.written(&setting(part)).is_some());
         let mut fields = vec![Field::heading(id, &name, is_set, None, false)];
-        for part in ["start", "end"] {
+        for part in [file_format::RampPart::START, file_format::RampPart::END] {
             let written = self.written(&setting(part)).and_then(Data::as_whole).map(|whole| whole as i64);
             let shown = written.map_or(marks::MSG_NONE_SHOWN.to_string(), |percent| {
-                named(marks::MSG_SHAPE_PERCENT_SHOWN, &[("percent", percent.into())])
+                named(marks::MSG_SHAPE_PERCENT_SHOWN, &[(fill::PERCENT, percent.into())])
             });
             let field_id = self.id();
             fields.push(
@@ -484,14 +506,30 @@ impl<'a> Made<'a> {
             );
         }
         let over_id = self.id();
-        let over = self.time_field(over_id, &label("over"), &setting("over"), labels::MSG_WHOLE_SPAN);
-        fields.push(over.with_shown_label(&part_label("over")).writing(&setting("over")));
-        let then = self.written(&setting("then")).map_or(SHAPE_THENS[0].to_string(), data_text);
+        let over = self.time_field(
+            over_id,
+            &label(file_format::RampPart::OVER),
+            &setting(file_format::RampPart::OVER),
+            labels::MSG_WHOLE_SPAN,
+        );
+        fields.push(
+            over.with_shown_label(&part_label(file_format::RampPart::OVER))
+                .writing(&setting(file_format::RampPart::OVER)),
+        );
+        let then = self
+            .written(&setting(file_format::ShapePart::THEN))
+            .map_or(SHAPE_THENS[0].to_string(), data_text);
         let then_id = self.id();
         fields.push(
-            Field::choice(then_id, &label("then"), SHAPE_THENS.iter().map(|each| each.to_string()).collect(), &then, None)
-                .with_shown_label(&part_label("then"))
-                .writing(&setting("then")),
+            Field::choice(
+                then_id,
+                &label(file_format::ShapePart::THEN),
+                SHAPE_THENS.iter().map(|each| each.to_string()).collect(),
+                &then,
+                None,
+            )
+            .with_shown_label(&part_label(file_format::ShapePart::THEN))
+            .writing(&setting(file_format::ShapePart::THEN)),
         );
         fields
     }
@@ -569,7 +607,7 @@ impl<'a> Made<'a> {
                     if number == 0 && zero_shown.is_some() {
                         return zero_shown.map(str::to_string);
                     }
-                    shown.map(|template| named(template, &[("number", number.into())]))
+                    shown.map(|template| named(template, &[(fill::NUMBER, number.into())]))
                 };
                 let (value, start, text) = match (number, default) {
                     (None, None) => (None, lowest.unwrap_or(0), Some(marks::MSG_NONE_SHOWN.to_string())),
@@ -660,7 +698,7 @@ impl<'a> Made<'a> {
                 );
                 let shown = named(
                     marks::MSG_WIZARD_PLAYER_GAUGE_SHOWN,
-                    &[("gauge", drawn.as_str().into()), ("place", number.into())],
+                    &[(fill::GAUGE, drawn.as_str().into()), (fill::PLACE, number.into())],
                 );
                 vec![Field::number(id, label, Some(number), Some(*lowest), Some(*highest), *lowest, Some(shown))]
             }
@@ -678,11 +716,11 @@ impl<'a> Made<'a> {
                     .filter(|shape| !shape.is_empty())
                     .unwrap_or_else(|| MAJOR_SHAPE.to_vec());
                 let chords: Vec<i64> = self
-                    .written("chords")
+                    .written(words::CHORDS)
                     .and_then(Data::as_list)
                     .map_or(vec![1], |chords| chords.iter().filter_map(Data::as_whole).map(|whole| whole as i64).collect());
                 let accidentals: Vec<Option<String>> = self
-                    .written("accidentals")
+                    .written(words::ACCIDENTALS)
                     .and_then(Data::as_list)
                     .map_or(Vec::new(), |items| items.iter().map(|item| item.as_str().map(str::to_string)).collect());
                 let numerals: Vec<String> = chords
@@ -713,7 +751,7 @@ impl<'a> Made<'a> {
             } => {
                 let value = self.musician_own(setting);
                 let (current, shown) = if self.written(setting).is_none() {
-                    (inherited_choice.to_string(), named(inherited_shown, &[("value", value.as_str().into())]))
+                    (inherited_choice.to_string(), named(inherited_shown, &[(fill::VALUE, value.as_str().into())]))
                 } else {
                     (value.clone(), value)
                 };
@@ -753,13 +791,13 @@ fn roman_numeral(shape: &[i64], degree: i64, accidental: Option<&str>) -> String
     let third = (shape[((place + 2) % length) as usize] - root).rem_euclid(12);
     let fifth = (shape[((place + 4) % length) as usize] - root).rem_euclid(12);
     let quality = match (third, fifth) {
-        (3, 7) => "minor",
-        (3, 6) => "diminished",
-        (4, 8) => "augmented",
-        _ => "major",
+        (MINOR_THIRD, PERFECT_FIFTH) => file_format::NamedProgression::MINOR,
+        (MINOR_THIRD, DIMINISHED_FIFTH) => file_format::Quality::DIMINISHED,
+        (MAJOR_THIRD, AUGMENTED_FIFTH) => file_format::Quality::AUGMENTED,
+        _ => file_format::Quality::MAJOR,
     };
     let mut numeral = ROMAN_NUMERALS[(degree - 1).rem_euclid(7) as usize].to_string();
-    if quality == "minor" || quality == "diminished" {
+    if quality == file_format::NamedProgression::MINOR || quality == file_format::Quality::DIMINISHED {
         numeral = numeral.to_lowercase();
     }
     let sign = accidental
@@ -851,7 +889,7 @@ impl Form for PluginEditor {
             .into_iter()
             .find(|(kind, ..)| *kind == self.kind)
             .map_or("", |(_, _, label)| label);
-        let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[("label", label.into())]);
+        let prompt = named(messages::MSG_RENAME_GENERATOR_PROMPT, &[(fill::LABEL, label.into())]);
         crate::screens::rename::ask_rename(app, self.section(), &self.name, &prompt);
         Some(())
     }
@@ -883,7 +921,7 @@ impl Form for PluginEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -891,8 +929,8 @@ impl Form for PluginEditor {
         Some(named(
             labels::MSG_EDITING_CAPTION,
             &[
-                ("what", caption_word(self.kind).to_uppercase().as_str().into()),
-                ("name", self.name.as_str().into()),
+                (fill::WHAT, caption_word(self.kind).to_uppercase().as_str().into()),
+                (fill::NAME, self.name.as_str().into()),
             ],
         ))
     }

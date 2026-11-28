@@ -19,6 +19,8 @@ use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::defaults::DEFAULT_GROOVE_CELL_LENGTH;
 use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::limits::{MAX_GROOVE_AMOUNT, MAX_GROOVE_CELLS, MIN_GROOVE_CELLS};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 const CELL_WIDTH: usize = 5;
@@ -63,9 +65,9 @@ impl GrooveEditor {
             let mut data = groove.to_data();
             if let Data::Map(pairs) = &mut data {
                 let cells = Data::List(cells.iter().map(|cell| Data::Whole(cell.unwrap_or(0) as i128)).collect());
-                match pairs.iter_mut().find(|(key, _)| key.as_str() == Some("cells")) {
+                match pairs.iter_mut().find(|(key, _)| key.as_str() == Some(file_format::GrooveSetting::CELLS)) {
                     Some(pair) => pair.1 = cells,
-                    None => pairs.insert(0, (Data::text("cells"), cells)),
+                    None => pairs.insert(0, (Data::text(file_format::GrooveSetting::CELLS), cells)),
                 }
             }
             if let Ok(changed) = llamatron_model::objects::named::Groove::from_data(&data) {
@@ -96,7 +98,7 @@ impl OneRow for GrooveEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GROOVES.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -104,7 +106,7 @@ impl OneRow for GrooveEditor {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::GROOVES).to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         )
     }
 
@@ -203,12 +205,12 @@ impl OneRow for GrooveEditor {
         let (cells, length) = groove_of(app, &self.name);
         let title = named(
             marks::MSG_GROOVE_NAME_SHOWN,
-            &[("label", labels::MSG_NAME_LABEL.into()), ("name", self.name.as_str().into())],
+            &[(fill::LABEL, labels::MSG_NAME_LABEL.into()), (fill::NAME, self.name.as_str().into())],
         );
         let mut lines = vec![
             heading(title, false, true),
             GridLine::Drawn(Text::styled(
-                &named(messages::MSG_GROOVE_NOTE, &[("length", length.as_str().into())]),
+                &named(messages::MSG_GROOVE_NOTE, &[(fill::LENGTH, length.as_str().into())]),
                 Style::DIM,
             )),
             GridLine::Drawn(Text::styled(messages::MSG_GROOVE_REPEATS_NOTE, Style::DIM)),

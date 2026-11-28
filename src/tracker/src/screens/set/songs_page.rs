@@ -14,6 +14,8 @@ use crate::screens::list_page::{named_item_keys, ListColumn, Listing, NamedWords
 use crate::screens::set::song_page::SongPage;
 use crate::settings::number_text;
 use crate::themes::{self, Colour};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks};
 
 const COLUMNS: [ListColumn; 6] = [
@@ -101,14 +103,14 @@ impl Listing for SongsPage {
 
     fn named(&self) -> Option<NamedWords> {
         Some(NamedWords {
-            section: "songs",
+            section: file_format::Section::SONGS,
             rename_prompt: llamatron_strings::messages::MSG_RENAME_SONG_PROMPT,
             what: llamatron_strings::legends::MSG_SONG_WHAT,
         })
     }
 
     fn delete_refusal(&self, app: &App) -> Option<&'static str> {
-        (app.document.names_of("songs").len() <= 1).then_some(llamatron_strings::errors::ERR_LAST_SONG_SHOWN)
+        (app.document.names_of(file_format::Section::SONGS).len() <= 1).then_some(llamatron_strings::errors::ERR_LAST_SONG_SHOWN)
     }
 
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
@@ -129,7 +131,7 @@ impl Listing for SongsPage {
 
 /// Ask for a new song's name, which cannot be empty or another's, and add the song, making it current.
 fn ask_new_song(app: &mut App) {
-    let taken = app.document.names_of("songs");
+    let taken = app.document.names_of(file_format::Section::SONGS);
     let mut prompt = crate::screens::dialogs::PromptDialog::new(llamatron_strings::messages::MSG_NEW_SONG_PROMPT, "");
     prompt.max_length = Some(llamatron_model::schema::generated::limits::MAX_NAME_LENGTH as usize);
     let prompt = prompt.then(Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
@@ -140,7 +142,10 @@ fn ask_new_song(app: &mut App) {
             return;
         }
         if llamatron_model::objects::naming::is_taken(text, &taken) {
-            app.refuse(&llamatron_strings::named(llamatron_strings::errors::ERR_NAME_IN_USE, &[("name", text.into())]));
+            app.refuse(&llamatron_strings::named(
+                llamatron_strings::errors::ERR_NAME_IN_USE,
+                &[(fill::NAME, text.into())],
+            ));
             return;
         }
         // The song's main and drum tracks each get an instrument of their own, as a track made on Arrange does.

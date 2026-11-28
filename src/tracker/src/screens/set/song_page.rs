@@ -16,6 +16,7 @@ use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{Section, SongSetting, LIVE_RESPONSIVENESSES, VISUALIZER_NAMES};
 use llamatron_model::schema::generated::genres::{GENRES, SUBGENRES, VARIANTS};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
@@ -72,7 +73,7 @@ impl Form for SongPage {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::SONGS).to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", app.document.get_current_song_name().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, app.document.get_current_song_name().into())],
         ))
     }
 
@@ -96,7 +97,7 @@ impl Form for SongPage {
             Some(MIN_TEMPO),
             Some(MAX_TEMPO),
             0,
-            Some(named(marks::MSG_TEMPO_SHOWN, &[("tempo", tempo.as_str().into())])),
+            Some(named(marks::MSG_TEMPO_SHOWN, &[(fill::TEMPO, tempo.as_str().into())])),
         );
         let entry_size = song_text(song, SongSetting::ENTRY_SIZE).unwrap_or_else(|| marks::MSG_ONE_STEP_SHOWN.to_string());
         let scale = song.get_scale_name().unwrap_or_else(|| marks::MSG_NONE_SHOWN.to_string());
@@ -243,10 +244,10 @@ impl Form for SongPage {
                 if llamatron_model::values::time_signature::TimeSignature::from_text(&text).is_err() {
                     use llamatron_model::values::generated::time_signature::{MAX_BEATS, MIN_BEATS, UNITS_LISTED};
                     let words = [
-                        ("text", text.as_str().into()),
-                        ("lowest", MIN_BEATS.into()),
-                        ("highest", MAX_BEATS.into()),
-                        ("units", UNITS_LISTED.into()),
+                        (fill::TEXT, text.as_str().into()),
+                        (fill::LOWEST, MIN_BEATS.into()),
+                        (fill::HIGHEST, MAX_BEATS.into()),
+                        (fill::UNITS, UNITS_LISTED.into()),
                     ];
                     app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_A_TIME_SIGNATURE, &words));
                     return;

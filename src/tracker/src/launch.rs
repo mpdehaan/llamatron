@@ -10,6 +10,8 @@
 //! interactive take plays nothing by itself: the person recording starts the song from Arrange, performs, and ends the
 //! take by stopping everything or leaving Arrange, after which the title shows again.
 
+#[cfg(test)]
+use llamatron_names::words;
 use std::time::{Duration, Instant};
 
 /// How long the title shows at the opening and the close of a recording.
@@ -206,7 +208,7 @@ mod tests {
             ..Launch::default()
         };
         let visual = Launch {
-            visualizer: Some("lava_lamp".to_string()),
+            visualizer: Some(words::LAVA_LAMP.to_string()),
             ..Launch::default()
         };
         let details = Launch {

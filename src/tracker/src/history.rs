@@ -6,6 +6,10 @@
 
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{messages, named};
 use std::collections::VecDeque;
 
@@ -28,33 +32,33 @@ pub struct History {
 
 /// The sections of a set, in the order a change is looked for in them.
 const SETLIST_SECTIONS: [&str; 15] = [
-    "scales",
-    "patterns",
-    "arps",
-    "chords",
-    "drifts",
-    "guitarifies",
-    "hockets",
-    "musicians",
-    "phrasings",
-    "shapes",
-    "timings",
-    "chains",
-    "grooves",
-    "instruments",
-    "songs",
+    file_format::Section::SCALES,
+    file_format::Section::PATTERNS,
+    words::ARPS,
+    words::CHORDS,
+    words::DRIFTS,
+    words::GUITARIFIES,
+    words::HOCKETS,
+    words::MUSICIANS,
+    words::PHRASINGS,
+    words::SHAPES,
+    words::TIMINGS,
+    file_format::Section::CHAINS,
+    file_format::Section::GROOVES,
+    file_format::Section::INSTRUMENTS,
+    file_format::Section::SONGS,
 ];
 const SONG_SECTIONS: [&str; 2] = ["draws", "tracks"];
 const SETTINGS_OF_THE_SET: [&str; 9] = [
-    "title",
-    "author",
-    "description",
-    "notes",
-    "step_size",
-    "default_octave",
-    "default_drum_octave",
-    "octave_labels",
-    "protected",
+    file_format::SetlistSetting::TITLE,
+    file_format::SetlistSetting::AUTHOR,
+    file_format::SetlistSetting::DESCRIPTION,
+    file_format::SetlistSetting::NOTES,
+    file_format::SetlistSetting::STEP_SIZE,
+    file_format::SetlistSetting::DEFAULT_OCTAVE,
+    file_format::SetlistSetting::DEFAULT_DRUM_OCTAVE,
+    file_format::SetlistSetting::OCTAVE_LABELS,
+    file_format::SetlistSetting::PROTECTED,
 ];
 const SETTINGS_OF_A_SONG: [&str; 4] = ["tempo", "time_signature", "scale", "groove"];
 
@@ -116,15 +120,15 @@ fn changed_word(section: &str) -> String {
     use llamatron_strings::plugin_texts::*;
     let plugin = PLUGINS.iter().find(|plugin| plugin.section == section).map(|plugin| plugin.name);
     let word = match plugin {
-        Some("arp") => arp::MSG_CHANGED_WORD,
-        Some("chords") => chords::MSG_CHANGED_WORD,
-        Some("drift") => drift::MSG_CHANGED_WORD,
-        Some("guitarify") => guitarify::MSG_CHANGED_WORD,
-        Some("hocket") => hocket::MSG_CHANGED_WORD,
-        Some("musician") => musician::MSG_CHANGED_WORD,
-        Some("phrasing") => phrasing::MSG_CHANGED_WORD,
-        Some("shapes") => shapes::MSG_CHANGED_WORD,
-        Some("timing") => timing::MSG_CHANGED_WORD,
+        Some(words::ARP) => arp::MSG_CHANGED_WORD,
+        Some(words::CHORDS) => chords::MSG_CHANGED_WORD,
+        Some(spec::DRIFT) => drift::MSG_CHANGED_WORD,
+        Some(words::GUITARIFY) => guitarify::MSG_CHANGED_WORD,
+        Some(words::HOCKET) => hocket::MSG_CHANGED_WORD,
+        Some(words::MUSICIAN) => musician::MSG_CHANGED_WORD,
+        Some(words::PHRASING) => phrasing::MSG_CHANGED_WORD,
+        Some(words::SHAPES) => shapes::MSG_CHANGED_WORD,
+        Some(words::TIMING) => timing::MSG_CHANGED_WORD,
         _ => return crate::settings::named_in(messages::MSG_CHANGED_WORDS, section),
     };
     word.to_string()
@@ -154,17 +158,22 @@ fn differing_name(section: &str, leaving: &Data, arriving: &Data) -> Option<Stri
 
 fn song_change(leaving: Option<&Data>, arriving: Option<&Data>) -> String {
     let (Some(leaving), Some(arriving)) = (leaving, arriving) else {
-        return crate::settings::named_in(messages::MSG_CHANGED_WORDS, "songs");
+        return crate::settings::named_in(messages::MSG_CHANGED_WORDS, file_format::Section::SONGS);
     };
     for section in SONG_SECTIONS {
         if let Some(name) = differing_name(section, leaving, arriving) {
             return named(
                 messages::MSG_CHANGED_NAMED,
-                &[("kind", changed_word(section).as_str().into()), ("name", name.as_str().into())],
+                &[(fill::KIND, changed_word(section).as_str().into()), (fill::NAME, name.as_str().into())],
             );
         }
     }
-    let scenes = |data: &Data| data.get("scenes").and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
+    let scenes = |data: &Data| {
+        data.get(file_format::Section::SCENES)
+            .and_then(Data::as_list)
+            .map(<[Data]>::to_vec)
+            .unwrap_or_default()
+    };
     let (before, after) = (scenes(leaving), scenes(arriving));
     if before != after {
         let first = before
@@ -172,14 +181,14 @@ fn song_change(leaving: Option<&Data>, arriving: Option<&Data>) -> String {
             .zip(&after)
             .position(|(one, other)| one != other)
             .unwrap_or(before.len().min(after.len()));
-        return named(messages::MSG_CHANGED_SCENE, &[("number", (first + FIRST_SCENE_NUMBER).into())]);
+        return named(messages::MSG_CHANGED_SCENE, &[(fill::NUMBER, (first + FIRST_SCENE_NUMBER).into())]);
     }
     for setting in SETTINGS_OF_A_SONG {
         if leaving.get(setting) != arriving.get(setting) {
             return crate::settings::named_in(messages::MSG_CHANGED_WORDS, setting);
         }
     }
-    crate::settings::named_in(messages::MSG_CHANGED_WORDS, "songs")
+    crate::settings::named_in(messages::MSG_CHANGED_WORDS, file_format::Section::SONGS)
 }
 
 /// The words for what a step of the history changes, from the set it leaves to the set it arrives at.
@@ -188,14 +197,17 @@ pub fn describe_change(leaving: &Snapshot, arriving: &Snapshot) -> String {
         let Some(name) = differing_name(section, &leaving.data, &arriving.data) else {
             continue;
         };
-        if section == "songs" {
-            let of = |data: &Data| data.get("songs").and_then(|songs| songs.get(&name)).cloned();
+        if section == file_format::Section::SONGS {
+            let of = |data: &Data| data.get(file_format::Section::SONGS).and_then(|songs| songs.get(&name)).cloned();
             let what = song_change(of(&leaving.data).as_ref(), of(&arriving.data).as_ref());
-            return named(messages::MSG_CHANGED_IN_SONG, &[("song", name.as_str().into()), ("what", what.as_str().into())]);
+            return named(
+                messages::MSG_CHANGED_IN_SONG,
+                &[(fill::SONG, name.as_str().into()), (fill::WHAT, what.as_str().into())],
+            );
         }
         return named(
             messages::MSG_CHANGED_NAMED,
-            &[("kind", changed_word(section).as_str().into()), ("name", name.as_str().into())],
+            &[(fill::KIND, changed_word(section).as_str().into()), (fill::NAME, name.as_str().into())],
         );
     }
     for setting in SETTINGS_OF_THE_SET {

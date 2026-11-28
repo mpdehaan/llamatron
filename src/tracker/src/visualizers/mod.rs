@@ -21,6 +21,10 @@ pub mod spectrum;
 pub mod warp;
 
 use crate::text::Text;
+#[cfg(test)]
+use llamatron_names::file_format;
+#[cfg(test)]
+use llamatron_names::spec;
 
 /// A song plays at 120 quarter notes a minute when nothing says otherwise, which is what motion is scaled against.
 pub const REFERENCE_SECONDS_PER_BEAT: f64 = 0.5;
@@ -156,7 +160,7 @@ mod tests {
             ],
             seconds_per_beat: REFERENCE_SECONDS_PER_BEAT,
             beats: 0.0,
-            names: vec!["bass".to_string(), "drums".to_string()],
+            names: vec![file_format::Row::BASS.to_string(), spec::DRUMS.to_string()],
         }
     }
 

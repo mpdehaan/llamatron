@@ -8,6 +8,7 @@
 use crate::app::App;
 use crate::screens::dialogs::{Answer, ConfirmDialog, ExportDialog, MessageDialog, EXPORT_CHOICES};
 use crate::uses::scene_label;
+use llamatron_names::fill;
 use llamatron_strings::{errors, messages, named, names};
 use std::path::{Path, PathBuf};
 
@@ -46,7 +47,7 @@ pub fn export(app: &mut App) {
 
 /// Ask which kind of export to write, and write it.
 fn choose_export(app: &mut App) {
-    let title = named(messages::MSG_EXPORT_TITLE, &[("name", app.document.get_current_song_name().into())]);
+    let title = named(messages::MSG_EXPORT_TITLE, &[(fill::NAME, app.document.get_current_song_name().into())]);
     let dialog = ExportDialog::new(
         &title,
         Box::new(|app: &mut App, answer: &Answer| {
@@ -83,7 +84,7 @@ fn export_as(app: &mut App, kind: &'static str) {
     if kind == ABLETON && earlier && !app.session.confirmed_overwrites.contains(&path) {
         let shown = path.display().to_string();
         let lines = vec![
-            named(messages::MSG_REPLACE_EXPORT_QUESTION, &[("path", shown.as_str().into())]),
+            named(messages::MSG_REPLACE_EXPORT_QUESTION, &[(fill::PATH, shown.as_str().into())]),
             messages::MSG_EXPORT_REPLACES_LIVE_WORK.to_string(),
         ];
         let question = ConfirmDialog::new(messages::MSG_REPLACE_EXPORT_TITLE, lines, false, false).then(Box::new(move |app: &mut App, _: &Answer| {
@@ -252,7 +253,7 @@ pub fn loop_error_lines(app: &App) -> Vec<String> {
     let mut lines = vec![errors::ERR_LOOP_SCENES_INTRO.to_string()];
     lines.extend(scenes.iter().take(LOOP_ERRORS_SHOWN).cloned());
     if scenes.len() > LOOP_ERRORS_SHOWN {
-        lines.push(named(errors::ERR_AND_MORE, &[("count", (scenes.len() - LOOP_ERRORS_SHOWN).into())]));
+        lines.push(named(errors::ERR_AND_MORE, &[(fill::COUNT, (scenes.len() - LOOP_ERRORS_SHOWN).into())]));
     }
     lines
 }

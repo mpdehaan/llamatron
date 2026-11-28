@@ -13,6 +13,8 @@ use crate::page::{Duration, Page};
 use crate::text::Text;
 use crate::themes::Colour;
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{marks, messages, named};
 use std::cell::Cell;
 
@@ -204,7 +206,7 @@ impl<L: Listing> ListPage<L> {
         match places.iter().position(|each| *each == place) {
             None => self.cursor.set(places[0]),
             Some(at) => {
-                let step: i64 = if key == "up" { -1 } else { 1 };
+                let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
                 self.cursor.set(places[(at as i64 + step).clamp(0, places.len() as i64 - 1) as usize]);
             }
         }
@@ -214,7 +216,7 @@ impl<L: Listing> ListPage<L> {
     }
 
     fn show_search(&self, app: &mut App) {
-        app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+        app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, self.typed.as_str().into())]));
     }
 
     fn settle(&self, app: &mut App) {
@@ -274,7 +276,7 @@ impl<L: Listing> ListPage<L> {
         } else if item.is(&Keys::COPY) {
             match app.document.copy_named(words.section, &name) {
                 Ok(new) => {
-                    app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
+                    app.say(&named(messages::MSG_COPIED_TO, &[(fill::NAME, new.as_str().into())]));
                     self.put_cursor_on(app, &new);
                 }
                 Err(problem) => app.refuse(&problem),
@@ -344,8 +346,8 @@ impl<L: Listing> ListPage<L> {
     fn say_moving(&self, app: &mut App) {
         let rows = self.listing.rows(app);
         let shown = rows.get(self.cursor.get()).map(|(_, cells)| cells[0].clone()).unwrap_or_default();
-        let row = named(messages::MSG_MOVING_ROW, &[("name", shown.as_str().into())]);
-        app.say(&named(messages::MSG_MOVING, &[("what", row.as_str().into())]));
+        let row = named(messages::MSG_MOVING_ROW, &[(fill::NAME, shown.as_str().into())]);
+        app.say(&named(messages::MSG_MOVING, &[(fill::WHAT, row.as_str().into())]));
     }
 
     /// Put the cursor on the row of a name.
@@ -420,9 +422,14 @@ impl<L: Listing> Page for ListPage<L> {
     fn place_kind(&self, app: &App) -> String {
         // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
         if self.searching {
-            return "searching".to_string();
+            return words::SEARCHING.to_string();
         }
-        if self.current(app).is_some() { "row" } else { "plus" }.to_string()
+        if self.current(app).is_some() {
+            words::ROW
+        } else {
+            llamatron_names::keys::PLUS
+        }
+        .to_string()
     }
 
     fn go_to_row(&mut self, app: &App, row: &str) {
@@ -577,15 +584,15 @@ impl<L: Listing> Page for ListPage<L> {
 /// Refuse to delete a named thing of a section that anything still uses, listing up to a few of the uses, and otherwise
 /// ask and delete it on YES; what is the template of its words in a question, taking its name.
 pub fn delete_after_checks(app: &mut App, section: &'static str, what: &str, name: &str) {
-    let what = named(what, &[("name", name.into())]);
+    let what = named(what, &[(fill::NAME, name.into())]);
     let uses = crate::uses::uses_of(app.document.get_setlist(), section, name);
     if !uses.is_empty() {
-        let mut lines = vec![named(llamatron_strings::errors::ERR_STILL_USED, &[("what", what.as_str().into())])];
+        let mut lines = vec![named(llamatron_strings::errors::ERR_STILL_USED, &[(fill::WHAT, what.as_str().into())])];
         lines.extend(uses.iter().take(MOST_USES_SHOWN).cloned());
         if uses.len() > MOST_USES_SHOWN {
             lines.push(named(
                 llamatron_strings::errors::ERR_AND_MORE,
-                &[("count", (uses.len() - MOST_USES_SHOWN).into())],
+                &[(fill::COUNT, (uses.len() - MOST_USES_SHOWN).into())],
             ));
         }
         app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
@@ -595,7 +602,7 @@ pub fn delete_after_checks(app: &mut App, section: &'static str, what: &str, nam
         return;
     }
     let name = name.to_string();
-    let question = named(messages::MSG_DELETE_QUESTION, &[("what", what.as_str().into())]);
+    let question = named(messages::MSG_DELETE_QUESTION, &[(fill::WHAT, what.as_str().into())]);
     let confirm = crate::screens::dialogs::ConfirmDialog::new(&question, Vec::new(), false, true).then(Box::new(
         move |app: &mut App, _: &crate::screens::dialogs::Answer| {
             if let Err(problem) = app.document.delete_named(section, &name) {

@@ -18,6 +18,7 @@ use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::file_format::CHAIN_KIND;
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 const COLUMNS: [ListColumn; 1] = [ListColumn {
@@ -126,9 +127,9 @@ fn step_shown(kind: &str, name: &str, count: Option<usize>) -> String {
     match count {
         Some(count) => named(
             marks::MSG_CHAIN_STEP_AGAIN,
-            &[("name", name.into()), ("number", count.into()), ("kind", label.into())],
+            &[(fill::NAME, name.into()), (fill::NUMBER, count.into()), (fill::KIND, label.into())],
         ),
-        None => named(marks::MSG_CHAIN_STEP_SHOWN, &[("name", name.into()), ("kind", label.into())]),
+        None => named(marks::MSG_CHAIN_STEP_SHOWN, &[(fill::NAME, name.into()), (fill::KIND, label.into())]),
     }
 }
 
@@ -153,7 +154,7 @@ impl Listing for ChainEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -161,7 +162,7 @@ impl Listing for ChainEditor {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::CHAINS).to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         ))
     }
 

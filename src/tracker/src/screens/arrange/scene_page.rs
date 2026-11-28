@@ -22,6 +22,10 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::Scene;
 use llamatron_model::schema::generated::file_format::{SceneSetting, SongSetting, RAMP_WAYS, SECTION_KINDS, TEMPO_RAMP_SETTINGS};
 use llamatron_model::schema::generated::limits::{MAX_NAME_LENGTH, MAX_RAMP_BARS, MAX_SCENE_REPEAT, MAX_TEMPO_PERCENT, MIN_TEMPO_PERCENT};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
@@ -61,7 +65,7 @@ fn percent_text(percent: Rational) -> String {
     if percent.denominator() == 1 {
         percent_shown(percent.numerator() as i64)
     } else {
-        named(marks::MSG_PART_PERCENT_SHOWN, &[("percent", percent.to_float().into())])
+        named(marks::MSG_PART_PERCENT_SHOWN, &[(fill::PERCENT, percent.to_float().into())])
     }
 }
 
@@ -125,7 +129,7 @@ impl ScenePage {
     fn scene_name(&self, app: &App) -> String {
         self.scene(app)
             .and_then(Scene::get_name)
-            .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[("number", (self.index + 1).into())]))
+            .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[(fill::NUMBER, (self.index + 1).into())]))
     }
 
     fn song_tempo(app: &App) -> Rational {
@@ -153,25 +157,28 @@ impl ScenePage {
             Some(name) => name.to_string(),
             None => {
                 let song_scale = song.get_scale_name().unwrap_or_else(|| messages::MSG_NO_SCALE.to_string());
-                named(marks::MSG_SONG_SCALE_SHOWN, &[("scale", song_scale.as_str().into())])
+                named(marks::MSG_SONG_SCALE_SHOWN, &[(fill::SCALE, song_scale.as_str().into())])
             }
         };
         let groove = match scene.get_written(SceneSetting::GROOVE) {
             None | Some(Data::Null) => {
-                let song_groove = song.get_written(SongSetting::GROOVE).and_then(Data::as_str).unwrap_or("none");
-                named(marks::MSG_SONG_GROOVE_SHOWN, &[("groove", song_groove.into())])
+                let song_groove = song
+                    .get_written(SongSetting::GROOVE)
+                    .and_then(Data::as_str)
+                    .unwrap_or(file_format::MatrixSource::NONE);
+                named(marks::MSG_SONG_GROOVE_SHOWN, &[(fill::GROOVE, song_groove.into())])
             }
             Some(Data::Bool(false)) => marks::MSG_GROOVE_OFF_SHOWN.to_string(),
             Some(value) => value.as_str().unwrap_or("").to_string(),
         };
         let percent = rational(scene.get_written(SceneSetting::TEMPO));
         let tempo_shown = match percent {
-            None => named(marks::MSG_SONG_TEMPO_SHOWN, &[("tempo", tempo_text(Self::song_tempo(app)).as_str().into())]),
+            None => named(marks::MSG_SONG_TEMPO_SHOWN, &[(fill::TEMPO, tempo_text(Self::song_tempo(app)).as_str().into())]),
             Some(percent) => named(
                 marks::MSG_TEMPO_PERCENT_SHOWN,
                 &[
-                    ("percent", percent_text(percent).as_str().into()),
-                    ("tempo", tempo_text(Self::played_tempo(app, scene)).as_str().into()),
+                    (fill::PERCENT, percent_text(percent).as_str().into()),
+                    (fill::TEMPO, tempo_text(Self::played_tempo(app, scene)).as_str().into()),
                 ],
             ),
         };
@@ -206,19 +213,22 @@ impl ScenePage {
         let blank = named(
             marks::MSG_TEMPO_PERCENT_SHOWN,
             &[
-                ("percent", percent_shown(AS_WRITTEN).as_str().into()),
-                ("tempo", tempo_text(played).as_str().into()),
+                (fill::PERCENT, percent_shown(AS_WRITTEN).as_str().into()),
+                (fill::TEMPO, tempo_text(played).as_str().into()),
             ],
         );
         let mut fields = Vec::new();
         let mut id = TEMPO_RAMP_IDS;
         for way in RAMP_WAYS {
             let setting = |part: &str| labelled(TEMPO_RAMP_SETTINGS, way, part);
-            let over = whole(scene.get_written(setting("over")));
-            let ramps = over.is_some() && ["start", "end"].iter().any(|part| rational(scene.get_written(setting(part))).is_some());
+            let over = whole(scene.get_written(setting(file_format::RampPart::OVER)));
+            let ramps = over.is_some()
+                && [file_format::RampPart::START, file_format::RampPart::END]
+                    .iter()
+                    .any(|part| rational(scene.get_written(setting(part))).is_some());
             id += 1;
             fields.push(Field::heading(id, &named_in(labels::MSG_RAMP_HEADINGS, way), ramps, None, false));
-            for part in ["start", "end"] {
+            for part in [file_format::RampPart::START, file_format::RampPart::END] {
                 id += 1;
                 let number = rational(scene.get_written(setting(part)));
                 let shown = match number {
@@ -226,8 +236,8 @@ impl ScenePage {
                     Some(percent) => named(
                         marks::MSG_TEMPO_PERCENT_SHOWN,
                         &[
-                            ("percent", percent_text(percent).as_str().into()),
-                            ("tempo", tempo_text(scaled(played, percent)).as_str().into()),
+                            (fill::PERCENT, percent_text(percent).as_str().into()),
+                            (fill::TEMPO, tempo_text(scaled(played, percent)).as_str().into()),
                         ],
                     ),
                 };
@@ -251,7 +261,7 @@ impl ScenePage {
             fields.push(
                 Field::number(
                     id,
-                    labelled(labels::MSG_TEMPO_RAMP_LABELS, way, "over"),
+                    labelled(labels::MSG_TEMPO_RAMP_LABELS, way, file_format::RampPart::OVER),
                     over,
                     Some(MIN_RAMP_BARS),
                     Some(MAX_RAMP_BARS),
@@ -259,8 +269,8 @@ impl ScenePage {
                     Some(shown),
                 )
                 .with_clear(marks::MSG_NONE_SHOWN)
-                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over"))
-                .writing(setting("over")),
+                .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, file_format::RampPart::OVER))
+                .writing(setting(file_format::RampPart::OVER)),
             );
         }
         Tab::new(labels::MSG_TEMPO_RAMPS_TAB, columns_of_sections(fields))
@@ -299,7 +309,7 @@ impl Form for ScenePage {
     fn crumbs(&self, app: &App) -> Vec<String> {
         vec![
             labels::Crumb::ARRANGE.to_string(),
-            named(labels::MSG_SCENE_CRUMB, &[("name", self.scene_name(app).as_str().into())]),
+            named(labels::MSG_SCENE_CRUMB, &[(fill::NAME, self.scene_name(app).as_str().into())]),
         ]
     }
 
@@ -307,7 +317,7 @@ impl Form for ScenePage {
         let what = labels::MSG_SCENE_CAPTION_WORD.to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.scene_name(app).as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.scene_name(app).as_str().into())],
         ))
     }
 
@@ -346,7 +356,7 @@ impl Form for ScenePage {
         let lengths = Lengths::of(app.document.get_setlist(), app.document.song());
         let length = clock(lengths.scene_seconds(self.index));
         let mut lines = vec![Text::styled(
-            &named(messages::MSG_SCENE_LENGTH_NOTE, &[("length", length.as_str().into())]),
+            &named(messages::MSG_SCENE_LENGTH_NOTE, &[(fill::LENGTH, length.as_str().into())]),
             Style::DIM,
         )];
         lines.extend(crate::lengths::problem_line(&lengths, self.index, width));
@@ -406,11 +416,17 @@ mod tests {
         tracker.settle();
         assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
         tracker.press(first_key(&FieldKeys::ENTER));
-        type_name(&mut tracker, "intro", "dawn");
-        assert_eq!(scene_names(&tracker), vec![Some("dawn".to_string()), Some("verse".to_string())]);
-        tracker.press("f2");
-        type_name(&mut tracker, "dawn", "verse");
-        assert_eq!(scene_names(&tracker), vec![Some("dawn".to_string()), Some("verse".to_string())]);
+        type_name(&mut tracker, file_format::SectionKind::INTRO, words::DAWN);
+        assert_eq!(
+            scene_names(&tracker),
+            vec![Some(words::DAWN.to_string()), Some(file_format::SectionKind::VERSE.to_string())]
+        );
+        tracker.press(llamatron_names::keys::F2);
+        type_name(&mut tracker, words::DAWN, file_format::SectionKind::VERSE);
+        assert_eq!(
+            scene_names(&tracker),
+            vec![Some(words::DAWN.to_string()), Some(file_format::SectionKind::VERSE.to_string())]
+        );
     }
 
     /// A scene that cannot be played says why under its settings, after its length.
@@ -422,7 +438,7 @@ mod tests {
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
         tracker.app.show_page(Box::new(FieldPage::new(ScenePage { index: 0 })));
         tracker.settle();
-        let shown = named(messages::MSG_PROBLEM_NOTE, &[("problem", "".into())]);
+        let shown = named(messages::MSG_PROBLEM_NOTE, &[(fill::PROBLEM, "".into())]);
         // The remarks stand under every setting, below the bottom of 80x24.
         let screen: Vec<String> = tracker.screen(160, 50).iter().map(|line| line.text()).collect();
         assert!(screen.iter().any(|line| line.starts_with(shown.trim_end())), "{screen:#?}");

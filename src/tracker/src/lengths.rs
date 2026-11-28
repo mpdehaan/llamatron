@@ -7,6 +7,7 @@
 use llamatron_engine::realizer::{SceneEstimate, SongRealizer};
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
+use llamatron_names::fill;
 
 pub struct Lengths {
     plays: Vec<SceneEstimate>,
@@ -80,7 +81,7 @@ pub fn problem_line(lengths: &Lengths, index: usize, width: usize) -> Option<cra
     let problem = lengths.scene_problem(index)?;
     let mut line = crate::text::Text::plain(&llamatron_strings::named(
         llamatron_strings::messages::MSG_PROBLEM_NOTE,
-        &[("problem", problem.as_str().into())],
+        &[(fill::PROBLEM, problem.as_str().into())],
     ));
     line.truncate(width);
     Some(line)

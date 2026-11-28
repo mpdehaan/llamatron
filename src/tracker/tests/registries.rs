@@ -15,6 +15,8 @@ use llamatron_backend::oscillators;
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
 use llamatron_model::schema::generated::file_format::{DRUM_MACHINES, EFFECTS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
+use llamatron_names::file_format;
+use llamatron_names::scenario;
 use llamatron_tracker::generated::sounds::PART_TYPES;
 use llamatron_tracker::instrument_sound::Sound;
 use llamatron_tracker::sound_spec::synth_spec;
@@ -35,15 +37,15 @@ fn spec_of(sound: &str) -> Data {
 
 /// A spec's part's type, as the backend reads it.
 fn written_type(spec: &Data, part: &str) -> String {
-    let found = if let Some(slot) = part.strip_prefix("env") {
+    let found = if let Some(slot) = part.strip_prefix(scenario::ENV) {
         let place: usize = slot.parse::<usize>().expect("an envelope slot's number") - 1;
-        spec.get("envelopes")
+        spec.get(file_format::SoundSetting::ENVELOPES)
             .and_then(Data::as_list)
             .and_then(|envelopes| envelopes.get(place))
-            .and_then(|envelope| envelope.get("type"))
+            .and_then(|envelope| envelope.get(file_format::ScaleSetting::TYPE))
             .cloned()
     } else {
-        spec.get(part).and_then(|written| written.get("type")).cloned()
+        spec.get(part).and_then(|written| written.get(file_format::ScaleSetting::TYPE)).cloned()
     };
     found.and_then(|name| name.as_str().map(str::to_string)).unwrap_or_else(|| NOTHING.to_string())
 }
@@ -51,17 +53,17 @@ fn written_type(spec: &Data, part: &str) -> String {
 /// The names a backend registry holds for a part of a voice.
 fn registered(part: &str) -> BTreeSet<&'static str> {
     match part {
-        "oscillators" => oscillators::REGISTRY.iter().map(|entry| entry.name).collect(),
-        "filter" => filters::REGISTRY.iter().map(|entry| entry.name).collect(),
-        "amp" => amp::TYPES.iter().map(|choice| choice.name).collect(),
-        envelope if envelope.starts_with("env") => envelopes::REGISTRY.iter().map(|entry| entry.name).collect(),
+        file_format::SoundSetting::OSCILLATORS => oscillators::REGISTRY.iter().map(|entry| entry.name).collect(),
+        file_format::SoundSetting::FILTER => filters::REGISTRY.iter().map(|entry| entry.name).collect(),
+        file_format::MatrixDestination::AMP => amp::TYPES.iter().map(|choice| choice.name).collect(),
+        envelope if envelope.starts_with(scenario::ENV) => envelopes::REGISTRY.iter().map(|entry| entry.name).collect(),
         other => panic!("the part {other} has no registry these tests know of"),
     }
 }
 
 /// The sound of a part set to a type, written as a set file writes one.
 fn sound_with(part: &str, kind: &str) -> String {
-    if let Some(slot) = part.strip_prefix("env") {
+    if let Some(slot) = part.strip_prefix(scenario::ENV) {
         let place: usize = slot.parse::<usize>().expect("an envelope slot's number") - 1;
         let slots: Vec<String> = (0..3)
             .map(|number| {
@@ -79,8 +81,8 @@ fn sound_with(part: &str, kind: &str) -> String {
 
 /// Which registry a part's types are held in: the three envelope slots share one.
 fn registry_of(part: &str) -> &str {
-    if part.starts_with("env") {
-        "envelopes"
+    if part.starts_with(scenario::ENV) {
+        file_format::SoundSetting::ENVELOPES
     } else {
         part
     }
@@ -119,10 +121,10 @@ fn every_effect_offered_is_registered_and_every_registered_effect_is_offered() {
     for name in &offered {
         let spec = spec_of(&format!("{{ engine: basic, effects: [{{ effect: {name} }}] }}"));
         let written = spec
-            .get("effects")
+            .get(file_format::SoundSetting::EFFECTS)
             .and_then(Data::as_list)
             .and_then(|blocks| blocks.first())
-            .and_then(|block| block.get("effect"))
+            .and_then(|block| block.get(file_format::EffectSetting::EFFECT))
             .and_then(Data::as_str);
         assert_eq!(written, Some(*name), "the effect {name} is written as itself");
     }

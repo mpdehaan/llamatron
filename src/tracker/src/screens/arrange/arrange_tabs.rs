@@ -17,6 +17,9 @@ use llamatron_model::schema::generated::file_format::GENERATOR_ENABLED;
 use llamatron_model::schema::generated::file_format::{DrawSetting, DRAW_NAMES, PLACED_SHAPES, RAMP_WAYS, VELOCITY_RAMP_SETTINGS};
 use llamatron_model::schema::generated::limits::{MAX_RAMP_BARS, MAX_VELOCITY_PERCENT, MIN_VELOCITY_PERCENT};
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, named};
 
 /// A velocity as written, which a level or a ramp leaves alone.
@@ -36,7 +39,7 @@ pub fn whole(value: Option<&Data>) -> Option<i64> {
 
 /// A percentage as a field shows it.
 pub fn percent_shown(percent: i64) -> String {
-    named(marks::MSG_PERCENT_SHOWN, &[("percent", percent.into())])
+    named(marks::MSG_PERCENT_SHOWN, &[(fill::PERCENT, percent.into())])
 }
 
 /// The bars a ramp takes as its field shows them.
@@ -44,7 +47,7 @@ pub fn bars_shown(bars: i64) -> String {
     if bars == MIN_RAMP_BARS {
         marks::MSG_RAMP_ONE_BAR_SHOWN.to_string()
     } else {
-        named(marks::MSG_RAMP_BARS_SHOWN, &[("bars", bars.into())])
+        named(marks::MSG_RAMP_BARS_SHOWN, &[(fill::BARS, bars.into())])
     }
 }
 
@@ -60,7 +63,7 @@ fn velocity_ramp_setting(way: &str, part: &str) -> &'static str {
 /// The Velocity tab: the level across the top, then a column for each ramp; own reads the page's own setting and above the
 /// scene's, for a clip that takes it from there.
 pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> Option<i64>) -> Tab {
-    let level = own("velocity");
+    let level = own(file_format::TrackSetting::VELOCITY);
     let level_field = Field::number(
         VELOCITY_IDS,
         labels::MSG_VELOCITY_PERCENT_LABEL,
@@ -71,20 +74,23 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
         Some(percent_shown(level.unwrap_or(AS_WRITTEN))),
     )
     .with_clear(&percent_shown(AS_WRITTEN))
-    .writing("velocity");
+    .writing(file_format::TrackSetting::VELOCITY);
     let mut fields = Vec::new();
     let mut id = VELOCITY_IDS;
     for way in RAMP_WAYS {
-        let names: Vec<&str> = ["start", "end", "over"].iter().map(|part| velocity_ramp_setting(way, part)).collect();
+        let names: Vec<&str> = [file_format::RampPart::START, file_format::RampPart::END, file_format::RampPart::OVER]
+            .iter()
+            .map(|part| velocity_ramp_setting(way, part))
+            .collect();
         id += 1;
         let is_set = names.iter().any(|name| own(name).is_some());
         fields.push(Field::heading(id, &named_in(labels::MSG_RAMP_HEADINGS, way), is_set, None, false));
-        for (part, name) in ["start", "end"].iter().zip(&names) {
+        for (part, name) in [file_format::RampPart::START, file_format::RampPart::END].iter().zip(&names) {
             id += 1;
             let taken = above(name);
             let shown = match (own(name), taken) {
                 (Some(value), _) => percent_shown(value),
-                (None, Some(value)) => named(marks::MSG_FROM_SCENE_SHOWN, &[("value", percent_shown(value).as_str().into())]),
+                (None, Some(value)) => named(marks::MSG_FROM_SCENE_SHOWN, &[(fill::VALUE, percent_shown(value).as_str().into())]),
                 (None, None) => percent_shown(AS_WRITTEN),
             };
             let cleared = if taken.is_some() {
@@ -112,7 +118,7 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
         let taken = above(over);
         let shown = match (own(over), taken) {
             (Some(bars), _) => bars_shown(bars),
-            (None, Some(bars)) => named(marks::MSG_FROM_SCENE_SHOWN, &[("value", bars_shown(bars).as_str().into())]),
+            (None, Some(bars)) => named(marks::MSG_FROM_SCENE_SHOWN, &[(fill::VALUE, bars_shown(bars).as_str().into())]),
             (None, None) => marks::MSG_NONE_SHOWN.to_string(),
         };
         let cleared = if taken.is_some() {
@@ -123,7 +129,7 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
         fields.push(
             Field::number(
                 id,
-                labelled(labels::MSG_VELOCITY_RAMP_LABELS, way, "over"),
+                labelled(labels::MSG_VELOCITY_RAMP_LABELS, way, file_format::RampPart::OVER),
                 own(over),
                 Some(MIN_RAMP_BARS),
                 Some(MAX_RAMP_BARS),
@@ -131,7 +137,7 @@ pub fn velocity_tab(own: &dyn Fn(&str) -> Option<i64>, above: &dyn Fn(&str) -> O
                 Some(shown),
             )
             .with_clear(cleared)
-            .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, "over"))
+            .with_shown_label(&named_in(labels::MSG_RAMP_PART_LABELS, file_format::RampPart::OVER))
             .writing(over),
         );
     }
@@ -179,7 +185,7 @@ pub fn reset_draws_tab(song: &Song, reset: Option<&Data>) -> Tab {
         .map(|(place, name)| {
             Field::toggle(
                 RESET_IDS + place,
-                &named(labels::MSG_RESET_LABEL, &[("name", (*name).into())]),
+                &named(labels::MSG_RESET_LABEL, &[(fill::NAME, (*name).into())]),
                 resets.contains(name),
             )
         })
@@ -212,7 +218,7 @@ pub fn listed_generator(setlist: &llamatron_model::objects::setlist::Setlist, na
         .iter()
         .find(|plugin| setlist.get_item(plugin.section, name).is_some())
         .map_or(labels::MSG_CHAIN_LABEL, |plugin| label_of(plugin.name));
-    named(labels::MSG_LISTED_GENERATOR, &[("kind", kind.into()), ("name", name.into())])
+    named(labels::MSG_LISTED_GENERATOR, &[(fill::KIND, kind.into()), (fill::NAME, name.into())])
 }
 
 /// The names a list of generators holds, as written.
@@ -224,7 +230,7 @@ pub fn chain_names(chains: Option<&Data>) -> Vec<String> {
 
 /// Whether a built-in generator's data says it is switched on, which it is not until enabled.
 pub fn built_in_on(data: Option<&Data>) -> bool {
-    data.and_then(|settings| settings.get("enabled"))
+    data.and_then(|settings| settings.get(file_format::GENERATOR_ENABLED))
         .is_some_and(|value| matches!(value, Data::Bool(true)))
 }
 
@@ -278,10 +284,10 @@ pub fn with_built_in(built_ins: Option<&Data>, kind: &str, setting: &str, value:
 pub fn tab_label_of(kind: &str) -> String {
     use llamatron_strings::plugin_texts::*;
     match kind {
-        "chords" => chords::MSG_TAB_LABEL,
-        "arp" => arp::MSG_TAB_LABEL,
-        "guitarify" => guitarify::MSG_TAB_LABEL,
-        "timing" => timing::MSG_TAB_LABEL,
+        words::CHORDS => chords::MSG_TAB_LABEL,
+        words::ARP => arp::MSG_TAB_LABEL,
+        words::GUITARIFY => guitarify::MSG_TAB_LABEL,
+        words::TIMING => timing::MSG_TAB_LABEL,
         _ => phrasing::MSG_TAB_LABEL,
     }
     .to_string()

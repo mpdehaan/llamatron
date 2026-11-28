@@ -127,7 +127,7 @@ flowchart TD
 | Crate | Folder | What it holds | Modules |
 | --- | --- | --- | --- |
 | math | `src/math/` | llamatron's exact arithmetic and random sources, the bottom layer every other crate stands on: rationals for lengths and times, mixed numbers, and the random numbers the generators draw. | `number`, `python_random`, `rational` |
-| names | `src/names/` | Every name llamatron uses as a value, each defined once: the set file's keys and values (`file_format`). | `file_format`, `fill`, `fluid_calls`, `spec`, `wire` |
+| names | `src/names/` | Every name llamatron uses as a value, each defined once: the set file's keys and values (`file_format`). | `file_format`, `fill`, `fluid_calls`, `keys`, `scenario`, `spec`, `wire`, `words` |
 | backend | `src/backend/` | llamatron's backend: the built-in synths, FluidSynth, the MIDI sender and the sound card, which llamatron runs on threads of its own, and which the llamatron-backend program runs for any other front end. | `audio`, `daemon`, `drums`, `dsp`, `effects`, `engine`, `envelopes`, `filters`, `fluid`, `instrument`, `modulation`, `oscillators`, `protocol`, `registry`, `sender` |
 | strings | `src/strings/` | Every text llamatron shows or raises, in `texts/`, a module for each way a text is used, and `fill`, which fills a text's blanks by name. | `fill`, `plugin_texts`, `texts` |
 | model | `src/model/` | llamatron's model: the set as stored, its values, its objects, its schema and its file, the layer the engine renders and the tracker edits. | `file`, `fundamentals`, `objects`, `schema`, `values` |

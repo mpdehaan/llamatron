@@ -21,6 +21,8 @@ use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_engine::realizer::SongRealizer;
 use llamatron_model::schema::generated::file_format::Section;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use llamatron_strings::{labels, messages};
 
 const COLUMNS: usize = 3;
@@ -35,16 +37,16 @@ const BAR_ROWS: usize = 2;
 
 /// The sections whose items a page's button counts, and the sections that hold generators.
 const GENERATOR_SECTIONS: [&str; 10] = [
-    "arps",
-    "chords",
-    "drifts",
-    "guitarifies",
-    "hockets",
-    "musicians",
-    "phrasings",
-    "shapes",
-    "timings",
-    "chains",
+    words::ARPS,
+    words::CHORDS,
+    words::DRIFTS,
+    words::GUITARIFIES,
+    words::HOCKETS,
+    words::MUSICIANS,
+    words::PHRASINGS,
+    words::SHAPES,
+    words::TIMINGS,
+    file_format::Section::CHAINS,
 ];
 
 type Grid = [[&'static Binding; 3]; 6];
@@ -113,9 +115,9 @@ fn cell_positions(rows: &Grid, binding: &'static Binding) -> Vec<(usize, usize)>
 /// stretches remembers where, and one entered along it is at its first row and column.
 fn moved(rows: &Grid, position: (usize, usize), key: &str) -> Option<(usize, usize)> {
     let (row_step, column_step): (i64, i64) = match key {
-        "up" => (-1, 0),
-        "down" => (1, 0),
-        "left" => (0, -1),
+        llamatron_names::keys::UP => (-1, 0),
+        llamatron_names::keys::DOWN => (1, 0),
+        llamatron_names::keys::LEFT => (0, -1),
         _ => (0, 1),
     };
     let here = rows[position.0][position.1];

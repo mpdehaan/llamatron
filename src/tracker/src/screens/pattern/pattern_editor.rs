@@ -28,9 +28,18 @@ use llamatron_model::schema::generated::file_format::{PatternSetting, Row, Secti
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_DEGREE, MIN_OCTAVE};
 use llamatron_model::values::generated::note::ROOT_NAMES;
 use llamatron_model::values::note::Note;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::spec;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named, names};
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
+
+/// How far the octaves Live labels stand from the octaves as numbered otherwise.
+const LIVE_OCTAVE_OFFSET: i64 = 2;
 
 /// The lines the roll's header, rules, numbers and description take around its rows, and the fewest rows it shows.
 const LINES_AROUND_ROWS: usize = 7;
@@ -139,7 +148,7 @@ impl<'a> Roll<'a> {
             if self.scale.is_some() {
                 pitch += match accidental.as_deref() {
                     Some("#") => 1,
-                    Some("b") => -1,
+                    Some(file_format::Accidental::FLAT) => -1,
                     _ => 0,
                 };
             }
@@ -165,7 +174,7 @@ impl<'a> Roll<'a> {
         let omit = value(self.pattern, Row::OMIT, start).and_then(Data::as_str);
         llamatron_model::schema::generated::file_format::OMITTED_ROLES
             .iter()
-            .any(|(name, roles)| Some(*name) == omit && roles.contains(&"root"))
+            .any(|(name, roles)| Some(*name) == omit && roles.contains(&file_format::ScaleSetting::ROOT))
     }
 
     fn highest_pitch(&self) -> i64 {
@@ -179,7 +188,7 @@ impl<'a> Roll<'a> {
     fn accidental_symbol(&self, step: usize) -> Option<&'a str> {
         value(self.pattern, Row::ACCIDENTAL, step)
             .and_then(Data::as_str)
-            .filter(|symbol| *symbol == "#" || *symbol == "b")
+            .filter(|symbol| *symbol == "#" || *symbol == file_format::Accidental::FLAT)
     }
 
     fn step_octave(&self, step: usize) -> i64 {
@@ -203,7 +212,7 @@ impl<'a> Roll<'a> {
         if self.scale.is_some() {
             pitch += match self.accidental_symbol(step) {
                 Some("#") => 1,
-                Some("b") => -1,
+                Some(file_format::Accidental::FLAT) => -1,
                 _ => 0,
             };
         }
@@ -230,7 +239,7 @@ impl<'a> Roll<'a> {
         (
             (below + 1) as i64 % length as i64 + MIN_DEGREE,
             octave + ((below + 1) / length) as i64,
-            Some("b"),
+            Some(file_format::Accidental::FLAT),
         )
     }
 
@@ -265,12 +274,12 @@ impl<'a> Roll<'a> {
         let label = |note: String, degree: String| {
             named(
                 labels::MSG_ROLL_ROW_LABEL,
-                &[("note", note.as_str().into()), ("degree", degree.as_str().into())],
+                &[(fill::NOTE, note.as_str().into()), (fill::DEGREE, degree.as_str().into())],
             )
         };
         let Some(scale) = &self.scale else {
             return label(
-                named(marks::MSG_ROLL_OCTAVE_ONLY, &[("octave", shown(octave).as_str().into())]),
+                named(marks::MSG_ROLL_OCTAVE_ONLY, &[(fill::OCTAVE, shown(octave).as_str().into())]),
                 degree.to_string(),
             );
         };
@@ -295,14 +304,14 @@ impl<'a> Roll<'a> {
             .map(|number| shown_octave(self.setlist, *number).to_string())
             .max_by_key(|text| text.len())
             .unwrap_or_default();
-        let mut notes = vec![named(marks::MSG_ROLL_OCTAVE_ONLY, &[("octave", octave.as_str().into())])];
+        let mut notes = vec![named(marks::MSG_ROLL_OCTAVE_ONLY, &[(fill::OCTAVE, octave.as_str().into())])];
         notes.extend(ROOT_NAMES.iter().map(|name| format!("{name}{octave}")));
         notes
             .iter()
             .map(|note| {
                 named(
                     labels::MSG_ROLL_ROW_LABEL,
-                    &[("note", note.as_str().into()), ("degree", self.size.to_string().as_str().into())],
+                    &[(fill::NOTE, note.as_str().into()), (fill::DEGREE, self.size.to_string().as_str().into())],
                 )
                 .chars()
                 .count()
@@ -458,10 +467,10 @@ impl PatternEditor {
         named(
             marks::MSG_STEPS_SHOWN,
             &[
-                ("before", before.into()),
-                ("first", (first + 1).into()),
-                ("last", last.into()),
-                ("after", after.into()),
+                (fill::BEFORE, before.into()),
+                (fill::FIRST, (first + 1).into()),
+                (fill::LAST, last.into()),
+                (fill::AFTER, after.into()),
             ],
         )
     }
@@ -477,7 +486,7 @@ impl PatternEditor {
     /// plays under has another number.
     fn scale_said(&self, app: &App, roll: &Roll) -> String {
         let said = self.scale_named(app, roll);
-        let Some(length) = roll.pattern.get_written("scale_length").and_then(Data::as_whole) else {
+        let Some(length) = roll.pattern.get_written(file_format::PatternSetting::SCALE_LENGTH).and_then(Data::as_whole) else {
             return said;
         };
         let scales = scales_of_pattern(roll.setlist, app.document.song(), &self.name);
@@ -487,44 +496,56 @@ impl PatternEditor {
         if !unsuited {
             return said;
         }
-        named(labels::MSG_WRITTEN_FOR, &[("scale", said.as_str().into()), ("length", (length as i64).into())])
+        named(
+            labels::MSG_WRITTEN_FOR,
+            &[(fill::SCALE, said.as_str().into()), (fill::LENGTH, (length as i64).into())],
+        )
     }
 
     /// What the header says about the scale: the one the rows are drawn in, that there are several, or that drums need
     /// none.
     fn scale_named(&self, app: &App, roll: &Roll) -> String {
         if roll.pattern.is_drum() {
-            return named(labels::MSG_SCALE_HEADER, &[("scale", labels::MSG_NO_SCALE_NEEDED.into())]);
+            return named(labels::MSG_SCALE_HEADER, &[(fill::SCALE, labels::MSG_NO_SCALE_NEEDED.into())]);
         }
         let scales = scales_of_pattern(roll.setlist, app.document.song(), &self.name);
         match scales.as_slice() {
-            [] => named(labels::MSG_SCALE_HEADER, &[("scale", messages::MSG_NO_SCALE.into())]),
+            [] => named(labels::MSG_SCALE_HEADER, &[(fill::SCALE, messages::MSG_NO_SCALE.into())]),
             [scale] => {
                 let root = scale_root(roll.setlist, scale);
                 let kind = match roll.setlist.get_named_scale(scale) {
                     Some(found) => found.get_kind().as_str().unwrap_or("").to_string(),
                     _ => String::new(),
                 };
-                let default = named(names::MSG_DEFAULT_SCALE_NAME, &[("root", root.as_str().into()), ("kind", kind.as_str().into())]);
+                let default = named(
+                    names::MSG_DEFAULT_SCALE_NAME,
+                    &[(fill::ROOT, root.as_str().into()), (fill::KIND, kind.as_str().into())],
+                );
                 let legacy = named(
                     names::MSG_LEGACY_SCALE_NAME,
-                    &[("root", root.as_str().into()), ("kind", title_case(&kind.replace('_', " ")).as_str().into())],
+                    &[
+                        (fill::ROOT, root.as_str().into()),
+                        (fill::KIND, title_case(&kind.replace('_', " ")).as_str().into()),
+                    ],
                 );
                 if same_name(scale, &default) || same_name(scale, &legacy) {
-                    return named(labels::MSG_SCALE_HEADER, &[("scale", scale.as_str().into())]);
+                    return named(labels::MSG_SCALE_HEADER, &[(fill::SCALE, scale.as_str().into())]);
                 }
                 let notes = named(
                     marks::MSG_SCALE_NOTES_TEXT,
-                    &[("root", root.as_str().into()), ("kind", kind.replace('_', " ").as_str().into())],
+                    &[(fill::ROOT, root.as_str().into()), (fill::KIND, kind.replace('_', " ").as_str().into())],
                 );
                 let shown = crate::patterns::shown_scale_name(scale);
                 named(
                     labels::MSG_SCALE_HEADER,
                     &[(
-                        "scale",
-                        named(marks::MSG_SCALE_SHOWN, &[("name", shown.as_str().into()), ("notes", notes.as_str().into())])
-                            .as_str()
-                            .into(),
+                        file_format::SongSetting::SCALE,
+                        named(
+                            marks::MSG_SCALE_SHOWN,
+                            &[(fill::NAME, shown.as_str().into()), (fill::NOTES, notes.as_str().into())],
+                        )
+                        .as_str()
+                        .into(),
                     )],
                 )
             }
@@ -546,23 +567,26 @@ impl PatternEditor {
         let step_size = named(
             marks::MSG_STEP_SIZE_SHOWN,
             &[
-                ("size", fraction(roll.step_size).as_str().into()),
-                ("whose", whose(PatternSetting::STEP_SIZE).into()),
+                (fill::SIZE, fraction(roll.step_size).as_str().into()),
+                (fill::WHOSE, whose(PatternSetting::STEP_SIZE).into()),
             ],
         );
-        let direction = pattern.get_direction().unwrap_or_else(|| "forward".to_string()).replace('_', " ");
+        let direction = pattern
+            .get_direction()
+            .unwrap_or_else(|| file_format::Direction::FORWARD.to_string())
+            .replace('_', " ");
         let first_cells = vec![
-            named(marks::MSG_STEPS_HEADER, &[("steps", pattern.get_steps().to_string().as_str().into())]),
+            named(marks::MSG_STEPS_HEADER, &[(fill::STEPS, pattern.get_steps().to_string().as_str().into())]),
             step_size,
-            named(marks::MSG_DRUM_HEADER, &[("drum", drum.into())]),
-            named(marks::MSG_DIRECTION_HEADER, &[("direction", direction.as_str().into())]),
+            named(marks::MSG_DRUM_HEADER, &[(fill::DRUM, drum.into())]),
+            named(marks::MSG_DIRECTION_HEADER, &[(fill::DIRECTION, direction.as_str().into())]),
         ];
         let signature = pattern.get_time_signature().unwrap_or_else(|| app.document.song().get_time_signature());
         let mut second_cells = vec![named(
             marks::MSG_TIME_SIGNATURE_SHOWN,
             &[
-                ("signature", signature.to_text().as_str().into()),
-                ("whose", whose(PatternSetting::TIME_SIGNATURE).into()),
+                (fill::SIGNATURE, signature.to_text().as_str().into()),
+                (fill::WHOSE, whose(PatternSetting::TIME_SIGNATURE).into()),
             ],
         )];
         second_cells.extend(extra);
@@ -592,7 +616,7 @@ impl PatternEditor {
             self.scale_said(app, roll),
             named(
                 marks::MSG_ENTRY_SIZE_SHOWN,
-                &[("size", fraction(entry_size).as_str().into()), ("whose", entry_whose.into())],
+                &[(fill::SIZE, fraction(entry_size).as_str().into()), (fill::WHOSE, entry_whose.into())],
             ),
         ]
     }
@@ -752,7 +776,7 @@ impl PatternEditor {
             let tied = matches!(value(roll.pattern, Row::TIE, step), Some(Data::Bool(true)));
             return named(
                 if tied { messages::MSG_DESCRIBE_TIED } else { messages::MSG_DESCRIBE_EMPTY },
-                &[("step", number.into())],
+                &[(fill::STEP, number.into())],
             );
         }
         let song = app.document.song();
@@ -763,7 +787,7 @@ impl PatternEditor {
             named(
                 messages::MSG_IN_SCALE,
                 &[(
-                    "scale",
+                    file_format::SongSetting::SCALE,
                     scale_name.clone().unwrap_or_else(|| messages::MSG_NO_SCALE.to_string()).as_str().into(),
                 )],
             )
@@ -776,7 +800,7 @@ impl PatternEditor {
                 None => named(
                     messages::MSG_DEGREE_WITHOUT_SCALE,
                     &[(
-                        "degree",
+                        file_format::Row::DEGREE,
                         value(roll.pattern, Row::DEGREE, step)
                             .and_then(Data::as_whole)
                             .unwrap_or(0)
@@ -787,9 +811,9 @@ impl PatternEditor {
                 ),
             }
         };
-        let chord = value(roll.pattern, Row::CHORD, step)
-            .map(data_text)
-            .map_or(String::new(), |chord| named(messages::MSG_DESCRIBE_CHORD, &[("chord", chord.as_str().into())]));
+        let chord = value(roll.pattern, Row::CHORD, step).map(data_text).map_or(String::new(), |chord| {
+            named(messages::MSG_DESCRIBE_CHORD, &[(fill::CHORD, chord.as_str().into())])
+        });
         let gate_now = value(roll.pattern, Row::GATE, step)
             .and_then(|gate| llamatron_model::schema::checking::written_length(gate, Rational::whole(4)).ok())
             .unwrap_or(roll.step_size);
@@ -812,10 +836,10 @@ impl PatternEditor {
         named(
             messages::MSG_DESCRIBE_NOTE,
             &[
-                ("step", number.into()),
-                ("sound", sound.as_str().into()),
-                ("gate", gate.as_str().into()),
-                ("chord", chord.as_str().into()),
+                (fill::STEP, number.into()),
+                (fill::SOUND, sound.as_str().into()),
+                (fill::GATE, gate.as_str().into()),
+                (fill::CHORD, chord.as_str().into()),
             ],
         )
     }
@@ -826,7 +850,11 @@ impl PatternEditor {
         let accidental = value(roll.pattern, Row::ACCIDENTAL, step).and_then(Data::as_str).unwrap_or("");
         let octave = value(roll.pattern, Row::OCTAVE, step).and_then(Data::as_whole).map(|whole| whole as i64);
         let setlist = app.document.get_setlist();
-        let offset = if octave_labels(setlist) == "live" { 2 } else { 0 };
+        let offset = if octave_labels(setlist) == file_format::OctaveLabels::LIVE {
+            LIVE_OCTAVE_OFFSET
+        } else {
+            0
+        };
         if roll.pattern.is_drum() {
             let octave = octave.unwrap_or(setlist.get_default_drum_octave());
             return Some(format!("{}{accidental}{}", data_text(degree), octave - offset));
@@ -841,7 +869,7 @@ impl PatternEditor {
         );
         let shift = match accidental {
             "#" => 1,
-            "b" => -1,
+            file_format::Accidental::FLAT => -1,
             _ => 0,
         };
         let moved = half_steps[place as usize] + octaves_up * HALF_STEPS_PER_OCTAVE + shift;
@@ -945,8 +973,12 @@ impl PatternEditor {
     }
 
     fn move_rows(&self, app: &App, key: &str) {
-        let step: i64 = if key == "up" || key == "left" { -1 } else { 1 };
-        if key == "left" || key == "right" {
+        let step: i64 = if key == llamatron_names::keys::UP || key == llamatron_names::keys::LEFT {
+            -1
+        } else {
+            1
+        };
+        if key == llamatron_names::keys::LEFT || key == llamatron_names::keys::RIGHT {
             self.step
                 .set((self.step.get() as i64 + step).clamp(0, self.step_count(app).max(1) as i64 - 1) as usize);
             return;
@@ -991,13 +1023,13 @@ impl PatternEditor {
         let rows = roll.rows();
         let pitch = self.place_cursor(&roll, &rows);
         match key {
-            "up" | "down" => {
+            llamatron_names::keys::UP | llamatron_names::keys::DOWN => {
                 let place = rows.iter().position(|row| *row == pitch).unwrap_or(0) as i64;
-                let step: i64 = if key == "up" { -1 } else { 1 };
+                let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
                 self.pitch.set(Some(rows[(place + step).clamp(0, rows.len() as i64 - 1) as usize]));
             }
             _ => {
-                let step: i64 = if key == "left" { -1 } else { 1 };
+                let step: i64 = if key == llamatron_names::keys::LEFT { -1 } else { 1 };
                 self.step
                     .set((self.step.get() as i64 + step).clamp(0, self.step_count(app) as i64 - 1) as usize);
             }
@@ -1171,7 +1203,7 @@ impl Page for PatternEditor {
             single_note: true,
             doubling: None,
         };
-        chord.resting(&named(messages::MSG_RESTING_STEP, &[("step", (step + 1).into())]))
+        chord.resting(&named(messages::MSG_RESTING_STEP, &[(fill::STEP, (step + 1).into())]))
     }
 
     fn keys(&self, app: &App) -> Vec<KeyItem> {
@@ -1289,7 +1321,7 @@ impl Page for PatternEditor {
         let Some(opener) = &self.opener_crumbs else {
             return vec![
                 labels::Crumb::PATTERNS.to_string(),
-                named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+                named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
             ];
         };
         let mut crumbs = opener.clone();
@@ -1297,7 +1329,7 @@ impl Page for PatternEditor {
             crumbs.push(labels::MSG_PREVIEW_PATTERN_CRUMB.to_string());
             return crumbs;
         }
-        crumbs.push(named(labels::MSG_PATTERN_CRUMB, &[("name", self.name.as_str().into())]));
+        crumbs.push(named(labels::MSG_PATTERN_CRUMB, &[(fill::NAME, self.name.as_str().into())]));
         crumbs
     }
 
@@ -1306,8 +1338,8 @@ impl Page for PatternEditor {
         named(
             labels::MSG_EDITING_CAPTION,
             &[
-                ("what", what.as_str().into()),
-                ("name", crate::patterns::shown_pattern_name(&self.name).as_str().into()),
+                (fill::WHAT, what.as_str().into()),
+                (fill::NAME, crate::patterns::shown_pattern_name(&self.name).as_str().into()),
             ],
         )
     }
@@ -1420,7 +1452,10 @@ impl PatternEditor {
                 let then: crate::screens::dialogs::Then = Box::new(move |app: &mut App, answer: &crate::screens::dialogs::Answer| {
                     let crate::screens::dialogs::Answer::Typed(text) = answer else { return };
                     let Ok(number) = text.trim().parse::<i64>() else {
-                        app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER, &[("text", text.as_str().into())]));
+                        app.refuse(&named(
+                            llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER,
+                            &[(fill::TEXT, text.as_str().into())],
+                        ));
                         return;
                     };
                     if !(lowest..=highest).contains(&number) {
@@ -1437,13 +1472,13 @@ impl PatternEditor {
                     let crate::screens::dialogs::Answer::Typed(text) = answer else { return };
                     let text = text.trim();
                     let Ok(length) = llamatron_math::Rational::parse(text) else {
-                        app.refuse(&named(llamatron_strings::errors::ERR_NOT_A_LENGTH, &[("text", text.into())]));
+                        app.refuse(&named(llamatron_strings::errors::ERR_NOT_A_LENGTH, &[(fill::TEXT, text.into())]));
                         return;
                     };
                     if length <= llamatron_math::Rational::ZERO || length > most {
                         app.refuse(&named(
                             llamatron_strings::errors::ERR_LENGTH_OUT_OF_RANGE,
-                            &[("most", most.to_string().as_str().into())],
+                            &[(fill::MOST, most.to_string().as_str().into())],
                         ));
                         return;
                     }
@@ -1525,7 +1560,7 @@ impl PatternEditor {
         let (degree, octave, accidental) = roll.note_at(pitch);
         let written = |data: Option<&Data>| data.and_then(Data::as_str).and_then(|text| Rational::parse(text).ok());
         let entry_size = written(roll.pattern.get_written(PatternSetting::ENTRY_SIZE))
-            .or_else(|| written(app.document.song().get_written("entry_size")))
+            .or_else(|| written(app.document.song().get_written(file_format::SongSetting::ENTRY_SIZE)))
             .unwrap_or(roll.step_size);
         let grabs = here.is_some_and(|start| patterns::value(roll.pattern, Row::GRAB, start).is_some_and(|grab| matches!(grab, Data::Bool(true))));
         RollPlace {
@@ -1644,7 +1679,7 @@ impl PatternEditor {
         let mut quality_names = vec![messages::MSG_QUALITY_SINGLE_NOTE.to_string()];
         quality_names.extend(CHORD_SYMBOLS.iter().map(|symbol| {
             let said = labels::MSG_CHORD_NAMES.iter().find(|(each, _)| each == symbol).map_or("", |(_, said)| *said);
-            named(marks::MSG_CHORD_SYMBOL_NAMED, &[("symbol", (*symbol).into()), ("name", said.into())])
+            named(marks::MSG_CHORD_SYMBOL_NAMED, &[(fill::SYMBOL, (*symbol).into()), (fill::NAME, said.into())])
         }));
         let mut inversions = vec![None];
         inversions.extend(INVERSIONS.iter().map(|inversion| Some(*inversion)));
@@ -1652,7 +1687,7 @@ impl PatternEditor {
         doublings.extend(DOUBLINGS.iter().map(|doubling| Some(doubling.to_string())));
         let where_ = named(
             messages::MSG_CHORD_OF_STEP,
-            &[("step", (step + 1).into()), ("pattern", self.name.as_str().into())],
+            &[(fill::STEP, (step + 1).into()), (fill::PATTERN, self.name.as_str().into())],
         );
         let (name, opened) = (self.name.clone(), self.opened_track.clone());
         let in_words = move |app: &App, choice: &ChordChoice| chord_in_words(app, &name, opened.as_deref(), step, choice);
@@ -1663,7 +1698,7 @@ impl PatternEditor {
         let name = self.name.clone();
         let written = move |app: &mut App, choice: &ChordChoice| write_chord(app, &name, step, choice);
         let offer = ChordOffer {
-            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[("where", where_.as_str().into())]),
+            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[(fill::WHERE, where_.as_str().into())]),
             qualities,
             quality_names,
             inversions,
@@ -1700,7 +1735,7 @@ impl PatternEditor {
             .map_or(Vec::new(), |slots| {
                 slots.iter().filter_map(|slot| slot.as_whole().map(|slot| slot as usize)).collect()
             });
-        let title = named(messages::MSG_KEYSWITCH_DIALOG_TITLE, &[("step", (step + 1).into())]);
+        let title = named(messages::MSG_KEYSWITCH_DIALOG_TITLE, &[(fill::STEP, (step + 1).into())]);
         let name = self.name.clone();
         let then = Box::new(move |app: &mut App, slots: Vec<usize>| {
             let written = (!slots.is_empty()).then(|| Data::List(slots.into_iter().map(|slot| Data::Whole(slot as i128)).collect()));
@@ -1883,9 +1918,11 @@ mod tests {
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         let setlist = llamatron_model::objects::setlist::Setlist::read_text(&text).expect("the scenario's set is valid");
         let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
-        tracker.app.show_page(crate::screens::pattern::open_clip_pattern("tune", Vec::new(), "lead"));
+        tracker
+            .app
+            .show_page(crate::screens::pattern::open_clip_pattern(spec::TUNE, Vec::new(), words::LEAD));
         tracker.settle();
-        let written_for = named(labels::MSG_WRITTEN_FOR, &[("scale", "".into()), ("length", 5.into())]);
+        let written_for = named(labels::MSG_WRITTEN_FOR, &[(fill::SCALE, "".into()), (fill::LENGTH, 5.into())]);
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
         assert!(
             screen.iter().any(|line| line.contains(written_for.trim_start_matches(", ").trim())),

@@ -15,6 +15,7 @@ use crate::keys::KeyItem;
 use crate::page::{Duration, Page};
 use crate::text::Text;
 use crate::themes::Colour;
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, marks, named};
 use std::cell::Cell;
 
@@ -395,7 +396,7 @@ impl<F: Form> FieldPage<F> {
             return;
         }
         self.move_in_order(shown, name);
-        if name == "up" && place > row + count && self.state.cursor.get() == row + count && count > 0 {
+        if name == llamatron_names::keys::UP && place > row + count && self.state.cursor.get() == row + count && count > 0 {
             let spots = self.box_spots(app, shown);
             self.state.cursor.set(row + 1 + tab_box::spot_from_below(&spots));
         }
@@ -403,7 +404,7 @@ impl<F: Form> FieldPage<F> {
 
     fn move_inside_box(&self, app: &App, shown: &Shown, name: &str, row: usize, here: usize) {
         let spots = self.box_spots(app, shown);
-        let there = if name == "down" {
+        let there = if name == llamatron_names::keys::DOWN {
             tab_box::spot_below(&spots, here)
         } else {
             tab_box::spot_above(&spots, here)
@@ -424,7 +425,11 @@ impl<F: Form> FieldPage<F> {
         let first_button = shown.first_button_place();
         let place = self.place(shown);
         let moved = |count: usize| {
-            let step: i64 = if name == "up" || name == "left" { -1 } else { 1 };
+            let step: i64 = if name == llamatron_names::keys::UP || name == llamatron_names::keys::LEFT {
+                -1
+            } else {
+                1
+            };
             (place as i64 + step).clamp(0, count as i64 - 1) as usize
         };
         if self.state.stacked_buttons.get() {
@@ -432,7 +437,7 @@ impl<F: Form> FieldPage<F> {
             return;
         }
         if place >= first_button {
-            if name == "up" && first_button > 0 {
+            if name == llamatron_names::keys::UP && first_button > 0 {
                 self.state.cursor.set(first_button - 1);
             }
             return;
@@ -450,14 +455,14 @@ impl<F: Form> FieldPage<F> {
     fn move_along_buttons(&self, shown: &Shown, name: &str) {
         let first_button = shown.first_button_place();
         let count = shown.fields.len() - first_button;
-        let step: i64 = if name == "left" { -1 } else { 1 };
+        let step: i64 = if name == llamatron_names::keys::LEFT { -1 } else { 1 };
         let place = (self.place(shown) as i64 - first_button as i64 + step).clamp(0, count as i64 - 1);
         self.state.cursor.set(first_button + place as usize);
     }
 
     fn move_along_cells(&self, shown: &Shown, name: &str) {
         let count = shown.fields[self.place(shown)].cells.len();
-        let step: i64 = if name == "left" { -1 } else { 1 };
+        let step: i64 = if name == llamatron_names::keys::LEFT { -1 } else { 1 };
         self.state.cell.set((self.state.cell.get() as i64 + step).clamp(0, count as i64 - 1) as usize);
     }
 
@@ -609,7 +614,7 @@ impl<F: Form> FieldPage<F> {
                 let here = selected_place == Some(place);
                 let mut line = Text::plain(cursor_mark(here));
                 line.append(
-                    &named(marks::MSG_STACKED_BUTTON, &[("name", button.label.as_str().into())]),
+                    &named(marks::MSG_STACKED_BUTTON, &[(fill::NAME, button.label.as_str().into())]),
                     if here { Style::BOLD } else { Style::PLAIN },
                 );
                 line
@@ -691,15 +696,18 @@ impl<F: Form> Page for FieldPage<F> {
             },
             (Asking::Number(lowest, highest), Answer::Typed(text)) => {
                 let Ok(number) = text.trim().parse::<i64>() else {
-                    app.refuse(&named(llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER, &[("text", text.as_str().into())]));
+                    app.refuse(&named(
+                        llamatron_strings::errors::ERR_TYPED_NOT_AN_INTEGER,
+                        &[(fill::TEXT, text.as_str().into())],
+                    ));
                     return;
                 };
                 if lowest.is_some_and(|lowest| number < lowest) || highest.is_some_and(|highest| number > highest) {
                     let bound = |bound: Option<i64>| bound.map_or_else(|| "None".to_string(), |bound| bound.to_string());
                     let words = [
-                        ("number", number.into()),
-                        ("low", bound(lowest).as_str().into()),
-                        ("high", bound(highest).as_str().into()),
+                        (fill::NUMBER, number.into()),
+                        (fill::LOW, bound(lowest).as_str().into()),
+                        (fill::HIGH, bound(highest).as_str().into()),
                     ];
                     app.refuse(&named(llamatron_strings::errors::ERR_OUT_OF_RANGE, &words));
                     return;

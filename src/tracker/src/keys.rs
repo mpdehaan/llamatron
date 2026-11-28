@@ -6,6 +6,7 @@
 //! bindings may hold the same keys and words.
 
 use crate::keybindings::{Binding, KeyClass, Keys};
+use llamatron_names::keys;
 use llamatron_strings::legends;
 
 pub const STEP_BACK: i64 = -1;
@@ -139,10 +140,10 @@ pub fn arrows_joined(items: Vec<KeyItem>) -> Vec<KeyItem> {
 /// lower case, and delete as backspace.
 pub fn pressed_key(name: &str) -> String {
     match name {
-        "plus" => "+".to_string(),
-        "minus" => "-".to_string(),
-        "slash" => "/".to_string(),
-        "delete" => "backspace".to_string(),
+        keys::PLUS => "+".to_string(),
+        keys::MINUS => "-".to_string(),
+        keys::SLASH => "/".to_string(),
+        keys::DELETE => keys::BACKSPACE.to_string(),
         _ if name.chars().count() == 1 => name.to_lowercase(),
         _ => name.to_string(),
     }

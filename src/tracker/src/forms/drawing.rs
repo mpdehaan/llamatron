@@ -9,6 +9,9 @@ use crate::drawing::{cursor_mark, padded, BoxCharacters as Box, Style, INDENT, S
 use crate::forms::nodes::{Drawn, Field};
 use crate::forms::tab_box::{Spot, Tab, TabBox, ON_TAB_ROW, TOP_BAND};
 use crate::text::Text;
+#[cfg(test)]
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, marks, named};
 
 const CELL_GAP: &str = "  ";
@@ -153,7 +156,7 @@ fn table_row_line(row: &Field, looks: &Looks, here: bool, label_width: usize, wi
 }
 
 fn slot_text(value: &str) -> String {
-    named(marks::MSG_DRAW_STRIP_CELL, &[("value", value.into())])
+    named(marks::MSG_DRAW_STRIP_CELL, &[(fill::VALUE, value.into())])
 }
 
 fn strip_lines(strip: &Field, looks: &Looks, here: bool, width: usize, lit: Option<usize>) -> Vec<Text> {
@@ -491,12 +494,12 @@ fn shown_window(widths: &[usize], inner: usize, cursor: Option<usize>) -> (usize
 /// some are.
 fn hidden_line(left: usize, right: usize, inner: usize) -> Text {
     let left_text = if left > 0 {
-        named(marks::MSG_HIDDEN_LEFT, &[("count", left.into())])
+        named(marks::MSG_HIDDEN_LEFT, &[(fill::COUNT, left.into())])
     } else {
         String::new()
     };
     let right_text = if right > 0 {
-        named(marks::MSG_HIDDEN_RIGHT, &[("count", right.into())])
+        named(marks::MSG_HIDDEN_RIGHT, &[(fill::COUNT, right.into())])
     } else {
         String::new()
     };
@@ -740,7 +743,7 @@ mod tests {
         let wide = 80;
         let drawn = drawn_columns(&looks, &tab, wide, None);
         let line = drawn[0].0.iter().find(|line| line.text().contains(label)).expect("the field's line");
-        let dimmed = |segment: &crate::text::Segment| segment.style.is_on("dim");
+        let dimmed = |segment: &crate::text::Segment| segment.style.is_on(file_format::ChordSymbol::DIMINISHED);
         let segments = line.segments();
         assert!(
             segments.iter().filter(|segment| segment.text.contains(label)).all(|segment| !dimmed(segment)),

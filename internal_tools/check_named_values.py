@@ -48,6 +48,25 @@ COMMENT = re.compile(r"//.*$")
 ATTRIBUTE = re.compile(r"^\s*#!?\[")
 
 
+# Where a constant or a static begins, whose every line, to the semicolon that ends it, gives values their names.
+DEFINITION_START = re.compile(r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const|static)\s")
+
+
+def definition_lines(text: str) -> set[int]:
+    """The numbers of the lines inside a constant's or a static's definition, such as the rows of a table."""
+    inside, depth, numbers = False, 0, set()
+    for number, line in enumerate(text.splitlines(), 1):
+        code = STRING_LITERAL.sub('""', COMMENT.sub("", line))
+        if not inside and DEFINITION_START.match(line):
+            inside, depth = True, 0
+        if inside:
+            numbers.add(number)
+            depth += code.count("[") + code.count("(") + code.count("{") - code.count("]") - code.count(")") - code.count("}")
+            if depth <= 0 and code.rstrip().endswith(";"):
+                inside = False
+    return numbers
+
+
 def passed_over(path: str) -> bool:
     """Whether a file is one the check never reads: built output, or a place where values are given their names."""
     return BUILT in path or path.startswith(DEFINING_PLACES)
@@ -101,8 +120,13 @@ def main() -> int:
     """Report every breakage in the lines read, and fail where there is one."""
     lines = every_line() if EVERYTHING in sys.argv[1:] else added_lines()
     failures = []
+    definitions: dict[str, set[int]] = {}
     for path, number, line in lines:
         if passed_over(path):
+            continue
+        if path not in definitions:
+            definitions[path] = definition_lines((TOP / path).read_text())
+        if number in definitions[path]:
             continue
         found = breakages(line)
         if found:

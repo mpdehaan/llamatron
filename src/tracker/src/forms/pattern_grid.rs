@@ -7,6 +7,7 @@
 
 use crate::drawing::{fit, fit_aligned, Align, BoxCharacters as Box, Style, SPACE};
 use crate::text::Text;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
 pub const CELL_WIDTH: usize = 5;
@@ -310,7 +311,7 @@ fn solid_note_cell(cell: &RollCell) -> Text {
             } else {
                 marks::MSG_NOTE_CELL_WITH_MARK
             };
-            let mut bar = Text::plain(&named(template, &[("mark", mark.as_str().into())]));
+            let mut bar = Text::plain(&named(template, &[(fill::MARK, mark.as_str().into())]));
             bar.stylize(Style::REVERSE, MARK_COLUMN, MARK_COLUMN + mark.chars().count());
             bar
         }

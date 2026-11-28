@@ -19,6 +19,8 @@ use llamatron_model::schema::generated::file_format::{
     ClipSlotSetting, SceneSetting, Section, SetlistSetting, SongSetting, TrackSetting, PLACED_SHAPES, TEMPO_RAMP_SETTINGS, VELOCITY_SETTINGS,
 };
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 use std::collections::HashMap;
 
@@ -108,7 +110,7 @@ fn chain_lines(chains: Option<&Data>) -> Vec<DetailLine> {
         .into_iter()
         .enumerate()
         .map(|(place, name)| {
-            let shown = named(marks::MSG_DETAILS_CHAIN, &[("name", name.as_str().into())]);
+            let shown = named(marks::MSG_DETAILS_CHAIN, &[(fill::NAME, name.as_str().into())]);
             detail(
                 shown,
                 Kind::Plain,
@@ -146,8 +148,8 @@ fn velocity_lines(written: &dyn Fn(&str) -> Option<Data>) -> Vec<DetailLine> {
     } else {
         marks::MSG_DETAILS_VELOCITY
     };
-    let percent = named(marks::MSG_PERCENT_SHOWN, &[("percent", level.into())]);
-    vec![plain(named(line, &[("percent", percent.as_str().into())]))]
+    let percent = named(marks::MSG_PERCENT_SHOWN, &[(fill::PERCENT, level.into())]);
+    vec![plain(named(line, &[(fill::PERCENT, percent.as_str().into())]))]
 }
 
 fn shape_lines(written: &dyn Fn(&str) -> Option<Data>) -> Vec<DetailLine> {
@@ -163,9 +165,9 @@ fn shape_lines(written: &dyn Fn(&str) -> Option<Data>) -> Vec<DetailLine> {
         lines.push(plain(named(
             marks::MSG_DETAILS_SHAPE,
             &[
-                ("shape", shape_name.as_str().into()),
-                ("start", value(start).into()),
-                ("end", value(end).into()),
+                (fill::SHAPE, shape_name.as_str().into()),
+                (fill::START, value(start).into()),
+                (fill::END, value(end).into()),
             ],
         )));
     }
@@ -178,7 +180,7 @@ fn groove_lines(choice: Option<&Data>) -> Vec<DetailLine> {
         Some(Data::Bool(false)) => vec![plain(marks::MSG_DETAILS_NO_GROOVE.to_string())],
         Some(value) => {
             let name = value.as_str().unwrap_or("").to_string();
-            let shown = named(marks::MSG_DETAILS_GROOVE, &[("name", name.as_str().into())]);
+            let shown = named(marks::MSG_DETAILS_GROOVE, &[(fill::NAME, name.as_str().into())]);
             vec![detail(
                 shown,
                 Kind::Plain,
@@ -195,7 +197,7 @@ fn groove_lines(choice: Option<&Data>) -> Vec<DetailLine> {
 fn scale_lines(song: &Song, name: Option<String>) -> Vec<DetailLine> {
     match name {
         Some(name) if Some(&name) != song.get_scale_name().as_ref() => {
-            let shown = named(marks::MSG_DETAILS_SCALE, &[("name", name.as_str().into())]);
+            let shown = named(marks::MSG_DETAILS_SCALE, &[(fill::NAME, name.as_str().into())]);
             vec![detail(
                 shown,
                 Kind::Plain,
@@ -215,21 +217,21 @@ pub fn clip_lines(setlist: &Setlist, song: &Song, clip: &ClipSlot) -> Vec<Detail
     let mut lines = chain_lines(clip.get_written(ClipSlotSetting::CHAINS));
     lines.extend(scale_lines(song, text(clip.get_written(ClipSlotSetting::SCALE))));
     if let Some(pattern) = text(clip.get_written(ClipSlotSetting::MORPH_TO)) {
-        lines.push(plain(named(marks::MSG_DETAILS_MORPH, &[("pattern", pattern.as_str().into())])));
+        lines.push(plain(named(marks::MSG_DETAILS_MORPH, &[(fill::PATTERN, pattern.as_str().into())])));
     }
     if let Some(direction) = text(clip.get_written(ClipSlotSetting::DIRECTION)) {
         if let Some((_, shown)) = marks::MSG_DETAILS_DIRECTION_NAMES.iter().find(|(found, _)| *found == direction) {
-            lines.push(plain(named(marks::MSG_DETAILS_DIRECTION, &[("direction", (*shown).into())])));
+            lines.push(plain(named(marks::MSG_DETAILS_DIRECTION, &[(fill::DIRECTION, (*shown).into())])));
         }
     }
     if let Some(track) = text(clip.get_written(ClipSlotSetting::GRAB_TRACK)) {
-        lines.push(plain(named(marks::MSG_DETAILS_GRAB, &[("track", track.as_str().into())])));
+        lines.push(plain(named(marks::MSG_DETAILS_GRAB, &[(fill::TRACK, track.as_str().into())])));
     }
     if let Some(action) = text(clip.get_written(ClipSlotSetting::FOLLOW_ACTION)) {
         let default = text(setlist.get_written(SetlistSetting::DEFAULT_FOLLOW_ACTION)).unwrap_or_else(|| DEFAULT_FOLLOW_ACTION.to_string());
         if action != default {
             let shown = named_in(labels::MSG_FOLLOW_ACTION_NAMES, &action);
-            lines.push(plain(named(marks::MSG_DETAILS_ADVANCE, &[("action", shown.as_str().into())])));
+            lines.push(plain(named(marks::MSG_DETAILS_ADVANCE, &[(fill::ACTION, shown.as_str().into())])));
         }
     }
     lines.extend(velocity_lines(&written));
@@ -264,13 +266,14 @@ fn scene_lines(song: &Song, scene: &Scene) -> Vec<DetailLine> {
             .find(|(key, _)| key[0] == way && key[1] == part)
             .and_then(|(_, setting)| written(setting))
     };
-    let ramps = ["in", "out"]
-        .iter()
-        .any(|way| ramp(way, "over").is_some() && (ramp(way, "start").is_some() || ramp(way, "end").is_some()));
+    let ramps = ["in", "out"].iter().any(|way| {
+        ramp(way, file_format::RampPart::OVER).is_some()
+            && (ramp(way, file_format::RampPart::START).is_some() || ramp(way, file_format::RampPart::END).is_some())
+    });
     if ramps {
-        lines.push(plain(named(marks::MSG_DETAILS_TEMPO_RAMPS, &[("tempo", tempo.as_str().into())])));
+        lines.push(plain(named(marks::MSG_DETAILS_TEMPO_RAMPS, &[(fill::TEMPO, tempo.as_str().into())])));
     } else if own.is_some() {
-        lines.push(plain(named(marks::MSG_DETAILS_TEMPO, &[("tempo", tempo.as_str().into())])));
+        lines.push(plain(named(marks::MSG_DETAILS_TEMPO, &[(fill::TEMPO, tempo.as_str().into())])));
     }
     lines.extend(groove_lines(scene.get_written(SceneSetting::GROOVE)));
     lines.extend(velocity_lines(&written));
@@ -281,7 +284,7 @@ fn scene_lines(song: &Song, scene: &Scene) -> Vec<DetailLine> {
 pub fn track_lines(track: &Track) -> Vec<DetailLine> {
     let mut lines = chain_lines(track.get_written(TrackSetting::CHAINS));
     if let Some(instrument) = track.get_instrument_name() {
-        let shown = named(marks::MSG_DETAILS_INSTRUMENT, &[("name", instrument.as_str().into())]);
+        let shown = named(marks::MSG_DETAILS_INSTRUMENT, &[(fill::NAME, instrument.as_str().into())]);
         lines.push(detail(
             shown,
             Kind::Plain,
@@ -294,7 +297,7 @@ pub fn track_lines(track: &Track) -> Vec<DetailLine> {
     }
     let transpose = whole(track.get_written(TrackSetting::TRANSPOSE)).unwrap_or(0);
     if transpose != 0 {
-        lines.push(plain(named(marks::MSG_DETAILS_TRANSPOSE, &[("amount", transpose.into())])));
+        lines.push(plain(named(marks::MSG_DETAILS_TRANSPOSE, &[(fill::AMOUNT, transpose.into())])));
     }
     lines.extend(groove_lines(track.get_written(TrackSetting::GROOVE)));
     if matches!(track.get_written(TrackSetting::MUTE), Some(Data::Bool(true))) {
@@ -320,7 +323,7 @@ pub fn detailed_clip_text(clip: &ClipSlot) -> String {
         shown.push(marks::MSG_LOOP_MARK.to_string());
     }
     if clip.get_repeat() > DEFAULT_REPEAT {
-        shown.push(named(marks::MSG_REPEAT_MARK, &[("repeat", clip.get_repeat().into())]));
+        shown.push(named(marks::MSG_REPEAT_MARK, &[(fill::REPEAT, clip.get_repeat().into())]));
     }
     let name = crate::screens::arrange::arrange_page::shown_name(&clip.get_display_name());
     if shown.is_empty() {
@@ -329,8 +332,8 @@ pub fn detailed_clip_text(clip: &ClipSlot) -> String {
     named(
         marks::MSG_CLIP_WITH_MARKS,
         &[
-            ("name", name.as_str().into()),
-            ("marks", shown.join(marks::MSG_DETAILS_MARKS_SEPARATOR).as_str().into()),
+            (fill::NAME, name.as_str().into()),
+            (fill::MARKS, shown.join(marks::MSG_DETAILS_MARKS_SEPARATOR).as_str().into()),
         ],
     )
 }

@@ -9,6 +9,7 @@ use llamatron_model::schema::generated::file_format::{ChordSymbol, ACCIDENTALS, 
 use llamatron_model::values::generated::note::{FLAT_NAMES, SHARP_NAMES};
 use llamatron_model::values::note::semitones_above_c;
 use llamatron_model::values::scale::ScaleType;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 const HALF_STEPS_PER_OCTAVE: i64 = 12;
@@ -83,8 +84,8 @@ pub fn scale_shown(scale: &ChordScale) -> String {
     named(
         marks::MSG_SCALE_NAMED,
         &[
-            ("root", scale.root.as_str().into()),
-            ("kind", python_title(&scale.kind.replace('_', " ")).as_str().into()),
+            (fill::ROOT, scale.root.as_str().into()),
+            (fill::KIND, python_title(&scale.kind.replace('_', " ")).as_str().into()),
         ],
     )
 }
@@ -254,7 +255,7 @@ pub fn spelled_chord(
     } else {
         named(
             marks::MSG_CHORD_TENSIONS_SHOWN,
-            &[("tensions", added.join(marks::MSG_TENSION_SEPARATOR).as_str().into())],
+            &[(fill::TENSIONS, added.join(marks::MSG_TENSION_SEPARATOR).as_str().into())],
         )
     };
     let (suffix, mut long_name) = match symbol_named {
@@ -334,7 +335,7 @@ impl ChordInWords {
                     .iter()
                     .find(|(each, _)| each == doubling)
                     .map_or("", |(_, said)| *said);
-                named(messages::MSG_DOUBLED_SENTENCE, &[("doubled", said.into())])
+                named(messages::MSG_DOUBLED_SENTENCE, &[(fill::DOUBLED, said.into())])
             })
             .collect();
         let shown = scale_shown(&drawn_from);
@@ -342,9 +343,9 @@ impl ChordInWords {
             let mut lines = vec![named(
                 messages::MSG_NOTE_SENTENCE,
                 &[
-                    ("scale", shown.as_str().into()),
-                    ("degree", degree.as_str().into()),
-                    ("name", self.name().as_str().into()),
+                    (fill::SCALE, shown.as_str().into()),
+                    (fill::DEGREE, degree.as_str().into()),
+                    (fill::NAME, self.name().as_str().into()),
                 ],
             )];
             lines.extend(doubled);
@@ -354,21 +355,21 @@ impl ChordInWords {
         let mut lines = vec![named(
             messages::MSG_CHORD_SENTENCE,
             &[
-                ("scale", shown.as_str().into()),
-                ("degree", degree.as_str().into()),
-                ("name", long_name.as_str().into()),
+                (fill::SCALE, shown.as_str().into()),
+                (fill::DEGREE, degree.as_str().into()),
+                (fill::NAME, long_name.as_str().into()),
             ],
         )];
         if self.kind.is_some() {
             lines.push(named(
                 messages::MSG_CHORD_OWN_SENTENCE,
                 &[
-                    ("scale", scale_shown(scale).as_str().into()),
-                    ("name", self.spelled(None).long_name.as_str().into()),
+                    (fill::SCALE, scale_shown(scale).as_str().into()),
+                    (fill::NAME, self.spelled(None).long_name.as_str().into()),
                 ],
             ));
         }
-        lines.push(named(messages::MSG_CHORD_NOTES, &[("notes", self.notes().as_str().into())]));
+        lines.push(named(messages::MSG_CHORD_NOTES, &[(fill::NOTES, self.notes().as_str().into())]));
         lines.extend(doubled);
         lines
     }
@@ -415,19 +416,19 @@ impl ChordInWords {
         let mut text = named(
             messages::MSG_CHORD_RESTING,
             &[
-                ("where", place.into()),
-                ("scale", scale_shown(&drawn_from).as_str().into()),
-                ("degree", degree_shown(self.degree, self.accidental.as_deref()).as_str().into()),
-                ("name", self.spelled(self.kind.as_deref()).long_name.as_str().into()),
-                ("notes", self.notes().as_str().into()),
+                (fill::WHERE, place.into()),
+                (fill::SCALE, scale_shown(&drawn_from).as_str().into()),
+                (fill::DEGREE, degree_shown(self.degree, self.accidental.as_deref()).as_str().into()),
+                (fill::NAME, self.spelled(self.kind.as_deref()).long_name.as_str().into()),
+                (fill::NOTES, self.notes().as_str().into()),
             ],
         );
         if self.kind.is_some() {
             text.push_str(&named(
                 messages::MSG_CHORD_RESTING_OWN,
                 &[
-                    ("scale", scale_shown(scale).as_str().into()),
-                    ("name", self.spelled(None).long_name.as_str().into()),
+                    (fill::SCALE, scale_shown(scale).as_str().into()),
+                    (fill::NAME, self.spelled(None).long_name.as_str().into()),
                 ],
             ));
         }

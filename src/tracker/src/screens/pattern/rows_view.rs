@@ -25,6 +25,12 @@ use llamatron_model::schema::generated::file_format::{
 use llamatron_model::schema::generated::limits::{MAX_STATEMENT_NUMBER, MIN_DEGREE};
 use llamatron_model::schema::generated::rows::{RowDescription, ROW_DESCRIPTIONS};
 use llamatron_model::schema::generated::settings::Plain;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::spec;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, named};
 
 pub const BASICS: &str = "basics";
@@ -132,9 +138,9 @@ fn section_rows_of(section: &str) -> Vec<&'static str> {
             rows
         }
         DRAW_APPLY => draw_rows(),
-        STOP_WHEN => statements("stop"),
-        RESTART_WHEN => statements("restart"),
-        _ => statements("mute"),
+        STOP_WHEN => statements(file_format::StepStatement::STOP),
+        RESTART_WHEN => statements(file_format::LfoSetting::RESTART),
+        _ => statements(file_format::TrackSetting::MUTE),
     }
 }
 
@@ -163,7 +169,7 @@ impl<'a> Rows<'a> {
                     self.song.draws().iter().any(|(name, held)| {
                         name == *draw
                             && held
-                                .get_written("slots")
+                                .get_written(file_format::DrawSetting::SLOTS)
                                 .and_then(Data::as_list)
                                 .is_some_and(|slots| slots.iter().any(|slot| !slot.is_null()))
                     })
@@ -270,7 +276,10 @@ impl<'a> Rows<'a> {
                 };
                 vec![named(
                     labels::MSG_SECTION_LABEL,
-                    &[("mark", mark.into()), ("name", named_in(labels::MSG_SECTION_NAMES, section).as_str().into())],
+                    &[
+                        (fill::MARK, mark.into()),
+                        (fill::NAME, named_in(labels::MSG_SECTION_NAMES, section).as_str().into()),
+                    ],
                 )]
             }
             RowName::Row(name) if *name == Row::DEGREE => {
@@ -342,7 +351,7 @@ impl<'a> Rows<'a> {
         };
         named(
             labels::MSG_CC_ROW_LABEL,
-            &[("label", label.as_str().into()), ("number", number.as_str().into())],
+            &[(fill::LABEL, label.as_str().into()), (fill::NUMBER, number.as_str().into())],
         )
     }
 
@@ -428,7 +437,7 @@ impl<'a> Rows<'a> {
             return !self.is_note(step) || !chorded;
         }
         if let Some((kind, place)) = Self::statement_place(name) {
-            if kind == "restart" && step == 0 {
+            if kind == file_format::LfoSetting::RESTART && step == 0 {
                 return true;
             }
             if place == 0 {
@@ -537,7 +546,7 @@ impl<'a> Rows<'a> {
                         return texts.join(separator);
                     }
                 }
-                named(marks::MSG_TENSIONS_COUNTED, &[("count", texts.len().into())])
+                named(marks::MSG_TENSIONS_COUNTED, &[(fill::COUNT, texts.len().into())])
             }
             _ if name == Row::CHORD_SCALE => held.map_or(marks::MSG_UNSET_MARK.to_string(), |kind| {
                 title_words(&data_text(kind)).chars().take(5).collect()
@@ -612,7 +621,7 @@ impl<'a> Rows<'a> {
                     } else {
                         ["1", "2", "3", "4", "5", "6", "7", "8", "9"][..limit].to_vec()
                     };
-                    let label = named(legends::MSG_DIGITS_RANGE_LABEL, &[("low", MIN_DEGREE.into()), ("high", limit.into())]);
+                    let label = named(legends::MSG_DIGITS_RANGE_LABEL, &[(fill::LOW, MIN_DEGREE.into()), (fill::HIGH, limit.into())]);
                     keys.push(of(&DegreeRow::CLASS, &DegreeRow::DEGREE).wanting_key().with_keys(digits).named(&label));
                     keys.extend(adjust(&DegreeRow::CLASS));
                     keys.push(of(&DegreeRow::CLASS, &DegreeRow::TOGGLE_NOTE));
@@ -626,7 +635,7 @@ impl<'a> Rows<'a> {
                 let highest = described(Row::OCTAVE).highest.unwrap_or(10);
                 let label = named(
                     legends::MSG_DIGITS_RANGE_LABEL,
-                    &[("low", "0".into()), ("high", shown_octave(self.setlist, highest).into())],
+                    &[(fill::LOW, "0".into()), (fill::HIGH, shown_octave(self.setlist, highest).into())],
                 );
                 let mut keys = vec![of(&OctaveRow::CLASS, &OctaveRow::TYPE).wanting_key().named(&label)];
                 keys.extend(adjust(&OctaveRow::CLASS));
@@ -1040,7 +1049,7 @@ impl<'a> Rows<'a> {
             let label = named_in(labels::MSG_ROW_LABELS, row);
             let title = named(
                 llamatron_strings::messages::MSG_NUMBER_PROMPT,
-                &[("row", label.as_str().into()), ("low", lowest.into()), ("high", highest.into())],
+                &[(fill::ROW, label.as_str().into()), (fill::LOW, lowest.into()), (fill::HIGH, highest.into())],
             );
             let now = value_here.as_ref().and_then(Data::as_whole).map_or(number_default(row), |whole| whole as i64);
             let asking = RowAsking::Number {
@@ -1158,10 +1167,10 @@ impl<'a> Rows<'a> {
                 let degree = current + offset;
                 let scale = self.scale.clone().unwrap_or_default();
                 if degree > size {
-                    edit.refusal = Some(named(llamatron_strings::errors::ERR_TOP_OF_SCALE, &[("scale", scale.as_str().into())]));
+                    edit.refusal = Some(named(llamatron_strings::errors::ERR_TOP_OF_SCALE, &[(fill::SCALE, scale.as_str().into())]));
                     size
                 } else if degree < MIN_DEGREE {
-                    edit.refusal = Some(named(llamatron_strings::errors::ERR_BOTTOM_OF_SCALE, &[("scale", scale.as_str().into())]));
+                    edit.refusal = Some(named(llamatron_strings::errors::ERR_BOTTOM_OF_SCALE, &[(fill::SCALE, scale.as_str().into())]));
                     MIN_DEGREE
                 } else {
                     degree
@@ -1187,8 +1196,8 @@ impl<'a> Rows<'a> {
     fn next_gate(&self, held: Option<&Data>, offset: i64) -> String {
         let step = self
             .pattern
-            .get_written("step_size")
-            .or_else(|| self.setlist.get_written("step_size"))
+            .get_written(file_format::SetlistSetting::STEP_SIZE)
+            .or_else(|| self.setlist.get_written(file_format::SetlistSetting::STEP_SIZE))
             .and_then(Data::as_str)
             .and_then(|text| Rational::parse(text).ok())
             .unwrap_or_else(|| Rational::new(1, 16));
@@ -1211,13 +1220,13 @@ impl<'a> Rows<'a> {
         let part = STATEMENT_PART_NAMES[place];
         let current = statement.as_ref().and_then(|statement| statement.get(part)).cloned();
         let choices: Option<Vec<Option<Data>>> = match part {
-            "register" => {
+            file_format::StatementPart::REGISTER => {
                 let mut choices = vec![None];
                 choices.extend(DRAW_NAMES.iter().map(|name| Some(Data::text(name))));
                 Some(choices)
             }
-            "operator" => Some(OPERATORS.iter().map(|each| Some(Data::text(each))).collect()),
-            "comparison" => Some(RESULT_COMPARISONS.iter().map(|each| Some(Data::text(each))).collect()),
+            file_format::StatementPart::OPERATOR => Some(OPERATORS.iter().map(|each| Some(Data::text(each))).collect()),
+            file_format::StatementPart::COMPARISON => Some(RESULT_COMPARISONS.iter().map(|each| Some(Data::text(each))).collect()),
             _ => None,
         };
         if let Some(choices) = choices {
@@ -1261,14 +1270,18 @@ impl<'a> Rows<'a> {
         let statement = self.whole_statement(kind, step);
         let part = STATEMENT_PART_NAMES[place];
         let stored = match (part, statement, chosen) {
-            ("register", _, None) => None,
-            ("register", None, Some(register)) => Some(crate::forms::statements::new_statement(register.as_str().unwrap_or_default())),
+            (file_format::StatementPart::REGISTER, _, None) => None,
+            (file_format::StatementPart::REGISTER, None, Some(register)) => {
+                Some(crate::forms::statements::new_statement(register.as_str().unwrap_or_default()))
+            }
             (_, None, _) => return RowEdit::default(),
-            ("operator", Some(statement), Some(operator)) => Some(crate::forms::statements::with_operator(&statement, operator.as_str().unwrap_or_default())),
+            (file_format::StatementPart::OPERATOR, Some(statement), Some(operator)) => {
+                Some(crate::forms::statements::with_operator(&statement, operator.as_str().unwrap_or_default()))
+            }
             (_, Some(statement), None) => Some(statement),
             (part, Some(statement), Some(value)) => {
-                let operator = statement.get("operator").and_then(Data::as_str).unwrap_or_default();
-                if part == "value" && DIVIDING_OPERATORS.contains(&operator) && value == Data::Whole(0) {
+                let operator = statement.get(file_format::StatementPart::OPERATOR).and_then(Data::as_str).unwrap_or_default();
+                if part == file_format::StatementPart::VALUE && DIVIDING_OPERATORS.contains(&operator) && value == Data::Whole(0) {
                     return RowEdit {
                         refusal: Some(llamatron_strings::errors::ERR_CANNOT_DIVIDE_BY_ZERO.to_string()),
                         ..RowEdit::default()
@@ -1359,15 +1372,15 @@ mod draw_use_tests {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/draw_uses.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
-        let song = setlist.get_song("song").expect("the song");
-        let pattern = setlist.get_pattern("tune").expect("the pattern");
+        let song = setlist.get_song(spec::SONG).expect("the song");
+        let pattern = setlist.get_pattern(spec::TUNE).expect("the pattern");
         let open = std::collections::HashSet::new();
         let rows = Rows {
             setlist: &setlist,
             song,
             pattern,
-            name: "tune".to_string(),
-            scale: Some("c_major".to_string()),
+            name: spec::TUNE.to_string(),
+            scale: Some(words::C_MAJOR.to_string()),
             open: &open,
             gauge_rows: 0,
             default_octave: 4,

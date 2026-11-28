@@ -19,6 +19,7 @@ use crate::page::Page;
 use crate::screens::dialogs::{box_lines, heading_lines, stacked, DIALOG_MARGIN, FLYOUT_SHIFT};
 use crate::text::Text;
 use llamatron_model::schema::generated::file_format::TENSIONS;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 /// The lists, left to right.
@@ -229,17 +230,17 @@ impl ChordDialog {
         let (name, kinds) = SCALE_CATEGORIES[row - 1];
         if let Some(kind) = self.kind.as_deref().filter(|kind| kinds.contains(kind) && row == row_of_kind(Some(kind))) {
             let chosen = kind_words(kind);
-            let bare = named(marks::MSG_FLYOUT_CHOSEN, &[("name", "".into()), ("chosen", chosen.as_str().into())]);
+            let bare = named(marks::MSG_FLYOUT_CHOSEN, &[(fill::NAME, "".into()), (fill::CHOSEN, chosen.as_str().into())]);
             let room = LIST_WIDTHS[SCALE_LIST].saturating_sub(cursor_mark(false).chars().count() + bare.chars().count());
             if room < SHORTEST_CATEGORY_NAME {
-                return named(marks::MSG_FLYOUT_CHOSEN_ALONE, &[("chosen", chosen.as_str().into())]);
+                return named(marks::MSG_FLYOUT_CHOSEN_ALONE, &[(fill::CHOSEN, chosen.as_str().into())]);
             }
             return named(
                 marks::MSG_FLYOUT_CHOSEN,
-                &[("name", fit(name, room).trim_end().into()), ("chosen", chosen.as_str().into())],
+                &[(fill::NAME, fit(name, room).trim_end().into()), (fill::CHOSEN, chosen.as_str().into())],
             );
         }
-        named(marks::MSG_FLYOUT_CLOSED, &[("name", name.into())])
+        named(marks::MSG_FLYOUT_CLOSED, &[(fill::NAME, name.into())])
     }
 
     fn row_text(&self, part: usize, place: usize) -> String {
@@ -380,7 +381,7 @@ impl ChordDialog {
         let row = self.flyout?;
         let (name, kinds) = SCALE_CATEGORIES[row - 1];
         let mut lines = vec![
-            Text::styled(&named(marks::MSG_FLYOUT_TITLE, &[("name", name.into())]), Style::BOLD),
+            Text::styled(&named(marks::MSG_FLYOUT_TITLE, &[(fill::NAME, name.into())]), Style::BOLD),
             Text::default(),
         ];
         for (place, kind) in kinds.iter().enumerate() {
@@ -429,11 +430,11 @@ impl Page for ChordDialog {
 
     fn press(&mut self, app: &mut App, item: &KeyItem, key: &str) {
         if let Some(row) = self.flyout {
-            if item.is(&Keys::CLOSE_FLYOUT) || (item.is(&Keys::MOVE) && key == "left") {
+            if item.is(&Keys::CLOSE_FLYOUT) || (item.is(&Keys::MOVE) && key == llamatron_names::keys::LEFT) {
                 self.flyout = None;
-            } else if item.is(&Keys::MOVE) && (key == "up" || key == "down") {
+            } else if item.is(&Keys::MOVE) && (key == llamatron_names::keys::UP || key == llamatron_names::keys::DOWN) {
                 let last = Self::kinds_of_row(row).len() - 1;
-                self.flyout_place = if key == "up" {
+                self.flyout_place = if key == llamatron_names::keys::UP {
                     self.flyout_place.saturating_sub(1)
                 } else {
                     (self.flyout_place + 1).min(last)
@@ -460,9 +461,9 @@ impl Page for ChordDialog {
         if item.is(&Keys::MOVE) {
             let place = self.parts.iter().position(|part| *part == self.part).unwrap_or(0);
             match key {
-                "left" => self.part = self.parts[place.saturating_sub(1)],
-                "right" => self.part = self.parts[(place + 1).min(self.parts.len() - 1)],
-                "up" => self.places[self.part] = self.places[self.part].saturating_sub(1),
+                llamatron_names::keys::LEFT => self.part = self.parts[place.saturating_sub(1)],
+                llamatron_names::keys::RIGHT => self.part = self.parts[(place + 1).min(self.parts.len() - 1)],
+                llamatron_names::keys::UP => self.places[self.part] = self.places[self.part].saturating_sub(1),
                 _ => self.places[self.part] = (self.places[self.part] + 1).min(self.count(self.part) - 1),
             }
         } else if item.is(&Keys::NEXT_LIST) {

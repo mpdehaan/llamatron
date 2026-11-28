@@ -18,6 +18,10 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::naming::unique_name;
 use llamatron_model::objects::setlist::{Instrument, Setlist};
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SongSetting, FLUIDSYNTH_DEVICE};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::spec;
 use llamatron_strings::{errors, named, names};
 
 /// The scene the copy plays, General MIDI's channels the preview takes (the last melodic one, and the drums'), the
@@ -87,18 +91,18 @@ impl PatternPreview {
     pub fn refusal(document: &Document, pattern: &str) -> Option<String> {
         let name = Self::instrument_of(document, pattern)?;
         let Some(held) = instrument(document, &name) else {
-            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.as_str().into())]));
+            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[(fill::NAME, name.as_str().into())]));
         };
         let Some(device) = device_of(held) else {
-            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.as_str().into())]));
+            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[(fill::NAME, name.as_str().into())]));
         };
         if device == FLUIDSYNTH_DEVICE {
-            return (!crate::wav::fluidsynth_installed()).then(|| named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.as_str().into())]));
+            return (!crate::wav::fluidsynth_installed()).then(|| named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[(fill::NAME, name.as_str().into())]));
         }
         if !crate::realtime::backend::output_port_names().contains(&device) {
             return Some(named(
                 errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
-                &[("name", name.as_str().into()), ("device", device.as_str().into())],
+                &[(fill::NAME, name.as_str().into()), (fill::DEVICE, device.as_str().into())],
             ));
         }
         None
@@ -159,15 +163,15 @@ impl PatternPreview {
         }
         let kind = held.get_written(InstrumentSetting::KIND).and_then(Data::as_str).unwrap_or(MIDI_KIND);
         let Some(device) = device_of(held).filter(|_| kind == MIDI_KIND) else {
-            return Some(named(errors::ERR_INSTRUMENT_PLAYS_NOTHING, &[("name", name.into())]));
+            return Some(named(errors::ERR_INSTRUMENT_PLAYS_NOTHING, &[(fill::NAME, name.into())]));
         };
         if device == FLUIDSYNTH_DEVICE {
-            return (!crate::wav::fluidsynth_installed()).then(|| named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.into())]));
+            return (!crate::wav::fluidsynth_installed()).then(|| named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[(fill::NAME, name.into())]));
         }
         if !crate::realtime::backend::output_port_names().contains(&device) {
             return Some(named(
                 errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
-                &[("name", name.into()), ("device", device.as_str().into())],
+                &[(fill::NAME, name.into()), (fill::DEVICE, device.as_str().into())],
             ));
         }
         None
@@ -205,15 +209,15 @@ impl PatternPreview {
             return Some(errors::ERR_NOTHING_TO_TRY_A_SOUND_WITH.to_string());
         };
         let Some(device) = instrument(document, name).and_then(device_of) else {
-            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[("name", name.into())]));
+            return Some(named(errors::ERR_PREVIEW_INSTRUMENT_HAS_NO_DEVICE, &[(fill::NAME, name.into())]));
         };
         if device == FLUIDSYNTH_DEVICE {
-            return Some(named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[("name", name.into())]));
+            return Some(named(errors::ERR_PREVIEW_FLUIDSYNTH_NOT_INSTALLED, &[(fill::NAME, name.into())]));
         }
         if !crate::realtime::backend::output_port_names().contains(&device) {
             return Some(named(
                 errors::ERR_PREVIEW_DEVICE_NOT_CONNECTED,
-                &[("name", name.into()), ("device", device.as_str().into())],
+                &[(fill::NAME, name.into()), (fill::DEVICE, device.as_str().into())],
             ));
         }
         None
@@ -335,7 +339,11 @@ fn pattern_copy(document: &Document, pattern: &str) -> Result<(Document, String,
         crate::patterns::scales_of_pattern(setlist, document.song(), pattern)
     };
     let scale = scales.first().cloned();
-    let direction = held.get_written("direction").and_then(Data::as_str).unwrap_or("forward").to_string();
+    let direction = held
+        .get_written(file_format::ClipSlotSetting::DIRECTION)
+        .and_then(Data::as_str)
+        .unwrap_or(file_format::Direction::FORWARD)
+        .to_string();
     let passes = passes_to_come_round(held.get_steps() as usize, &direction);
     let tracks: Vec<&str> = document.song().get_track_names();
     let track = unique_name(names::MSG_PREVIEW_TRACK_NAME, &tracks);
@@ -363,7 +371,8 @@ fn instrument_copy(document: &Document, name: &str) -> Result<OneClip, String> {
         Some(preview) => preview.to_data(),
         None => {
             let sound = crate::instrument_sound::Sound::of(held);
-            let drum = crate::realtime::transport::is_built_in(held) && sound.part_type("oscillators") == "drum";
+            let drum =
+                crate::realtime::transport::is_built_in(held) && sound.part_type(file_format::SoundSetting::OSCILLATORS) == file_format::TrackSetting::DRUM;
             llamatron_model::objects::instrument_previews::starting_preview(drum)
         }
     };
@@ -376,7 +385,7 @@ fn instrument_copy(document: &Document, name: &str) -> Result<OneClip, String> {
 fn one_clip_copy(document: &Document, pattern: &Data, passes: i64, instrument: Option<&str>) -> Result<OneClip, String> {
     let setlist = document.get_setlist();
     let song_name = document.get_current_song_name().to_string();
-    let drum = matches!(pattern.get("drum"), Some(Data::Bool(true)));
+    let drum = matches!(pattern.get(file_format::TrackSetting::DRUM), Some(Data::Bool(true)));
     let patterns: Vec<&str> = setlist.items(Section::PATTERNS).iter().map(|(name, _)| name.as_str()).collect();
     let pattern_name = unique_name(names::MSG_PREVIEW_PATTERN_NAME, &patterns);
     let mut data = setlist.to_data();
@@ -418,27 +427,30 @@ fn one_clip_copy(document: &Document, pattern: &Data, passes: i64, instrument: O
 fn one_clip_song(song: &mut Data, track: &str, instrument: Option<&str>, drum: bool, pattern: &str, passes: i64, scale: Option<&str>) {
     let mut track_data = Data::Map(Vec::new());
     if let Some(instrument) = instrument {
-        track_data.set("instrument", Data::text(instrument));
+        track_data.set(file_format::TrackSetting::INSTRUMENT, Data::text(instrument));
     }
     if drum {
-        track_data.set("drum", Data::Bool(true));
+        track_data.set(file_format::TrackSetting::DRUM, Data::Bool(true));
     }
-    let mut song_tracks = match song.get("tracks") {
+    let mut song_tracks = match song.get(file_format::Section::TRACKS) {
         Some(Data::Map(pairs)) => pairs.clone(),
         _ => Vec::new(),
     };
     song_tracks.push((Data::text(track), track_data));
-    song.set("tracks", Data::Map(song_tracks));
-    let mut clip = Data::Map(vec![(Data::text("pattern"), Data::text(pattern))]);
+    song.set(file_format::Section::TRACKS, Data::Map(song_tracks));
+    let mut clip = Data::Map(vec![(Data::text(file_format::ClipSlotSetting::PATTERN), Data::text(pattern))]);
     if passes != ONE_PASS {
-        clip.set("repeat", Data::Whole(passes as i128));
+        clip.set(file_format::SceneSetting::REPEAT, Data::Whole(passes as i128));
     }
     if let Some(scale) = scale {
-        clip.set("scale", Data::text(scale));
+        clip.set(file_format::SongSetting::SCALE, Data::text(scale));
     }
     // A scene's data holds its clips by their tracks' names, as the set's data does, not the file's list of clips.
     let clips = Data::Map(vec![(Data::text(track), clip)]);
-    song.set("scenes", Data::List(vec![Data::Map(vec![(Data::text("tracks"), clips)])]));
+    song.set(
+        file_format::Section::SCENES,
+        Data::List(vec![Data::Map(vec![(Data::text(file_format::Section::TRACKS), clips)])]),
+    );
     song.set(SongSetting::LIVE_RESPONSIVENESS, Data::text(CLIP_RESTART));
 }
 
@@ -450,12 +462,12 @@ fn trial_pattern(numbers: &[i64], step_size: &str) -> Data {
         .map(|number| SHARP_NAMES[number.rem_euclid(HALF_STEPS_PER_OCTAVE) as usize])
         .collect();
     let mut data = Data::Map(Vec::new());
-    data.set("steps", Data::Whole(numbers.len() as i128));
-    data.set("step_size", Data::text(step_size));
-    data.set("drum", Data::Bool(true));
-    data.set("degree", Data::List(names.iter().map(|name| Data::text(&name[..1])).collect()));
+    data.set(file_format::PatternSetting::STEPS, Data::Whole(numbers.len() as i128));
+    data.set(file_format::SetlistSetting::STEP_SIZE, Data::text(step_size));
+    data.set(file_format::TrackSetting::DRUM, Data::Bool(true));
+    data.set(file_format::Row::DEGREE, Data::List(names.iter().map(|name| Data::text(&name[..1])).collect()));
     data.set(
-        "accidental",
+        file_format::Row::ACCIDENTAL,
         Data::List(
             names
                 .iter()
@@ -464,7 +476,7 @@ fn trial_pattern(numbers: &[i64], step_size: &str) -> Data {
         ),
     );
     data.set(
-        "octave",
+        file_format::Row::OCTAVE,
         Data::List(
             numbers
                 .iter()
@@ -472,7 +484,10 @@ fn trial_pattern(numbers: &[i64], step_size: &str) -> Data {
                 .collect(),
         ),
     );
-    data.set("velocity", Data::List(numbers.iter().map(|_| Data::Whole(TRIAL_VELOCITY)).collect()));
+    data.set(
+        file_format::TrackSetting::VELOCITY,
+        Data::List(numbers.iter().map(|_| Data::Whole(TRIAL_VELOCITY)).collect()),
+    );
     data
 }
 
@@ -682,7 +697,7 @@ mod tests {
     fn a_pattern_listens_through_a_built_in_preview_instrument() {
         let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET).expect("the scenario's set is valid");
         let document = Document::new(setlist, None);
-        let route = pattern_route(&document, "tune");
+        let route = pattern_route(&document, spec::TUNE);
         assert_eq!(route.sound.as_deref(), Some("lead synth"));
         assert!(!route.port.is_empty());
     }

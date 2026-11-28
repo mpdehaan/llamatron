@@ -141,11 +141,15 @@ impl Page for NewPatternDialog {
         if item.is(&Keys::CANCEL) {
             app.go_back();
         } else if item.is(&Keys::SELECT) {
-            let moved = if key == "up" { self.row as i64 - 1 } else { self.row as i64 + 1 };
+            let moved = if key == llamatron_names::keys::UP {
+                self.row as i64 - 1
+            } else {
+                self.row as i64 + 1
+            };
             self.row = moved.clamp(0, ROWS as i64 - 1) as usize;
         } else if item.is(&Keys::CHOOSE_BUTTON) {
             let last = labels::MSG_NEW_PATTERN_BUTTONS.len() - 1;
-            self.button = if key == "left" {
+            self.button = if key == llamatron_names::keys::LEFT {
                 self.button.saturating_sub(1)
             } else {
                 (self.button + 1).min(last)

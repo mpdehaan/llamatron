@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The command line's export, run as a person runs it: `llamatron SET --to KIND`.
 
+use llamatron_names::file_format;
+use llamatron_names::scenario;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -24,11 +26,11 @@ fn fresh_folder(name: &str) -> PathBuf {
 /// The --out folder is made where it doesn't exist, and --song finds its song without regard to case.
 #[test]
 fn an_export_makes_its_out_folder_and_finds_its_song_by_any_case() {
-    let folder = fresh_folder("out_and_song").join("not_made_yet");
+    let folder = fresh_folder(scenario::OUT_AND_SONG).join(scenario::NOT_MADE_YET);
     let song_in_capitals = "SCALE";
     let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
         .arg(scale_set())
-        .args(["--to", "midi", "--song", song_in_capitals, "--out"])
+        .args(["--to", file_format::InstrumentKind::MIDI, "--song", song_in_capitals, "--out"])
         .arg(&folder)
         .output()
         .expect("llamatron runs");
@@ -51,9 +53,9 @@ fn ran(arguments: &[&str]) -> (bool, String) {
 fn launch_options_are_checked_before_anything_opens() {
     let set = scale_set();
     let set = set.to_str().expect("a path of text");
-    let (worked, said) = ran(&[set, "--visualizer", "no_such_mode"]);
-    assert!(!worked && said.contains("lava_lamp"), "{said}");
-    let (worked, said) = ran(&[set, "--to", "midi", "--autoplay"]);
+    let (worked, said) = ran(&[set, "--visualizer", scenario::NO_SUCH_MODE]);
+    assert!(!worked && said.contains(scenario::LAVA_LAMP), "{said}");
+    let (worked, said) = ran(&[set, "--to", file_format::InstrumentKind::MIDI, "--autoplay"]);
     assert!(!worked && said.contains("--autoplay"), "{said}");
 }
 
@@ -66,10 +68,10 @@ fn panned_set() -> PathBuf {
 /// channel; a track whose instrument never set its Pan sends no CC 10.
 #[test]
 fn a_general_midi_export_sends_each_panned_instruments_pan() {
-    let folder = fresh_folder("panned_gm");
+    let folder = fresh_folder(scenario::PANNED_GM);
     let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
         .arg(panned_set())
-        .args(["--to", "gm", "--out"])
+        .args(["--to", scenario::GM, "--out"])
         .arg(&folder)
         .output()
         .expect("llamatron runs");
@@ -77,7 +79,7 @@ fn a_general_midi_export_sends_each_panned_instruments_pan() {
     let file = std::fs::read_dir(&folder)
         .expect("the folder was made")
         .map(|entry| entry.expect("an entry").path())
-        .find(|path| path.extension().is_some_and(|extension| extension == "mid"))
+        .find(|path| path.extension().is_some_and(|extension| extension == scenario::MID))
         .expect("a MIDI file");
     let bytes = std::fs::read(file).expect("the MIDI file reads back");
     let control_change = 0xb0u8;
@@ -99,7 +101,7 @@ fn a_soloed_track_is_exported_alone() {
         let folder = fresh_folder(folder);
         let run = Command::new(env!("CARGO_BIN_EXE_llamatron"))
             .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join(set))
-            .args(["--to", "midi", "--out"])
+            .args(["--to", file_format::InstrumentKind::MIDI, "--out"])
             .arg(&folder)
             .output()
             .expect("llamatron runs");
@@ -114,20 +116,23 @@ fn a_soloed_track_is_exported_alone() {
         bytes.windows(4).filter(|four| four == b"MTrk").count()
     };
     let (tempo_and_one, tempo_and_two) = (2, 3);
-    assert_eq!(tracks_in("tests/data/soloed_fluidsynth.yml", "soloed"), tempo_and_one);
-    assert_eq!(tracks_in("tests/data/panned_fluidsynth.yml", "unsoloed"), tempo_and_two);
+    assert_eq!(tracks_in("tests/data/soloed_fluidsynth.yml", scenario::SOLOED), tempo_and_one);
+    assert_eq!(tracks_in("tests/data/panned_fluidsynth.yml", scenario::UNSOLOED), tempo_and_two);
 }
 
 /// A set holding a value that cannot be used is refused for export, the change it would make listed, until --force
 /// exports it with the nearest allowed value in its place; the set file is not changed.
 #[test]
 fn a_set_with_a_value_out_of_range_exports_only_with_force() {
-    let folder = fresh_folder("force");
+    let folder = fresh_folder(scenario::FORCE);
     let set = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/velocity_too_loud.yml");
     let before = std::fs::read_to_string(&set).expect("the set reads");
     let export = |force: bool| {
         let mut command = Command::new(env!("CARGO_BIN_EXE_llamatron"));
-        command.arg(&set).args(["--to", "midi", "--replace", "--out"]).arg(&folder);
+        command
+            .arg(&set)
+            .args(["--to", file_format::InstrumentKind::MIDI, "--replace", "--out"])
+            .arg(&folder);
         if force {
             command.arg("--force");
         }
@@ -147,13 +152,13 @@ fn a_set_with_a_value_out_of_range_exports_only_with_force() {
 /// naming it.
 #[test]
 fn template_builds_the_live_set_from_the_set_named() {
-    let folder = fresh_folder("template");
+    let folder = fresh_folder(scenario::TEMPLATE);
     let set = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
     let template = Path::new(env!("CARGO_MANIFEST_DIR")).join("../exporters/templates/live12.als");
     let export = |template: &Path| {
         Command::new(env!("CARGO_BIN_EXE_llamatron"))
             .arg(&set)
-            .args(["--to", "ableton", "--replace", "--out"])
+            .args(["--to", scenario::ABLETON, "--replace", "--out"])
             .arg(&folder)
             .arg("--template")
             .arg(template)

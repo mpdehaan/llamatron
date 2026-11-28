@@ -16,6 +16,8 @@ use crate::screens::new_pattern_dialog::NewPatternDialog;
 use llamatron_model::objects::naming::{copy_name, is_taken, new_name};
 use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{errors, labels, legends, messages, named, names};
 
 /// How the cursor request names a pattern's row, and a group's + (New) row.
@@ -32,7 +34,7 @@ fn choose_tab_of(app: &mut App, name: &str) {
         .document
         .get_setlist()
         .get_pattern(name)
-        .and_then(|pattern| pattern.get_written("group"))
+        .and_then(|pattern| pattern.get_written(file_format::PatternSetting::GROUP))
         .and_then(|group| group.as_str())
         .map(str::to_string);
     let label = group.unwrap_or_else(|| labels::MSG_UNGROUPED.to_string());
@@ -103,7 +105,7 @@ impl PatternsPage {
         if !matches.is_empty() && !matches.contains(&self.cursor.get()) {
             self.cursor.set(matches[0]);
         }
-        app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+        app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, self.typed.as_str().into())]));
     }
 
     /// ENTER at the end of a search: the cursor stays on the pattern found, its group's tab chosen.
@@ -136,7 +138,7 @@ impl PatternsPage {
             }
             Listed::Pattern(name) if item.is(&Keys::COPY) => match app.document.copy_named(Section::PATTERNS, &name) {
                 Ok(new) => {
-                    app.say(&named(messages::MSG_COPIED_TO, &[("name", new.as_str().into())]));
+                    app.say(&named(messages::MSG_COPIED_TO, &[(fill::NAME, new.as_str().into())]));
                     if let Some(found) = self.rows(app).iter().position(|(listed, _)| *listed == Listed::Pattern(new.clone())) {
                         self.cursor.set(found);
                     }
@@ -188,7 +190,7 @@ impl PatternsPage {
             .document
             .get_setlist()
             .get_pattern(name)
-            .and_then(|pattern| pattern.get_written("group"))
+            .and_then(|pattern| pattern.get_written(file_format::PatternSetting::GROUP))
             .and_then(|group| group.as_str())
             .map(str::to_string);
         let place = current.and_then(|current| groups.iter().position(|group| *group == current)).unwrap_or(0);
@@ -235,7 +237,7 @@ impl PatternsPage {
     /// Ask for the group's new name, one no group has, for every pattern in it.
     fn rename_group(&self, app: &mut App, group: &str) {
         let taken: Vec<String> = self.groups(app).into_iter().filter(|each| each != group).collect();
-        let title = named(messages::MSG_RENAME_GROUP_PROMPT, &[("name", group.into())]);
+        let title = named(messages::MSG_RENAME_GROUP_PROMPT, &[(fill::NAME, group.into())]);
         let (old, made_here) = (group.to_string(), self.new_groups.clone());
         ask_unused_name(app, &title, group, taken, move |app, text| {
             if text == old {
@@ -251,7 +253,7 @@ impl PatternsPage {
 
     /// Take every pattern out of the group after asking, deleting none; a group made here that holds none is simply gone.
     fn ungroup(&self, app: &mut App, group: &str) {
-        let title = named(messages::MSG_UNGROUP_TITLE, &[("name", group.into())]);
+        let title = named(messages::MSG_UNGROUP_TITLE, &[(fill::NAME, group.into())]);
         let lines = vec![messages::MSG_UNGROUP_QUESTION.to_string()];
         let (group, made_here) = (group.to_string(), self.new_groups.clone());
         let dialog = ConfirmDialog::new(&title, lines, false, false).then(Box::new(move |app: &mut App, _: &Answer| {
@@ -265,7 +267,7 @@ impl PatternsPage {
     /// Copy the whole group under a new name, asked for in a prompt that starts from the group's name counted up.
     fn copy_group(&self, app: &mut App, group: &str) {
         let groups = self.groups(app);
-        let title = named(messages::MSG_COPY_GROUP_TITLE, &[("name", group.into())]);
+        let title = named(messages::MSG_COPY_GROUP_TITLE, &[(fill::NAME, group.into())]);
         let value = copy_name(group, &groups);
         let (group, made_here) = (group.to_string(), self.new_groups.clone());
         ask_unused_name(app, &title, &value, groups, move |app, text| {
@@ -276,7 +278,7 @@ impl PatternsPage {
             if copies.is_empty() {
                 made_here.borrow_mut().push(text.to_string());
             }
-            app.say(&named(messages::MSG_GROUP_COPIED, &[("name", text.into())]));
+            app.say(&named(messages::MSG_GROUP_COPIED, &[(fill::NAME, text.into())]));
             choose_tab(app, text);
         });
     }

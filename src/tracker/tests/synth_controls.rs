@@ -8,6 +8,9 @@
 use llamatron_backend::instrument::patch::{Patch, Voice};
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
+use llamatron_names::file_format;
+use llamatron_names::scenario;
+use llamatron_names::spec;
 use llamatron_tracker::generated::sounds::{SettingKind, MODDED_SETTINGS, PART_TYPES, SETTING_KINDS, TYPE_SETTINGS, TYPE_SETTING_KINDS};
 use llamatron_tracker::instrument_sound::Sound;
 
@@ -35,7 +38,7 @@ fn instrument(sound: &str) -> Instrument {
 /// The instrument with its sound replaced.
 fn with_sound(instrument: &Instrument, sound: Data) -> Instrument {
     let mut changed = instrument.clone();
-    changed.set_written("sound", Some(sound));
+    changed.set_written(file_format::InstrumentSetting::SOUND, Some(sound));
     changed
 }
 
@@ -139,10 +142,10 @@ fn values_of(kind: SettingKind) -> Vec<Data> {
 /// The sound a type of part is tried in: a synth whose other parts let the part be heard, such as a held envelope's
 /// sustain or a filter at a cutoff Env2 moves.
 fn tried_in(part: &str, part_type: &str) -> String {
-    let oscillators = if part == "oscillators" {
+    let oscillators = if part == file_format::SoundSetting::OSCILLATORS {
         match part_type {
-            "basic" => "{ type: basic, oscillators: [{ waveform: pulse, detune: 7 }] }".to_string(),
-            "sid" => "{ type: sid, wave: pulse }".to_string(),
+            file_format::OscillatorType::BASIC => "{ type: basic, oscillators: [{ waveform: pulse, detune: 7 }] }".to_string(),
+            file_format::OscillatorType::SID => "{ type: sid, wave: pulse }".to_string(),
             other => format!("{{ type: {other} }}"),
         }
     } else {
@@ -155,22 +158,26 @@ fn tried_in(part: &str, part_type: &str) -> String {
             "{ type: adsr, attack: 10, decay: 200, sustain: 50, release: 200 }".to_string()
         }
     };
-    let filter = if part == "filter" {
+    let filter = if part == file_format::SoundSetting::FILTER {
         format!("{{ type: {part_type}, env_amount: 50, key_track: 0 }}")
     } else {
         "{ type: ladder, cutoff: 1500, resonance: 30, env_amount: 50 }".to_string()
     };
-    let amp = if part == "amp" {
+    let amp = if part == file_format::MatrixDestination::AMP {
         format!("{{ type: {part_type} }}")
     } else {
         "{ type: clean }".to_string()
     };
-    let engine = if part_type == "drum" { "drum" } else { "basic" };
+    let engine = if part_type == file_format::TrackSetting::DRUM {
+        file_format::TrackSetting::DRUM
+    } else {
+        file_format::OscillatorType::BASIC
+    };
     format!(
         "{{ engine: {engine}, oscillators: {oscillators}, envelopes: [{}, {}, {}], filter: {filter}, amp: {amp}, matrix: [{{ source: env3, via: none, destination: pitch, amount: 20 }}] }}",
-        envelope("env1"),
-        envelope("env2"),
-        envelope("env3")
+        envelope(file_format::SoundPart::ENV1),
+        envelope(file_format::SoundPart::ENV2),
+        envelope(file_format::SoundPart::ENV3)
     )
 }
 
@@ -179,25 +186,40 @@ fn tried_in(part: &str, part_type: &str) -> String {
 /// sustain that holds into the release, a note soft enough not to accent, and the gate's Lowpass mode or its ping.
 fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static str)] {
     match (part_type, setting) {
-        ("sid", "interval") => &[("ring_on", "true")],
-        ("pocket", "wave_shape") => &[("chip_voice", "wave")],
-        ("pocket", "noise") => &[("chip_voice", "noise")],
-        ("pocket", "sweep_step") | ("pocket", "sweep_direction") => &[("sweep_pace", "3")],
-        ("chip_steps", "level_direction") => &[("start_level", "8"), ("level_pace", "3")],
-        ("adsr", "attack_curve") | ("ar", "attack_curve") | ("asr", "attack_curve") => &[("attack", "200")],
-        ("adsr", "release") => &[("sustain", "80")],
-        ("acid_gate", "soft_attack") => &[("circuit", "modded"), ("accent_threshold", "127")],
-        ("low_pass_gate", "resonance") | ("low_pass_gate_amp", "resonance") => &[("gate_mode", "lowpass")],
-        ("low_pass_gate", "ping_time") | ("low_pass_gate_amp", "ping_time") => &[("signal", "ping")],
-        ("acid_gate", "circuit") => &[("amp_decay", "300")],
-        ("diode", "circuit") => &[("filter_fm", "80")],
-        ("asheville", "osc1_shape") | ("asheville", "osc2_shape") | ("asheville", "osc3_shape") => &[("model", "continuous")],
-        ("asheville", "feedback") => &[("feedback_on", "true")],
-        ("asheville", "osc1_rate") => &[("osc1_speed", "medium")],
-        ("asheville", "osc2_rate") => &[("osc2_speed", "medium")],
-        ("asheville", "osc3_rate") => &[("osc3_speed", "medium")],
-        ("asheville", "feedback_on") => &[("feedback", "8")],
-        (kind, name) if MODDED_SETTINGS.contains(&(kind, name)) => &[("circuit", "modded")],
+        (file_format::OscillatorType::SID, file_format::PartSetting::INTERVAL) => &[(spec::RING_ON, scenario::TRUE)],
+        (file_format::OscillatorType::POCKET, file_format::PartSetting::WAVE_SHAPE) => {
+            &[(file_format::PartSetting::CHIP_VOICE, file_format::PartSetting::WAVE)]
+        }
+        (file_format::OscillatorType::POCKET, file_format::PartSetting::NOISE) => &[(file_format::PartSetting::CHIP_VOICE, file_format::PartSetting::NOISE)],
+        (file_format::OscillatorType::POCKET, file_format::PartSetting::SWEEP_STEP)
+        | (file_format::OscillatorType::POCKET, file_format::PartSetting::SWEEP_DIRECTION) => &[(file_format::PartSetting::SWEEP_PACE, "3")],
+        (file_format::EnvelopeType::CHIP_STEPS, file_format::PartSetting::LEVEL_DIRECTION) => {
+            &[(file_format::PartSetting::START_LEVEL, "8"), (file_format::PartSetting::LEVEL_PACE, "3")]
+        }
+        (file_format::EnvelopeType::ADSR, file_format::PartSetting::ATTACK_CURVE)
+        | (file_format::EnvelopeType::AR, file_format::PartSetting::ATTACK_CURVE)
+        | (file_format::EnvelopeType::ASR, file_format::PartSetting::ATTACK_CURVE) => &[(file_format::PartSetting::ATTACK, "200")],
+        (file_format::EnvelopeType::ADSR, file_format::PartSetting::RELEASE) => &[(file_format::PartSetting::SUSTAIN, "80")],
+        (file_format::EnvelopeType::ACID_GATE, file_format::PartSetting::SOFT_ATTACK) => {
+            &[(scenario::CIRCUIT, scenario::MODDED), (file_format::PartSetting::ACCENT_THRESHOLD, "127")]
+        }
+        (file_format::FilterType::LOW_PASS_GATE, file_format::PartSetting::RESONANCE) | (scenario::LOW_PASS_GATE_AMP, file_format::PartSetting::RESONANCE) => {
+            &[(file_format::PartSetting::GATE_MODE, file_format::GateMode::LOWPASS)]
+        }
+        (file_format::FilterType::LOW_PASS_GATE, file_format::PartSetting::PING_TIME) | (scenario::LOW_PASS_GATE_AMP, file_format::PartSetting::PING_TIME) => {
+            &[(file_format::PartSetting::SIGNAL, file_format::GateInput::PING)]
+        }
+        (file_format::EnvelopeType::ACID_GATE, scenario::CIRCUIT) => &[(file_format::PartSetting::AMP_DECAY, "300")],
+        (file_format::FilterType::DIODE, scenario::CIRCUIT) => &[(spec::FILTER_FM, "80")],
+        (file_format::OscillatorType::ASHEVILLE, spec::OSC1_SHAPE)
+        | (file_format::OscillatorType::ASHEVILLE, spec::OSC2_SHAPE)
+        | (file_format::OscillatorType::ASHEVILLE, spec::OSC3_SHAPE) => &[(spec::MODEL, spec::CONTINUOUS)],
+        (file_format::OscillatorType::ASHEVILLE, spec::FEEDBACK) => &[(spec::FEEDBACK_ON, scenario::TRUE)],
+        (file_format::OscillatorType::ASHEVILLE, spec::OSC1_RATE) => &[(spec::OSC1_SPEED, spec::MEDIUM)],
+        (file_format::OscillatorType::ASHEVILLE, spec::OSC2_RATE) => &[(spec::OSC2_SPEED, spec::MEDIUM)],
+        (file_format::OscillatorType::ASHEVILLE, spec::OSC3_RATE) => &[(spec::OSC3_SPEED, spec::MEDIUM)],
+        (file_format::OscillatorType::ASHEVILLE, spec::FEEDBACK_ON) => &[(spec::FEEDBACK, "8")],
+        (kind, name) if MODDED_SETTINGS.contains(&(kind, name)) => &[(scenario::CIRCUIT, scenario::MODDED)],
         _ => &[],
     }
 }
@@ -207,15 +229,19 @@ fn company(part_type: &str, setting: &str) -> &'static [(&'static str, &'static 
 fn tried_apart(part_type: &str, setting: &str) -> bool {
     matches!(
         (part_type, setting),
-        ("sid", "arpeggio") | ("vactrol", "memory") | ("low_pass_gate", "memory") | ("low_pass_gate_amp", "memory") | ("drum", _)
+        (file_format::OscillatorType::SID, file_format::PartSetting::ARPEGGIO)
+            | (file_format::EnvelopeType::VACTROL, file_format::PartSetting::MEMORY)
+            | (file_format::FilterType::LOW_PASS_GATE, file_format::PartSetting::MEMORY)
+            | (scenario::LOW_PASS_GATE_AMP, file_format::PartSetting::MEMORY)
+            | (file_format::TrackSetting::DRUM, _)
     )
 }
 
 /// A value as the trial writes it: a switch, a whole number where it reads as one, else text.
 fn written(value: &str) -> Data {
     match value {
-        "true" => Data::Bool(true),
-        "false" => Data::Bool(false),
+        scenario::TRUE => Data::Bool(true),
+        scenario::FALSE => Data::Bool(false),
         _ => value.parse::<i128>().map_or_else(|_| Data::text(value), Data::Whole),
     }
 }
@@ -356,7 +382,7 @@ fn every_control_tried_apart_changes_the_sound() {
         let sound = format!("{{ engine: basic, lfos: [{{ \"on\": true, rate_percent: 20, restart: {restart} }}], matrix: [{{ source: lfo1, via: none, destination: pitch, amount: 30 }}] }}");
         played_notes(&instrument(&sound), &[PITCH, PITCH])
     };
-    if !differs(&restarting("on_play"), &restarting("each_note")) {
+    if !differs(&restarting(spec::ON_PLAY), &restarting(spec::EACH_NOTE)) {
         unwired.push("lfo restart");
     }
     // A gate's own cell remembers the note before as the vactrol envelope does, in the Filter's place and the Amp's.
@@ -365,8 +391,12 @@ fn every_control_tried_apart_changes_the_sound() {
         played_notes(&instrument(&sound), &[PITCH, PITCH])
     };
     for (part, kind, control) in [
-        ("filter", "low_pass_gate", "filter low_pass_gate memory"),
-        ("amp", "low_pass_gate_amp", "amp low_pass_gate_amp memory"),
+        (
+            file_format::SoundSetting::FILTER,
+            file_format::FilterType::LOW_PASS_GATE,
+            "filter low_pass_gate memory",
+        ),
+        (file_format::MatrixDestination::AMP, scenario::LOW_PASS_GATE_AMP, "amp low_pass_gate_amp memory"),
     ] {
         if !differs(&gate_remembering(part, kind, "0"), &gate_remembering(part, kind, "100")) {
             unwired.push(control);
@@ -496,7 +526,7 @@ fn every_engine_slides_a_glided_step_without_striking_it_again() {
     let first_voice = 1;
     for engine_name in llamatron_model::schema::generated::file_format::SOUND_ENGINES
         .iter()
-        .filter(|name| **name != "drum")
+        .filter(|name| **name != file_format::TrackSetting::DRUM)
     {
         let instrument = instrument(&format!("{{ engine: {engine_name}, voices: 1, glide: 60 }}"));
         let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(&instrument), DRUMS_FROM);
@@ -621,20 +651,20 @@ fn snail_instrument(weighting: i64, routes: &[Data]) -> Instrument {
 fn snail_at_speed(weighting: i64, seconds: i64, routes: &[Data]) -> Instrument {
     let (engine, snail) = ("basic", "snail");
     let snail_slot = settings(&[
-        ("type", Data::text(snail)),
-        ("slow", Data::Whole(weighting.into())),
-        ("slow_speed", Data::Whole(seconds.into())),
+        (file_format::ScaleSetting::TYPE, Data::text(snail)),
+        (file_format::VactrolCell::SLOW, Data::Whole(weighting.into())),
+        (spec::SLOW_SPEED, Data::Whole(seconds.into())),
     ]);
     let sound = settings(&[
-        ("engine", Data::text(engine)),
-        ("lfos", Data::List(vec![snail_slot])),
-        ("matrix", Data::List(routes.to_vec())),
+        (file_format::SoundSetting::ENGINE, Data::text(engine)),
+        (file_format::SoundSetting::LFOS, Data::List(vec![snail_slot])),
+        (file_format::SoundSetting::MATRIX, Data::List(routes.to_vec())),
     ]);
     let instrument = settings(&[
-        ("name", Data::text("tried")),
-        ("kind", Data::text("built_in")),
-        ("role", Data::text("normal")),
-        ("sound", sound),
+        (file_format::FileLayout::NAME, Data::text(scenario::TRIED)),
+        (file_format::FileLayout::KIND, Data::text(file_format::TrackSetting::BUILT_IN)),
+        (file_format::InstrumentSetting::ROLE, Data::text(file_format::InstrumentRole::NORMAL)),
+        (file_format::InstrumentSetting::SOUND, sound),
     ]);
     Instrument::from_data(&instrument).expect("the scenario's instrument is valid")
 }
@@ -642,10 +672,10 @@ fn snail_at_speed(weighting: i64, seconds: i64, routes: &[Data]) -> Instrument {
 /// A Mod Matrix slot from a source to a destination at an amount in percent.
 fn route(source: &str, destination: &str, amount: i64) -> Data {
     settings(&[
-        ("source", Data::text(source)),
-        ("via", Data::text("none")),
-        ("destination", Data::text(destination)),
-        ("amount", Data::Whole(amount.into())),
+        (file_format::MatrixSetting::SOURCE, Data::text(source)),
+        (file_format::MatrixSetting::VIA, Data::text(file_format::MatrixSource::NONE)),
+        (file_format::MatrixSetting::DESTINATION, Data::text(destination)),
+        (file_format::MatrixSetting::AMOUNT, Data::Whole(amount.into())),
     ])
 }
 
@@ -690,9 +720,13 @@ fn slow_path_under_a_note(instrument: &Instrument, control: usize) -> Vec<f64> {
 #[test]
 fn every_source_moves_a_snails_weighting() {
     let (control, full) = (74, 100);
-    let heard = route("lfo1_slow_y", "cutoff", full);
+    let heard = route(spec::LFO1_SLOW_Y, file_format::PartSetting::CUTOFF, full);
     let unmoved = slow_path_under_a_note(&snail_instrument(0, std::slice::from_ref(&heard)), control);
-    for source in ["velocity".to_string(), "env1".to_string(), format!("cc{control}")] {
+    for source in [
+        file_format::TrackSetting::VELOCITY.to_string(),
+        file_format::SoundPart::ENV1.to_string(),
+        format!("cc{control}"),
+    ] {
         let routes = [heard.clone(), route(&source, "lfo1_slow", full)];
         let moved = slow_path_under_a_note(&snail_instrument(0, &routes), control);
         assert_ne!(unmoved, moved, "{source} moves Slow");
@@ -704,9 +738,9 @@ fn every_source_moves_a_snails_weighting() {
 #[test]
 fn a_snail_moves_its_destinations_and_its_settings_move_it() {
     let (cutoff, full, centre, leaning) = ("cutoff", 100, 0, 100);
-    let silent = played(&snail_instrument(centre, &[route("lfo1_slow_x", cutoff, 0)]));
-    for circuit in ["slow", "slower", "slowest"] {
-        for axis in ["x", "y", "z"] {
+    let silent = played(&snail_instrument(centre, &[route(spec::LFO1_SLOW_X, cutoff, 0)]));
+    for circuit in [file_format::VactrolCell::SLOW, spec::SLOWER, scenario::SLOWEST] {
+        for axis in [scenario::X, scenario::Y, scenario::Z] {
             let output = format!("lfo1_{circuit}_{axis}");
             let heard = played(&snail_instrument(centre, &[route(&output, cutoff, full)]));
             assert!(differs(&silent, &heard), "{output} moves the cutoff");
@@ -732,30 +766,33 @@ fn a_snail_moves_its_destinations_and_its_settings_move_it() {
 fn ashevilles_oscillators_are_moved_one_by_one() {
     let (amount, lfo) = (30, "lfo1");
     let asheville = |destination: &str, amount: i64| {
-        let oscillator = |on: bool| settings(&[("on", Data::Bool(on))]);
+        let oscillator = |on: bool| settings(&[(file_format::LfoSetting::ON, Data::Bool(on))]);
         let sound = settings(&[
-            ("engine", Data::text("asheville")),
+            (file_format::SoundSetting::ENGINE, Data::text(file_format::OscillatorType::ASHEVILLE)),
             (
-                "oscillators",
+                file_format::SoundSetting::OSCILLATORS,
                 settings(&[
-                    ("type", Data::text("asheville")),
-                    ("oscillators", Data::List(vec![oscillator(true), oscillator(true)])),
+                    (file_format::ScaleSetting::TYPE, Data::text(file_format::OscillatorType::ASHEVILLE)),
+                    (file_format::SoundSetting::OSCILLATORS, Data::List(vec![oscillator(true), oscillator(true)])),
                 ]),
             ),
-            ("lfos", Data::List(vec![settings(&[("on", Data::Bool(true))])])),
-            ("matrix", Data::List(vec![route(lfo, destination, amount)])),
+            (
+                file_format::SoundSetting::LFOS,
+                Data::List(vec![settings(&[(file_format::LfoSetting::ON, Data::Bool(true))])]),
+            ),
+            (file_format::SoundSetting::MATRIX, Data::List(vec![route(lfo, destination, amount)])),
         ]);
         let instrument = settings(&[
-            ("name", Data::text("tried")),
-            ("kind", Data::text("built_in")),
-            ("role", Data::text("normal")),
-            ("sound", sound),
+            (file_format::FileLayout::NAME, Data::text(scenario::TRIED)),
+            (file_format::FileLayout::KIND, Data::text(file_format::TrackSetting::BUILT_IN)),
+            (file_format::InstrumentSetting::ROLE, Data::text(file_format::InstrumentRole::NORMAL)),
+            (file_format::InstrumentSetting::SOUND, sound),
         ]);
         played(&Instrument::from_data(&instrument).expect("the scenario's instrument is valid"))
     };
-    let unmoved = asheville("osc1_pitch", 0);
-    let first = asheville("osc1_pitch", amount);
-    let second = asheville("osc2_pitch", amount);
+    let unmoved = asheville(spec::OSC1_PITCH, 0);
+    let first = asheville(spec::OSC1_PITCH, amount);
+    let second = asheville(spec::OSC2_PITCH, amount);
     assert!(differs(&unmoved, &first) && differs(&unmoved, &second), "each oscillator's Pitch is heard");
     assert!(differs(&first, &second), "each moves its own oscillator");
 }

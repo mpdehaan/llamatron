@@ -12,6 +12,7 @@ use crate::keys::{KeyItem, STEP_BACK, STEP_FORWARD};
 use crate::page::{Duration, Page};
 use crate::text::Text;
 use crate::themes::Colour;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 use std::cell::Cell;
 
@@ -252,10 +253,10 @@ impl<R: OneRow> OneRowEditor<R> {
         named(
             self.row.steps_shown(),
             &[
-                ("before", before.into()),
-                ("first", (first + 1).into()),
-                ("last", last.into()),
-                ("after", after.into()),
+                (fill::BEFORE, before.into()),
+                (fill::FIRST, (first + 1).into()),
+                (fill::LAST, last.into()),
+                (fill::AFTER, after.into()),
             ],
         )
     }
@@ -315,13 +316,13 @@ impl<R: OneRow> Page for OneRowEditor<R> {
         let count = self.row.values(app).len();
         if item.is(&Keys::BACK) {
             app.go_back();
-        } else if item.is(self.row.move_binding()) && (key == "up" || key == "down") {
+        } else if item.is(self.row.move_binding()) && (key == llamatron_names::keys::UP || key == llamatron_names::keys::DOWN) {
             let step = self.keep_step(app);
             self.row.press_more(app, item, key, step);
         } else if self.row.steps_values() && self.press_values(app, item, key) {
         } else if item.is(self.row.move_binding()) {
             self.typed.clear();
-            let step: i64 = if key == "left" { STEP_BACK } else { STEP_FORWARD };
+            let step: i64 = if key == llamatron_names::keys::LEFT { STEP_BACK } else { STEP_FORWARD };
             // A row with no steps left has nowhere to move to.
             let last = count.saturating_sub(1) as i64;
             self.step.set((self.step.get() as i64 + step).clamp(0, last) as usize);

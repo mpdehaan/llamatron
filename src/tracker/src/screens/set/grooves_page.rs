@@ -19,6 +19,7 @@ use llamatron_model::objects::named::Groove;
 use llamatron_model::objects::naming::new_name;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{GrooveSetting, Section};
+use llamatron_names::file_format;
 use llamatron_strings::{labels, marks, names};
 
 /// How many cells a new groove has: one bar of straight 16ths.
@@ -122,7 +123,7 @@ impl Listing for GroovesPage {
 
     fn named(&self) -> Option<NamedWords> {
         Some(NamedWords {
-            section: "grooves",
+            section: file_format::Section::GROOVES,
             rename_prompt: llamatron_strings::messages::MSG_RENAME_GROOVE_PROMPT,
             what: llamatron_strings::legends::MSG_GROOVE_WHAT,
         })

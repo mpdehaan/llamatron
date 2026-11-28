@@ -33,6 +33,10 @@ class NamedValuesTest(unittest.TestCase):
     def test_shown_text_and_comments_pass(self):
         self.assertEqual(CHECK.breakages('    assert!(moved, "the A gauge moves Slow"); // 48 kHz'), [])
 
+    def test_every_line_of_a_constant_table_is_a_definition(self):
+        table = 'const NAMED: [(&str, usize); 2] = [\n    (words::BLACK, 0),\n    (words::RED, 7),\n];\nfn after() { run(7); }'
+        self.assertEqual(CHECK.definition_lines(table), {1, 2, 3, 4})
+
     def test_the_places_that_define_names_are_passed_over(self):
         self.assertTrue(CHECK.passed_over("src/names/src/lib.rs"))
         self.assertFalse(CHECK.passed_over("src/tracker/src/sound_spec.rs"))

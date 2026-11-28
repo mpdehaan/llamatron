@@ -19,9 +19,13 @@ use crate::screens::dialogs::{box_lines, heading_lines, sized_contents, stacked,
 use crate::text::Text;
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 use std::cell::RefCell;
 use std::rc::Rc;
+
+/// How many semitones make an octave, which Up and Down move the key picked by.
+const SEMITONES_AN_OCTAVE: i64 = 12;
 
 /// The place of the row of buttons, under the last slot, and the buttons' places in MSG_OK_CANCEL_BUTTONS.
 const SLOT_COUNT: usize = 10;
@@ -80,7 +84,7 @@ impl KeyswitchMapDialog {
     /// Ask for the slot's name over the map, an empty answer leaving the slot without one.
     fn rename(&self, app: &mut App) {
         let place = self.cursor;
-        let title = named(messages::MSG_KEYSWITCH_NAME_PROMPT, &[("slot", place.into())]);
+        let title = named(messages::MSG_KEYSWITCH_NAME_PROMPT, &[(fill::SLOT, place.into())]);
         let mut prompt = PromptDialog::new(&title, &self.current().name.unwrap_or_default());
         prompt.max_length = Some(MAX_NAME_LENGTH as usize);
         let keyswitches = self.keyswitches.clone();
@@ -103,13 +107,13 @@ impl KeyswitchMapDialog {
     fn slot_line(&self, app: &App, slot: usize, width: usize) -> Text {
         let keyswitch = self.keyswitches.borrow()[slot].clone();
         let here = slot == self.cursor;
-        let start = named(marks::MSG_KEYSWITCH_MAP_ROW, &[("slot", slot.into())]);
+        let start = named(marks::MSG_KEYSWITCH_MAP_ROW, &[(fill::SLOT, slot.into())]);
         let (name_mark, note_mark) = (cursor_mark(here && self.cell == NAME_CELL), cursor_mark(here && self.cell == NOTE_CELL));
         let room = width.saturating_sub(start.chars().count() + name_mark.chars().count() + note_mark.chars().count() + KEYSWITCH_NOTE_WIDTH);
         let shown_name = keyswitch.name.clone().unwrap_or_else(|| marks::MSG_NONE_SHOWN.to_string());
         let note_cell = named(
             marks::MSG_KEYSWITCH_NOTE_CELL,
-            &[("note", Self::note_text(app, keyswitch.note).as_str().into())],
+            &[(fill::NOTE, Self::note_text(app, keyswitch.note).as_str().into())],
         );
         let note = fit(&note_cell, KEYSWITCH_NOTE_WIDTH - marks::MSG_PICKER_MARK.chars().count());
         let mut line = Text::default();
@@ -124,7 +128,7 @@ impl KeyswitchMapDialog {
     /// The headings over the slots' two cells, each over the place its cell starts.
     fn heading_line(width: usize) -> Text {
         let mark = cursor_mark(false);
-        let gap = named(marks::MSG_KEYSWITCH_MAP_ROW, &[("slot", 0.into())]).chars().count() + mark.chars().count();
+        let gap = named(marks::MSG_KEYSWITCH_MAP_ROW, &[(fill::SLOT, 0.into())]).chars().count() + mark.chars().count();
         let room = width.saturating_sub(gap + mark.chars().count() + KEYSWITCH_NOTE_WIDTH);
         let mut line = Text::default();
         line.append(&" ".repeat(gap), Style::PLAIN);
@@ -155,10 +159,10 @@ impl KeyswitchMapDialog {
         let picking = self.picking?;
         let keyswitch = self.current();
         let title = match &keyswitch.name {
-            None => named(messages::MSG_KEYSWITCH_NOTE_TITLE, &[("slot", self.cursor.into())]),
+            None => named(messages::MSG_KEYSWITCH_NOTE_TITLE, &[(fill::SLOT, self.cursor.into())]),
             Some(name) => named(
                 messages::MSG_KEYSWITCH_NOTE_NAMED_TITLE,
-                &[("slot", self.cursor.into()), ("name", name.as_str().into())],
+                &[(fill::SLOT, self.cursor.into()), (fill::NAME, name.as_str().into())],
             ),
         };
         let style_of = |kind: Option<KeyKind>| match kind {
@@ -172,9 +176,9 @@ impl KeyswitchMapDialog {
         lines.push(Text::default());
         lines.push(Text::plain(&named(
             messages::MSG_KEYSWITCH_PICKED_NOTE,
-            &[("note", Self::note_text(app, Some(picking)).as_str().into())],
+            &[(fill::NOTE, Self::note_text(app, Some(picking)).as_str().into())],
         )));
-        lines.push(Text::plain(&named(messages::MSG_KEYSWITCH_PICKED_OCTAVE, &[("octave", octave.into())])));
+        lines.push(Text::plain(&named(messages::MSG_KEYSWITCH_PICKED_OCTAVE, &[(fill::OCTAVE, octave.into())])));
         lines.push(Text::default());
         lines.extend(legend(&self.keys(app), width));
         Some(lines)
@@ -224,10 +228,19 @@ impl Page for KeyswitchMapDialog {
             } else if item.is(&Keys::PICK_NOTE) {
                 // A key moves along within the octave shown, since the octave is picked apart from the key.
                 let within = picking.rem_euclid(12);
-                let moved = if key == "left" { (within - 1).max(0) } else { (within + 1).min(11) };
+                let moved = if key == llamatron_names::keys::LEFT {
+                    (within - 1).max(0)
+                } else {
+                    (within + 1).min(SEMITONES_AN_OCTAVE - 1)
+                };
                 self.picking = Some((picking - within + moved).min(MAX_MIDI_NUMBER));
             } else if item.is(&Keys::PICK_OCTAVE) {
-                let moved = picking + if key == "up" { 12 } else { -12 };
+                let moved = picking
+                    + if key == llamatron_names::keys::UP {
+                        SEMITONES_AN_OCTAVE
+                    } else {
+                        -SEMITONES_AN_OCTAVE
+                    };
                 if (MIN_MIDI_NUMBER..=MAX_MIDI_NUMBER).contains(&moved) {
                     self.picking = Some(moved);
                 }
@@ -240,14 +253,14 @@ impl Page for KeyswitchMapDialog {
         if item.is(&Keys::CANCEL) {
             app.go_back();
         } else if item.is(&Keys::MOVE) {
-            self.cursor = if key == "up" {
+            self.cursor = if key == llamatron_names::keys::UP {
                 self.cursor.saturating_sub(1)
             } else {
                 (self.cursor + 1).min(BUTTONS_PLACE)
             };
         } else if item.is(&Keys::ALONG_BUTTONS) {
             let last = labels::MSG_OK_CANCEL_BUTTONS.len() - 1;
-            self.button = if key == "left" {
+            self.button = if key == llamatron_names::keys::LEFT {
                 self.button.saturating_sub(1)
             } else {
                 (self.button + 1).min(last)

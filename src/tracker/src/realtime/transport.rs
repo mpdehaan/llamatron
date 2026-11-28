@@ -17,6 +17,7 @@ use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE};
+use llamatron_names::fill;
 use llamatron_strings::{errors, messages, named};
 
 /// How far ahead of now a launch from silence starts, so that its first window reaches the sender before it is due.
@@ -129,7 +130,7 @@ impl Transport {
                     .map(|(instrument, device)| {
                         named(
                             errors::ERR_DEVICE_NOT_CONNECTED,
-                            &[("instrument", instrument.as_str().into()), ("device", device.as_str().into())],
+                            &[(fill::INSTRUMENT, instrument.as_str().into()), (fill::DEVICE, device.as_str().into())],
                         )
                     })
                     .collect(),
@@ -218,7 +219,7 @@ impl Transport {
         devices.dedup();
         let said = named(
             messages::MSG_SILENCED,
-            &[("channels", channels.len().into()), ("devices", devices.len().into())],
+            &[(fill::CHANNELS, channels.len().into()), (fill::DEVICES, devices.len().into())],
         );
         if let Some(sender) = self.sender.as_mut() {
             sender.silence(&channels);
@@ -296,7 +297,7 @@ impl Transport {
             Ok(score) => score,
             Err(problem) => {
                 let problem = format!("{problem:?}");
-                return Some(named(messages::MSG_LIVE_EDIT_NOT_HEARD, &[("problem", problem.as_str().into())]));
+                return Some(named(messages::MSG_LIVE_EDIT_NOT_HEARD, &[(fill::PROBLEM, problem.as_str().into())]));
             }
         };
         let (Some(sender), Some(player)) = (self.sender.as_mut(), self.player.as_mut()) else {
@@ -425,7 +426,7 @@ impl Transport {
         let total = crate::page::clock(self.song_seconds());
         let shown = named(
             llamatron_strings::marks::MSG_PLAYING_CLOCK,
-            &[("at", at.as_str().into()), ("total", total.as_str().into())],
+            &[(fill::AT, at.as_str().into()), (fill::TOTAL, total.as_str().into())],
         );
         // The synths' load follows the clock, and the dropouts once there are any.
         let Some((busy, dropouts)) = self.sender.as_ref().and_then(BackendSender::synth_load) else {
@@ -436,12 +437,16 @@ impl Transport {
         if dropouts > 0 {
             return Some(named(
                 llamatron_strings::marks::MSG_SYNTH_LOAD_AND_DROPOUTS,
-                &[("clock", clock), ("percent", percent.into()), ("dropouts", (dropouts as i64).into())],
+                &[
+                    (fill::CLOCK, clock),
+                    (fill::PERCENT, percent.into()),
+                    (fill::DROPOUTS, (dropouts as i64).into()),
+                ],
             ));
         }
         Some(named(
             llamatron_strings::marks::MSG_SYNTH_LOAD,
-            &[("clock", clock), ("percent", percent.into())],
+            &[(fill::CLOCK, clock), (fill::PERCENT, percent.into())],
         ))
     }
 

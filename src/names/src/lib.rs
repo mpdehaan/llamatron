@@ -9,5 +9,8 @@
 pub mod file_format;
 pub mod fill;
 pub mod fluid_calls;
+pub mod keys;
+pub mod scenario;
 pub mod spec;
 pub mod wire;
+pub mod words;

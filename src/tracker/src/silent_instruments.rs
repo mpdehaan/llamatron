@@ -10,6 +10,9 @@
 use crate::app::App;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::file_format::FLUIDSYNTH_DEVICE;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{errors, named};
 
 /// The names of the instruments some track of some song plays through, in the set's order.
@@ -45,7 +48,7 @@ pub fn silent_instrument_lines(setlist: &Setlist, fluidsynth_installed: bool, co
         if *device != FLUIDSYNTH_DEVICE && !connected.iter().any(|port| port == device) {
             lines.push(named(
                 errors::ERR_DEVICE_WILL_NOT_SOUND,
-                &[("instrument", name.as_str().into()), ("device", (*device).into())],
+                &[(fill::INSTRUMENT, name.as_str().into()), (fill::DEVICE, (*device).into())],
             ));
         }
     }
@@ -79,7 +82,7 @@ mod tests {
         let lines = silent_instrument_lines(&setlist, false, &connected);
         let missing = named(
             errors::ERR_DEVICE_WILL_NOT_SOUND,
-            &[("instrument", "away".into()), ("device", "another computer's port".into())],
+            &[(fill::INSTRUMENT, words::AWAY.into()), (fill::DEVICE, "another computer's port".into())],
         );
         assert_eq!(lines, vec![errors::ERR_FLUIDSYNTH_WILL_NOT_SOUND.to_string(), missing]);
         assert_eq!(silent_instrument_lines(&setlist, true, &connected).len(), 1);

@@ -11,6 +11,8 @@ use crate::uses::clip_slots_naming;
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{Section, KEYSWITCH_SLOT_COUNT};
 use llamatron_model::values::generated::note::SHARP_NAMES;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{marks, messages, named};
 
 /// How wide a slot's note is written, such as C0 (24).
@@ -48,14 +50,14 @@ pub fn keyswitches_of(app: &App, instrument: Option<&str>) -> Vec<Keyswitch> {
     let Some(llamatron_model::objects::setlist::Item::Instrument(held)) = app.document.get_setlist().get_item(Section::INSTRUMENTS, name) else {
         return empty;
     };
-    let Some(slots) = held.get_written("keyswitches").and_then(Data::as_list) else {
+    let Some(slots) = held.get_written(file_format::InstrumentSetting::KEYSWITCHES).and_then(Data::as_list) else {
         return empty;
     };
     let mut keyswitches: Vec<Keyswitch> = slots
         .iter()
         .map(|slot| Keyswitch {
-            name: slot.get("name").and_then(Data::as_str).map(str::to_string),
-            note: slot.get("note").and_then(Data::as_whole).map(|note| note as i64),
+            name: slot.get(file_format::FileLayout::NAME).and_then(Data::as_str).map(str::to_string),
+            note: slot.get(file_format::KeyswitchSetting::NOTE).and_then(Data::as_whole).map(|note| note as i64),
         })
         .collect();
     keyswitches.resize(KEYSWITCH_SLOT_COUNT as usize, Keyswitch::default());
@@ -66,7 +68,7 @@ pub fn keyswitches_of(app: &App, instrument: Option<&str>) -> Vec<Keyswitch> {
 pub fn slot_name(keyswitches: &[Keyswitch], slot: usize) -> String {
     match keyswitches.get(slot).and_then(|keyswitch| keyswitch.name.clone()) {
         Some(name) => name,
-        None => named(marks::MSG_KEYSWITCH_SLOT_NAMED, &[("slot", slot.into())]),
+        None => named(marks::MSG_KEYSWITCH_SLOT_NAMED, &[(fill::SLOT, slot.into())]),
     }
 }
 
@@ -74,7 +76,7 @@ pub fn slot_name(keyswitches: &[Keyswitch], slot: usize) -> String {
 pub fn note_text(app: &App, note: i64) -> String {
     let octave = shown_octave(app.document.get_setlist(), note.div_euclid(12));
     let name = format!("{}{octave}", SHARP_NAMES[note.rem_euclid(12) as usize]);
-    named(marks::MSG_KEYSWITCH_NOTE, &[("name", name.as_str().into()), ("number", note.into())])
+    named(marks::MSG_KEYSWITCH_NOTE, &[(fill::NAME, name.as_str().into()), (fill::NUMBER, note.into())])
 }
 
 /// The instrument whose keyswitches a pattern's steps are named by, and what the keyswitch dialog says over its slots:
@@ -116,7 +118,10 @@ pub fn slot_rows(app: &App, pattern: &str, opened_track: Option<&str>) -> (Vec<u
     let mut used: Vec<usize> = Vec::new();
     if let Some(held) = app.document.get_setlist().get_pattern(pattern) {
         for step in 0..held.get_steps().max(0) as usize {
-            for slot in crate::patterns::value(held, "keyswitch", step).and_then(Data::as_list).unwrap_or(&[]) {
+            for slot in crate::patterns::value(held, file_format::Row::KEYSWITCH, step)
+                .and_then(Data::as_list)
+                .unwrap_or(&[])
+            {
                 if let Some(slot) = slot.as_whole() {
                     used.push(slot as usize);
                 }
@@ -137,5 +142,5 @@ pub fn slot_rows(app: &App, pattern: &str, opened_track: Option<&str>) -> (Vec<u
     used.extend(mapped);
     used.sort_unstable();
     used.dedup();
-    (used, named(messages::MSG_KEYSWITCH_SECTION_HINT, &[("instrument", said.as_str().into())]))
+    (used, named(messages::MSG_KEYSWITCH_SECTION_HINT, &[(fill::INSTRUMENT, said.as_str().into())]))
 }

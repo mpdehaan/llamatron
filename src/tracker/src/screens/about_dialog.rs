@@ -12,6 +12,7 @@ use crate::page::Page;
 use crate::screens::dialogs::dialog_box;
 use crate::text::Text;
 use llamatron_math::python_random::PythonRandom;
+use llamatron_names::fill;
 use llamatron_strings::named;
 use llamatron_strings::texts::about;
 
@@ -29,11 +30,14 @@ const PROGRAM_NAME: &str = "llamatron";
 fn cow_saying(text: &str) -> Vec<String> {
     let rule_width = text.chars().count() + BUBBLE_MARGIN;
     let mut lines = vec![
-        named(about::MSG_COW_BUBBLE_TOP, &[("rule", BUBBLE_TOP_CHARACTER.repeat(rule_width).as_str().into())]),
-        named(about::MSG_COW_BUBBLE_TEXT, &[("text", text.into())]),
+        named(
+            about::MSG_COW_BUBBLE_TOP,
+            &[(fill::RULE, BUBBLE_TOP_CHARACTER.repeat(rule_width).as_str().into())],
+        ),
+        named(about::MSG_COW_BUBBLE_TEXT, &[(fill::TEXT, text.into())]),
         named(
             about::MSG_COW_BUBBLE_BOTTOM,
-            &[("rule", BUBBLE_BOTTOM_CHARACTER.repeat(rule_width).as_str().into())],
+            &[(fill::RULE, BUBBLE_BOTTOM_CHARACTER.repeat(rule_width).as_str().into())],
         ),
     ];
     lines.extend(about::MSG_COW.iter().map(|line| line.to_string()));
@@ -46,7 +50,7 @@ fn random_quote() -> String {
     let mut random = PythonRandom::unseeded();
     if random.random() < EIGHT_BALL_CHANCE {
         let answer = random.choice(about::MSG_EIGHT_BALL_ANSWERS);
-        return named(about::MSG_EIGHT_BALL, &[("answer", (*answer).into())]);
+        return named(about::MSG_EIGHT_BALL, &[(fill::ANSWER, (*answer).into())]);
     }
     random.choice(about::MSG_ABOUT_QUOTES).to_string()
 }
@@ -73,14 +77,14 @@ impl AboutDialog {
         words.push(named(
             about::MSG_ABOUT_VERSION,
             &[
-                ("version", crate::version::PROGRAM_VERSION.into()),
-                ("date", crate::version::BUILD_DATE.into()),
-                ("time", crate::version::BUILD_TIME.into()),
+                (fill::VERSION, crate::version::PROGRAM_VERSION.into()),
+                (fill::DATE, crate::version::BUILD_DATE.into()),
+                (fill::TIME, crate::version::BUILD_TIME.into()),
             ],
         ));
         words.push(about::MSG_ABOUT_WEB.to_string());
         words.push(about::MSG_ABOUT_BLOG.to_string());
-        words.push(named(about::MSG_ABOUT_MORE, &[("site", about::MSG_SITE.into())]));
+        words.push(named(about::MSG_ABOUT_MORE, &[(fill::SITE, about::MSG_SITE.into())]));
         if quote.len() <= 2 {
             words.push(String::new());
         }
@@ -91,7 +95,7 @@ impl AboutDialog {
         }
         words.push(about::MSG_ABOUT_LICENSE.to_string());
         let year = crate::version::BUILD_DATE.split('-').next().unwrap_or_default();
-        words.push(named(about::MSG_ABOUT_COPYRIGHT, &[("year", year.into())]));
+        words.push(named(about::MSG_ABOUT_COPYRIGHT, &[(fill::YEAR, year.into())]));
         words.iter().map(|line| Text::plain(line)).collect()
     }
 }

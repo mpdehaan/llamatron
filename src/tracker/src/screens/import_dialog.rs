@@ -24,6 +24,7 @@ use crate::text::Text;
 use llamatron_importers::import::{ImportChoices, Imported, MidiImport, LONGEST_PATTERN_CHOICES};
 use llamatron_importers::writing::default_scale_name;
 use llamatron_math::Rational;
+use llamatron_names::fill;
 use llamatron_strings::texts::importing;
 use llamatron_strings::{marks, named};
 
@@ -147,12 +148,12 @@ impl ImportDialog {
             importing::MSG_IMPORT_AS_TRACKS
         };
         let step = match choices.step_size {
-            None => named(importing::MSG_IMPORT_AUTO_STEP, &[("size", fraction_text(made.step_size).as_str().into())]),
+            None => named(importing::MSG_IMPORT_AUTO_STEP, &[(fill::SIZE, fraction_text(made.step_size).as_str().into())]),
             Some(size) => fraction_text(size),
         };
         vec![
             made.song.name.clone(),
-            named(importing::MSG_IMPORT_STEPS, &[("count", choices.longest_pattern.into())]),
+            named(importing::MSG_IMPORT_STEPS, &[(fill::COUNT, choices.longest_pattern.into())]),
             toggle(choices.unique_names),
             chords.to_string(),
             toggle(choices.controls),
@@ -175,18 +176,18 @@ impl ImportDialog {
         } else {
             named(
                 importing::MSG_IMPORT_MORE_KEYS,
-                &[("first", names[0].as_str().into()), ("count", (names.len() - 1).into())],
+                &[(fill::FIRST, names[0].as_str().into()), (fill::COUNT, (names.len() - 1).into())],
             )
         };
         let signature = found.time_signature.unwrap_or_else(|| "None".to_string());
         named(
             importing::MSG_IMPORT_FOUND,
             &[
-                ("tracks", found.tracks.into()),
-                ("bars", found.bars.into()),
-                ("time_signature", signature.as_str().into()),
-                ("tempo", found.tempo.python_str().as_str().into()),
-                ("keys", keys.as_str().into()),
+                (fill::TRACKS, found.tracks.into()),
+                (fill::BARS, found.bars.into()),
+                (fill::TIME_SIGNATURE, signature.as_str().into()),
+                (fill::TEMPO, found.tempo.python_str().as_str().into()),
+                (fill::KEYS, keys.as_str().into()),
             ],
         )
     }
@@ -197,20 +198,20 @@ impl ImportDialog {
             return named(
                 importing::MSG_IMPORT_MAKES_LONG,
                 &[
-                    ("tracks", made.tracks.into()),
-                    ("patterns", made.patterns.into()),
-                    ("long", made.long_patterns.into()),
-                    ("longest", self.choices.longest_pattern.into()),
-                    ("scenes", made.scenes.into()),
+                    (fill::TRACKS, made.tracks.into()),
+                    (fill::PATTERNS, made.patterns.into()),
+                    (fill::LONG, made.long_patterns.into()),
+                    (fill::LONGEST, self.choices.longest_pattern.into()),
+                    (fill::SCENES, made.scenes.into()),
                 ],
             );
         }
         named(
             importing::MSG_IMPORT_MAKES,
             &[
-                ("tracks", made.tracks.into()),
-                ("patterns", made.patterns.into()),
-                ("scenes", made.scenes.into()),
+                (fill::TRACKS, made.tracks.into()),
+                (fill::PATTERNS, made.patterns.into()),
+                (fill::SCENES, made.scenes.into()),
             ],
         )
     }
@@ -231,7 +232,7 @@ impl ImportDialog {
         lines.push(Text::default());
         lines.extend(wrapped(&self.makes_text(&made), width));
         if made.song.shared != 0 {
-            lines.extend(dim(&named(importing::MSG_IMPORT_SHARED, &[("count", made.song.shared.into())])));
+            lines.extend(dim(&named(importing::MSG_IMPORT_SHARED, &[(fill::COUNT, made.song.shared.into())])));
         }
         for warning in &made.warnings {
             lines.extend(dim(warning));
@@ -256,10 +257,10 @@ impl ImportDialog {
         let said = named(
             importing::MSG_IMPORTED,
             &[
-                ("name", made.song.name.as_str().into()),
-                ("tracks", made.tracks.into()),
-                ("patterns", made.patterns.into()),
-                ("scenes", made.scenes.into()),
+                (fill::NAME, made.song.name.as_str().into()),
+                (fill::TRACKS, made.tracks.into()),
+                (fill::PATTERNS, made.patterns.into()),
+                (fill::SCENES, made.scenes.into()),
             ],
         );
         app.say(&said);
@@ -295,14 +296,14 @@ impl Page for ImportDialog {
         if item.is(&Keys::CANCEL) {
             app.go_back();
         } else if item.is(&Keys::SELECT) {
-            self.row = if key == "up" {
+            self.row = if key == llamatron_names::keys::UP {
                 self.row.saturating_sub(1)
             } else {
                 (self.row + 1).min(BUTTONS)
             };
         } else if item.is(&Keys::CHOOSE_BUTTON) {
             let last = importing::MSG_IMPORT_BUTTONS.len() - 1;
-            self.button = if key == "left" {
+            self.button = if key == llamatron_names::keys::LEFT {
                 self.button.saturating_sub(1)
             } else {
                 (self.button + 1).min(last)
@@ -361,10 +362,10 @@ impl ImportedDialog {
         let mut messages = vec![named(
             importing::MSG_IMPORTED_SONG,
             &[
-                ("name", made.song.name.as_str().into()),
-                ("tracks", made.tracks.into()),
-                ("patterns", made.patterns.into()),
-                ("scenes", made.scenes.into()),
+                (fill::NAME, made.song.name.as_str().into()),
+                (fill::TRACKS, made.tracks.into()),
+                (fill::PATTERNS, made.patterns.into()),
+                (fill::SCENES, made.scenes.into()),
             ],
         )];
         if !made.warnings.is_empty() {

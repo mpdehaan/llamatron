@@ -19,6 +19,9 @@ use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{SetlistSetting, FOLLOW_ACTION_CHOICES, OCTAVE_LABEL_CHOICES, STEP_SIZE_CHOICES, VISUALIZER_NAMES};
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MIN_OCTAVE};
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 /// The fields, by id.
@@ -270,14 +273,14 @@ impl Form for FilePage {
                     .unwrap_or_else(|| ".".to_string());
                 let stem = path.file_stem().map(|stem| stem.to_string_lossy().to_string()).unwrap_or_default();
                 let prefix = format!("{directory}/{stem}_{}", document.get_current_song_name());
-                named(marks::MSG_EXPORTS_BESIDE, &[("prefix", prefix.as_str().into())])
+                named(marks::MSG_EXPORTS_BESIDE, &[(fill::PREFIX, prefix.as_str().into())])
             }
         };
         let config = crate::preferences::Preferences::config_path().map_or(String::new(), |path| path.to_string_lossy().to_string());
         vec![
-            Text::styled(&named(messages::MSG_FILE_NOTE, &[("path", path.as_str().into())]), Style::DIM),
-            Text::styled(&named(messages::MSG_EXPORTS_NOTE, &[("where", exports.as_str().into())]), Style::DIM),
-            Text::styled(&named(messages::MSG_CONFIG_NOTE, &[("path", config.as_str().into())]), Style::DIM),
+            Text::styled(&named(messages::MSG_FILE_NOTE, &[(fill::PATH, path.as_str().into())]), Style::DIM),
+            Text::styled(&named(messages::MSG_EXPORTS_NOTE, &[(fill::WHERE, exports.as_str().into())]), Style::DIM),
+            Text::styled(&named(messages::MSG_CONFIG_NOTE, &[(fill::PATH, config.as_str().into())]), Style::DIM),
         ]
     }
 
@@ -412,7 +415,7 @@ mod tests {
         use crate::keys::first_key;
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/clip_of_two_patterns.yml");
         let mut document = crate::document::Document::open(&path).expect("the scenario's set opens");
-        document.change_set(|setlist| setlist.set_written(SetlistSetting::TITLE, Some(Data::text("changed"))));
+        document.change_set(|setlist| setlist.set_written(SetlistSetting::TITLE, Some(Data::text(words::CHANGED))));
         let mut tracker = crate::app::Tracker::new(document);
         tracker.app.show_page(Box::new(crate::screens::field_page::FieldPage::new(FilePage)));
         tracker.settle();
@@ -427,7 +430,7 @@ mod tests {
             if on_new || boxed_new {
                 break;
             }
-            tracker.press("down");
+            tracker.press(llamatron_names::keys::DOWN);
         }
         tracker.press(first_key(&FieldKeys::ENTER));
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();

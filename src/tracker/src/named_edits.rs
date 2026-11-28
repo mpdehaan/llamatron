@@ -14,7 +14,12 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::defaults::DEFAULT_TEMPO;
 use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{errors, named, names};
+
+/// The cells of a new groove: one bar of sixteenths.
+const NEW_GROOVE_CELLS: usize = 16;
 
 pub const TRACKS: &str = "tracks";
 const SONGS: &str = "songs";
@@ -110,13 +115,13 @@ impl Document {
             .song()
             .scenes()
             .iter()
-            .filter_map(|scene| scene.get_written("name").and_then(Data::as_str).map(str::to_string))
+            .filter_map(|scene| scene.get_written(file_format::FileLayout::NAME).and_then(Data::as_str).map(str::to_string))
             .collect();
         let name = self
             .song()
             .scenes()
             .get(index)
-            .and_then(|scene| scene.get_written("name"))
+            .and_then(|scene| scene.get_written(file_format::FileLayout::NAME))
             .and_then(Data::as_str)
             .unwrap_or(llamatron_strings::names::MSG_SCENE_WITHOUT_A_NAME)
             .to_string();
@@ -228,7 +233,7 @@ impl Document {
             .iter()
             .filter_map(|(name, item)| match item {
                 llamatron_model::objects::setlist::Item::Pattern(pattern) => {
-                    let held = pattern.get_written("group").and_then(Data::as_str);
+                    let held = pattern.get_written(file_format::PatternSetting::GROUP).and_then(Data::as_str);
                     (held == group).then(|| name.clone())
                 }
                 _ => None,
@@ -279,7 +284,7 @@ impl Document {
         if let Some((_, long)) = names.iter().find(|(_, copied)| copied.chars().count() > most) {
             return Err(named(
                 errors::ERR_GROUP_COPY_NAME_TOO_LONG,
-                &[("name", long.as_str().into()), ("most", most.into())],
+                &[(fill::NAME, long.as_str().into()), (fill::MOST, most.into())],
             ));
         }
         let setlist = self.get_setlist();
@@ -305,7 +310,7 @@ impl Document {
             .get_setlist()
             .get_pattern(other)
             .cloned()
-            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", other.into())]))?;
+            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[(fill::NAME, other.into())]))?;
         let name = name.to_string();
         self.change_set(|setlist| {
             if let Some(pattern) = setlist.get_pattern_mut(&name) {
@@ -324,17 +329,17 @@ impl Document {
             .get_setlist()
             .get_pattern(name)
             .cloned()
-            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", name.into())]))?;
+            .ok_or_else(|| named(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[(fill::NAME, name.into())]))?;
         let count = pattern.get_steps() as usize;
         let starts: Vec<usize> = (0..count).step_by(steps.max(1)).collect();
-        let word = named(names::MSG_SPLIT_BASE, &[("name", name.into())]);
+        let word = named(names::MSG_SPLIT_BASE, &[(fill::NAME, name.into())]);
         let first =
             llamatron_model::objects::naming::split_trailing_number(&new_name(&word, &self.names_taken(Section::PATTERNS))).map_or(1, |(_, _, number)| number);
         let made: Vec<String> = (0..starts.len())
             .map(|part| {
                 named(
                     names::MSG_NUMBERED_NAME,
-                    &[("base", word.as_str().into()), ("number", (first + part as i64).into())],
+                    &[(fill::BASE, word.as_str().into()), (fill::NUMBER, (first + part as i64).into())],
                 )
             })
             .collect();
@@ -342,7 +347,7 @@ impl Document {
         if let Some(long) = made.iter().find(|part| part.chars().count() > most) {
             return Err(named(
                 errors::ERR_GROUP_COPY_NAME_TOO_LONG,
-                &[("name", long.as_str().into()), ("most", most.into())],
+                &[(fill::NAME, long.as_str().into()), (fill::MOST, most.into())],
             ));
         }
         let mut parts = Vec::new();
@@ -400,9 +405,15 @@ impl Document {
         if section == TRACKS {
             self.edit_data(|data| edits::copied_track(data, &song, name, &new))?;
         } else if let (GROOVES, Some((_, cells, length))) = (section, FACTORY_GROOVES.iter().find(|(each, ..)| *each == name)) {
-            let mut groove = vec![(Data::text("cells"), Data::List(cells.iter().map(|cell| Data::Whole(*cell as i128)).collect()))];
+            let mut groove = vec![(
+                Data::text(file_format::GrooveSetting::CELLS),
+                Data::List(cells.iter().map(|cell| Data::Whole(*cell as i128)).collect()),
+            )];
             if *length != SIXTEENTHS {
-                groove.push((Data::text("cell_length"), Data::text(&format!("{}/{}", length.0, length.1))));
+                groove.push((
+                    Data::text(file_format::GrooveSetting::CELL_LENGTH),
+                    Data::text(&format!("{}/{}", length.0, length.1)),
+                ));
             }
             let groove = Data::Map(groove);
             self.edit_data(|data| with_item(data, GROOVES, &new, groove))?;
@@ -460,12 +471,17 @@ impl Document {
     /// counted up where taken, and one scene, and make it current, as one step to undo.
     pub fn add_song(&mut self, name: &str, main_instrument: Data, drum_instrument: Data) -> Result<(), String> {
         use llamatron_model::schema::generated::file_format::TrackSetting;
-        let scale = self.names_of("scales").first().cloned();
-        let mut song = vec![(Data::text("tempo"), Data::Whole(DEFAULT_TEMPO as i128))];
+        let scale = self.names_of(file_format::Section::SCALES).first().cloned();
+        let mut song = vec![(Data::text(file_format::SongSetting::TEMPO), Data::Whole(DEFAULT_TEMPO as i128))];
         if let Some(scale) = scale {
-            song.push((Data::text("scale"), Data::text(&scale)));
+            song.push((Data::text(file_format::SongSetting::SCALE), Data::text(&scale)));
         }
-        let first_of = |word: &str| named(names::MSG_JOINED_NUMBERED_NAME, &[("base", word.into()), ("number", FIRST_NUMBER.into())]);
+        let first_of = |word: &str| {
+            named(
+                names::MSG_JOINED_NUMBERED_NAME,
+                &[(fill::BASE, word.into()), (fill::NUMBER, FIRST_NUMBER.into())],
+            )
+        };
         let (main, drum) = (first_of(names::MSG_NEW_MAIN_TRACK_WORD), first_of(names::MSG_NEW_DRUM_TRACK_WORD));
         let mut taken = self.names_of(INSTRUMENTS);
         let main_instrument_name = llamatron_model::objects::naming::unique_name(&main, &taken);
@@ -478,8 +494,8 @@ impl Document {
             }
             Data::Map(settings)
         };
-        let scene = named(names::MSG_NEW_SCENE_NAME, &[("number", FIRST_NUMBER.into())]);
-        song.push((Data::text("draws"), Data::Map(Vec::new())));
+        let scene = named(names::MSG_NEW_SCENE_NAME, &[(fill::NUMBER, FIRST_NUMBER.into())]);
+        song.push((Data::text(file_format::Section::DRAWS), Data::Map(Vec::new())));
         song.push((
             Data::text(TRACKS),
             Data::Map(vec![
@@ -488,8 +504,8 @@ impl Document {
             ]),
         ));
         song.push((
-            Data::text("scenes"),
-            Data::List(vec![Data::Map(vec![(Data::text("name"), Data::text(&scene))])]),
+            Data::text(file_format::Section::SCENES),
+            Data::List(vec![Data::Map(vec![(Data::text(file_format::FileLayout::NAME), Data::text(&scene))])]),
         ));
         let song = Data::Map(song);
         self.edit_data(|data| {
@@ -512,15 +528,18 @@ impl Document {
     /// Add a C major scale under a name.
     pub fn add_scale(&mut self, name: &str) -> Result<(), String> {
         let scale = Data::Map(vec![
-            (Data::text("root"), Data::text(NEW_SCALE_ROOT)),
-            (Data::text("type"), Data::text(NEW_SCALE_KIND)),
+            (Data::text(file_format::ScaleSetting::ROOT), Data::text(NEW_SCALE_ROOT)),
+            (Data::text(file_format::ScaleSetting::TYPE), Data::text(NEW_SCALE_KIND)),
         ]);
-        self.edit_data(|data| with_item(data, "scales", name, scale))
+        self.edit_data(|data| with_item(data, file_format::Section::SCALES, name, scale))
     }
 
     /// Add a straight groove of one bar of sixteenths under a name.
     pub fn add_groove(&mut self, name: &str) -> Result<(), String> {
-        let groove = Data::Map(vec![(Data::text("cells"), Data::List(vec![Data::Whole(0); 16]))]);
+        let groove = Data::Map(vec![(
+            Data::text(file_format::GrooveSetting::CELLS),
+            Data::List(vec![Data::Whole(0); NEW_GROOVE_CELLS]),
+        )]);
         self.edit_data(|data| with_item(data, GROOVES, name, groove))
     }
 }

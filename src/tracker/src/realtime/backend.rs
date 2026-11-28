@@ -15,6 +15,8 @@ use std::time::{Duration, Instant};
 use crate::realtime::player::Sender;
 use crate::realtime::timeline::{ClipTag, Playing};
 use llamatron_model::file::data::Data;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use rmpv::Value;
 
@@ -289,11 +291,11 @@ impl BackendSender {
             None => Value::Nil,
         };
         Value::Map(vec![
-            ("ports".into(), Value::Array(listed)),
-            ("recording".into(), false.into()),
-            ("driver".into(), TIMESTAMPED.into()),
-            ("device".into(), audio_device()),
-            ("fluid".into(), fluid),
+            (words::PORTS.into(), Value::Array(listed)),
+            (words::RECORDING.into(), false.into()),
+            (words::DRIVER.into(), TIMESTAMPED.into()),
+            (file_format::InstrumentSetting::DEVICE.into(), audio_device()),
+            (words::FLUID.into(), fluid),
         ])
     }
 
@@ -371,13 +373,13 @@ mod tests {
         assert!(sender.is_running());
         let tag = ClipTag {
             scene: 0,
-            track: "lead".to_string(),
+            track: words::LEAD.to_string(),
             play: 1,
         };
         let event = Playing {
             whole: Rational::ZERO,
             seconds: 0.5,
-            port: "nowhere".to_string(),
+            port: words::NOWHERE.to_string(),
             channel: 0,
             kind: crate::realtime::timeline::NOTE_ON,
             number: 60,

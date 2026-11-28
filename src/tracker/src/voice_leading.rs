@@ -15,6 +15,7 @@ use llamatron_model::objects::pattern::Pattern;
 use llamatron_model::schema::checking::InvalidValue;
 use llamatron_model::schema::generated::file_format::Row;
 use llamatron_model::schema::generated::limits::{INVERSIONS, MAX_OCTAVE, MIN_DEGREE, MIN_OCTAVE};
+use llamatron_names::file_format;
 
 /// The octaves a chord may be moved by where voice leading may move one: none first, so that a tie keeps the octave
 /// written.
@@ -55,7 +56,7 @@ fn half_steps_of(tone: &Tone, scale: &ChordScale) -> i64 {
     let (octaves_up, place) = ((degree - MIN_DEGREE).div_euclid(length), (degree - MIN_DEGREE).rem_euclid(length));
     let shift = match accidental.as_deref() {
         Some("#") => 1,
-        Some("b") => -1,
+        Some(file_format::Accidental::FLAT) => -1,
         _ => 0,
     };
     (octave + octaves_up) * 12 + scale.shape[place as usize] + shift

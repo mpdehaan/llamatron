@@ -11,6 +11,8 @@ use crate::screens::one_row_editor::{Edge, GridLine, OneRow};
 use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 
 const CELL_WIDTH: usize = 6;
@@ -41,14 +43,14 @@ impl OffsetsEditor {
         });
         app.document.change_set(|setlist| {
             if let Some(Item::Generator(settings)) = setlist.get_item_mut(SECTION, &name) {
-                settings.set_written("offsets", value);
+                settings.set_written(words::OFFSETS, value);
             }
         });
     }
 
     fn offsets(&self, app: &App) -> Vec<Option<i64>> {
         match app.document.get_setlist().get_item(SECTION, &self.name) {
-            Some(Item::Generator(settings)) => settings.get_written("offsets").and_then(Data::as_list).map_or(Vec::new(), |offsets| {
+            Some(Item::Generator(settings)) => settings.get_written(words::OFFSETS).and_then(Data::as_list).map_or(Vec::new(), |offsets| {
                 offsets.iter().map(|offset| offset.as_whole().map(|whole| whole as i64)).collect()
             }),
             _ => Vec::new(),
@@ -70,12 +72,12 @@ fn value_text(value: Option<i64>, levels: i64, cursor: bool) -> String {
             };
             named(
                 if value > 0 { marks::MSG_POSITIVE_VALUE } else { marks::MSG_OTHER_VALUE },
-                &[("value", value.into()), ("mark", mark.into())],
+                &[(fill::VALUE, value.into()), (fill::MARK, mark.into())],
             )
         }
     };
     if cursor {
-        named(marks::MSG_CURSOR_VALUE_MARKS, &[("text", text.as_str().into())])
+        named(marks::MSG_CURSOR_VALUE_MARKS, &[(fill::TEXT, text.as_str().into())])
     } else {
         text
     }
@@ -109,7 +111,7 @@ impl OneRow for OffsetsEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
             labels::Crumb::OFFSETS.to_string(),
         ]
     }
@@ -118,7 +120,7 @@ impl OneRow for OffsetsEditor {
         let what = llamatron_strings::plugin_texts::arp::MSG_CAPTION_WORD.to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         )
     }
 
@@ -196,7 +198,7 @@ impl OneRow for OffsetsEditor {
         let count = last - first;
         let step_text = |place: usize| {
             if place == step {
-                named(marks::MSG_CURSOR_STEP_MARKS, &[("text", (place + 1).to_string().as_str().into())])
+                named(marks::MSG_CURSOR_STEP_MARKS, &[(fill::TEXT, (place + 1).to_string().as_str().into())])
             } else {
                 (place + 1).to_string()
             }

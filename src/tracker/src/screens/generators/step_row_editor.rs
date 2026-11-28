@@ -13,6 +13,7 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::limits::{MAX_STEP_ROW, MIN_STEP_ROW};
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
 const CELL_WIDTH: usize = 5;
@@ -73,7 +74,7 @@ impl OneRow for StepRowEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
             labels::Crumb::STEPS.to_string(),
         ]
     }
@@ -82,7 +83,7 @@ impl OneRow for StepRowEditor {
         let what = caption_word(self.kind).to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         )
     }
 

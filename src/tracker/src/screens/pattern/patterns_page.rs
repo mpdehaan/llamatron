@@ -24,6 +24,9 @@ use llamatron_model::objects::naming::name_order;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::{PatternSetting, Section};
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 
 const COLUMNS: [ListColumn; 5] = [
@@ -302,13 +305,13 @@ impl PatternsPage {
     fn move_cursor(&mut self, app: &mut App, key: &str) {
         let matches = self.matches(app);
         if self.on_tabs {
-            if key != "up" && !matches.is_empty() {
+            if key != llamatron_names::keys::UP && !matches.is_empty() {
                 self.on_tabs = false;
                 self.cursor.set(matches[0]);
             }
             return;
         }
-        if key == "up" && !self.searching && matches.first() == Some(&self.cursor.get()) {
+        if key == llamatron_names::keys::UP && !self.searching && matches.first() == Some(&self.cursor.get()) {
             self.on_tabs = true;
             return;
         }
@@ -316,12 +319,12 @@ impl PatternsPage {
         match matches.iter().position(|each| *each == place) {
             None => self.cursor.set(matches.first().copied().unwrap_or(0)),
             Some(at) => {
-                let step: i64 = if key == "up" { -1 } else { 1 };
+                let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
                 self.cursor.set(matches[(at as i64 + step).clamp(0, matches.len() as i64 - 1) as usize]);
             }
         }
         if self.searching {
-            app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", self.typed.as_str().into())]));
+            app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, self.typed.as_str().into())]));
         }
     }
 }
@@ -331,14 +334,14 @@ impl Page for PatternsPage {
     fn place_kind(&self, app: &App) -> String {
         // A search offers keys of its own, so a row found by one is a place apart from the same row otherwise.
         if self.searching {
-            return "searching".to_string();
+            return words::SEARCHING.to_string();
         }
         if self.on_tabs {
-            return "tabs".to_string();
+            return words::TABS.to_string();
         }
         match self.listed(app) {
-            Listed::Pattern(_) => "pattern".to_string(),
-            Listed::NewPattern(_) => "plus".to_string(),
+            Listed::Pattern(_) => file_format::ClipSlotSetting::PATTERN.to_string(),
+            Listed::NewPattern(_) => llamatron_names::keys::PLUS.to_string(),
             Listed::NewGroup => "new group".to_string(),
         }
     }
@@ -425,7 +428,7 @@ impl Page for PatternsPage {
                 self.cursor.set(place);
             }
             self.place(app);
-            app.say(&named(messages::MSG_SEARCH_STATUS, &[("text", "".into())]));
+            app.say(&named(messages::MSG_SEARCH_STATUS, &[(fill::TEXT, "".into())]));
         } else if item.is(&Keys::SEARCH_CANCEL) {
             self.searching = false;
             self.cursor.set(self.place_before_search);

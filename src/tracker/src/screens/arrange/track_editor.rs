@@ -19,6 +19,10 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::Track;
 use llamatron_model::schema::generated::file_format::{SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::limits::{MAX_OCTAVE, MAX_TRANSPOSE, MIN_OCTAVE};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
@@ -86,7 +90,11 @@ impl TrackEditor {
             (MUTE, Edit::Toggle(on)) => self.write(app, TrackSetting::MUTE, on.then_some(Data::Bool(true))),
             // A track's instrument is changed, never taken away: its picker offers only the instruments of its kind.
             (INSTRUMENT, Edit::Enter) => {
-                let role = if track.is_drum() { "percussion" } else { "normal" };
+                let role = if track.is_drum() {
+                    file_format::InstrumentRole::PERCUSSION
+                } else {
+                    file_format::InstrumentRole::NORMAL
+                };
                 let instruments = crate::settings::sorted_names(&instruments_of_role(app, role));
                 let current = track.get_instrument_name();
                 arrange_tabs::ask_name(app, labels::MSG_INSTRUMENT_LABEL, instruments, current.as_deref());
@@ -172,8 +180,11 @@ impl TrackEditor {
                 if scenes_choose {
                     marks::MSG_SCENE_OR_SONG_GROOVE_SHOWN.to_string()
                 } else {
-                    let song_groove = song.get_written(SongSetting::GROOVE).and_then(Data::as_str).unwrap_or("none");
-                    named(marks::MSG_SONG_GROOVE_SHOWN, &[("groove", song_groove.into())])
+                    let song_groove = song
+                        .get_written(SongSetting::GROOVE)
+                        .and_then(Data::as_str)
+                        .unwrap_or(file_format::MatrixSource::NONE);
+                    named(marks::MSG_SONG_GROOVE_SHOWN, &[(fill::GROOVE, song_groove.into())])
                 }
             }
             Some(Data::Bool(false)) => marks::MSG_GROOVE_OFF_SHOWN.to_string(),
@@ -231,7 +242,7 @@ impl TrackEditor {
         let velocity_shown = if track.get_default_velocity().is_some() {
             None
         } else if has_instrument {
-            Some(named(marks::MSG_FROM_INSTRUMENT_SHOWN, &[("value", velocity_above.into())]))
+            Some(named(marks::MSG_FROM_INSTRUMENT_SHOWN, &[(fill::VALUE, velocity_above.into())]))
         } else {
             Some(velocity_above.to_string())
         };
@@ -263,9 +274,9 @@ impl TrackEditor {
                 Some(0),
                 Some(127),
                 0,
-                Some(named(marks::MSG_ACCENT_SHOWN, &[("accent", accent.into())])),
+                Some(named(marks::MSG_ACCENT_SHOWN, &[(fill::ACCENT, accent.into())])),
             )
-            .with_clear(&named(marks::MSG_ACCENT_SHOWN, &[("accent", 15.into())])),
+            .with_clear(&named(marks::MSG_ACCENT_SHOWN, &[(fill::ACCENT, 15.into())])),
             Field::number(
                 next(),
                 labels::MSG_VELOCITY_PERCENT_LABEL,
@@ -273,9 +284,9 @@ impl TrackEditor {
                 Some(0),
                 Some(200),
                 100,
-                Some(named(marks::MSG_PERCENT_SHOWN, &[("percent", percent.into())])),
+                Some(named(marks::MSG_PERCENT_SHOWN, &[(fill::PERCENT, percent.into())])),
             )
-            .with_clear(&named(marks::MSG_PERCENT_SHOWN, &[("percent", 100.into())])),
+            .with_clear(&named(marks::MSG_PERCENT_SHOWN, &[(fill::PERCENT, 100.into())])),
         ];
         Tab::new(
             labels::MSG_SETTINGS_TAB,
@@ -298,7 +309,7 @@ impl TrackEditor {
                 let shown = number.map_or(marks::MSG_NONE_SHOWN.to_string(), |number| number.to_string());
                 Field::number(
                     FIRST_OWN + 100 + lane,
-                    &named(labels::MSG_CC_LABEL, &[("number", (lane + 1).into())]),
+                    &named(labels::MSG_CC_LABEL, &[(fill::NUMBER, (lane + 1).into())]),
                     number,
                     Some(0),
                     Some(127),
@@ -321,17 +332,17 @@ impl TrackEditor {
         for (index, scene) in song.scenes().iter().enumerate() {
             let Some(clip) = scene.get_clip_slot(&self.name) else { continue };
             let on = clip
-                .get_written("built_in")
+                .get_written(file_format::TrackSetting::BUILT_IN)
                 .and_then(|built_ins| built_ins.get(kind))
-                .and_then(|settings| settings.get("enabled"))
+                .and_then(|settings| settings.get(file_format::GENERATOR_ENABLED))
                 .is_some_and(|value| matches!(value, Data::Bool(true)));
             if on {
                 let name = scene
                     .get_name()
-                    .unwrap_or_else(|| named(llamatron_strings::names::MSG_NEW_SCENE_NAME, &[("number", (index + 1).into())]));
+                    .unwrap_or_else(|| named(llamatron_strings::names::MSG_NEW_SCENE_NAME, &[(fill::NUMBER, (index + 1).into())]));
                 overriding.push(named(
                     messages::MSG_BUILT_IN_OVERRIDING_CLIP,
-                    &[("scene", name.as_str().into()), ("track", self.name.as_str().into())],
+                    &[(fill::SCENE, name.as_str().into()), (fill::TRACK, self.name.as_str().into())],
                 ));
             }
         }
@@ -345,9 +356,9 @@ impl TrackEditor {
             tab.remarks = vec![named(
                 template,
                 &[
-                    ("word", word.as_str().into()),
-                    ("count", overriding.len().into()),
-                    ("clips", clips.as_str().into()),
+                    (fill::WORD, word.as_str().into()),
+                    (fill::COUNT, overriding.len().into()),
+                    (fill::CLIPS, clips.as_str().into()),
                 ],
             )];
         }
@@ -385,7 +396,7 @@ impl Form for TrackEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::ARRANGE.to_string(),
-            named(labels::MSG_TRACK_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_TRACK_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
         ]
     }
 
@@ -393,7 +404,7 @@ impl Form for TrackEditor {
         let what = named_in(labels::MSG_CAPTION_WORDS, Section::TRACKS).to_uppercase();
         Some(named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         ))
     }
 
@@ -448,7 +459,7 @@ fn instruments_of_role(app: &App, role: &str) -> Vec<String> {
         let held = instrument
             .get_written(llamatron_model::schema::generated::file_format::InstrumentSetting::ROLE)
             .and_then(Data::as_str)
-            .unwrap_or("normal");
+            .unwrap_or(file_format::InstrumentRole::NORMAL);
         if held == role {
             names.push(name.clone());
         }
@@ -472,7 +483,9 @@ mod tests {
     fn on_the_bass_track() -> Tracker {
         let setlist = Setlist::read_text(TWO_TRACK_SET).expect("the scenario's set is valid");
         let mut tracker = Tracker::new(crate::document::Document::new(setlist, None));
-        tracker.app.show_page(Box::new(FieldPage::new(TrackEditor { name: "bass".to_string() })));
+        tracker.app.show_page(Box::new(FieldPage::new(TrackEditor {
+            name: file_format::Row::BASS.to_string(),
+        })));
         tracker.settle();
         tracker
     }
@@ -497,16 +510,20 @@ mod tests {
     #[test]
     fn the_track_editor_renames_its_track() {
         let mut tracker = on_the_bass_track();
-        tracker.press("f2");
-        type_name(&mut tracker, "bass", "lead");
-        assert_eq!(track_names(&tracker), vec!["bass", "lead"], "a taken name is refused");
+        tracker.press(llamatron_names::keys::F2);
+        type_name(&mut tracker, file_format::Row::BASS, words::LEAD);
+        assert_eq!(track_names(&tracker), vec![file_format::Row::BASS, words::LEAD], "a taken name is refused");
         assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
         tracker.press(first_key(&FieldKeys::ENTER));
         assert_eq!(tracker.top().name(), "PromptDialog");
-        type_name(&mut tracker, "bass", "groove");
-        assert_eq!(track_names(&tracker), vec!["groove", "lead"]);
+        type_name(&mut tracker, file_format::Row::BASS, file_format::SongSetting::GROOVE);
+        assert_eq!(track_names(&tracker), vec![file_format::SongSetting::GROOVE, words::LEAD]);
         assert!(
-            tracker.top().crumbs(&tracker.app).iter().any(|crumb| crumb.contains("groove")),
+            tracker
+                .top()
+                .crumbs(&tracker.app)
+                .iter()
+                .any(|crumb| crumb.contains(file_format::SongSetting::GROOVE)),
             "the page follows the rename"
         );
     }

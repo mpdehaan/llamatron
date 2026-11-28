@@ -10,6 +10,7 @@ use crate::keys::KeyItem;
 use crate::page::{page_lines, Page};
 use crate::screens::main_page::MainPage;
 use crate::text::Text;
+use llamatron_names::fill;
 
 /// The dim line above the legend: what the last key did, or why it did nothing, in amber.
 #[derive(Default)]
@@ -396,13 +397,16 @@ impl Tracker {
             self.app.say(nothing);
             return;
         };
-        let mut status = named(done, &[("what", words.as_str().into())]);
+        let mut status = named(done, &[(fill::WHAT, words.as_str().into())]);
         // A page whose thing the step renamed goes on showing it under its other name; a page whose thing the step took away
         // can't be shown, so the tracker goes back to the page it was opened from, and says so.
         self.follow_renames(&renames);
         if let Some(gone) = self.pages.iter().position(|page| !page.still_exists(&self.app)) {
             let crumbs = self.pages[gone].crumbs(&self.app).join(llamatron_strings::marks::MSG_CRUMB_SEPARATOR);
-            status = named(messages::MSG_BACK_FROM, &[("status", status.as_str().into()), ("page", crumbs.as_str().into())]);
+            status = named(
+                messages::MSG_BACK_FROM,
+                &[(fill::STATUS, status.as_str().into()), (fill::PAGE, crumbs.as_str().into())],
+            );
             self.pages.truncate(gone.max(1));
         }
         self.app.say(&status);
@@ -456,7 +460,7 @@ impl Tracker {
 
 /// The character a key types, where it types one: a printable letter, mark or space.
 fn typed_character(key: &str) -> Option<char> {
-    if key == "space" {
+    if key == llamatron_names::keys::SPACE {
         return Some(' ');
     }
     let mut characters = key.chars();

@@ -20,6 +20,9 @@ use crate::style::Style;
 use crate::text::Text;
 use llamatron_math::Rational;
 use llamatron_model::values::generated::note::SHARP_NAMES;
+use llamatron_names::fill;
+use llamatron_names::keys;
+use llamatron_names::words;
 use llamatron_strings::texts::visualizers;
 use llamatron_strings::{marks, named};
 
@@ -178,7 +181,7 @@ fn coloured(drums: &[usize], others: &[usize]) -> Vec<(usize, (u8, u8, u8))> {
 
 /// A track's name with its number, counted from 1, as the legend shows it.
 fn track_label(name: &str, place: usize) -> String {
-    named(marks::MSG_SCENE_VIEW_TRACK, &[("name", name.into()), ("number", (place + 1).into())])
+    named(marks::MSG_SCENE_VIEW_TRACK, &[(fill::NAME, name.into()), (fill::NUMBER, (place + 1).into())])
 }
 
 /// A line cut to a width, as Rich's truncate cuts without an ellipsis, padded with spaces where pad says.
@@ -268,9 +271,9 @@ impl SceneView {
     /// Move the cursor a sixteenth left or right, or a row up or down, stopping at the edges.
     pub fn move_cursor(&mut self, app: &App, key: &str) {
         match key {
-            "left" => self.column = (self.column - 1).max(0),
-            "right" => self.column = (self.column + 1).min(self.columns(app) - 1),
-            "up" => self.row.set(self.row.get().saturating_sub(1)),
+            keys::LEFT => self.column = (self.column - 1).max(0),
+            keys::RIGHT => self.column = (self.column + 1).min(self.columns(app) - 1),
+            keys::UP => self.row.set(self.row.get().saturating_sub(1)),
             _ => {
                 let count = self.rows(app).len();
                 self.row.set((self.row.get() + 1).min(count.saturating_sub(1)));
@@ -386,7 +389,7 @@ impl SceneView {
         let notes = match self.notes(app) {
             Ok(notes) => notes,
             Err(problem) => {
-                let said = named(marks::MSG_SCENE_VIEW_CANT_SHOW, &[("problem", problem.as_str().into())]);
+                let said = named(marks::MSG_SCENE_VIEW_CANT_SHOW, &[(fill::PROBLEM, problem.as_str().into())]);
                 lines.push(Text::plain(&cut_text(&said, width)));
                 return lines;
             }
@@ -396,18 +399,18 @@ impl SceneView {
         let signature = song.get_time_signature();
         let shown_signature = named(
             marks::MSG_SCENE_VIEW_SIGNATURE,
-            &[("beats", signature.get_beats().into()), ("unit", signature.get_unit().into())],
+            &[(fill::BEATS, signature.get_beats().into()), (fill::UNIT, signature.get_unit().into())],
         );
         let values = named(
             marks::MSG_SCENE_VIEW_EFFECTIVE,
             &[
-                ("tempo", effective.tempo.as_str().into()),
-                ("tempo_source", effective.tempo_source.into()),
-                ("signature", shown_signature.as_str().into()),
-                ("scale", effective.scale.clone().unwrap_or_default().as_str().into()),
-                ("scale_source", effective.scale_source.into()),
-                ("groove", effective.groove.as_str().into()),
-                ("groove_source", effective.groove_source.into()),
+                (fill::TEMPO, effective.tempo.as_str().into()),
+                (fill::TEMPO_SOURCE, effective.tempo_source.into()),
+                (fill::SIGNATURE, shown_signature.as_str().into()),
+                (fill::SCALE, effective.scale.clone().unwrap_or_default().as_str().into()),
+                (fill::SCALE_SOURCE, effective.scale_source.into()),
+                (fill::GROOVE, effective.groove.as_str().into()),
+                (fill::GROOVE_SOURCE, effective.groove_source.into()),
             ],
         );
         lines.push(Text::styled(&cut_text(&values, width), Styles::DIM));
@@ -458,7 +461,7 @@ impl SceneView {
             let name = &notes.names[track];
             let mut entry = format!("{}{}", marks::MSG_SCENE_VIEW_LEGEND_MARK, track_label(name, track));
             if let Some((_, scale)) = effective.clip_scales.iter().find(|(found, _)| found == name) {
-                entry.push_str(&named(marks::MSG_SCENE_VIEW_CLIP_SCALE, &[("scale", scale.as_str().into())]));
+                entry.push_str(&named(marks::MSG_SCENE_VIEW_CLIP_SCALE, &[(fill::SCALE, scale.as_str().into())]));
             }
             text.append_style(&entry, colour_style(self.track_colour(app, track), None));
             text.append(marks::MSG_SCENE_VIEW_LEGEND_GAP, Styles::PLAIN);
@@ -595,7 +598,7 @@ impl SceneView {
         let mut cells: Vec<(char, Option<Style>)> = vec![(SPACE, None); LABEL_COLUMNS];
         if pitch % 12 == 0 {
             let octave = crate::settings::shown_octave(app.document.get_setlist(), pitch / 12);
-            let shown = named(visualizers::MSG_PIANO_ROLL_OCTAVE_LABEL, &[("octave", octave.into())]);
+            let shown = named(visualizers::MSG_PIANO_ROLL_OCTAVE_LABEL, &[(fill::OCTAVE, octave.into())]);
             for (place, character) in shown.chars().take(NOTE_LABEL_COLUMN).enumerate() {
                 cells[place] = (character, Some(label.clone()));
             }
@@ -625,7 +628,7 @@ impl SceneView {
             tracks.dedup();
             if tracks.len() > 1 {
                 let background = self.track_colour(app, tracks[0]);
-                let bold = Style::parse("bold");
+                let bold = Style::parse(words::BOLD);
                 if tracks.len() == 2 {
                     let style = colour_style(self.track_colour(app, tracks[1]), Some(background)).and(&bold);
                     return (OVERLAP_CHARACTER, Some(style));
@@ -654,7 +657,7 @@ impl SceneView {
         let mut lines = Vec::new();
         for (place, (name, track)) in song.tracks().iter().enumerate() {
             let Some(clip) = scene.get_clip_slot(name) else { continue };
-            let heading = colour_style(self.track_colour(app, place), None).and(&Style::parse("bold"));
+            let heading = colour_style(self.track_colour(app, place), None).and(&Style::parse(words::BOLD));
             lines.push(Text::with_style(&track_label(name, place), heading));
             let mut details = clip_lines(setlist, song, clip);
             details.extend(track_lines(track));
@@ -695,10 +698,10 @@ impl SceneView {
                 let mut text = named(
                     marks::MSG_SCENE_VIEW_NOTE,
                     &[
-                        ("track", notes.names[note.track].as_str().into()),
-                        ("number", (note.track + 1).into()),
-                        ("note", self.note_name(app, note.pitch).as_str().into()),
-                        ("length", length_text(note.end - note.start).as_str().into()),
+                        (fill::TRACK, notes.names[note.track].as_str().into()),
+                        (fill::NUMBER, (note.track + 1).into()),
+                        (fill::NOTE, self.note_name(app, note.pitch).as_str().into()),
+                        (fill::LENGTH, length_text(note.end - note.start).as_str().into()),
                     ],
                 );
                 if note.marked {
@@ -713,8 +716,8 @@ impl SceneView {
         let bar_columns = sixteenth(notes.bar).max(1);
         let (bar, within) = (self.column.div_euclid(bar_columns), self.column.rem_euclid(bar_columns));
         let beat = within / sixteenth(notes.beat).max(1);
-        let place = named(marks::MSG_SCENE_VIEW_PLACE, &[("bar", (bar + 1).into()), ("beat", (beat + 1).into())]);
-        named(marks::MSG_SCENE_VIEW_NOTHING_HERE, &[("place", place.as_str().into())])
+        let place = named(marks::MSG_SCENE_VIEW_PLACE, &[(fill::BAR, (bar + 1).into()), (fill::BEAT, (beat + 1).into())]);
+        named(marks::MSG_SCENE_VIEW_NOTHING_HERE, &[(fill::PLACE, place.as_str().into())])
     }
 
     /// A pitch's name with its octave in the set's octave labels.

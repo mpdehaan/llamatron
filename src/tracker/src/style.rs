@@ -4,21 +4,23 @@
 //! A style a piece of the screen is drawn in, as the Rich library holds one, and written as Rich writes it, so that the
 //! screens compare with the Python program's: its attributes, then its colour, then `on` its background.
 
+use llamatron_names::file_format;
 /// The attributes a style may set, in the order Rich writes them.
+use llamatron_names::words;
 const ATTRIBUTES: [&str; 13] = [
-    "bold",
-    "dim",
-    "italic",
-    "underline",
-    "blink",
-    "blink2",
-    "reverse",
-    "conceal",
-    "strike",
-    "underline2",
-    "frame",
-    "encircle",
-    "overline",
+    words::BOLD,
+    file_format::ChordSymbol::DIMINISHED,
+    words::ITALIC,
+    words::UNDERLINE,
+    words::BLINK,
+    words::BLINK2,
+    words::REVERSE,
+    words::CONCEAL,
+    file_format::VactrolLight::STRIKE,
+    words::UNDERLINE2,
+    words::FRAME,
+    words::ENCIRCLE,
+    words::OVERLINE,
 ];
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
@@ -35,11 +37,11 @@ impl Style {
         let mut style = Style::default();
         let mut words = text.split_whitespace().peekable();
         while let Some(word) = words.next() {
-            if word == "on" {
+            if word == file_format::LfoSetting::ON {
                 style.bgcolor = words.next().map(str::to_string);
                 continue;
             }
-            if word == "not" {
+            if word == words::NOT {
                 if let Some(place) = words.next().and_then(|name| ATTRIBUTES.iter().position(|found| *found == name)) {
                     style.attributes[place] = Some(false);
                 }
@@ -47,7 +49,7 @@ impl Style {
             }
             match ATTRIBUTES.iter().position(|found| *found == word) {
                 Some(place) => style.attributes[place] = Some(true),
-                None if word != "none" => style.color = Some(word.to_string()),
+                None if word != file_format::MatrixSource::NONE => style.color = Some(word.to_string()),
                 None => {}
             }
         }

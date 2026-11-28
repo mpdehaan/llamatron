@@ -7,6 +7,7 @@
 use crate::keys::KeyItem;
 use crate::style::Style as RichStyle;
 use crate::text::Text;
+use llamatron_names::fill;
 use llamatron_strings::legends;
 
 pub const ELLIPSIS: char = '…';
@@ -159,8 +160,8 @@ pub fn legend(keys: &[KeyItem], width: usize) -> Vec<Text> {
     let mut lines = Vec::new();
     let mut line = Text::plain(SPACE);
     for item in keys {
-        let label = llamatron_strings::named(legends::MSG_LEGEND_LABEL, &[("label", item.label.as_str().into())]);
-        let what = llamatron_strings::named(legends::MSG_LEGEND_WHAT, &[("what", item.what.as_str().into())]);
+        let label = llamatron_strings::named(legends::MSG_LEGEND_LABEL, &[(fill::LABEL, item.label.as_str().into())]);
+        let what = llamatron_strings::named(legends::MSG_LEGEND_WHAT, &[(fill::WHAT, item.what.as_str().into())]);
         let size = label.chars().count() + what.chars().count();
         if line.cell_len() + size > width && line.cell_len() > 1 {
             lines.push(line);

@@ -13,6 +13,8 @@ use llamatron_math::Rational;
 use llamatron_model::schema::generated::file_format::{ChordSymbol, Quality, INTERVAL_CHORDS};
 use llamatron_model::values::generated::note::{FLAT_NAMES, SHARP_NAMES};
 use llamatron_model::values::note::semitones_above_c;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 
 /// How many pitch classes may sound in a beat besides its chord, as a melody's passing notes, and the share of the beat a
@@ -259,7 +261,7 @@ fn applied_chord(root: i64, symbol: &str, scale: Option<&ChordScale>) -> Option<
     Some(Applied {
         numeral: named(
             marks::MSG_SECONDARY_DOMINANT,
-            &[("dominant", numeral.into()), ("target", target_numeral.as_str().into())],
+            &[(fill::DOMINANT, numeral.into()), (fill::TARGET, target_numeral.as_str().into())],
         ),
         degree,
         letters,
@@ -338,7 +340,7 @@ fn root_numeral(root: i64, symbol: &str, scale: &ChordScale) -> String {
         above = (above + 1).rem_euclid(12);
         accidental = marks::MSG_ACCIDENTAL_MARKS
             .iter()
-            .find(|(sign, _)| *sign == "b")
+            .find(|(sign, _)| *sign == file_format::Accidental::FLAT)
             .map_or(String::new(), |(_, mark)| mark.to_string());
         if !shape.contains(&above) {
             return String::new();
@@ -370,7 +372,7 @@ pub fn chord_texts(root: i64, symbol: &str, scale: Option<&ChordScale>, bass: Op
             .map_or_else(|| spelled(bass, scale), |(_, name)| name.clone());
         name = named(
             marks::MSG_SCENE_VIEW_SLASH_CHORD,
-            &[("chord", name.as_str().into()), ("bass", bass_name.as_str().into())],
+            &[(fill::CHORD, name.as_str().into()), (fill::BASS, bass_name.as_str().into())],
         );
     }
     let Some(scale) = scale else { return (name, String::new()) };

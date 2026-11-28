@@ -5,6 +5,7 @@
 //! [ and ], ENTER and Bksp do there. A field's kind says what most settings are, and works out what a key makes of it: a page
 //! is handed that as an Edit to store, by the field's id, so that a setting's behaviour is said once, in its kind.
 
+use llamatron_names::fill;
 use llamatron_strings::{labels, legends, marks, named};
 
 /// How the tracker draws a field.
@@ -436,7 +437,10 @@ impl Field {
     pub fn drawn_label(&self, open: bool) -> String {
         if self.is_heading() {
             let mark = if open { marks::MSG_SECTION_OPEN_MARK } else { marks::MSG_SECTION_CLOSED_MARK };
-            return named(labels::MSG_SECTION_LABEL, &[("mark", mark.into()), ("name", self.label.as_str().into())]);
+            return named(
+                labels::MSG_SECTION_LABEL,
+                &[(fill::MARK, mark.into()), (fill::NAME, self.label.as_str().into())],
+            );
         }
         self.shown_label.clone().unwrap_or_else(|| self.label.clone())
     }

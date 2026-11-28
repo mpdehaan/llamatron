@@ -6,6 +6,7 @@
 
 use crate::app::App;
 use crate::screens::dialogs::{Answer, ConfirmDialog, MessageDialog, PromptDialog, QuitDialog, SAVE_THEN_QUIT};
+use llamatron_names::fill;
 use llamatron_strings::{errors, messages, named};
 use std::path::{Path, PathBuf};
 
@@ -30,19 +31,19 @@ pub fn save(app: &mut App, then: Option<AfterSaving>) {
     let shown = path.display().to_string();
     if app.document.file_is_protected(None) {
         let lines = vec![
-            named(messages::MSG_PROTECTED_EXPLAINED, &[("path", shown.as_str().into())]),
+            named(messages::MSG_PROTECTED_EXPLAINED, &[(fill::PATH, shown.as_str().into())]),
             messages::MSG_PROTECTED_SAVE_COPY_QUESTION.to_string(),
         ];
         confirm(app, messages::MSG_PROTECTED_TITLE, lines, Box::new(move |app: &mut App| save_as(app, then)));
         return;
     }
     if app.document.file_holds_this_set() {
-        app.say(&named(messages::MSG_FILE_UNCHANGED, &[("path", shown.as_str().into())]));
+        app.say(&named(messages::MSG_FILE_UNCHANGED, &[(fill::PATH, shown.as_str().into())]));
         if let Some(then) = then {
             then(app);
         }
     } else if app.document.file_changed_elsewhere() {
-        let lines = vec![named(messages::MSG_FILE_CHANGED_ELSEWHERE_QUESTION, &[("path", shown.as_str().into())])];
+        let lines = vec![named(messages::MSG_FILE_CHANGED_ELSEWHERE_QUESTION, &[(fill::PATH, shown.as_str().into())])];
         confirm(
             app,
             messages::MSG_FILE_CHANGED_ELSEWHERE_TITLE,
@@ -86,12 +87,12 @@ fn chosen(app: &mut App, typed: &str, then: Option<AfterSaving>) {
     let shown = path.display().to_string();
     if app.document.file_is_protected(Some(&path)) {
         let lines = vec![
-            named(messages::MSG_PROTECTED_EXPLAINED, &[("path", shown.as_str().into())]),
+            named(messages::MSG_PROTECTED_EXPLAINED, &[(fill::PATH, shown.as_str().into())]),
             messages::MSG_PROTECTED_CHOOSE_ANOTHER_NAME.to_string(),
         ];
         app.show_page(Box::new(MessageDialog::new(messages::MSG_PROTECTED_TITLE, lines)));
     } else if Some(path.as_path()) != app.document.get_path() && path.exists() {
-        let lines = vec![named(messages::MSG_REPLACE_FILE_QUESTION, &[("path", shown.as_str().into())])];
+        let lines = vec![named(messages::MSG_REPLACE_FILE_QUESTION, &[(fill::PATH, shown.as_str().into())])];
         confirm(
             app,
             messages::MSG_REPLACE_FILE_TITLE,
@@ -110,12 +111,12 @@ fn write(app: &mut App, path: &Path, then: Option<AfterSaving>, as_copy: bool) {
     if let Err(error) = written {
         let lines = vec![named(
             errors::ERR_CANT_SAVE,
-            &[("path", shown.as_str().into()), ("error", error.as_str().into())],
+            &[(fill::PATH, shown.as_str().into()), (fill::ERROR, error.as_str().into())],
         )];
         app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_SAVE_TITLE, lines)));
         return;
     }
-    app.say(&named(messages::MSG_SAVED, &[("path", shown.as_str().into())]));
+    app.say(&named(messages::MSG_SAVED, &[(fill::PATH, shown.as_str().into())]));
     if let Some(then) = then {
         then(app);
     }

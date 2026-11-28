@@ -8,6 +8,8 @@
 //! The arithmetic follows Rich's operation for operation, since a float printed differently would change every file.
 
 use llamatron_math::number::python_float_text;
+use llamatron_names::file_format;
+use llamatron_names::words;
 
 /// A colour as red, green and blue.
 type Rgb = (u8, u8, u8);
@@ -36,14 +38,14 @@ const NUMBERED: [Rgb; 16] = [
 ];
 /// The named colours a style may say, by their number among the numbered ones.
 const NAMED: [(&str, usize); 8] = [
-    ("black", 0),
-    ("red", 1),
-    ("green", 2),
-    ("yellow", 3),
-    ("blue", 4),
-    ("magenta", 5),
-    ("cyan", 6),
-    ("white", 7),
+    (words::BLACK, 0),
+    (words::RED, 1),
+    (words::GREEN, 2),
+    (words::YELLOW, 3),
+    (words::BLUE, 4),
+    (words::MAGENTA, 5),
+    (words::CYAN, 6),
+    (words::WHITE, 7),
 ];
 /// How far dim text is blended toward the background.
 const DIM_BLEND: f64 = 0.4;
@@ -94,13 +96,13 @@ impl PieceStyle {
         let mut after_on = false;
         for word in text.split_whitespace() {
             match word {
-                "on" => after_on = true,
-                "bold" => style.bold = true,
-                "dim" => style.dim = true,
-                "italic" => style.italic = true,
-                "underline" => style.underline = true,
-                "strike" => style.strike = true,
-                "reverse" => style.reverse = true,
+                file_format::LfoSetting::ON => after_on = true,
+                words::BOLD => style.bold = true,
+                file_format::ChordSymbol::DIMINISHED => style.dim = true,
+                words::ITALIC => style.italic = true,
+                words::UNDERLINE => style.underline = true,
+                file_format::VactrolLight::STRIKE => style.strike = true,
+                words::REVERSE => style.reverse = true,
                 colour if after_on => style.background = colour_named(colour),
                 colour => style.colour = colour_named(colour),
             }
@@ -291,7 +293,7 @@ pub fn screen_svg(lines: &[Vec<(String, String)>], width: usize, title: &str, un
 
 /// A colour a style's word names.
 fn colour_named(word: &str) -> Colour {
-    if word == "default" {
+    if word == words::DEFAULT {
         return Colour::Default;
     }
     if let Some(hex) = word.strip_prefix('#') {

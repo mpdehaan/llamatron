@@ -13,6 +13,11 @@ use crate::realtime::preview::{PatternPreview, Previewing};
 use crate::screens::dialogs::{Answer, ChoiceDialog, MessageDialog};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{Section, TrackSetting};
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::spec;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{errors, messages, named};
 
 /// What a pattern's Listen key does now: listen, or stop the pattern playing.
@@ -53,8 +58,8 @@ pub fn listen_to_pattern(app: &mut App, pattern: &str) {
         return;
     }
     let said = match app.preview.scale() {
-        None => named(messages::MSG_LISTENING_TO_PATTERN, &[("name", pattern.into())]),
-        Some(scale) => named(messages::MSG_LISTENING_IN_SCALE, &[("name", pattern.into()), ("scale", scale.into())]),
+        None => named(messages::MSG_LISTENING_TO_PATTERN, &[(fill::NAME, pattern.into())]),
+        Some(scale) => named(messages::MSG_LISTENING_IN_SCALE, &[(fill::NAME, pattern.into()), (fill::SCALE, scale.into())]),
     };
     app.say(&said);
 }
@@ -78,7 +83,7 @@ pub fn listen_to_instrument(app: &mut App, instrument: &str) {
         app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_PLAY_TITLE, vec![problem])));
         return;
     }
-    app.say(&named(messages::MSG_LISTENING_TO_INSTRUMENT, &[("name", instrument.into())]));
+    app.say(&named(messages::MSG_LISTENING_TO_INSTRUMENT, &[(fill::NAME, instrument.into())]));
 }
 
 /// Stop the pattern's preview alone, leaving a song played from Arrange playing.
@@ -97,7 +102,7 @@ pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
     let real_time = app.document.song().plays_in_real_time(app.document.get_setlist());
     if !real_time && app.fluidsynth_installed {
         match app.preview.play_clip_of_song(&app.document, index, track) {
-            Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[("name", name.into())])),
+            Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[(fill::NAME, name.into())])),
             Err(problem) => app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_PLAY_TITLE, vec![problem]))),
         }
         return;
@@ -106,8 +111,8 @@ pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
         app.show_page(Box::new(MessageDialog::new(&refusal.title, refusal.lines)));
         return;
     }
-    let said = named(messages::MSG_LISTENING, &[("name", name.into()), ("track", track.into())]);
-    let what = named(messages::MSG_CLIP_ON_TRACK, &[("name", name.into()), ("track", track.into())]);
+    let said = named(messages::MSG_LISTENING, &[(fill::NAME, name.into()), (fill::TRACK, track.into())]);
+    let what = named(messages::MSG_CLIP_ON_TRACK, &[(fill::NAME, name.into()), (fill::TRACK, track.into())]);
     let instrument = app
         .document
         .song()
@@ -121,7 +126,7 @@ pub fn listen(app: &mut App, index: usize, track: &str, name: &str) {
         .is_some_and(|held| crate::realtime::transport::device_of(held).is_some() || crate::realtime::transport::is_built_in(held));
     if listens_through_drum_kit(app, track) {
         match app.preview.play_clip_of_song(&app.document, index, track) {
-            Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[("name", name.into())])),
+            Ok(()) => app.say(&named(messages::MSG_LISTENING_GENERAL_MIDI, &[(fill::NAME, name.into())])),
             Err(problem) => app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_PLAY_TITLE, vec![problem]))),
         }
         return;
@@ -205,10 +210,10 @@ mod tests {
         let setlist = llamatron_model::objects::setlist::Setlist::read_text(TRACKS_SET).expect("the scenario's set is valid");
         let mut app = App::new(crate::document::Document::new(setlist, None));
         app.fluidsynth_installed = true;
-        assert!(listens_through_drum_kit(&app, "drums"));
-        assert!(!listens_through_drum_kit(&app, "lead"));
-        assert!(!listens_through_drum_kit(&app, "played"));
+        assert!(listens_through_drum_kit(&app, spec::DRUMS));
+        assert!(!listens_through_drum_kit(&app, words::LEAD));
+        assert!(!listens_through_drum_kit(&app, words::PLAYED));
         app.fluidsynth_installed = false;
-        assert!(!listens_through_drum_kit(&app, "drums"));
+        assert!(!listens_through_drum_kit(&app, spec::DRUMS));
     }
 }

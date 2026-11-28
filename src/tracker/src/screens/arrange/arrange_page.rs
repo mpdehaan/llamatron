@@ -23,6 +23,9 @@ pub use edits::new_pattern_steps;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::song::{ClipSlot, Scene};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, TrackSetting};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named, names};
 use std::cell::Cell;
 
@@ -145,7 +148,7 @@ fn clip_text(clip: &ClipSlot, repeats_left: Option<i64>) -> String {
     if clip.get_repeat() > DEFAULT_REPEAT {
         shown.push_str(&named(
             marks::MSG_REPEAT_MARK,
-            &[("repeat", repeats_left.unwrap_or_else(|| clip.get_repeat()).into())],
+            &[(fill::REPEAT, repeats_left.unwrap_or_else(|| clip.get_repeat()).into())],
         ));
     }
     if shown.is_empty() {
@@ -154,14 +157,14 @@ fn clip_text(clip: &ClipSlot, repeats_left: Option<i64>) -> String {
     let room = (CELL_WIDTH as i64 - shown.chars().count() as i64 - 2).max(1) as usize;
     named(
         marks::MSG_CLIP_WITH_MARKS,
-        &[("name", fit(&name, room).trim_end().into()), ("marks", shown.as_str().into())],
+        &[(fill::NAME, fit(&name, room).trim_end().into()), (fill::MARKS, shown.as_str().into())],
     )
 }
 
 pub fn scene_name(scene: &Scene, index: usize) -> String {
     scene
         .get_name()
-        .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[("number", (index + 1).into())]))
+        .unwrap_or_else(|| named(names::MSG_NEW_SCENE_NAME, &[(fill::NUMBER, (index + 1).into())]))
 }
 
 impl ArrangePage {
@@ -391,7 +394,7 @@ impl ArrangePage {
             return;
         }
         let last_column = Self::places(app).len() - 1 + FIRST_TRACK_COLUMN;
-        let beyond = if key == "left" {
+        let beyond = if key == llamatron_names::keys::LEFT {
             (SCENE_COLUMN..self.column.get())
                 .rev()
                 .find(|each| *each == SCENE_COLUMN || Self::column_holds_track(app, *each))
@@ -514,12 +517,12 @@ impl ArrangePage {
         let name = match what {
             Moving::Scene => named(
                 messages::MSG_CUT_SCENE,
-                &[("name", scene_name(&app.document.song().scenes()[row], row).as_str().into())],
+                &[(fill::NAME, scene_name(&app.document.song().scenes()[row], row).as_str().into())],
             ),
-            Moving::Track => named(messages::MSG_CUT_TRACK, &[("name", track.as_str().into())]),
+            Moving::Track => named(messages::MSG_CUT_TRACK, &[(fill::NAME, track.as_str().into())]),
             Moving::Clip => {
                 let clip = Self::clip(app, row, &track).map_or(String::new(), ClipSlot::get_display_name);
-                named(messages::MSG_CUT_CLIP, &[("name", clip.as_str().into())])
+                named(messages::MSG_CUT_CLIP, &[(fill::NAME, clip.as_str().into())])
             }
         };
         self.cut = Some(Cut { what, row, track });
@@ -614,7 +617,7 @@ impl ArrangePage {
             }
         });
         if let Some(track) = dropped {
-            app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[("track", track.as_str().into())]));
+            app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[(fill::TRACK, track.as_str().into())]));
         }
     }
 
@@ -1032,14 +1035,14 @@ impl ArrangePage {
         let mut name = scene_name(scene, index);
         if scene.get_repeat() > DEFAULT_REPEAT {
             name.push(' ');
-            name.push_str(&named(marks::MSG_REPEAT_MARK, &[("repeat", scene.get_repeat().into())]));
+            name.push_str(&named(marks::MSG_REPEAT_MARK, &[(fill::REPEAT, scene.get_repeat().into())]));
         }
         if matches!(scene.get_written(SceneSetting::LAUNCH_TOGETHER), Some(Data::Bool(false))) {
             name.push(' ');
             name.push_str(marks::MSG_LAUNCH_APART_MARK);
         }
         let length = clock(lengths.scene_seconds(index));
-        let row = named(marks::MSG_SCENE_ROW, &[("number", (index + 1).into()), ("name", name.as_str().into())]);
+        let row = named(marks::MSG_SCENE_ROW, &[(fill::NUMBER, (index + 1).into()), (fill::NAME, name.as_str().into())]);
         format!("{}{length}", fit(&row, SCENE_LABEL_WIDTH - length.chars().count() - 1))
     }
 
@@ -1054,7 +1057,7 @@ impl ArrangePage {
         if Self::real_time_on(app) {
             let playing = app.transport.is_playing();
             let mark = if playing { marks::MSG_STOP_MARK } else { marks::MSG_PLAY_MARK };
-            let button = named(marks::MSG_SONG_BUTTON, &[("mark", mark.into())]);
+            let button = named(marks::MSG_SONG_BUTTON, &[(fill::MARK, mark.into())]);
             lines[1].push(Piece::Text {
                 column: SCENE_LABEL_COLUMN,
                 text: button,
@@ -1300,24 +1303,24 @@ impl Page for ArrangePage {
     /// clip or an empty cell.
     fn place_kind(&self, app: &App) -> String {
         let kind = if self.on_corner() {
-            "corner"
+            words::CORNER
         } else if self.plus_here(app) == Some(false) {
             "track plus"
         } else if self.plus_here(app) == Some(true) {
             "drum track plus"
         } else if self.on_header() {
-            "track"
+            file_format::FileLayout::TRACK
         } else if self.on_scene_name() {
-            "scene"
+            words::SCENE
         } else {
             let has_clip = self
                 .cursor_track(app)
                 .and_then(|track| app.document.song().scenes().get(self.row.get() as usize)?.get_clip_slot(&track).cloned())
                 .is_some();
             if has_clip {
-                "clip"
+                words::CLIP
             } else {
-                "empty"
+                words::EMPTY
             }
         };
         kind.to_string()
@@ -1436,9 +1439,9 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::MOVE) {
             let from = self.column.get();
             match key {
-                "up" => self.row.set(self.row.get() - 1),
-                "down" => self.row.set(self.row.get() + 1),
-                "left" => self.column.set(self.column.get().saturating_sub(1)),
+                llamatron_names::keys::UP => self.row.set(self.row.get() - 1),
+                llamatron_names::keys::DOWN => self.row.set(self.row.get() + 1),
+                llamatron_names::keys::LEFT => self.column.set(self.column.get().saturating_sub(1)),
                 _ => self.column.set(self.column.get() + 1),
             }
             self.step_over_plus(app, key, from);
@@ -1460,20 +1463,23 @@ impl Page for ArrangePage {
                 self.toggle_solo(app, &track);
             }
         } else if item.is(&Keys::PLAY_SONG) {
-            let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
-            let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+            let scene = named(messages::MSG_SCENE_NUMBER, &[(fill::NUMBER, 1.into())]);
+            let said = named(messages::MSG_PLAYING_FROM, &[(fill::SCENE, scene.as_str().into())]);
             play_through(app, &scene, &said, |app| app.transport.play_scene(&app.document, 0));
         } else if item.is(&Keys::PLAY_SCENE) {
             let index = self.row.get().max(0) as usize;
-            let scene = named(messages::MSG_SCENE_NUMBER, &[("number", (index + 1).into())]);
-            let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+            let scene = named(messages::MSG_SCENE_NUMBER, &[(fill::NUMBER, (index + 1).into())]);
+            let said = named(messages::MSG_PLAYING_FROM, &[(fill::SCENE, scene.as_str().into())]);
             play_through(app, &scene, &said, |app| app.transport.play_scene(&app.document, index));
         } else if item.is(&Keys::PLAY_CLIP) {
             let index = self.row.get().max(0) as usize;
             let Some(track) = self.cursor_track(app) else { return };
             let name = Self::clip(app, index, &track).map(|clip| clip.get_display_name()).unwrap_or_default();
-            let clip = named(messages::MSG_CLIP_ON_TRACK, &[("name", name.as_str().into()), ("track", track.as_str().into())]);
-            let said = named(messages::MSG_PLAYING_CLIP, &[("clip", clip.as_str().into())]);
+            let clip = named(
+                messages::MSG_CLIP_ON_TRACK,
+                &[(fill::NAME, name.as_str().into()), (fill::TRACK, track.as_str().into())],
+            );
+            let said = named(messages::MSG_PLAYING_CLIP, &[(fill::CLIP, clip.as_str().into())]);
             play_through(app, &clip, &said, |app| {
                 app.transport.play_clips(&app.document, index, vec![track.clone()], &[], false)
             });
@@ -1483,7 +1489,7 @@ impl Page for ArrangePage {
         } else if item.is(&Keys::STOP_CLIP) {
             let Some(track) = self.cursor_track(app) else { return };
             app.transport.stop_clip(&track);
-            app.say(&named(messages::MSG_STOPPED_TRACK, &[("track", track.as_str().into())]));
+            app.say(&named(messages::MSG_STOPPED_TRACK, &[(fill::TRACK, track.as_str().into())]));
         } else if item.is(&Keys::SCENE_VIEW) {
             self.inset = Some(SceneView::new(app, self.row.get().max(0) as usize));
         } else if item.is(&Keys::INTO_DETAILS) {
@@ -1495,7 +1501,7 @@ impl Page for ArrangePage {
             app.session.shows_arrange_details = false;
         } else if item.is(&Keys::PICK_DETAIL) {
             let count = self.pickable(app).len() as i64;
-            let step: i64 = if key == "up" { -1 } else { 1 };
+            let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
             self.picked = Some((self.picked.unwrap_or(0) as i64 + step).clamp(0, (count - 1).max(0)) as usize);
         } else if item.is(&Keys::OPEN_DETAIL) {
             if let Some(target) = self.picked_target(app) {
@@ -1589,11 +1595,11 @@ impl Page for ArrangePage {
         let index = inset.get_index();
         let title = named(
             marks::MSG_SCENE_VIEW_TITLE,
-            &[("scene", scene_name(&app.document.song().scenes()[index], index).as_str().into())],
+            &[(fill::SCENE, scene_name(&app.document.song().scenes()[index], index).as_str().into())],
         );
         let closing = named(
             marks::MSG_SCENE_VIEW_CLOSING,
-            &[("key", Keys::ESCAPE_INSET.name.into()), ("what", Keys::ESCAPE_INSET.what.into())],
+            &[(fill::KEY, Keys::ESCAPE_INSET.name.into()), (fill::WHAT, Keys::ESCAPE_INSET.what.into())],
         );
         inset.drawn_over(app, screen, width, height, &title, &closing)
     }
@@ -1619,7 +1625,7 @@ pub fn play_through(app: &mut App, what: &str, said: &str, play: impl FnOnce(&mu
     }
     crate::screens::listening::stop_every_preview(app);
     match play(app) {
-        Ok(true) => app.say(&named(messages::MSG_STARTS_AT_NEXT_BAR, &[("what", what.into())])),
+        Ok(true) => app.say(&named(messages::MSG_STARTS_AT_NEXT_BAR, &[(fill::WHAT, what.into())])),
         Ok(false) => app.say(said),
         Err(problem) => app.show_page(Box::new(crate::screens::dialogs::MessageDialog::new(
             llamatron_strings::errors::ERR_CANT_PLAY_TITLE,
@@ -1703,7 +1709,7 @@ mod tests {
             if page.place_kind(app) == kind {
                 return;
             }
-            press_key(app, page, &Keys::MOVE, "right");
+            press_key(app, page, &Keys::MOVE, llamatron_names::keys::RIGHT);
         }
         assert_eq!(page.place_kind(app), kind);
     }
@@ -1714,12 +1720,21 @@ mod tests {
     fn main_tracks_show_first_and_drums_after_the_double_line() {
         let (app, _) = drums_first();
         let track = |name: &str| Place::Track(name.to_string());
-        assert_eq!(ArrangePage::places(&app), vec![track("lead"), track("bass"), track("kick")]);
-        assert_eq!(file_order(&app), ["kick", "lead", "bass"]);
+        assert_eq!(
+            ArrangePage::places(&app),
+            vec![track(words::LEAD), track(file_format::Row::BASS), track(file_format::DrumMachine::KICK)]
+        );
+        assert_eq!(file_order(&app), [file_format::DrumMachine::KICK, words::LEAD, file_format::Row::BASS]);
         let (app, _) = arranged();
-        assert_eq!(ArrangePage::places(&app), vec![track("lead"), track("bass"), Place::Add { drum: true }]);
+        assert_eq!(
+            ArrangePage::places(&app),
+            vec![track(words::LEAD), track(file_format::Row::BASS), Place::Add { drum: true }]
+        );
         let (app, _) = drums_only();
-        assert_eq!(ArrangePage::places(&app), vec![Place::Add { drum: false }, track("kick"), track("hat")]);
+        assert_eq!(
+            ArrangePage::places(&app),
+            vec![Place::Add { drum: false }, track(file_format::DrumMachine::KICK), track(words::HAT)]
+        );
     }
 
     /// I inserts after the cursor: on a melodic track a melodic track after it, on a scene a scene after it, and on the
@@ -1727,11 +1742,14 @@ mod tests {
     #[test]
     fn i_inserts_after_the_cursor_and_on_a_plus_makes_its_groups_first_track() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
         let inserted = page.cursor_track(&app).expect("the new track");
-        assert_eq!(ArrangePage::tracks(&app)[..3], ["lead".to_string(), inserted.clone(), "bass".to_string()]);
+        assert_eq!(
+            ArrangePage::tracks(&app)[..3],
+            [words::LEAD.to_string(), inserted.clone(), file_format::Row::BASS.to_string()]
+        );
         assert!(!ArrangePage::is_drum_track(&app, &inserted));
         page.column.set(FIRST_TRACK_COLUMN);
         right_until(&mut app, &mut page, "drum track plus");
@@ -1739,12 +1757,16 @@ mod tests {
         let drums = page.cursor_track(&app).expect("the first drum track");
         assert!(ArrangePage::is_drum_track(&app, &drums));
         assert!(!ArrangePage::places(&app).contains(&Place::Add { drum: true }));
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         page.column.set(SCENE_COLUMN);
         press(&mut app, &mut page, &Keys::INSERT_SCENE);
         assert_eq!(page.row.get(), 1);
         assert_eq!(app.document.song().scenes().len(), 3);
-        assert_eq!(app.document.song().scenes()[2].get_name().as_deref(), Some("chorus"));
+        let inserted = 2;
+        assert_eq!(
+            app.document.song().scenes()[inserted].get_name().as_deref(),
+            Some(file_format::SectionKind::CHORUS)
+        );
     }
 
     /// The instrument a track plays, as data, by its track's name.
@@ -1774,16 +1796,18 @@ mod tests {
     fn a_new_track_gets_an_instrument_of_its_own_named_after_it() {
         use llamatron_model::schema::generated::file_format::InstrumentSetting;
         let (mut app, mut page) = arranged();
-        at(&app, &page, "verse", "bass");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::Row::BASS);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
         let melodic = page.cursor_track(&app).expect("the new track");
         let (name, instrument) = instrument_of(&app, &melodic);
         assert_eq!(name, melodic);
-        assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text("normal")));
+        assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text(file_format::InstrumentRole::NORMAL)));
         assert_eq!(
-            instrument.get(InstrumentSetting::SOUND).and_then(|sound| sound.get("engine")),
-            Some(&Data::text("basic"))
+            instrument
+                .get(InstrumentSetting::SOUND)
+                .and_then(|sound| sound.get(file_format::SoundSetting::ENGINE)),
+            Some(&Data::text(file_format::OscillatorType::BASIC))
         );
         assert!(ArrangePage::real_time_on(&app));
         page.column.set(FIRST_TRACK_COLUMN);
@@ -1791,14 +1815,17 @@ mod tests {
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
         let drum = page.cursor_track(&app).expect("the drum track");
         let (_, instrument) = instrument_of(&app, &drum);
-        assert_eq!(instrument.get(InstrumentSetting::ROLE), Some(&Data::text("percussion")));
+        assert_eq!(
+            instrument.get(InstrumentSetting::ROLE),
+            Some(&Data::text(file_format::InstrumentRole::PERCUSSION))
+        );
         // When the next track's name is an instrument's already, its instrument counts up from the name.
         let taken = ArrangePage::tracks(&app);
         let next = llamatron_model::objects::naming::new_track_name(llamatron_strings::names::MSG_NEW_MAIN_TRACK_WORD, &taken);
         let instruments = llamatron_model::schema::generated::file_format::Section::INSTRUMENTS;
         let (held, _) = instrument_of(&app, &drum);
         app.document.rename_named(instruments, &held, &next).expect("the rename");
-        at(&app, &page, "verse", "bass");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::Row::BASS);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
         let third = page.cursor_track(&app).expect("the third track");
@@ -1811,7 +1838,7 @@ mod tests {
     #[test]
     fn a_copied_track_plays_a_copy_of_its_instrument() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "verse", "bass");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::Row::BASS);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::INSERT_TRACK);
         let original = page.cursor_track(&app).expect("the new track");
@@ -1831,7 +1858,7 @@ mod tests {
     #[test]
     fn a_group_emptied_keeps_its_plus() {
         let (mut app, mut page) = drums_first();
-        for name in ["lead", "bass"] {
+        for name in [words::LEAD, file_format::Row::BASS] {
             app.document
                 .delete_named(llamatron_model::schema::generated::file_format::Section::TRACKS, name)
                 .expect("the track deletes");
@@ -1849,77 +1876,77 @@ mod tests {
     #[test]
     fn a_track_pastes_only_among_its_kind_after_the_cursor() {
         let (mut app, mut page) = drums_only();
-        at(&app, &page, "verse", "kick");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::DrumMachine::KICK);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::CUT_TRACK);
-        at(&app, &page, "verse", "hat");
+        at(&app, &page, file_format::SectionKind::VERSE, words::HAT);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::PASTE);
-        assert_eq!(file_order(&app), ["hat", "kick"]);
+        assert_eq!(file_order(&app), [words::HAT, file_format::DrumMachine::KICK]);
         let (mut app, mut page) = drums_first();
-        at(&app, &page, "verse", "kick");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::DrumMachine::KICK);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::CUT_TRACK);
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         page.row.set(HEADER_ROW);
         press(&mut app, &mut page, &Keys::PASTE);
         assert!(page.cut.is_some());
         assert_eq!(app.status.text(), messages::MSG_PASTE_TRACK_AMONG_ITS_KIND);
-        assert_eq!(file_order(&app), ["kick", "lead", "bass"]);
+        assert_eq!(file_order(&app), [file_format::DrumMachine::KICK, words::LEAD, file_format::Row::BASS]);
     }
 
     /// Under the header Left passes over a group's + onto the scene's name, and Right from the last track stays put.
     #[test]
     fn left_and_right_pass_over_a_plus_under_the_header() {
         let (mut app, mut page) = drums_only();
-        at(&app, &page, "verse", "kick");
-        press_key(&mut app, &mut page, &Keys::MOVE, "left");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::DrumMachine::KICK);
+        press_key(&mut app, &mut page, &Keys::MOVE, llamatron_names::keys::LEFT);
         assert!(page.on_scene_name());
-        at(&app, &page, "verse", "hat");
-        press_key(&mut app, &mut page, &Keys::MOVE, "right");
-        assert_eq!(page.cursor_track(&app).as_deref(), Some("hat"));
+        at(&app, &page, file_format::SectionKind::VERSE, words::HAT);
+        press_key(&mut app, &mut page, &Keys::MOVE, llamatron_names::keys::RIGHT);
+        assert_eq!(page.cursor_track(&app).as_deref(), Some(words::HAT));
     }
 
     /// A copied drum clip pastes onto an empty drum cell, but not onto a melodic track.
     #[test]
     fn a_clip_pastes_only_onto_its_patterns_kind() {
         let (mut app, mut page) = drums_first();
-        at(&app, &page, "verse", "kick");
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::DrumMachine::KICK);
         press(&mut app, &mut page, &Keys::COPY_CLIP);
-        at(&app, &page, "chorus", "bass");
+        at(&app, &page, file_format::SectionKind::CHORUS, file_format::Row::BASS);
         press(&mut app, &mut page, &Keys::PASTE);
         assert_eq!(app.status.text(), messages::MSG_PASTE_CLIP_AMONG_ITS_KIND);
-        assert!(ArrangePage::clip(&app, 1, "bass").is_none());
-        at(&app, &page, "chorus", "kick");
+        assert!(ArrangePage::clip(&app, 1, file_format::Row::BASS).is_none());
+        at(&app, &page, file_format::SectionKind::CHORUS, file_format::DrumMachine::KICK);
         press(&mut app, &mut page, &Keys::PASTE);
-        assert!(ArrangePage::clip(&app, 1, "kick").is_some());
+        assert!(ArrangePage::clip(&app, 1, file_format::DrumMachine::KICK).is_some());
     }
 
     /// M anywhere in a track's column mutes the track and unmutes it again; a muted track is silent.
     #[test]
     fn m_mutes_the_track_of_the_cursors_column() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "chorus", "bass");
+        at(&app, &page, file_format::SectionKind::CHORUS, file_format::Row::BASS);
         press(&mut app, &mut page, &Keys::MUTE_TRACK);
-        assert!(flag(&app, "bass", TrackSetting::MUTE));
-        assert!(ArrangePage::is_silenced(&app, "bass") && !ArrangePage::is_silenced(&app, "lead"));
+        assert!(flag(&app, file_format::Row::BASS, TrackSetting::MUTE));
+        assert!(ArrangePage::is_silenced(&app, file_format::Row::BASS) && !ArrangePage::is_silenced(&app, words::LEAD));
         press(&mut app, &mut page, &Keys::UNMUTE_TRACK);
-        assert!(!flag(&app, "bass", TrackSetting::MUTE));
+        assert!(!flag(&app, file_format::Row::BASS, TrackSetting::MUTE));
     }
 
     /// S solos one track at a time, every other track silent; soloing another moves the solo, and S again lifts it.
     #[test]
     fn s_solos_one_track_at_a_time() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         press(&mut app, &mut page, &Keys::SOLO_TRACK);
-        assert!(flag(&app, "lead", TrackSetting::SOLO));
-        assert!(ArrangePage::is_silenced(&app, "bass") && !ArrangePage::is_silenced(&app, "lead"));
-        at(&app, &page, "verse", "bass");
+        assert!(flag(&app, words::LEAD, TrackSetting::SOLO));
+        assert!(ArrangePage::is_silenced(&app, file_format::Row::BASS) && !ArrangePage::is_silenced(&app, words::LEAD));
+        at(&app, &page, file_format::SectionKind::VERSE, file_format::Row::BASS);
         press(&mut app, &mut page, &Keys::SOLO_TRACK);
-        assert!(flag(&app, "bass", TrackSetting::SOLO) && !flag(&app, "lead", TrackSetting::SOLO));
+        assert!(flag(&app, file_format::Row::BASS, TrackSetting::SOLO) && !flag(&app, words::LEAD, TrackSetting::SOLO));
         press(&mut app, &mut page, &Keys::UNSOLO_TRACK);
-        assert!(!ArrangePage::is_silenced(&app, "lead") && !ArrangePage::is_silenced(&app, "bass"));
+        assert!(!ArrangePage::is_silenced(&app, words::LEAD) && !ArrangePage::is_silenced(&app, file_format::Row::BASS));
     }
 
     fn scene_names(app: &App) -> Vec<String> {
@@ -1931,33 +1958,33 @@ mod tests {
     #[test]
     fn t_cuts_and_p_pastes_scenes_and_clips() {
         let (mut app, mut page) = arranged();
-        at(&app, &page, "verse", "lead");
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         page.column.set(SCENE_COLUMN);
         press(&mut app, &mut page, &Keys::CUT_SCENE);
-        at(&app, &page, "chorus", "lead");
+        at(&app, &page, file_format::SectionKind::CHORUS, words::LEAD);
         page.column.set(SCENE_COLUMN);
         press(&mut app, &mut page, &Keys::PASTE);
-        assert_eq!(scene_names(&app), ["chorus", "verse"]);
+        assert_eq!(scene_names(&app), [file_format::SectionKind::CHORUS, file_format::SectionKind::VERSE]);
         app.document.undo();
-        assert_eq!(scene_names(&app), ["verse", "chorus"]);
-        at(&app, &page, "verse", "lead");
+        assert_eq!(scene_names(&app), [file_format::SectionKind::VERSE, file_format::SectionKind::CHORUS]);
+        at(&app, &page, file_format::SectionKind::VERSE, words::LEAD);
         press(&mut app, &mut page, &Keys::CUT_CLIP);
-        at(&app, &page, "chorus", "bass");
+        at(&app, &page, file_format::SectionKind::CHORUS, file_format::Row::BASS);
         press(&mut app, &mut page, &Keys::PASTE);
         let chorus = app
             .document
             .song()
             .scenes()
             .iter()
-            .position(|held| held.get_name().as_deref() == Some("chorus"))
-            .expect("chorus");
-        assert!(ArrangePage::clip(&app, chorus, "bass").is_some());
-        assert!(ArrangePage::clip(&app, 0, "lead").is_none());
-        at(&app, &page, "chorus", "bass");
+            .position(|held| held.get_name().as_deref() == Some(file_format::SectionKind::CHORUS))
+            .expect(file_format::SectionKind::CHORUS);
+        assert!(ArrangePage::clip(&app, chorus, file_format::Row::BASS).is_some());
+        assert!(ArrangePage::clip(&app, 0, words::LEAD).is_none());
+        at(&app, &page, file_format::SectionKind::CHORUS, file_format::Row::BASS);
         press(&mut app, &mut page, &Keys::CUT_CLIP);
         press(&mut app, &mut page, &Keys::BACK);
         assert!(page.cut.is_none());
-        assert!(ArrangePage::clip(&app, chorus, "bass").is_some());
+        assert!(ArrangePage::clip(&app, chorus, file_format::Row::BASS).is_some());
     }
 
     /// In the details view, ENTER on a clip's "+ add chain" line asks for one of the set's generators and adds it to the
@@ -1971,7 +1998,7 @@ mod tests {
         let mut tracker = crate::app::Tracker::new(crate::document::Document::new(setlist, None));
         tracker.press(first_key(&crate::keybindings::MainPage::ARRANGE));
         // Arrange opens on the scene's name; the clip is the cell to its right.
-        tracker.press("right");
+        tracker.press(llamatron_names::keys::RIGHT);
         let most_presses = 10;
         tracker.press(first_key(&Keys::SHOW_DETAILS));
         tracker.press(first_key(&Keys::INTO_DETAILS));
@@ -1979,17 +2006,17 @@ mod tests {
             if tracker.top().keys(&tracker.app).iter().any(|key| key.is(&Keys::ADD_CHAIN)) {
                 break;
             }
-            tracker.press("down");
+            tracker.press(llamatron_names::keys::DOWN);
         }
         tracker.press(first_key(&Keys::ADD_CHAIN));
         let screen: Vec<String> = tracker.screen(80, 24).iter().map(|line| line.text()).collect();
         assert!(
-            screen.iter().any(|line| line.contains("lift")),
+            screen.iter().any(|line| line.contains(words::LIFT)),
             "the picker lists the set's generator: {screen:#?}"
         );
         tracker.press(first_key(&crate::keybindings::ChoiceDialog::CHOOSE));
-        let clip = tracker.app.document.song().scenes()[0].get_clip_slot("lead").expect("the clip").clone();
+        let clip = tracker.app.document.song().scenes()[0].get_clip_slot(words::LEAD).expect("the clip").clone();
         let chains = crate::screens::arrange::arrange_tabs::chain_names(clip.get_written(ClipSlotSetting::CHAINS));
-        assert_eq!(chains, ["lift"]);
+        assert_eq!(chains, [words::LIFT]);
     }
 }

@@ -7,6 +7,8 @@
 //! settings in memory alone and writes nothing.
 
 use llamatron_model::file::data::{dump, load, Data};
+use llamatron_names::file_format;
+use llamatron_names::words;
 use std::path::{Path, PathBuf};
 
 /// The config file's folder in the home folder, the backend's logs beside it, and the file's name.
@@ -34,9 +36,9 @@ impl TrackInstrumentDefault {
     /// The word the config file stores.
     pub fn word(self) -> &'static str {
         match self {
-            TrackInstrumentDefault::FluidSynth => "fluidsynth",
-            TrackInstrumentDefault::BuiltIn => "built_in",
-            TrackInstrumentDefault::ExternalMidi => "external_midi",
+            TrackInstrumentDefault::FluidSynth => words::FLUIDSYNTH,
+            TrackInstrumentDefault::BuiltIn => file_format::TrackSetting::BUILT_IN,
+            TrackInstrumentDefault::ExternalMidi => words::EXTERNAL_MIDI,
         }
     }
 

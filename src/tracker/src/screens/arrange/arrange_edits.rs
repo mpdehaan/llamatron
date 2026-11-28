@@ -15,6 +15,8 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::naming::new_name;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, Section};
 use llamatron_model::schema::generated::limits::{MAX_SCALE_LENGTH, MIN_SCALE_LENGTH};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{errors, labels, messages, named, names};
 
 /// How many steps a new pattern has where a bar of the song is not whole steps.
@@ -59,7 +61,7 @@ impl ArrangePage {
             let dialog = ConfirmDialog::new(messages::MSG_FRACTURE_TITLE, Vec::new(), false, false).then(Box::new(|app: &mut App, _: &Answer| {
                 match app.document.fracture() {
                     Ok(copies) if copies.is_empty() => app.say(messages::MSG_NOTHING_TO_FRACTURE),
-                    Ok(copies) => app.say(&named(messages::MSG_FRACTURED, &[("count", copies.len().into())])),
+                    Ok(copies) => app.say(&named(messages::MSG_FRACTURED, &[(fill::COUNT, copies.len().into())])),
                     Err(problem) => app.refuse(&problem),
                 }
             }));
@@ -97,7 +99,7 @@ impl ArrangePage {
             .song()
             .scenes()
             .iter()
-            .filter_map(|scene| scene.get_written("name").and_then(Data::as_str).map(str::to_string))
+            .filter_map(|scene| scene.get_written(file_format::FileLayout::NAME).and_then(Data::as_str).map(str::to_string))
             .collect();
         new_name(names::MSG_NEW_SCENE_WORD, &taken)
     }
@@ -151,7 +153,7 @@ impl ArrangePage {
     fn copy_scene(&self, app: &mut App) {
         let row = self.row.get().max(0) as usize;
         let name = super::scene_name(&app.document.song().scenes()[row], row);
-        let title = named(messages::MSG_COPY_SCENE_TITLE, &[("name", name.as_str().into())]);
+        let title = named(messages::MSG_COPY_SCENE_TITLE, &[(fill::NAME, name.as_str().into())]);
         let column = self.column.get();
         ask_how_patterns_copy(
             app,
@@ -189,10 +191,13 @@ impl ArrangePage {
             app.show_page(Box::new(MessageDialog::new(errors::ERR_CANT_DELETE_TITLE, lines)));
             return;
         }
-        let question = named(messages::MSG_DELETE_SCENE_QUESTION, &[("name", super::scene_name(scene, row).as_str().into())]);
+        let question = named(
+            messages::MSG_DELETE_SCENE_QUESTION,
+            &[(fill::NAME, super::scene_name(scene, row).as_str().into())],
+        );
         let mut lines = Vec::new();
         if count > 0 {
-            lines.push(named(messages::MSG_ALSO_DELETES_CLIPS, &[("count", count.into())]));
+            lines.push(named(messages::MSG_ALSO_DELETES_CLIPS, &[(fill::COUNT, count.into())]));
         }
         confirm_delete(
             app,
@@ -206,7 +211,7 @@ impl ArrangePage {
     /// with its clips and move onto it.
     fn copy_track(&self, app: &mut App) {
         let Some(name) = self.cursor_track(app) else { return };
-        let title = named(messages::MSG_COPY_TRACK_TITLE, &[("name", name.as_str().into())]);
+        let title = named(messages::MSG_COPY_TRACK_TITLE, &[(fill::NAME, name.as_str().into())]);
         let (row, column) = (self.row.get(), self.column.get());
         ask_how_patterns_copy(
             app,
@@ -262,13 +267,13 @@ impl ArrangePage {
             .flat_map(|scene| scene.clip_slots())
             .filter(|(_, clip)| clip.get_written(ClipSlotSetting::GRAB_TRACK).and_then(Data::as_str) == Some(name.as_str()))
             .count();
-        let question = named(messages::MSG_DELETE_TRACK_QUESTION, &[("name", name.as_str().into())]);
+        let question = named(messages::MSG_DELETE_TRACK_QUESTION, &[(fill::NAME, name.as_str().into())]);
         let mut lines = Vec::new();
         if clips > 0 {
-            lines.push(named(messages::MSG_ALSO_DELETES_CLIPS, &[("count", clips.into())]));
+            lines.push(named(messages::MSG_ALSO_DELETES_CLIPS, &[(fill::COUNT, clips.into())]));
         }
         if grabbing > 0 {
-            lines.push(named(messages::MSG_GRABBERS_STOP, &[("count", grabbing.into())]));
+            lines.push(named(messages::MSG_GRABBERS_STOP, &[(fill::COUNT, grabbing.into())]));
         }
         confirm_delete(
             app,
@@ -332,7 +337,7 @@ impl ArrangePage {
         }
         if Self::edited(app, |document| document.put_clip(row, &track, &clip.to_data())) {
             if let Some(other) = dropped {
-                app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[("track", other.as_str().into())]));
+                app.say(&named(messages::MSG_PASTED_WITHOUT_GRAB, &[(fill::TRACK, other.as_str().into())]));
             }
         }
     }
@@ -341,7 +346,7 @@ impl ArrangePage {
     fn delete_clip(&self, app: &mut App) {
         let row = self.row.get().max(0) as usize;
         let Some(track) = self.cursor_track(app) else { return };
-        let question = named(messages::MSG_DELETE_CLIP_QUESTION, &[("track", track.as_str().into())]);
+        let question = named(messages::MSG_DELETE_CLIP_QUESTION, &[(fill::TRACK, track.as_str().into())]);
         confirm_delete(
             app,
             &question,
@@ -409,7 +414,7 @@ fn blank_pattern(app: &mut App, row: usize, track: &str, crumbs: Vec<String>) {
             let pattern = name.clone();
             app.document.change_set(|setlist| {
                 if let Some(llamatron_model::objects::setlist::Item::Pattern(held)) = setlist.get_item_mut(Section::PATTERNS, &pattern) {
-                    held.set_written("scale_length", Some(Data::Whole(length as i128)));
+                    held.set_written(file_format::PatternSetting::SCALE_LENGTH, Some(Data::Whole(length as i128)));
                 }
             });
         }

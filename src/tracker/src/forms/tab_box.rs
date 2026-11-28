@@ -5,6 +5,7 @@
 //! columns under headings, and where the cursor goes from a field among the spots the tracker drew them at.
 
 use crate::forms::nodes::Field;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 
 /// Where the cursor is on the row of tabs, or past the box's foot.
@@ -109,7 +110,7 @@ impl Tab {
             None => self.label.clone(),
             Some(on) => {
                 let mark = if on { marks::MSG_TOGGLE_ON } else { marks::MSG_FIELD_TOGGLE_OFF };
-                named(marks::MSG_TAB_WITH_MARK, &[("name", self.label.as_str().into()), ("mark", mark.into())])
+                named(marks::MSG_TAB_WITH_MARK, &[(fill::NAME, self.label.as_str().into()), (fill::MARK, mark.into())])
             }
         }
     }

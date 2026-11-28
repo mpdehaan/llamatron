@@ -17,6 +17,8 @@ use llamatron_model::objects::pattern::Pattern;
 use llamatron_model::schema::generated::file_format::{Section, DIRECTIONS};
 use llamatron_model::schema::generated::limits::{MAX_SCALE_LENGTH, MAX_STEPS, MAX_STEP_SIZE, MIN_SCALE_LENGTH, MIN_STEPS};
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{errors, labels, legends, marks, messages, named};
 use std::cell::RefCell;
 
@@ -150,7 +152,7 @@ fn typed_whole(app: &mut App, text: &str) -> Option<i64> {
     match text.trim().parse::<i64>() {
         Ok(number) => Some(number),
         Err(_) => {
-            app.refuse(&named(errors::ERR_TYPED_NOT_AN_INTEGER, &[("text", text.into())]));
+            app.refuse(&named(errors::ERR_TYPED_NOT_AN_INTEGER, &[(fill::TEXT, text.into())]));
             None
         }
     }
@@ -189,7 +191,10 @@ pub fn ask_steps(app: &mut App, place: &Place) {
     ask_text(app, messages::MSG_STEPS_PROMPT, &place.steps.to_string(), move |app, text| {
         let Some(steps) = typed_whole(app, text) else { return };
         if !(MIN_STEPS..=MAX_STEPS).contains(&steps) {
-            app.refuse(&named(errors::ERR_STEPS_OUT_OF_RANGE, &[("low", MIN_STEPS.into()), ("high", MAX_STEPS.into())]));
+            app.refuse(&named(
+                errors::ERR_STEPS_OUT_OF_RANGE,
+                &[(fill::LOW, MIN_STEPS.into()), (fill::HIGH, MAX_STEPS.into())],
+            ));
             return;
         }
         let lost = app
@@ -269,7 +274,7 @@ fn load_over(app: &mut App, place: &Place) {
     }
     let name = place.name.clone();
     let shown = crate::patterns::shown_pattern_name(&name);
-    let title = named(messages::MSG_LOAD_OVER_CHOICE_TITLE, &[("name", shown.as_str().into())]);
+    let title = named(messages::MSG_LOAD_OVER_CHOICE_TITLE, &[(fill::NAME, shown.as_str().into())]);
     ask_choice(app, &title, others.clone(), 0, move |app, chosen| {
         let other = others[chosen].clone();
         let name = name.clone();
@@ -285,7 +290,7 @@ fn load_over(app: &mut App, place: &Place) {
         if has_notes(app, &name) {
             let question = named(
                 messages::MSG_LOAD_OVER_QUESTION,
-                &[("name", name.as_str().into()), ("other", other.as_str().into())],
+                &[(fill::NAME, name.as_str().into()), (fill::OTHER, other.as_str().into())],
             );
             confirm(app, &question, Vec::new(), load);
         } else {
@@ -303,11 +308,11 @@ fn ask_length(app: &mut App, title: &str, current: &str, most: Rational, then: i
             return;
         }
         let Ok(length) = Rational::parse(text) else {
-            app.refuse(&named(errors::ERR_NOT_A_LENGTH, &[("text", text.into())]));
+            app.refuse(&named(errors::ERR_NOT_A_LENGTH, &[(fill::TEXT, text.into())]));
             return;
         };
         if length <= Rational::ZERO || length > most {
-            app.refuse(&named(errors::ERR_LENGTH_OUT_OF_RANGE, &[("most", most.to_string().as_str().into())]));
+            app.refuse(&named(errors::ERR_LENGTH_OUT_OF_RANGE, &[(fill::MOST, most.to_string().as_str().into())]));
             return;
         }
         then(app, Some(length.to_string()));
@@ -326,7 +331,7 @@ fn written(app: &App, name: &str, setting: &str) -> String {
 
 /// Ask for the pattern's own step size, blank to take the set's.
 fn ask_step_size(app: &mut App, name: &str) {
-    let current = written(app, name, "step_size");
+    let current = written(app, name, file_format::SetlistSetting::STEP_SIZE);
     let name = name.to_string();
     ask_length(
         app,
@@ -336,7 +341,7 @@ fn ask_step_size(app: &mut App, name: &str) {
         move |app, length| {
             let value = length.map(|length| Data::text(&length));
             change_pattern(app, &name, |pattern| {
-                pattern.set_written("step_size", value);
+                pattern.set_written(file_format::SetlistSetting::STEP_SIZE, value);
                 Ok(())
             });
         },
@@ -345,7 +350,7 @@ fn ask_step_size(app: &mut App, name: &str) {
 
 /// Ask for the pattern's own time signature, written such as 6/8, blank to take the song's.
 fn ask_time_signature(app: &mut App, name: &str) {
-    let current = written(app, name, "time_signature");
+    let current = written(app, name, file_format::SongSetting::TIME_SIGNATURE);
     let name = name.to_string();
     ask_text(app, messages::MSG_TIME_SIGNATURE_PROMPT, &current, move |app, text| {
         let text = text.trim();
@@ -358,16 +363,16 @@ fn ask_time_signature(app: &mut App, name: &str) {
             app.refuse(&named(
                 errors::ERR_TYPED_NOT_A_TIME_SIGNATURE,
                 &[
-                    ("text", text.into()),
-                    ("lowest", MIN_BEATS.into()),
-                    ("highest", MAX_BEATS.into()),
-                    ("units", UNITS_LISTED.into()),
+                    (fill::TEXT, text.into()),
+                    (fill::LOWEST, MIN_BEATS.into()),
+                    (fill::HIGHEST, MAX_BEATS.into()),
+                    (fill::UNITS, UNITS_LISTED.into()),
                 ],
             ));
             return;
         };
         change_pattern(app, &name, |pattern| {
-            pattern.set_written("time_signature", value);
+            pattern.set_written(file_format::SongSetting::TIME_SIGNATURE, value);
             Ok(())
         });
     });
@@ -382,7 +387,7 @@ fn toggle_drum(app: &mut App, place: &Place) {
     } else {
         messages::MSG_CHANGE_TYPE_EMPTY_QUESTION
     };
-    let lines = vec![named(question, &[("what", what.into())])];
+    let lines = vec![named(question, &[(fill::WHAT, what.into())])];
     let name = place.name.clone();
     confirm(app, messages::MSG_CHANGE_TYPE_TITLE, lines, move |app| {
         change_pattern(app, &name, |pattern| {
@@ -406,9 +411,12 @@ fn direction_choices() -> Vec<String> {
     rows.iter()
         .map(|(name, said)| {
             let padded = format!("{name:<widest$}");
-            named(marks::MSG_COLUMN_LINE, &[("name", padded.as_str().into()), ("description", (*said).into())])
-                .trim_end()
-                .to_string()
+            named(
+                marks::MSG_COLUMN_LINE,
+                &[(fill::NAME, padded.as_str().into()), (fill::DESCRIPTION, (*said).into())],
+            )
+            .trim_end()
+            .to_string()
         })
         .collect()
 }
@@ -419,7 +427,7 @@ fn pick_direction(app: &mut App, name: &str) {
         .document
         .get_setlist()
         .get_pattern(name)
-        .and_then(|pattern| pattern.get_written("direction"))
+        .and_then(|pattern| pattern.get_written(file_format::ClipSlotSetting::DIRECTION))
         .and_then(Data::as_str)
         .unwrap_or(DIRECTIONS[0])
         .to_string();
@@ -440,7 +448,7 @@ fn pick_scale_length(app: &mut App, name: &str) {
         .document
         .get_setlist()
         .get_pattern(name)
-        .and_then(|pattern| pattern.get_written("scale_length"))
+        .and_then(|pattern| pattern.get_written(file_format::PatternSetting::SCALE_LENGTH))
         .and_then(Data::as_whole);
     let place = current
         .and_then(|current| lengths.iter().position(|length| *length as i128 == current))
@@ -451,7 +459,7 @@ fn pick_scale_length(app: &mut App, name: &str) {
     ask_choice(app, messages::MSG_SCALE_LENGTH_TITLE, options, place, move |app, chosen| {
         let value = chosen.checked_sub(1).map(|place| Data::Whole(lengths[place] as i128));
         change_pattern(app, &name, |pattern| {
-            pattern.set_written("scale_length", value);
+            pattern.set_written(file_format::PatternSetting::SCALE_LENGTH, value);
             Ok(())
         });
     });
@@ -484,7 +492,10 @@ pub fn munge(app: &mut App, place: &Place) {
 /// Whether a pattern of so many steps would hold more than a pattern may, saying so on the status line where it would.
 fn grown_too_long(app: &mut App, steps: usize) -> bool {
     if steps > MAX_STEPS as usize {
-        app.refuse(&named(errors::ERR_MUNGE_TOO_MANY_STEPS, &[("steps", steps.into()), ("most", MAX_STEPS.into())]));
+        app.refuse(&named(
+            errors::ERR_MUNGE_TOO_MANY_STEPS,
+            &[(fill::STEPS, steps.into()), (fill::MOST, MAX_STEPS.into())],
+        ));
     }
     steps > MAX_STEPS as usize
 }
@@ -676,7 +687,10 @@ fn ask_split(app: &mut App, place: &Place) {
     ask_text(app, messages::MSG_SPLIT_PROMPT, &SPLIT_STEPS.min(most).to_string(), move |app, text| {
         let Some(steps) = typed_whole(app, text) else { return };
         if !(FIRST_ROLL as i64..=most as i64).contains(&steps) {
-            app.refuse(&named(errors::ERR_SPLIT_OUT_OF_RANGE, &[("low", FIRST_ROLL.into()), ("high", most.into())]));
+            app.refuse(&named(
+                errors::ERR_SPLIT_OUT_OF_RANGE,
+                &[(fill::LOW, FIRST_ROLL.into()), (fill::HIGH, most.into())],
+            ));
             return;
         }
         let made = match app.document.split_pattern(&name, steps as usize) {
@@ -688,13 +702,16 @@ fn ask_split(app: &mut App, place: &Place) {
             named(
                 messages::MSG_SPLIT_CREATED_MANY,
                 &[
-                    ("count", made.len().into()),
-                    ("names", shown.as_str().into()),
-                    ("more", (made.len() - SPLIT_NAMES_SHOWN).into()),
+                    (fill::COUNT, made.len().into()),
+                    (fill::NAMES, shown.as_str().into()),
+                    (fill::MORE, (made.len() - SPLIT_NAMES_SHOWN).into()),
                 ],
             )
         } else {
-            named(messages::MSG_SPLIT_CREATED, &[("count", made.len().into()), ("names", shown.as_str().into())])
+            named(
+                messages::MSG_SPLIT_CREATED,
+                &[(fill::COUNT, made.len().into()), (fill::NAMES, shown.as_str().into())],
+            )
         };
         app.show_page(Box::new(MessageDialog::new(messages::MSG_SPLIT_TITLE, vec![said])));
     });
@@ -707,7 +724,7 @@ fn invert_melody(app: &mut App, place: &Place) {
         .document
         .get_setlist()
         .get_pattern(&place.name)
-        .and_then(|pattern| pattern.get_written("scale_length"))
+        .and_then(|pattern| pattern.get_written(file_format::PatternSetting::SCALE_LENGTH))
         .and_then(Data::as_whole)
         .map(|size| size as i64);
     let Some(size) = place.scale_size.or(written) else {
@@ -727,7 +744,10 @@ fn lead_voices(app: &mut App, place: &Place, choice: usize) {
     }
     let chords = app.document.get_setlist().get_pattern(&place.name).map_or(0, |pattern| {
         (0..place.steps)
-            .filter(|step| crate::patterns::value(pattern, "degree", *step).is_some() && crate::patterns::value(pattern, "chord", *step).is_some())
+            .filter(|step| {
+                crate::patterns::value(pattern, file_format::Row::DEGREE, *step).is_some()
+                    && crate::patterns::value(pattern, file_format::Row::CHORD, *step).is_some()
+            })
             .count()
     });
     if chords < FEWEST_CHORDS_TO_LEAD {
@@ -764,7 +784,10 @@ fn ask_number(
     ask_text(app, title, "", move |app, text| {
         let Some(number) = typed_whole(app, text) else { return };
         if !(low..=high).contains(&number) {
-            app.refuse(&named(errors::ERR_MUNGE_NUMBER_OUT_OF_RANGE, &[("low", low.into()), ("high", high.into())]));
+            app.refuse(&named(
+                errors::ERR_MUNGE_NUMBER_OUT_OF_RANGE,
+                &[(fill::LOW, low.into()), (fill::HIGH, high.into())],
+            ));
             return;
         }
         munged(app, &name, |pattern| way(pattern, number));
@@ -782,7 +805,10 @@ fn ask_roll(app: &mut App, place: &Place, left: bool) {
     ask_text(app, title, "", move |app, text| {
         let Some(count) = typed_whole(app, text) else { return };
         if !(FIRST_ROLL as i64..=steps as i64).contains(&count) {
-            app.refuse(&named(errors::ERR_ROLL_OUT_OF_RANGE, &[("low", FIRST_ROLL.into()), ("high", steps.into())]));
+            app.refuse(&named(
+                errors::ERR_ROLL_OUT_OF_RANGE,
+                &[(fill::LOW, FIRST_ROLL.into()), (fill::HIGH, steps.into())],
+            ));
             return;
         }
         let count = if left { count } else { -count };

@@ -15,6 +15,8 @@ use crate::themes::{self, Colour};
 use crate::uses::uses_of;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::Section;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
 const COLUMNS: [ListColumn; 4] = [
@@ -78,7 +80,7 @@ impl Listing for ScalesPage {
             let kind = scale.get_kind().as_str().unwrap_or("").to_string();
             let notes = named(
                 marks::MSG_SCALE_NOTES_TEXT,
-                &[("root", root.as_str().into()), ("kind", kind.replace('_', " ").as_str().into())],
+                &[(fill::ROOT, root.as_str().into()), (fill::KIND, kind.replace('_', " ").as_str().into())],
             );
             let size = scale_kind_name(&kind).map_or(0, |kind| kind.get_shape().len());
             let uses = uses_of(setlist, Section::SCALES, name).len();
@@ -93,7 +95,7 @@ impl Listing for ScalesPage {
 
     fn named(&self) -> Option<NamedWords> {
         Some(NamedWords {
-            section: "scales",
+            section: file_format::Section::SCALES,
             rename_prompt: llamatron_strings::messages::MSG_RENAME_SCALE_PROMPT,
             what: llamatron_strings::legends::MSG_SCALE_WHAT,
         })
@@ -102,7 +104,9 @@ impl Listing for ScalesPage {
     fn press_row(&mut self, app: &mut App, item: &KeyItem, _key: &str, row: Option<&str>) -> Option<String> {
         if item.is(&Keys::ADD) || item.is(&Keys::ADD_HERE) {
             // A new scale is C major, named by its number as every new thing is, and opens on its page to be changed.
-            let name = app.document.new_name("scales", llamatron_strings::names::MSG_NEW_SCALE_WORD);
+            let name = app
+                .document
+                .new_name(file_format::Section::SCALES, llamatron_strings::names::MSG_NEW_SCALE_WORD);
             if let Err(problem) = app.document.add_scale(&name) {
                 app.refuse(&problem);
                 return None;

@@ -6,6 +6,7 @@
 
 use llamatron_model::values::generated::note::SHARP_NAMES;
 use llamatron_model::values::note::semitones_above_c;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 
 const WHITE_KEYS: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
@@ -179,7 +180,7 @@ impl Keyboard {
         for (place, (pitch_class, column)) in keys.iter().enumerate() {
             let note_name = SHARP_NAMES[*pitch_class as usize];
             let mut name = if *pitch_class == root {
-                named(marks::MSG_ROOT_KEY_NAME, &[("name", note_name.into())])
+                named(marks::MSG_ROOT_KEY_NAME, &[(fill::NAME, note_name.into())])
             } else {
                 centred(note_name, KEY_WIDTH)
             };
@@ -190,7 +191,7 @@ impl Keyboard {
         }
         for (pitch_class, column) in &keys {
             if black_after(*pitch_class) == Some(root) {
-                let name = named(marks::MSG_ROOT_KEY_NAME, &[("name", self.root.as_str().into())]);
+                let name = named(marks::MSG_ROOT_KEY_NAME, &[(fill::NAME, self.root.as_str().into())]);
                 let start = (*column as i64 + BLACK_KEY_SHIFT as i64 + (KEY_WIDTH as i64 - name.chars().count() as i64).div_euclid(2)) as usize;
                 put(&mut characters, start, &name);
             }

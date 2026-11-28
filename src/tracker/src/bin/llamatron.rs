@@ -4,6 +4,7 @@
 //! llamatron: `llamatron [set.yml]` opens a set's file in the tracker, or a new set where none is named, and
 //! `llamatron set.yml --to KIND` writes its songs without opening the tracker, as the Export dialog writes them.
 
+use llamatron_names::fill;
 use llamatron_strings::{cli, named};
 use llamatron_tracker::launch::Launch;
 use std::path::PathBuf;
@@ -115,7 +116,7 @@ fn asked(arguments: Vec<String>) -> Result<Asked, String> {
             "--visualizer" => asked.launch.visualizer = Some(visualizer_named(value_after(&mut words))?),
             "--max-seconds" => asked.launch.max_seconds = Some(seconds_named(value_after(&mut words))?),
             option if option.starts_with("--") => {
-                return Err(named(cli::ERR_CLI_UNKNOWN_OPTION, &[("option", option.into())]));
+                return Err(named(cli::ERR_CLI_UNKNOWN_OPTION, &[(fill::OPTION, option.into())]));
             }
             _ => {
                 asked.set = Some(PathBuf::from(word));
@@ -137,10 +138,10 @@ fn refuse_mixed(asked: &Asked, given: &[String]) -> Result<(), String> {
     let launching = named_of(&LAUNCH_OPTIONS);
     let exporting = named_of(&EXPORT_OPTIONS);
     if asked.kind.is_some() && !launching.is_empty() {
-        return Err(named(cli::ERR_CLI_NOT_WITH_TO, &[("options", launching.as_str().into())]));
+        return Err(named(cli::ERR_CLI_NOT_WITH_TO, &[(fill::OPTIONS, launching.as_str().into())]));
     }
     if asked.kind.is_none() && !exporting.is_empty() {
-        return Err(named(cli::ERR_CLI_ONLY_WITH_TO, &[("options", exporting.as_str().into())]));
+        return Err(named(cli::ERR_CLI_ONLY_WITH_TO, &[(fill::OPTIONS, exporting.as_str().into())]));
     }
     if asked.launch.opens_arrange() && asked.set.is_none() {
         return Err(cli::ERR_CLI_LAUNCH_NEEDS_SET.to_string());
@@ -166,7 +167,7 @@ fn seconds_named(value: Option<String>) -> Result<f64, String> {
         .parse::<f64>()
         .ok()
         .filter(|seconds| seconds.is_finite() && *seconds >= 0.0)
-        .ok_or_else(|| named(cli::ERR_CLI_NEEDS_SECONDS, &[("value", value.as_str().into())]))
+        .ok_or_else(|| named(cli::ERR_CLI_NEEDS_SECONDS, &[(fill::VALUE, value.as_str().into())]))
 }
 
 /// The set a file holds for an export. A file holding values that cannot be used, each with an allowed value near it, is
@@ -177,11 +178,11 @@ fn corrected_for_export(path: &std::path::Path, force: bool) -> Result<llamatron
     let (document, corrections) = (opened.document, opened.corrections);
     let line = if force { cli::MSG_CLI_CHANGED } else { cli::MSG_CLI_WOULD_CHANGE };
     for correction in &corrections {
-        eprintln!("{}", named(line, &[("change", correction.described().as_str().into())]));
+        eprintln!("{}", named(line, &[(fill::CHANGE, correction.described().as_str().into())]));
     }
     if !force && !corrections.is_empty() {
         let shown = path.display().to_string();
-        return Err(named(llamatron_strings::errors::ERR_NEEDS_FORCE, &[("path", shown.as_str().into())]));
+        return Err(named(llamatron_strings::errors::ERR_NEEDS_FORCE, &[(fill::PATH, shown.as_str().into())]));
     }
     Ok(document)
 }
@@ -193,7 +194,7 @@ fn export(asked: &Asked, kind: &str) -> Result<(), String> {
     if !kinds.contains(&kind) {
         return Err(named(
             cli::ERR_CLI_UNKNOWN_KIND,
-            &[("kind", kind.into()), ("kinds", kinds.join(", ").as_str().into())],
+            &[(fill::KIND, kind.into()), (fill::KINDS, kinds.join(", ").as_str().into())],
         ));
     }
     let path = asked.set.as_ref().ok_or_else(|| cli::ERR_CLI_NEEDS_A_SET.to_string())?;
@@ -209,7 +210,10 @@ fn export(asked: &Asked, kind: &str) -> Result<(), String> {
             Some(song) => vec![song.clone()],
             None => {
                 let shown = path.display().to_string();
-                return Err(named(cli::ERR_CLI_NO_SONG, &[("name", name.as_str().into()), ("path", shown.as_str().into())]));
+                return Err(named(
+                    cli::ERR_CLI_NO_SONG,
+                    &[(fill::NAME, name.as_str().into()), (fill::PATH, shown.as_str().into())],
+                ));
             }
         },
         None => songs,
@@ -224,7 +228,7 @@ fn export(asked: &Asked, kind: &str) -> Result<(), String> {
         document.select_song(&song);
         if !asked.replace && llamatron_tracker::exporting::has_earlier_export(&document, kind, &directory) {
             let earlier = directory.join(document.export_name()).display().to_string();
-            return Err(named(llamatron_strings::errors::ERR_FILE_EXISTS, &[("path", earlier.as_str().into())]));
+            return Err(named(llamatron_strings::errors::ERR_FILE_EXISTS, &[(fill::PATH, earlier.as_str().into())]));
         }
         let written = llamatron_tracker::exporting::export_song(&document, kind, &directory, template.as_deref())?;
         let shown = written.display().to_string();

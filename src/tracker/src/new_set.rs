@@ -10,6 +10,7 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::file_format::{
     ClipSlotSetting, FileLayout, PatternSetting, Row, ScaleSetting, Section, SetlistSetting, SongSetting, TrackSetting,
 };
+use llamatron_names::fill;
 use llamatron_strings::named;
 use llamatron_strings::names;
 
@@ -38,23 +39,23 @@ fn map(pairs: Vec<(&str, Data)>) -> Data {
 pub fn new_set(main_instrument: Data, drum_instrument: Data) -> Result<Setlist, String> {
     let scale = named(
         names::MSG_NUMBERED_NAME,
-        &[("base", names::MSG_NEW_SCALE_WORD.into()), ("number", FIRST.into())],
+        &[(fill::BASE, names::MSG_NEW_SCALE_WORD.into()), (fill::NUMBER, FIRST.into())],
     );
     let pattern = named(
         names::MSG_NUMBERED_NAME,
-        &[("base", names::MSG_NEW_PATTERN_WORD.into()), ("number", FIRST.into())],
+        &[(fill::BASE, names::MSG_NEW_PATTERN_WORD.into()), (fill::NUMBER, FIRST.into())],
     );
     let scene = named(
         names::MSG_NUMBERED_NAME,
-        &[("base", names::MSG_NEW_SCENE_WORD.into()), ("number", FIRST.into())],
+        &[(fill::BASE, names::MSG_NEW_SCENE_WORD.into()), (fill::NUMBER, FIRST.into())],
     );
     let main = named(
         names::MSG_JOINED_NUMBERED_NAME,
-        &[("base", names::MSG_NEW_MAIN_TRACK_WORD.into()), ("number", FIRST.into())],
+        &[(fill::BASE, names::MSG_NEW_MAIN_TRACK_WORD.into()), (fill::NUMBER, FIRST.into())],
     );
     let drum = named(
         names::MSG_JOINED_NUMBERED_NAME,
-        &[("base", names::MSG_NEW_DRUM_TRACK_WORD.into()), ("number", FIRST.into())],
+        &[(fill::BASE, names::MSG_NEW_DRUM_TRACK_WORD.into()), (fill::NUMBER, FIRST.into())],
     );
     let degrees = (0..STEPS)
         .map(|step| if step % STEPS_A_BEAT == 0 { Data::Whole(ROOT_DEGREE) } else { Data::Null })

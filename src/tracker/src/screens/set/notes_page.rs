@@ -13,6 +13,8 @@ use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::SetlistSetting;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages};
 use std::cell::Cell;
 
@@ -113,12 +115,12 @@ impl NotesPage {
     fn move_cursor(&mut self, app: &App, key: &str) {
         let lines = self.lines(app);
         match key {
-            "up" | "down" => {
-                let step: i64 = if key == "up" { -1 } else { 1 };
+            llamatron_names::keys::UP | llamatron_names::keys::DOWN => {
+                let step: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
                 self.row = (self.row as i64 + step).clamp(0, lines.len() as i64 - 1) as usize;
                 self.column = self.column.min(chars(&lines[self.row]));
             }
-            "left" => {
+            llamatron_names::keys::LEFT => {
                 if self.column > 0 {
                     self.column -= 1;
                 } else if self.row > 0 {
@@ -230,7 +232,7 @@ impl Page for NotesPage {
             self.stop_editing(app);
         } else if item.is(&Keys::SELECT_BUTTON) {
             let last = labels::MSG_NOTES_BUTTONS.len() - 1;
-            self.button = if key == "left" {
+            self.button = if key == llamatron_names::keys::LEFT {
                 self.button.saturating_sub(1)
             } else {
                 (self.button + 1).min(last)
@@ -346,7 +348,7 @@ mod tests {
     fn clearing_the_notes_asks_first() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/grab_into_a_circle.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
-        let mut tracker = Tracker::new(crate::document::Document::new(Setlist::read_text(&text).expect("valid"), None));
+        let mut tracker = Tracker::new(crate::document::Document::new(Setlist::read_text(&text).expect(words::VALID), None));
         let page = NotesPage::new(&tracker.app, false);
         tracker.app.show_page(Box::new(page));
         tracker.settle();

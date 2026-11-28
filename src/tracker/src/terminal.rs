@@ -13,6 +13,10 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifier
 use crossterm::style::{Attribute, Color, Print, SetAttribute, SetBackgroundColor, SetForegroundColor};
 use crossterm::terminal::{self, BeginSynchronizedUpdate, Clear, ClearType, EndSynchronizedUpdate, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::{cursor, queue};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::keys;
+use llamatron_names::words;
 use llamatron_strings::{messages, named};
 use std::io::{self, Write};
 use std::path::Path;
@@ -132,7 +136,7 @@ fn refuse_endless(document: &Document) -> Result<(), String> {
     let listed = scenes.join(", ");
     Err(named(
         llamatron_strings::errors::ERR_RECORDING_SONG_LOOPS,
-        &[("scenes", listed.as_str().into())],
+        &[(fill::SCENES, listed.as_str().into())],
     ))
 }
 
@@ -150,8 +154,8 @@ fn start(tracker: &mut Tracker, launch: &Launch) {
         }
     }
     if launch.plays() && !tracker.app.transport.is_playing() {
-        let scene = named(messages::MSG_SCENE_NUMBER, &[("number", 1.into())]);
-        let said = named(messages::MSG_PLAYING_FROM, &[("scene", scene.as_str().into())]);
+        let scene = named(messages::MSG_SCENE_NUMBER, &[(fill::NUMBER, 1.into())]);
+        let said = named(messages::MSG_PLAYING_FROM, &[(fill::SCENE, scene.as_str().into())]);
         crate::screens::arrange::arrange_page::play_through(&mut tracker.app, &scene, &said, |app| app.transport.play_scene(&app.document, 0));
         tracker.settle();
     }
@@ -282,12 +286,12 @@ fn draw_lines(out: &mut impl Write, lines: Vec<crate::text::Text>, height: usize
 fn write_styled(out: &mut impl Write, style: &Style) -> io::Result<()> {
     queue!(out, SetAttribute(Attribute::Reset))?;
     let attributes = [
-        ("bold", Attribute::Bold),
-        ("dim", Attribute::Dim),
-        ("italic", Attribute::Italic),
-        ("underline", Attribute::Underlined),
-        ("reverse", Attribute::Reverse),
-        ("strike", Attribute::CrossedOut),
+        (words::BOLD, Attribute::Bold),
+        (file_format::ChordSymbol::DIMINISHED, Attribute::Dim),
+        (words::ITALIC, Attribute::Italic),
+        (words::UNDERLINE, Attribute::Underlined),
+        (words::REVERSE, Attribute::Reverse),
+        (file_format::VactrolLight::STRIKE, Attribute::CrossedOut),
     ];
     for (name, attribute) in attributes {
         if style.is_on(name) {
@@ -325,23 +329,23 @@ fn color_of(name: &str) -> Option<Color> {
         return number.trim().parse().ok().map(Color::AnsiValue);
     }
     let named = match name {
-        "default" => Color::Reset,
-        "black" => Color::Black,
-        "red" => Color::DarkRed,
-        "green" => Color::DarkGreen,
-        "yellow" => Color::DarkYellow,
-        "blue" => Color::DarkBlue,
-        "magenta" => Color::DarkMagenta,
-        "cyan" => Color::DarkCyan,
-        "white" => Color::Grey,
-        "bright_black" | "grey50" => Color::DarkGrey,
-        "bright_red" => Color::Red,
-        "bright_green" => Color::Green,
-        "bright_yellow" => Color::Yellow,
-        "bright_blue" => Color::Blue,
-        "bright_magenta" => Color::Magenta,
-        "bright_cyan" => Color::Cyan,
-        "bright_white" => Color::White,
+        words::DEFAULT => Color::Reset,
+        words::BLACK => Color::Black,
+        words::RED => Color::DarkRed,
+        words::GREEN => Color::DarkGreen,
+        words::YELLOW => Color::DarkYellow,
+        words::BLUE => Color::DarkBlue,
+        words::MAGENTA => Color::DarkMagenta,
+        words::CYAN => Color::DarkCyan,
+        words::WHITE => Color::Grey,
+        words::BRIGHT_BLACK | words::GREY50 => Color::DarkGrey,
+        words::BRIGHT_RED => Color::Red,
+        words::BRIGHT_GREEN => Color::Green,
+        words::BRIGHT_YELLOW => Color::Yellow,
+        words::BRIGHT_BLUE => Color::Blue,
+        words::BRIGHT_MAGENTA => Color::Magenta,
+        words::BRIGHT_CYAN => Color::Cyan,
+        words::BRIGHT_WHITE => Color::White,
         _ => return None,
     };
     Some(named)
@@ -353,26 +357,26 @@ fn key_name(pressed: &KeyEvent, takes_text: bool) -> Option<String> {
     let shift = pressed.modifiers.contains(KeyModifiers::SHIFT);
     let name = match pressed.code {
         KeyCode::Char(character) if pressed.modifiers.contains(KeyModifiers::CONTROL) => format!("ctrl+{}", character.to_ascii_lowercase()),
-        KeyCode::Char(' ') => "space".to_string(),
+        KeyCode::Char(' ') => keys::SPACE.to_string(),
         KeyCode::Char(character) if takes_text => character.to_string(),
         KeyCode::Char(character) => character.to_lowercase().to_string(),
-        KeyCode::Enter => "enter".to_string(),
-        KeyCode::Esc => "escape".to_string(),
-        KeyCode::Backspace | KeyCode::Delete => "backspace".to_string(),
-        KeyCode::Tab => "tab".to_string(),
+        KeyCode::Enter => keys::ENTER.to_string(),
+        KeyCode::Esc => keys::ESCAPE.to_string(),
+        KeyCode::Backspace | KeyCode::Delete => keys::BACKSPACE.to_string(),
+        KeyCode::Tab => keys::TAB.to_string(),
         KeyCode::BackTab => "shift+tab".to_string(),
         KeyCode::Up if shift => "shift+up".to_string(),
         KeyCode::Down if shift => "shift+down".to_string(),
         KeyCode::Left if shift => "shift+left".to_string(),
         KeyCode::Right if shift => "shift+right".to_string(),
-        KeyCode::Up => "up".to_string(),
-        KeyCode::Down => "down".to_string(),
-        KeyCode::Left => "left".to_string(),
-        KeyCode::Right => "right".to_string(),
-        KeyCode::Home => "home".to_string(),
-        KeyCode::End => "end".to_string(),
-        KeyCode::PageUp => "pageup".to_string(),
-        KeyCode::PageDown => "pagedown".to_string(),
+        KeyCode::Up => keys::UP.to_string(),
+        KeyCode::Down => keys::DOWN.to_string(),
+        KeyCode::Left => keys::LEFT.to_string(),
+        KeyCode::Right => keys::RIGHT.to_string(),
+        KeyCode::Home => keys::HOME.to_string(),
+        KeyCode::End => keys::END.to_string(),
+        KeyCode::PageUp => keys::PAGEUP.to_string(),
+        KeyCode::PageDown => keys::PAGEDOWN.to_string(),
         KeyCode::F(number) => format!("f{number}"),
         _ => return None,
     };

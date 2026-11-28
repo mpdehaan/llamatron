@@ -19,6 +19,9 @@ use llamatron_model::schema::generated::file_format::{PROGRESSION_CHORDS, TENSIO
 use llamatron_model::schema::generated::limits::{
     MAX_PROGRESSION_CHORDS, MAX_PROGRESSION_DEGREE, MAX_PROGRESSION_INVERSION, MIN_PROGRESSION_CHORDS, MIN_PROGRESSION_DEGREE,
 };
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 
 const KIND: &str = "chords";
@@ -73,7 +76,7 @@ fn tensions_shown(tensions: &[String]) -> String {
             return joined;
         }
     }
-    named(marks::MSG_TENSIONS_COUNTED, &[("count", tensions.len().into())])
+    named(marks::MSG_TENSIONS_COUNTED, &[(fill::COUNT, tensions.len().into())])
 }
 
 fn row_written<T>(values: &[Option<T>], written: impl Fn(&T) -> Data) -> Option<Data> {
@@ -93,12 +96,12 @@ impl ChordsEditor {
 
     fn rows(&self, app: &App) -> Rows {
         let chords: Vec<i64> = self
-            .written(app, "chords")
+            .written(app, words::CHORDS)
             .as_ref()
             .and_then(Data::as_list)
             .map_or(vec![1], |chords| chords.iter().filter_map(Data::as_whole).map(|whole| whole as i64).collect());
         let count = chords.len();
-        let tensions_data = self.written(app, "tensions");
+        let tensions_data = self.written(app, words::TENSIONS);
         let tensions_listed = tensions_data.as_ref().and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
         let tensions = (0..count)
             .map(|place| {
@@ -113,12 +116,12 @@ impl ChordsEditor {
                     .collect()
             })
             .collect();
-        let inversions_data = self.written(app, "inversions");
+        let inversions_data = self.written(app, words::INVERSIONS);
         let inversions_listed = inversions_data.as_ref().and_then(Data::as_list).map(<[Data]>::to_vec).unwrap_or_default();
         Rows {
-            accidentals: texts_lined_up(self.written(app, "accidentals").as_ref(), count),
-            qualities: texts_lined_up(self.written(app, "qualities").as_ref(), count),
-            scales: texts_lined_up(self.written(app, "scales").as_ref(), count),
+            accidentals: texts_lined_up(self.written(app, words::ACCIDENTALS).as_ref(), count),
+            qualities: texts_lined_up(self.written(app, words::QUALITIES).as_ref(), count),
+            scales: texts_lined_up(self.written(app, file_format::Section::SCALES).as_ref(), count),
             inversions: (0..count)
                 .map(|place| inversions_listed.get(place).and_then(Data::as_whole).map(|whole| whole as i64))
                 .collect(),
@@ -133,15 +136,15 @@ impl ChordsEditor {
         let tensions: Vec<Option<Vec<String>>> = rows.tensions.into_iter().map(|held| if held.is_empty() { None } else { Some(held) }).collect();
         let written = [
             (
-                "chords",
+                words::CHORDS,
                 Some(Data::List(rows.chords.iter().map(|degree| Data::Whole(*degree as i128)).collect())),
             ),
-            ("accidentals", row_written(&rows.accidentals, text)),
-            ("inversions", row_written(&rows.inversions, |inversion| Data::Whole(*inversion as i128))),
-            ("scales", row_written(&rows.scales, text)),
-            ("qualities", row_written(&rows.qualities, text)),
+            (words::ACCIDENTALS, row_written(&rows.accidentals, text)),
+            (words::INVERSIONS, row_written(&rows.inversions, |inversion| Data::Whole(*inversion as i128))),
+            (file_format::Section::SCALES, row_written(&rows.scales, text)),
+            (words::QUALITIES, row_written(&rows.qualities, text)),
             (
-                "tensions",
+                words::TENSIONS,
                 row_written(&tensions, |held| Data::List(held.iter().map(|tension| Data::Text(tension.clone())).collect())),
             ),
         ];
@@ -171,7 +174,7 @@ impl ChordsEditor {
         let mut quality_names = vec![messages::MSG_QUALITY_FROM_SCALE.to_string()];
         quality_names.extend(PROGRESSION_CHORDS.iter().map(|symbol| {
             let said = labels::MSG_CHORD_NAMES.iter().find(|(each, _)| each == symbol).map_or("", |(_, said)| *said);
-            named(marks::MSG_CHORD_SYMBOL_NAMED, &[("symbol", (*symbol).into()), ("name", said.into())])
+            named(marks::MSG_CHORD_SYMBOL_NAMED, &[(fill::SYMBOL, (*symbol).into()), (fill::NAME, said.into())])
         }));
         let mut inversions = vec![None];
         inversions.extend((1..=MAX_PROGRESSION_INVERSION).map(Some));
@@ -182,7 +185,7 @@ impl ChordsEditor {
         };
         let where_ = named(
             messages::MSG_CHORD_OF_PROGRESSION,
-            &[("chord", (place + 1).into()), ("progression", self.name.as_str().into())],
+            &[(fill::CHORD, (place + 1).into()), (fill::PROGRESSION, self.name.as_str().into())],
         );
         let said_editor = ChordsEditor {
             section: self.section,
@@ -195,7 +198,7 @@ impl ChordsEditor {
             edited_row: self.edited_row,
         };
         let offer = ChordOffer {
-            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[("where", where_.as_str().into())]),
+            title: named(messages::MSG_CHORD_DIALOG_TITLE, &[(fill::WHERE, where_.as_str().into())]),
             qualities,
             quality_names,
             inversions,
@@ -421,7 +424,7 @@ impl OneRow for ChordsEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
             labels::Crumb::CHORDS.to_string(),
         ]
     }
@@ -430,7 +433,7 @@ impl OneRow for ChordsEditor {
         let what = caption_word(KIND).to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         )
     }
 
@@ -491,7 +494,7 @@ impl OneRow for ChordsEditor {
 
     fn press_more(&mut self, app: &mut App, item: &KeyItem, key: &str, step: usize) {
         if item.is(&Keys::MOVE) {
-            let offset: i64 = if key == "up" { -1 } else { 1 };
+            let offset: i64 = if key == llamatron_names::keys::UP { -1 } else { 1 };
             self.edited_row = (self.edited_row as i64 + offset).clamp(0, EDITED_ROWS as i64 - 1) as usize;
         } else if item.is(&Keys::LESS) {
             self.nudge(app, step, -1);
@@ -543,7 +546,7 @@ impl OneRow for ChordsEditor {
 
     fn resting(&self, app: &App, step: usize) -> String {
         let rows = self.rows(app);
-        let place = named(messages::MSG_RESTING_CHORD, &[("chord", (step + 1).into())]);
+        let place = named(messages::MSG_RESTING_CHORD, &[(fill::CHORD, (step + 1).into())]);
         Self::in_words(app, &rows, step).resting(&place)
     }
 

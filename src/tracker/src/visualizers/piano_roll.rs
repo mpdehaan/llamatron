@@ -14,6 +14,7 @@ use super::picture::Colour;
 use super::{FrameClock, Hearing, Mode, REFERENCE_SECONDS_PER_BEAT};
 use crate::text::Text;
 use llamatron_model::schema::generated::file_format::LIVE_OCTAVE_OFFSET;
+use llamatron_names::fill;
 use llamatron_strings::texts::visualizers;
 
 pub const OPTION: &str = "piano_roll";
@@ -227,7 +228,7 @@ impl PianoRoll {
                 continue;
             }
             let octave = pitch.div_euclid(HALF_STEPS_PER_OCTAVE) - LIVE_OCTAVE_OFFSET;
-            let label: Vec<char> = llamatron_strings::named(visualizers::MSG_PIANO_ROLL_OCTAVE_LABEL, &[("octave", octave.into())])
+            let label: Vec<char> = llamatron_strings::named(visualizers::MSG_PIANO_ROLL_OCTAVE_LABEL, &[(fill::OCTAVE, octave.into())])
                 .chars()
                 .collect();
             for (column, cell) in cells[LEGEND_ROWS + offset].iter_mut().enumerate().take(width) {

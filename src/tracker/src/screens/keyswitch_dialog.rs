@@ -16,6 +16,7 @@ use crate::keyswitches::KEYSWITCH_NOTE_WIDTH;
 use crate::page::Page;
 use crate::screens::dialogs::dialog_box;
 use crate::text::Text;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
 /// The OK button, the one ENTER presses, so the one drawn selected.
@@ -68,7 +69,7 @@ impl KeyswitchDialog {
         let start = format!(
             "{}{}",
             cursor_mark(slot == self.cursor),
-            named(marks::MSG_KEYSWITCH_SLOT_ROW, &[("slot", slot.into()), ("toggle", toggle.into())])
+            named(marks::MSG_KEYSWITCH_SLOT_ROW, &[(fill::SLOT, slot.into()), (fill::TOGGLE, toggle.into())])
         );
         let room = width.saturating_sub(start.chars().count() + KEYSWITCH_NOTE_WIDTH);
         let name = fit(&self.names[slot], room);
@@ -121,7 +122,7 @@ impl Page for KeyswitchDialog {
             app.go_back();
         } else if item.is(&Keys::MOVE) {
             let last = self.names.len().saturating_sub(1);
-            self.cursor = if key == "up" {
+            self.cursor = if key == llamatron_names::keys::UP {
                 self.cursor.saturating_sub(1)
             } else {
                 (self.cursor + 1).min(last)

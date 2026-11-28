@@ -15,6 +15,7 @@ use crate::screens::list_page::{ListColumn, ListPage, Listing, Row};
 use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_model::file::corrections::Correction;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 use std::path::{Path, PathBuf};
 
@@ -96,7 +97,7 @@ impl OpenPage {
             Err(problem) => {
                 let said = named(
                     llamatron_strings::errors::ERR_CANT_READ_MIDI,
-                    &[("file", file.as_str().into()), ("problem", problem.as_str().into())],
+                    &[(fill::FILE, file.as_str().into()), (fill::PROBLEM, problem.as_str().into())],
                 );
                 let told = crate::screens::dialogs::MessageDialog::new(llamatron_strings::errors::ERR_CANT_IMPORT_TITLE, vec![said]);
                 app.show_page(Box::new(told));
@@ -153,7 +154,7 @@ const MOST_CORRECTIONS_SHOWN: usize = 5;
 pub fn take_up(app: &mut App, document: Document, note: Option<String>) {
     let path = document.get_path().map(|path| path.display().to_string()).unwrap_or_default();
     app.document = document;
-    app.say(&note.unwrap_or_else(|| named(messages::MSG_OPENED, &[("path", path.as_str().into())])));
+    app.say(&note.unwrap_or_else(|| named(messages::MSG_OPENED, &[(fill::PATH, path.as_str().into())])));
     crate::silent_instruments::warn_of_silent_instruments(app);
 }
 
@@ -163,10 +164,13 @@ pub fn offer_corrected(app: &mut App, opened: crate::document::OpenedSet) {
     let crate::document::OpenedSet { document, corrections, note } = opened;
     let file = document.get_file_name().unwrap_or_default();
     let shown = corrections.len().min(MOST_CORRECTIONS_SHOWN);
-    let mut lines = vec![named(messages::MSG_CORRECTIONS_INTRO, &[("file", file.as_str().into())])];
+    let mut lines = vec![named(messages::MSG_CORRECTIONS_INTRO, &[(fill::FILE, file.as_str().into())])];
     lines.extend(corrections[..shown].iter().map(Correction::described));
     if corrections.len() > shown {
-        lines.push(named(messages::MSG_CORRECTIONS_MORE, &[("count", ((corrections.len() - shown) as i64).into())]));
+        lines.push(named(
+            messages::MSG_CORRECTIONS_MORE,
+            &[(fill::COUNT, ((corrections.len() - shown) as i64).into())],
+        ));
     }
     lines.push(messages::MSG_CORRECTIONS_WARNING.to_string());
     let offered = std::cell::RefCell::new(Some((document, note)));
@@ -228,7 +232,7 @@ impl Listing for OpenPage {
         names.sort_by_key(|name| name.to_lowercase());
         let mut rows = vec![(PARENT.to_string(), vec![marks::MSG_PARENT_ROW.to_string()])];
         for name in names.iter().filter(|name| self.is_folder(name)) {
-            rows.push((name.clone(), vec![named(marks::MSG_FOLDER_ROW, &[("name", name.as_str().into())])]));
+            rows.push((name.clone(), vec![named(marks::MSG_FOLDER_ROW, &[(fill::NAME, name.as_str().into())])]));
         }
         for name in &names {
             let lowered = name.to_lowercase();

@@ -9,6 +9,7 @@ use crate::app::App;
 use crate::screens::dialogs::{Answer, PromptDialog};
 use llamatron_model::objects::naming::is_taken;
 use llamatron_model::schema::generated::limits::MAX_NAME_LENGTH;
+use llamatron_names::fill;
 use llamatron_strings::{errors, named};
 
 /// What stores a new name once it is accepted.
@@ -18,7 +19,7 @@ pub type StoreName = Box<dyn Fn(&mut App, &str)>;
 /// template taking the old name, refusing an empty name or one the taken names hold, and storing the new one.
 pub fn ask_song_name(app: &mut App, prompt: &str, name: &str, most: usize, taken: Vec<String>, store: StoreName) {
     let old = name.to_string();
-    let title = named(prompt, &[("name", name.into())]);
+    let title = named(prompt, &[(fill::NAME, name.into())]);
     let mut dialog = PromptDialog::new(&title, name);
     dialog.max_length = Some(most);
     let dialog = dialog.then(Box::new(move |app: &mut App, answer: &Answer| {
@@ -27,7 +28,7 @@ pub fn ask_song_name(app: &mut App, prompt: &str, name: &str, most: usize, taken
         if text.is_empty() {
             app.refuse(errors::ERR_EMPTY_NAME);
         } else if text != old && is_taken(text, &taken) {
-            app.refuse(&named(errors::ERR_NAME_IN_USE, &[("name", text.into())]));
+            app.refuse(&named(errors::ERR_NAME_IN_USE, &[(fill::NAME, text.into())]));
         } else if text != old {
             store(app, text);
         }
@@ -39,7 +40,7 @@ pub fn ask_song_name(app: &mut App, prompt: &str, name: &str, most: usize, taken
 pub fn ask_rename(app: &mut App, section: &'static str, name: &str, prompt: &str) {
     let old = name.to_string();
     let taken: Vec<String> = app.document.names_taken(section).into_iter().filter(|each| *each != old).collect();
-    let title = named(prompt, &[("name", name.into())]);
+    let title = named(prompt, &[(fill::NAME, name.into())]);
     let mut dialog = PromptDialog::new(&title, name);
     dialog.max_length = Some(MAX_NAME_LENGTH as usize);
     let dialog = dialog.then(Box::new(move |app: &mut App, answer: &Answer| {
@@ -48,7 +49,7 @@ pub fn ask_rename(app: &mut App, section: &'static str, name: &str, prompt: &str
         if text.is_empty() {
             app.refuse(errors::ERR_EMPTY_NAME);
         } else if text != old && is_taken(text, &taken) {
-            app.refuse(&named(errors::ERR_NAME_IN_USE, &[("name", text.into())]));
+            app.refuse(&named(errors::ERR_NAME_IN_USE, &[(fill::NAME, text.into())]));
         } else if text != old {
             match app.document.rename_named(section, &old, text) {
                 Ok(()) => app.renamed(section, &old, text),

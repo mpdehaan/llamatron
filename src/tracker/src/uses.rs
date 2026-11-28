@@ -10,6 +10,7 @@ use llamatron_model::objects::song::{ClipSlot, Scene, Song, Track};
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSetting, Section, SongSetting, TrackSetting};
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::fill;
 use llamatron_strings::{messages, named, names};
 
 /// The settings each kind of object names an item of a section by (the Python classes' REFERENCES).
@@ -91,7 +92,10 @@ fn clip_names(clip: &ClipSlot, section: &str, name: &str) -> bool {
 /// How a scene is named in a use: its number and its name, if it has one.
 pub fn scene_label(number: usize, scene: &Scene) -> String {
     let scene_name = scene.get_name().unwrap_or_else(|| names::MSG_DOCUMENT_UNNAMED_SCENE.to_string());
-    named(messages::MSG_USE_SCENE, &[("number", number.into()), ("name", scene_name.as_str().into())])
+    named(
+        messages::MSG_USE_SCENE,
+        &[(fill::NUMBER, number.into()), (fill::NAME, scene_name.as_str().into())],
+    )
 }
 
 /// The songs that chose an item as their own.
@@ -165,18 +169,18 @@ pub fn chains_naming(setlist: &Setlist, section: &str, name: &str) -> Vec<String
 pub fn uses_of(setlist: &Setlist, section: &str, name: &str) -> Vec<String> {
     let mut uses = Vec::new();
     for song in songs_naming(setlist, section, name) {
-        uses.push(named(messages::MSG_USE_SONG, &[("name", song.as_str().into())]));
+        uses.push(named(messages::MSG_USE_SONG, &[(fill::NAME, song.as_str().into())]));
     }
     for (song, number, scene) in scenes_naming(setlist, section, name) {
         uses.push(named(
             messages::MSG_USE_SONG_SCENE,
-            &[("song", song.as_str().into()), ("scene", scene_label(number, scene).as_str().into())],
+            &[(fill::SONG, song.as_str().into()), (fill::SCENE, scene_label(number, scene).as_str().into())],
         ));
     }
     for (song, track) in tracks_naming(setlist, section, name) {
         uses.push(named(
             messages::MSG_USE_SONG_TRACK,
-            &[("song", song.as_str().into()), ("track", track.as_str().into())],
+            &[(fill::SONG, song.as_str().into()), (fill::TRACK, track.as_str().into())],
         ));
     }
     for (song, number, scene, track) in clip_slots_naming(setlist, section, name) {
@@ -184,21 +188,21 @@ pub fn uses_of(setlist: &Setlist, section: &str, name: &str) -> Vec<String> {
         uses.push(named(
             messages::MSG_USE_SONG_SCENE_TRACK,
             &[
-                ("song", song.as_str().into()),
-                ("scene", scene.as_str().into()),
-                ("track", track.as_str().into()),
+                (fill::SONG, song.as_str().into()),
+                (fill::SCENE, scene.as_str().into()),
+                (fill::TRACK, track.as_str().into()),
             ],
         ));
     }
     for chain in chains_naming(setlist, section, name) {
-        uses.push(named(messages::MSG_USE_CHAIN, &[("name", chain.as_str().into())]));
+        uses.push(named(messages::MSG_USE_CHAIN, &[(fill::NAME, chain.as_str().into())]));
     }
     uses
 }
 
 /// A count in words, the singular and the plural template each filled with the count: 1 song, 2 songs.
 pub fn counted(count: usize, words: &[&str]) -> String {
-    named(if count == 1 { words[0] } else { words[1] }, &[("count", count.into())])
+    named(if count == 1 { words[0] } else { words[1] }, &[(fill::COUNT, count.into())])
 }
 
 /// Things listed as a sentence lists them: a, b and c.

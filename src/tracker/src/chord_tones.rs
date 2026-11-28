@@ -12,6 +12,7 @@ use llamatron_model::fundamentals::role_of;
 use llamatron_model::objects::pattern::Pattern;
 use llamatron_model::schema::generated::file_format::{Row, BASS_NOTES, OMITTED_ROLES, SCALE_CHORDS};
 use llamatron_model::schema::generated::limits::MIN_DEGREE;
+use llamatron_names::file_format;
 
 /// A note as the roll places one: its degree, its octave and its sharp or flat.
 pub type Tone = (i64, i64, Option<String>);
@@ -92,7 +93,7 @@ pub fn chord_tones(pattern: &Pattern, step: usize, octave: i64, scale: Option<&C
             let Some(tones) = tones_above(pattern, step, &root, &symbol, scale, omitted) else {
                 return Vec::new();
             };
-            if omitted.contains(&"root") {
+            if omitted.contains(&file_format::ScaleSetting::ROOT) {
                 // A rootless chord sounds as its tones alone, which its inversion and doubling then voice.
                 (inverted_rootless(&tones, inversion), true)
             } else {

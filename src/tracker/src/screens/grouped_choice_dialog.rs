@@ -12,6 +12,7 @@ use crate::page::Page;
 use crate::screens::dialogs::{dialog_box, Answer, ChoiceDialog, Then};
 use crate::screens::list_page::shown_around;
 use crate::text::Text;
+use llamatron_names::fill;
 use llamatron_strings::{marks, named};
 
 /// How many rows the list shows around the cursor, as every picker does.
@@ -128,10 +129,10 @@ impl GroupedChoiceDialog {
                     };
                     named(
                         marks::MSG_GROUP_OF_CHOICES,
-                        &[("mark", mark.into()), ("name", self.headings[number].as_str().into())],
+                        &[(fill::MARK, mark.into()), (fill::NAME, self.headings[number].as_str().into())],
                     )
                 }
-                Some(place) => named(marks::MSG_GROUPED_CHOICE, &[("name", self.choices.options[place].as_str().into())]),
+                Some(place) => named(marks::MSG_GROUPED_CHOICE, &[(fill::NAME, self.choices.options[place].as_str().into())]),
             };
             lines.push(Text::styled(&fit(&format!("{}{shown}", cursor_mark(row == self.row)), width), Style::PLAIN));
         }
@@ -189,7 +190,11 @@ impl Page for GroupedChoiceDialog {
             app.go_back();
         } else if item.is(&Keys::MOVE) {
             let last = self.rows().len().saturating_sub(1);
-            self.row = if key == "up" { self.row.saturating_sub(1) } else { (self.row + 1).min(last) };
+            self.row = if key == llamatron_names::keys::UP {
+                self.row.saturating_sub(1)
+            } else {
+                (self.row + 1).min(last)
+            };
         } else if item.is(&Keys::OPEN) || item.is(&Keys::CLOSE) {
             let heading = self.heading_here().to_string();
             if !self.opened.remove(&heading) {

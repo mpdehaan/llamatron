@@ -17,6 +17,8 @@ use crate::themes::{self, Colour};
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::STROKES;
+use llamatron_names::file_format;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 const KIND: &str = "guitarify";
@@ -45,13 +47,13 @@ impl GuitarBar {
             .iter()
             .find(|(name, ..)| *name == DEFAULT_BAR)
             .expect("the default bar is ready-made");
-        let bar = written("bar");
+        let bar = written(file_format::GuitarifySetting::BAR);
         let strokes: Vec<String> = bar
             .as_ref()
             .and_then(Data::as_list)
             .map(|strokes| strokes.iter().map(text_of).collect())
             .unwrap_or_else(|| default_strokes.iter().map(|stroke| stroke.to_string()).collect());
-        let accents_written = written("accents");
+        let accents_written = written(file_format::GuitarifySetting::ACCENTS);
         let accents = if bar.is_none() && accents_written.is_none() {
             default_accents.to_vec()
         } else {
@@ -61,7 +63,7 @@ impl GuitarBar {
                 .map_or(Vec::new(), |items| items.iter().map(|item| matches!(item, Data::Bool(true))).collect());
             (0..strokes.len()).map(|place| listed.get(place).copied().unwrap_or(false)).collect()
         };
-        let cell = written("cell").map_or(default_cell.to_string(), |cell| text_of(&cell));
+        let cell = written(file_format::GuitarifySetting::CELL).map_or(default_cell.to_string(), |cell| text_of(&cell));
         GuitarBar { strokes, accents, cell }
     }
 }
@@ -89,9 +91,15 @@ impl GuitarBarEditor {
         let name = self.name.clone();
         app.document.change_set(|setlist| {
             if let Some(Item::Generator(settings)) = setlist.get_item_mut(SECTION, &name) {
-                settings.set_written("bar", Some(Data::List(bar.strokes.into_iter().map(Data::Text).collect())));
-                settings.set_written("accents", Some(Data::List(bar.accents.into_iter().map(Data::Bool).collect())));
-                settings.set_written("cell", Some(Data::Text(bar.cell)));
+                settings.set_written(
+                    file_format::GuitarifySetting::BAR,
+                    Some(Data::List(bar.strokes.into_iter().map(Data::Text).collect())),
+                );
+                settings.set_written(
+                    file_format::GuitarifySetting::ACCENTS,
+                    Some(Data::List(bar.accents.into_iter().map(Data::Bool).collect())),
+                );
+                settings.set_written(file_format::GuitarifySetting::CELL, Some(Data::Text(bar.cell)));
             }
         });
     }
@@ -154,7 +162,7 @@ impl OneRow for GuitarBarEditor {
     fn crumbs(&self, _app: &App) -> Vec<String> {
         vec![
             labels::Crumb::GENERATORS.to_string(),
-            named(labels::MSG_ITEM_CRUMB, &[("name", self.name.as_str().into())]),
+            named(labels::MSG_ITEM_CRUMB, &[(fill::NAME, self.name.as_str().into())]),
             labels::Crumb::STROKES.to_string(),
         ]
     }
@@ -163,7 +171,7 @@ impl OneRow for GuitarBarEditor {
         let what = caption_word(KIND).to_uppercase();
         named(
             labels::MSG_EDITING_CAPTION,
-            &[("what", what.as_str().into()), ("name", self.name.as_str().into())],
+            &[(fill::WHAT, what.as_str().into()), (fill::NAME, self.name.as_str().into())],
         )
     }
 
@@ -253,8 +261,11 @@ impl OneRow for GuitarBarEditor {
         };
         let stroke = named_in(labels::MSG_GUITAR_STROKE_NAMES, &bar.strokes[step]);
         vec![
-            heading(named(messages::MSG_GUITAR_BAR_NOTE, &[("cell", bar.cell.as_str().into())]), true, false),
-            GridLine::Drawn(Text::plain(&named(note, &[("number", (step + 1).into()), ("stroke", stroke.as_str().into())]))),
+            heading(named(messages::MSG_GUITAR_BAR_NOTE, &[(fill::CELL, bar.cell.as_str().into())]), true, false),
+            GridLine::Drawn(Text::plain(&named(
+                note,
+                &[(fill::NUMBER, (step + 1).into()), (fill::STROKE, stroke.as_str().into())],
+            ))),
             GridLine::Drawn(Text::default()),
             GridLine::Rule { edge: Edge::Top, count },
             GridLine::Row {

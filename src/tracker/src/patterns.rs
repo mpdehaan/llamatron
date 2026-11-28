@@ -15,6 +15,7 @@ use llamatron_model::objects::song::Song;
 use llamatron_model::schema::checking::written_length;
 use llamatron_model::schema::generated::file_format::{Row, Section, TrackSetting};
 use llamatron_model::schema::generated::limits::{MAX_GATE, MAX_OCTAVE, MIN_OCTAVE};
+use llamatron_names::fill;
 use std::collections::BTreeMap;
 
 /// A step's value in a row, None where the row or the step holds nothing.
@@ -370,7 +371,7 @@ pub fn cycle_accidental(pattern: &mut Pattern, start: usize) -> Edited {
 /// A pattern's name as the pages show it: an instrument's preview pattern by its instrument, `preview (lead)`.
 pub fn shown_pattern_name(name: &str) -> String {
     match instrument_previews::preview_instrument(name) {
-        Some(instrument) => llamatron_strings::named(llamatron_strings::names::MSG_INSTRUMENT_PREVIEW_NAME, &[("instrument", instrument.into())]),
+        Some(instrument) => llamatron_strings::named(llamatron_strings::names::MSG_INSTRUMENT_PREVIEW_NAME, &[(fill::INSTRUMENT, instrument.into())]),
         None => name.to_string(),
     }
 }

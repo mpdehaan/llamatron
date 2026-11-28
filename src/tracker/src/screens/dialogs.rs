@@ -16,6 +16,7 @@ use crate::keys::KeyItem;
 use crate::page::Page;
 use crate::screens::list_page::shown_around;
 use crate::text::Text;
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
 /// How wide a dialog's box is unless what it holds needs more, and the room it keeps from the screen's sides.
@@ -229,7 +230,7 @@ impl ChoiceDialog {
     pub(crate) fn lines(&self, width: usize) -> Vec<Text> {
         let mut lines = Vec::new();
         if !self.typed.is_empty() {
-            let shown = named(marks::MSG_SEARCH_SHOWN, &[("text", self.typed.as_str().into())]);
+            let shown = named(marks::MSG_SEARCH_SHOWN, &[(fill::TEXT, self.typed.as_str().into())]);
             lines.push(Text::styled(&fit(&format!("{SPACE}{shown}"), width), Style::DIM));
         }
         let shown = self.shown_places();
@@ -290,7 +291,7 @@ impl Page for ChoiceDialog {
             match matches.iter().position(|place| *place == self.current) {
                 None => self.current = matches[0],
                 Some(place) => {
-                    let moved = if key == "up" {
+                    let moved = if key == llamatron_names::keys::UP {
                         place.saturating_sub(1)
                     } else {
                         (place + 1).min(matches.len() - 1)
@@ -308,7 +309,7 @@ impl Page for ChoiceDialog {
                 }
             }
         } else if item.is(&ChoiceKeys::SEARCH) {
-            self.typed.push_str(if key == "space" { SPACE } else { key });
+            self.typed.push_str(if key == llamatron_names::keys::SPACE { SPACE } else { key });
             self.settle();
         } else if item.is(&ChoiceKeys::ERASE) {
             self.typed.pop();
@@ -419,7 +420,7 @@ impl Page for PromptDialog {
         if item.is(&PromptKeys::CANCEL) {
             app.go_back();
         } else if item.is(&PromptKeys::MOVE) {
-            self.cursor = if key == "left" {
+            self.cursor = if key == llamatron_names::keys::LEFT {
                 self.cursor.saturating_sub(1)
             } else {
                 (self.cursor + 1).min(length)
@@ -568,8 +569,8 @@ impl GridChoiceDialog {
     fn move_cursor(&mut self, key: &str) {
         let (row, column) = self.where_now();
         let width = self.width();
-        if key == "up" || key == "down" {
-            let rows: Vec<usize> = if key == "up" {
+        if key == llamatron_names::keys::UP || key == llamatron_names::keys::DOWN {
+            let rows: Vec<usize> = if key == llamatron_names::keys::UP {
                 (0..row).rev().collect()
             } else {
                 (row + 1..self.cells().len()).collect()
@@ -584,7 +585,7 @@ impl GridChoiceDialog {
             }
             return;
         }
-        let step: i64 = if key == "left" { -1 } else { 1 };
+        let step: i64 = if key == llamatron_names::keys::LEFT { -1 } else { 1 };
         for offset in 1..=width as i64 {
             let mut target = column as i64 + step * offset;
             if target < 0 || target >= width as i64 {
@@ -635,7 +636,7 @@ impl GridChoiceDialog {
             tabs.append(marks::MSG_PREVIOUS_PAGE_MARK, Style::BOLD);
         }
         for (number, (name, _)) in self.pages.iter().enumerate() {
-            let tab = named(marks::MSG_PAGE_TAB, &[("name", name.as_deref().unwrap_or_default().into())]);
+            let tab = named(marks::MSG_PAGE_TAB, &[(fill::NAME, name.as_deref().unwrap_or_default().into())]);
             tabs.append(&tab, if number == self.page { Style::REVERSE } else { Style::DIM });
             if number < self.pages.len() - 1 || self.page < self.pages.len() - 1 {
                 tabs.append(SPACE, Style::PLAIN);
@@ -922,8 +923,11 @@ impl SoundDialog {
         }
         let (name, sounds) = &self.groups[row - self.top.len()];
         match sounds.iter().find(|(_, held)| *held == self.current) {
-            Some((chosen, _)) => named(marks::MSG_FLYOUT_CHOSEN, &[("name", name.as_str().into()), ("chosen", chosen.as_str().into())]),
-            None => named(marks::MSG_FLYOUT_CLOSED, &[("name", name.as_str().into())]),
+            Some((chosen, _)) => named(
+                marks::MSG_FLYOUT_CHOSEN,
+                &[(fill::NAME, name.as_str().into()), (fill::CHOSEN, chosen.as_str().into())],
+            ),
+            None => named(marks::MSG_FLYOUT_CLOSED, &[(fill::NAME, name.as_str().into())]),
         }
     }
 
@@ -962,13 +966,13 @@ impl SoundDialog {
                 .map(|(group, _, label)| {
                     named(
                         marks::MSG_SOUND_FOUND,
-                        &[("sound", label.as_str().into()), ("group", self.groups[*group].0.as_str().into())],
+                        &[(fill::SOUND, label.as_str().into()), (fill::GROUP, self.groups[*group].0.as_str().into())],
                     )
                 })
                 .collect();
             let mut lines = Vec::new();
             if !typed.is_empty() {
-                let shown = named(marks::MSG_SEARCH_SHOWN, &[("text", typed.as_str().into())]);
+                let shown = named(marks::MSG_SEARCH_SHOWN, &[(fill::TEXT, typed.as_str().into())]);
                 lines.push(Text::styled(&fit(&format!("{SPACE}{shown}"), width), Style::DIM));
             }
             let shown: Vec<Text> = Self::windowed(&rows, at, SHOWN_SOUNDS)
@@ -1081,11 +1085,15 @@ impl Page for SoundDialog {
             let found = self.found().len();
             if found > 0 {
                 let place = self.found_place.min(found - 1);
-                self.found_place = if key == "up" { place.saturating_sub(1) } else { (place + 1).min(found - 1) };
+                self.found_place = if key == llamatron_names::keys::UP {
+                    place.saturating_sub(1)
+                } else {
+                    (place + 1).min(found - 1)
+                };
             }
         } else if item.is(&SoundKeys::MOVE) {
             let rows = self.top.len() + self.groups.len();
-            self.cursor = if key == "up" {
+            self.cursor = if key == llamatron_names::keys::UP {
                 self.cursor.saturating_sub(1)
             } else {
                 (self.cursor + 1).min(rows.saturating_sub(1))
@@ -1093,9 +1101,9 @@ impl Page for SoundDialog {
         } else if item.is(&SoundKeys::MOVE_IN_FLYOUT) {
             let count = self.flyout.map_or(0, |group| self.groups[group].1.len());
             match key {
-                "left" => self.flyout = None,
-                "up" => self.flyout_place = self.flyout_place.saturating_sub(1),
-                "down" => self.flyout_place = (self.flyout_place + 1).min(count.saturating_sub(1)),
+                llamatron_names::keys::LEFT => self.flyout = None,
+                llamatron_names::keys::UP => self.flyout_place = self.flyout_place.saturating_sub(1),
+                llamatron_names::keys::DOWN => self.flyout_place = (self.flyout_place + 1).min(count.saturating_sub(1)),
                 _ => {}
             }
         } else if item.is(&SoundKeys::OPEN) {
@@ -1109,7 +1117,7 @@ impl Page for SoundDialog {
             self.found_place = 0;
         } else if item.is(&SoundKeys::TYPE) {
             let typed = self.typed.get_or_insert_with(String::new);
-            typed.push_str(if key == "space" { SPACE } else { key });
+            typed.push_str(if key == llamatron_names::keys::SPACE { SPACE } else { key });
             self.found_place = 0;
         } else if item.is(&SoundKeys::ERASE) {
             if let Some(typed) = self.typed.as_mut() {
@@ -1233,7 +1241,7 @@ impl HelpDialog {
 
     /// The heading: the page whose keys these are.
     fn title(&self) -> String {
-        named(messages::MSG_HELP_TITLE, &[("where", self.place.as_str().into())])
+        named(messages::MSG_HELP_TITLE, &[(fill::WHERE, self.place.as_str().into())])
     }
 
     /// The everywhere keys, a blank line and the page's own keys.
@@ -1448,7 +1456,7 @@ impl Page for ConfirmDialog {
         if item.is(&ConfirmKeys::NO) {
             app.go_back();
         } else if item.is(&ConfirmKeys::SELECT) {
-            self.choice = if key == "left" {
+            self.choice = if key == llamatron_names::keys::LEFT {
                 self.choice.saturating_sub(1)
             } else {
                 (self.choice + 1).min(NO)
@@ -1542,7 +1550,7 @@ impl Page for QuitDialog {
         if item.is(&QuitKeys::CANCEL) {
             app.go_back();
         } else if item.is(&QuitKeys::SELECT) {
-            self.choice = if key == "left" {
+            self.choice = if key == llamatron_names::keys::LEFT {
                 self.choice.saturating_sub(1)
             } else {
                 (self.choice + 1).min(CANCEL_QUIT)
@@ -1672,7 +1680,7 @@ impl Page for ExportDialog {
             if item.is(&ExportKeys::CLOSE_FLYOUT) {
                 self.flyout_open = false;
             } else if item.is(&ExportKeys::MOVE) {
-                self.flyout_place = if key == "up" {
+                self.flyout_place = if key == llamatron_names::keys::UP {
                     self.flyout_place.saturating_sub(1)
                 } else {
                     (self.flyout_place + 1).min(MIDI_KINDS.len() - 1)
@@ -1785,7 +1793,10 @@ impl PickManyDialog {
                 } else {
                     marks::MSG_FIELD_TOGGLE_OFF
                 };
-                let text = named(marks::MSG_PICKED_CHOICE, &[("mark", mark.into()), ("name", self.names[place].as_str().into())]);
+                let text = named(
+                    marks::MSG_PICKED_CHOICE,
+                    &[(fill::MARK, mark.into()), (fill::NAME, self.names[place].as_str().into())],
+                );
                 Text::plain(&fit(&format!("{}{text}", cursor_mark(place == self.cursor)), width))
             })
             .collect()
@@ -1819,7 +1830,7 @@ impl Page for PickManyDialog {
             app.go_back();
         } else if item.is(&PickManyKeys::MOVE) {
             let last = self.options.len().saturating_sub(1);
-            self.cursor = if key == "up" {
+            self.cursor = if key == llamatron_names::keys::UP {
                 self.cursor.saturating_sub(1)
             } else {
                 (self.cursor + 1).min(last)

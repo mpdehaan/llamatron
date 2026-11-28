@@ -21,6 +21,8 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::generated::defaults::{DEFAULT_FOLLOW_ACTION, DEFAULT_LAUNCH_TOGETHER};
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, FollowAction, SceneSetting, SetlistSetting};
+#[cfg(test)]
+use llamatron_names::spec;
 
 /// How close to a pass's start a moment may be and still count as that start, against rounding in the seconds.
 const PASS_TOLERANCE: f64 = 1e-9;
@@ -374,7 +376,7 @@ mod tests {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/one_draw_stepping.yml");
         let text = std::fs::read_to_string(path).expect("the scenario's set is there");
         let setlist = Setlist::read_text(&text).expect("the scenario's set is valid");
-        let song = setlist.get_song("song").expect("the song");
+        let song = setlist.get_song(spec::SONG).expect("the song");
         let score = Score::new(&setlist, song, &[], None).expect("the song renders");
         let first_draw = 0;
         // At 120 a minute a sixteenth lasts 0.125 s, so the middle of the third step is 0.3125 s in.

@@ -11,7 +11,11 @@ use crate::keys::{arrows_joined, in_order, KeyItem};
 use crate::style::Style as RichStyle;
 use crate::text::Text;
 use crate::themes::{self, Colour};
+use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
+
+/// How many seconds make a minute, for a clock.
+const SECONDS_A_MINUTE: i64 = 60;
 
 /// The header's two lines and its rule or stripe.
 const HEADER_LINES: usize = 3;
@@ -156,7 +160,13 @@ pub fn clock(seconds: Option<f64>) -> String {
         None => marks::MSG_NO_TIME.to_string(),
         Some(seconds) => {
             let total = seconds.round_ties_even() as i64;
-            named(marks::MSG_CLOCK, &[("minutes", (total / 60).into()), ("seconds", (total % 60).into())])
+            named(
+                marks::MSG_CLOCK,
+                &[
+                    (fill::MINUTES, (total / SECONDS_A_MINUTE).into()),
+                    (fill::SECONDS, (total % SECONDS_A_MINUTE).into()),
+                ],
+            )
         }
     }
 }
@@ -173,7 +183,10 @@ pub fn clock_exact(seconds: llamatron_math::Rational) -> String {
     };
     named(
         marks::MSG_CLOCK,
-        &[("minutes", ((total / 60) as i64).into()), ("seconds", ((total % 60) as i64).into())],
+        &[
+            (fill::MINUTES, ((total / SECONDS_A_MINUTE as i128) as i64).into()),
+            (fill::SECONDS, ((total % SECONDS_A_MINUTE as i128) as i64).into()),
+        ],
     )
 }
 
@@ -250,8 +263,8 @@ pub fn header(page: &dyn Page, app: &App, width: usize, height: usize) -> Vec<Te
     let song = app.document.get_current_song_name();
     let song = if song.is_empty() { marks::MSG_NONE_SHOWN } else { song };
     let names = [
-        named(labels::MSG_SET_CRUMB, &[("file", file.as_str().into())]),
-        named(labels::MSG_SONG_CRUMB, &[("song", song.into())]),
+        named(labels::MSG_SET_CRUMB, &[(fill::FILE, file.as_str().into())]),
+        named(labels::MSG_SONG_CRUMB, &[(fill::SONG, song.into())]),
     ];
     let marks_width = marks.iter().map(|mark| mark.chars().count()).max().unwrap_or(0);
     let names_width = names.iter().map(|name| name.chars().count()).max().unwrap_or(0);
