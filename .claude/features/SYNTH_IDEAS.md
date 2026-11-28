@@ -27,7 +27,7 @@ The professor's research is in `.claude/notes/synthesis/`.
   each note afresh, sending no CC.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **Modulator modules**: each Modulators tab slot holds a module chosen by its Type, and beside LFO and LFO+ the Type
+- **Modulator modules**: each Modulators tab slot holds a module chosen by its Type, and beside LFO the Type
   offers Snail, Chaos, Tide, Turing, Bounce and Swarm, a module of several outputs adding them to the Mod Matrix's sources
   while chosen (`.claude/planning/DESIGNS.md`, "Modulator modules on the LFOs tab"). What each module is:
   - **Chaos**: a chaotic system's path in three dimensions, X, Y and Z, never repeating; System is Lorenz (two lobes it
@@ -36,11 +36,11 @@ The professor's research is in `.claude/notes/synthesis/`.
     chaos, and a speed; bounded and numerically safe, restarted from its seed if it ever escapes. Other systems kept for
     later: the jerk systems, Aizawa, Halvorsen, Dadras, the logistic and Hénon maps, the Duffing oscillator, the
     rungler (a shift register clocked and fed by its own oscillators).
-  - **Snail**: three slow chaotic circuits, each travelling around two
-    strange attractors at its own pace (about 20 seconds, 75 seconds and 35 minutes a trip at a Pace of x1), two with a
-    Lean setting which attractor it lingers around, the third with none; each circuit's X and Y, and a mix of the three
-    (the first and third added, the second taken away) split into its rising and falling halves, as outputs. Never
-    restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked before building.
+  - **Snail**: three slow chaotic circuits, Slow, Slower and Slowest (about 20 seconds, 75 seconds and 35 minutes
+    a cycle), each travelling around two strange attractors, Slow and Slower with a Lean setting which attractor it
+    lingers around, Slowest with none; each circuit's X, Y and Z (Y inverted) as outputs, and the two Leans as
+    destinations. Never restarted by a note. Its circuit's equations, a jerk-type system, to be found and checked
+    before building.
   - **Tide**: a function generator of four related outputs, read from open firmware (MIT, `pichenettes/eurorack`,
     `tides2/`): a rise and a fall, Mode Loop, Once (AD) or Held (AR); Speed and Rate; Bend (the rise and fall from logarithmic to
     exponential); Slope (rise against fall); Smooth (a low-pass one way, a wavefolder the other); four outputs related by
