@@ -90,7 +90,7 @@ pub const MSG_CHANGED_NAMED: &str = "{kind} ({name})";
 pub const MSG_CHANGED_IN_SONG: &str = "song ({song}): {what}";
 pub const MSG_CHANGED_SCENE: &str = "scene {number}";
 pub const MSG_CHANGED_THE_SET: &str = "the set";
-pub static MSG_CHANGED_WORDS: &[(&str, &str)] = &[("scales", "scale"), ("patterns", "pattern"), ("chains", "chain"), ("grooves", "groove"), ("instruments", "instrument"), ("songs", "song"), ("tracks", "track"), ("draws", "draw"), ("title", "title"), ("author", "author"), ("description", "description"), ("notes", "notes"), ("step_size", "step size"), ("default_octave", "default octave"), ("default_drum_octave", "default drum octave"), ("octave_labels", "octave labels"), ("protected", "protected"), ("default_follow_action", "default follow action"), ("real_time", "real time"), ("tempo", "tempo"), ("time_signature", "time signature"), ("scale", "scale"), ("groove", "groove")];
+pub static MSG_CHANGED_WORDS: &[(&str, &str)] = &[(file_format::Section::SCALES, file_format::SongSetting::SCALE), (file_format::Section::PATTERNS, file_format::ClipSlotSetting::PATTERN), (file_format::Section::CHAINS, file_format::FileLayout::CHAIN), (file_format::Section::GROOVES, file_format::SongSetting::GROOVE), (file_format::Section::INSTRUMENTS, file_format::TrackSetting::INSTRUMENT), (file_format::Section::SONGS, spec::SONG), (file_format::Section::TRACKS, file_format::FileLayout::TRACK), (file_format::Section::DRAWS, words::DRAW), (file_format::SetlistSetting::TITLE, file_format::SetlistSetting::TITLE), (file_format::SetlistSetting::AUTHOR, file_format::SetlistSetting::AUTHOR), (file_format::SetlistSetting::DESCRIPTION, file_format::SetlistSetting::DESCRIPTION), (file_format::SetlistSetting::NOTES, file_format::SetlistSetting::NOTES), (file_format::SetlistSetting::STEP_SIZE, "step size"), (file_format::SetlistSetting::DEFAULT_OCTAVE, "default octave"), (file_format::SetlistSetting::DEFAULT_DRUM_OCTAVE, "default drum octave"), (file_format::SetlistSetting::OCTAVE_LABELS, "octave labels"), (file_format::SetlistSetting::PROTECTED, file_format::SetlistSetting::PROTECTED), (file_format::SetlistSetting::DEFAULT_FOLLOW_ACTION, "default follow action"), (file_format::SetlistSetting::REAL_TIME, "real time"), (file_format::SongSetting::TEMPO, file_format::SongSetting::TEMPO), (file_format::SongSetting::TIME_SIGNATURE, "time signature"), (file_format::SongSetting::SCALE, file_format::SongSetting::SCALE), (file_format::SongSetting::GROOVE, file_format::SongSetting::GROOVE)];
 pub const MSG_NEW_SONG_PROMPT: &str = "New song";
 pub const MSG_RENAME_SONG_PROMPT: &str = "Rename song ({name})";
 pub const MSG_RENAME_TRACK_PROMPT: &str = "Rename track ({name})";
@@ -194,7 +194,7 @@ pub const MSG_CHORD_OWN_SENTENCE: &str = "In {scale}, the clip's own, the chord 
 pub const MSG_NOTE_SENTENCE: &str = "In {scale}, the note on {degree} is {name}.";
 pub const MSG_CHORD_NOTES: &str = "Notes: {notes}";
 pub const MSG_DOUBLED_SENTENCE: &str = "Doubled: {doubled}.";
-pub static MSG_DOUBLINGS_SAID: &[(&str, &str)] = &[("low_up", "the lowest note again an octave up"), ("all_up", "every note again an octave up"), ("all_down", "every note again an octave down"), ("top_down", "the top note again an octave down")];
+pub static MSG_DOUBLINGS_SAID: &[(&str, &str)] = &[(file_format::Doubling::LOW_UP, "the lowest note again an octave up"), (file_format::Doubling::ALL_UP, "every note again an octave up"), (file_format::Doubling::ALL_DOWN, "every note again an octave down"), (file_format::Doubling::TOP_DOWN, "the top note again an octave down")];
 pub const MSG_CHORD_NO_SCALE_KNOWN: &str = "No scale is known here, so the chord has no name yet.";
 pub const MSG_CHORD_RESTING: &str = "{where}: in {scale}, the chord on {degree} is {name} ({notes})";
 pub const MSG_CHORD_RESTING_OWN: &str = "; in {scale} it is {name}";
@@ -328,4 +328,7 @@ pub const MSG_PASTE_CLIP_AMONG_ITS_KIND: &str = "a clip pastes only onto a track
 /// What a list page's M picked up, carried by the arrows.
 pub const MSG_MOVING: &str = "moving {what}: the arrows carry it, ENTER drops it";
 /// ESC letting go of what T cut, nothing moved.
+use llamatron_names::spec;
+use llamatron_names::words;
+use llamatron_names::file_format;
 pub const MSG_CUT_LET_GO: &str = "let go of what was cut";

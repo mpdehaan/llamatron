@@ -7,6 +7,8 @@
 #![allow(clippy::type_complexity)]
 
 /// A generator plugin as the model knows it: its name, its section of a set, and where its built-in one runs, or None.
+use llamatron_names::spec;
+use llamatron_names::words;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Plugin {
     pub name: &'static str,
@@ -15,13 +17,13 @@ pub struct Plugin {
 }
 
 pub static PLUGINS: &[Plugin] = &[
-    Plugin { name: "arp", section: "arps", built_in_place: Some(20) },
-    Plugin { name: "chords", section: "chords", built_in_place: Some(10) },
-    Plugin { name: "drift", section: "drifts", built_in_place: None },
-    Plugin { name: "guitarify", section: "guitarifies", built_in_place: Some(30) },
-    Plugin { name: "hocket", section: "hockets", built_in_place: None },
-    Plugin { name: "musician", section: "musicians", built_in_place: None },
-    Plugin { name: "phrasing", section: "phrasings", built_in_place: Some(70) },
-    Plugin { name: "shapes", section: "shapes", built_in_place: None },
-    Plugin { name: "timing", section: "timings", built_in_place: Some(60) },
+    Plugin { name: words::ARP, section: words::ARPS, built_in_place: Some(20) },
+    Plugin { name: words::CHORDS, section: words::CHORDS, built_in_place: Some(10) },
+    Plugin { name: spec::DRIFT, section: words::DRIFTS, built_in_place: None },
+    Plugin { name: words::GUITARIFY, section: words::GUITARIFIES, built_in_place: Some(30) },
+    Plugin { name: words::HOCKET, section: words::HOCKETS, built_in_place: None },
+    Plugin { name: words::MUSICIAN, section: words::MUSICIANS, built_in_place: None },
+    Plugin { name: words::PHRASING, section: words::PHRASINGS, built_in_place: Some(70) },
+    Plugin { name: words::SHAPES, section: words::SHAPES, built_in_place: None },
+    Plugin { name: words::TIMING, section: words::TIMINGS, built_in_place: Some(60) },
 ];

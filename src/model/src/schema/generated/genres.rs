@@ -6,9 +6,12 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+use llamatron_names::file_format;
+
 pub const MASHUP: &str = "Mashup";
 pub const MASHUP_NAMED: &str = "{subgenre} Mashup";
 pub const MASHUP_SUFFIX: &str = " Mashup";
 pub static GENRES: &[&str] = &["Blues", "Children's", "Classical", "Country", "Electronic", "Exercise", "Experimental", "Folk", "Funk", "Gospel", "Mashup", "Metal", "Pop", "Ragtime", "Rock", "Soundtrack", "TV Theme", "Video Game", "World"];
-pub static SUBGENRES: &[(&str, &[&str])] = &[("Blues", &["driving shuffle", "jump blues", "minor blues", "shuffle", "slow blues", "texas shuffle"]), ("Electronic", &["ambient", "big beat", "chiptune", "downtempo", "drum and bass", "dubstep", "electro", "hi-nrg", "house", "italo", "minimal techno", "synth-pop", "techno", "trance"]), ("Experimental", &["serial chords", "serial synths", "serial trio", "serial winds"]), ("Funk", &["disco", "funk", "new orleans", "sixties soul", "soul ballad", "southern soul"]), ("Mashup", &["Blues", "Electronic", "Funk", "Jazz", "Metal", "Rock", "World"]), ("Pop", &["baroque", "big studio", "bubblegum", "folk pop", "soul pop", "sunshine", "waltz ballad"]), ("Rock", &["arena rock", "british invasion", "folk rock", "hard rock", "new wave", "punk", "rock and roll", "rock ballad", "six-eight ballad"])];
-pub static VARIANTS: &[(&str, &[(&str, &[&str])])] = &[("Rock", &[("hard rock", &["blues-based", "heavy", "boogie", "stomp"])])];
+pub static SUBGENRES: &[(&str, &[&str])] = &[("Blues", &["driving shuffle", "jump blues", "minor blues", file_format::ReadyBar::SHUFFLE, "slow blues", "texas shuffle"]), ("Electronic", &[words::AMBIENT, "big beat", words::CHIPTUNE, words::DOWNTEMPO, "drum and bass", words::DUBSTEP, words::ELECTRO, "hi-nrg", words::HOUSE, words::ITALO, "minimal techno", "synth-pop", words::TECHNO, words::TRANCE]), ("Experimental", &["serial chords", "serial synths", "serial trio", "serial winds"]), ("Funk", &[file_format::ReadyBar::DISCO, words::FUNK, "new orleans", "sixties soul", "soul ballad", "southern soul"]), ("Mashup", &["Blues", "Electronic", "Funk", "Jazz", "Metal", "Rock", "World"]), ("Pop", &[words::BAROQUE, "big studio", words::BUBBLEGUM, "folk pop", "soul pop", words::SUNSHINE, "waltz ballad"]), ("Rock", &["arena rock", "british invasion", "folk rock", "hard rock", "new wave", file_format::NamedProgression::PUNK, "rock and roll", "rock ballad", "six-eight ballad"])];
+pub static VARIANTS: &[(&str, &[(&str, &[&str])])] = &[("Rock", &[("hard rock", &["blues-based", words::HEAVY, file_format::ReadyBar::BOOGIE, words::STOMP])])];
