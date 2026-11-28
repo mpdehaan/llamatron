@@ -64,3 +64,4 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 33. SYNTH_IDEAS: Asheville's later-version features; Asheville-Poly.
 34. SYNTH_IDEAS: The Mod Matrix names each destination by its block.
 35. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
+36. SYNTH_IDEAS: QuadLFO

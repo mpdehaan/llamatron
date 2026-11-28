@@ -39,6 +39,9 @@ The professor's research is in `.claude/notes/synthesis/`.
 - **Figures**: a Type of a Modulators slot beside LFO and Snail (`.claude/planning/DESIGNS.md`, "Figures"): a loop of random
   steps, synced to the song, that repeats and changes as slowly as its Change allows, read at x1, x2, x4 and ÷2 as four
   Mod Matrix sources that stay in step, with Change as its destination.
+- **QuadLFO**: a Type of a Modulators slot: one LFO whose rate is set freely or chosen from tempo-synced steps, from
+  very, very slow up to audio rates, offering outputs at 1x, 2x, 3x and 4x its rate, each in sine, saw and square,
+  as Mod Matrix sources; it restarts at each note or at each scene.
 - **Modulators drawn**, later, at a calm rate: each module draws what it is doing in its box (the snails' traces, a
   chaotic system's path), worked out on the screen's side only while its box is on screen, and only if
   cheap.
