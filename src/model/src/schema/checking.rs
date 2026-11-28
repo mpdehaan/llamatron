@@ -16,6 +16,9 @@ use crate::schema::generated::settings::{Check, Described, Nearest, Plain, Setti
 use crate::values::generated::note::ROOT_NAMES;
 use crate::values::time_signature::TimeSignature;
 use llamatron_math::Rational;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::{named, Value};
 
@@ -129,7 +132,10 @@ pub fn check(setting: &Setting, value: &Data, context: Option<&dyn Context>) -> 
             if fits {
                 return Ok(());
             }
-            refused(error, &[("name", name.into()), ("value", shown())])
+            refused(
+                error,
+                &[(file_format::FileLayout::NAME, name.into()), (file_format::StatementPart::VALUE, shown())],
+            )
         }
         Described::WholeNumber { lowest, highest, error } => {
             let fits = value
@@ -142,11 +148,11 @@ pub fn check(setting: &Setting, value: &Data, context: Option<&dyn Context>) -> 
             let result = refused(
                 error,
                 &[
-                    ("name", name.into()),
-                    ("value", shown()),
-                    ("lowest", bound(lowest)),
-                    ("highest", bound(highest)),
-                    ("most", bound(highest)),
+                    (file_format::FileLayout::NAME, name.into()),
+                    (file_format::StatementPart::VALUE, shown()),
+                    (spec::LOWEST, bound(lowest)),
+                    (spec::HIGHEST, bound(highest)),
+                    (spec::MOST, bound(highest)),
                 ],
             );
             result.map_err(|refusal| InvalidValue {
@@ -161,7 +167,11 @@ pub fn check(setting: &Setting, value: &Data, context: Option<&dyn Context>) -> 
             let nearest = default.map(|choice| NearestValue::Value(plain_data(&choice))).unwrap_or(NearestValue::LeftOut);
             let result = refused(
                 error,
-                &[("name", name.into()), ("value", shown()), ("choices", listed(&plain_texts(choices)).into())],
+                &[
+                    (file_format::FileLayout::NAME, name.into()),
+                    (file_format::StatementPart::VALUE, shown()),
+                    (words::CHOICES, listed(&plain_texts(choices)).into()),
+                ],
             );
             result.map_err(|refusal| InvalidValue { nearest, ..refusal })
         }
@@ -251,16 +261,16 @@ pub fn fraction_data(value: Rational) -> Data {
 /// A number written like 2 or 1/8, as an exact fraction; true and false refused.
 pub fn number(value: &Data) -> Result<Rational, InvalidValue> {
     if matches!(value, Data::Bool(_)) {
-        return Err(InvalidValue::new(named(errors::ERR_EXPECTED_NUMBER, &[("value", value.into())])));
+        return Err(InvalidValue::new(named(errors::ERR_EXPECTED_NUMBER, &[(fill::VALUE, value.into())])));
     }
-    Rational::parse(&value.python_str()).map_err(|_| InvalidValue::new(named(errors::ERR_EXPECTED_NUMBER_LIKE, &[("value", value.into())])))
+    Rational::parse(&value.python_str()).map_err(|_| InvalidValue::new(named(errors::ERR_EXPECTED_NUMBER_LIKE, &[(fill::VALUE, value.into())])))
 }
 
 /// A length in whole notes, which has to be more than zero.
 pub fn positive_length(value: &Data) -> Result<Rational, InvalidValue> {
     let length = number(value)?;
     if length <= Rational::ZERO {
-        return Err(InvalidValue::new(named(errors::ERR_LENGTH_NOT_POSITIVE, &[("value", value.into())])));
+        return Err(InvalidValue::new(named(errors::ERR_LENGTH_NOT_POSITIVE, &[(fill::VALUE, value.into())])));
     }
     Ok(length)
 }
@@ -280,13 +290,13 @@ pub fn is_written_length(value: &Data) -> bool {
 /// A length written as a whole number or a fraction, more than nothing and at most most; decimals refused.
 pub fn written_length(value: &Data, most: Rational) -> Result<Rational, InvalidValue> {
     if !is_written_length(value) {
-        return Err(InvalidValue::new(named(errors::ERR_BAD_WRITTEN_LENGTH, &[("value", value.into())])));
+        return Err(InvalidValue::new(named(errors::ERR_BAD_WRITTEN_LENGTH, &[(fill::VALUE, value.into())])));
     }
     let length = positive_length(value)?;
     if length > most {
         return Err(InvalidValue::new(named(
             errors::ERR_LENGTH_TOO_LONG,
-            &[("most", most.to_string().into()), ("value", value.into())],
+            &[(spec::MOST, most.to_string().into()), (file_format::StatementPart::VALUE, value.into())],
         )));
     }
     Ok(length)
@@ -316,7 +326,7 @@ pub fn bars_written(value: &Data) -> Option<i64> {
         return None;
     }
     let count: i64 = words[0].parse().ok()?;
-    (named(file_format::BARS_WRITTEN, &[("count", words[0].into())]) == text && count > 0).then_some(count)
+    (named(file_format::BARS_WRITTEN, &[(fill::COUNT, words[0].into())]) == text && count > 0).then_some(count)
 }
 
 /// A time setting as bars or a positive length.
@@ -324,7 +334,7 @@ pub fn time_length(value: &Data) -> Result<TimeLength, InvalidValue> {
     if let Some(count) = bars_written(value) {
         return Ok(TimeLength::Bars(count));
     }
-    let refusal = || InvalidValue::new(named(errors::ERR_BAD_TIME, &[("value", value.into())]));
+    let refusal = || InvalidValue::new(named(errors::ERR_BAD_TIME, &[(fill::VALUE, value.into())]));
     let length = number(value).map_err(|_| refusal())?;
     if length <= Rational::ZERO {
         return Err(refusal());
@@ -355,7 +365,7 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if value.is_null() || value.as_str().is_some() {
                 return Ok(());
             }
-            refused(errors::ERR_INVALID_NAME, &[("name", shown())])
+            refused(errors::ERR_INVALID_NAME, &[(file_format::FileLayout::NAME, shown())])
         }
         Check::ChecksNumber => number(value).map(|_| ()),
         Check::ChecksTimeLength => time_length(value).map(|_| ()),
@@ -364,21 +374,21 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if value.as_str().is_some() {
                 return Ok(());
             }
-            refused(errors::ERR_SCENE_NAME_NOT_TEXT, &[("value", shown())])
+            refused(errors::ERR_SCENE_NAME_NOT_TEXT, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::SceneCheckScaleName => match value {
             Data::Null => Ok(()),
             Data::Text(name) if named_in(context, |song| song.has_scale(name)) => Ok(()),
-            _ => refused(errors::ERR_SCENE_NO_SUCH_SCALE, &[("scale", shown())]),
+            _ => refused(errors::ERR_SCENE_NO_SUCH_SCALE, &[(fill::SCALE, shown())]),
         },
         Check::SongCheckScaleName => match value {
             Data::Null => Ok(()),
             Data::Text(name) if named_in(context, |song| song.has_scale(name)) => Ok(()),
-            _ => refused(errors::ERR_SONG_NO_SUCH_SCALE, &[("scale", shown())]),
+            _ => refused(errors::ERR_SONG_NO_SUCH_SCALE, &[(fill::SCALE, shown())]),
         },
         Check::ClipSlotCheckScaleName => match value {
             Data::Text(name) if named_in(context, |song| song.has_scale(name)) => Ok(()),
-            _ => refused(errors::ERR_SCENE_NO_SUCH_SCALE, &[("scale", shown())]),
+            _ => refused(errors::ERR_SCENE_NO_SUCH_SCALE, &[(fill::SCALE, shown())]),
         },
         Check::SceneCheckTempoPercent => {
             let percent = number(value)?;
@@ -389,24 +399,24 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             refused(
                 errors::ERR_BAD_TEMPO_PERCENT,
                 &[
-                    ("lowest", limits::MIN_TEMPO_PERCENT.into()),
-                    ("highest", limits::MAX_TEMPO_PERCENT.into()),
-                    ("value", shown()),
+                    (spec::LOWEST, limits::MIN_TEMPO_PERCENT.into()),
+                    (spec::HIGHEST, limits::MAX_TEMPO_PERCENT.into()),
+                    (file_format::StatementPart::VALUE, shown()),
                 ],
             )
         }
         Check::ClipSlotCheckPatternName => match value {
             Data::Text(name) if named_in(context, |song| song.has_pattern(name)) => Ok(()),
-            _ => refused(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", shown())]),
+            _ => refused(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[(fill::NAME, shown())]),
         },
         Check::ClipSlotCheckPatternNames => {
             let Some(names) = names_in(value).filter(|names| !names.is_empty()) else {
-                return refused(errors::ERR_NOT_PATTERN_NAMES, &[("value", shown())]);
+                return refused(errors::ERR_NOT_PATTERN_NAMES, &[(file_format::StatementPart::VALUE, shown())]);
             };
             let Some(song) = context else { return Ok(()) };
             for name in &names {
                 if !song.has_pattern(name) {
-                    return refused(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[("name", (*name).into())]);
+                    return refused(errors::ERR_CLIP_SLOT_NO_SUCH_PATTERN, &[(file_format::FileLayout::NAME, (*name).into())]);
                 }
             }
             let drums = names.iter().filter(|name| song.is_drum_pattern(name)).count();
@@ -417,15 +427,15 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
         }
         Check::ClipSlotCheckGrabTrackName => match value {
             Data::Text(name) if named_in(context, |song| song.has_track(name)) => Ok(()),
-            _ => refused(errors::ERR_NO_GRAB_TRACK, &[("name", shown())]),
+            _ => refused(errors::ERR_NO_GRAB_TRACK, &[(fill::NAME, shown())]),
         },
         Check::ChainCheckChainNames => {
             let Some(names) = names_in(value) else {
-                return refused(errors::ERR_NOT_CHAIN_NAMES, &[("value", shown())]);
+                return refused(errors::ERR_NOT_CHAIN_NAMES, &[(file_format::StatementPart::VALUE, shown())]);
             };
             for name in names {
                 if !named_in(context, |set| set.has_generator_named(name)) {
-                    return refused(errors::ERR_NO_GENERATOR_CALLED, &[("name", name.into())]);
+                    return refused(errors::ERR_NO_GENERATOR_CALLED, &[(fill::NAME, name.into())]);
                 }
             }
             Ok(())
@@ -433,32 +443,32 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
         Check::GrooveCheckGrooveChoice => match value {
             Data::Null | Data::Bool(false) => Ok(()),
             Data::Text(name) if named_in(context, |song| song.has_groove(name)) => Ok(()),
-            Data::Text(_) => refused(errors::ERR_NO_SUCH_GROOVE, &[("name", shown())]),
-            _ => refused(errors::ERR_GROOVE_NOT_NAME_OR_FALSE, &[("value", shown())]),
+            Data::Text(_) => refused(errors::ERR_NO_SUCH_GROOVE, &[(fill::NAME, shown())]),
+            _ => refused(errors::ERR_GROOVE_NOT_NAME_OR_FALSE, &[(file_format::StatementPart::VALUE, shown())]),
         },
         Check::SongCheckGrooveName => match value {
             Data::Text(name) if named_in(context, |song| song.has_groove(name)) => Ok(()),
-            _ => refused(errors::ERR_SONG_NO_SUCH_GROOVE, &[("name", shown())]),
+            _ => refused(errors::ERR_SONG_NO_SUCH_GROOVE, &[(fill::NAME, shown())]),
         },
         Check::SongCheckPreviewInstrument => match value {
             Data::Null => Ok(()),
             Data::Text(name) if named_in(context, |song| song.has_instrument(name)) => Ok(()),
-            _ => refused(errors::ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT, &[("name", shown())]),
+            _ => refused(errors::ERR_SONG_NO_SUCH_PREVIEW_INSTRUMENT, &[(fill::NAME, shown())]),
         },
         Check::TrackCheckInstrumentName => match value {
             Data::Text(name) if named_in(context, |song| song.has_instrument(name)) => Ok(()),
-            _ => refused(errors::ERR_NO_SUCH_INSTRUMENT, &[("name", shown())]),
+            _ => refused(errors::ERR_NO_SUCH_INSTRUMENT, &[(fill::NAME, shown())]),
         },
         Check::SongCheckWizardChoices => match value {
             Data::Null | Data::Map(_) => Ok(()),
-            _ => refused(errors::ERR_SONG_BAD_WIZARD, &[("value", shown())]),
+            _ => refused(errors::ERR_SONG_BAD_WIZARD, &[(file_format::StatementPart::VALUE, shown())]),
         },
         Check::SetlistNeverRefused | Check::SongNeverRefused => Ok(()),
         Check::SetlistCheckVersion => {
             if is_version(value) {
                 return Ok(());
             }
-            refused(errors::ERR_SONG_BAD_VERSION, &[("value", shown())])
+            refused(errors::ERR_SONG_BAD_VERSION, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::TrackCheckCcNumbers => {
             let lanes = file_format::CC_ROWS.len();
@@ -473,7 +483,12 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             }
             refused(
                 errors::ERR_BAD_CC_NUMBERS,
-                &[("lanes", lanes.into()), ("lowest", 0.into()), ("highest", 127.into()), ("value", shown())],
+                &[
+                    (words::LANES, lanes.into()),
+                    (spec::LOWEST, 0.into()),
+                    (spec::HIGHEST, 127.into()),
+                    (file_format::StatementPart::VALUE, shown()),
+                ],
             )
         }
         Check::TraitsCheckResetDraws => {
@@ -483,7 +498,10 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             }
             refused(
                 errors::ERR_BAD_RESET_DRAWS,
-                &[("names", listed(file_format::DRAW_NAMES).into()), ("value", shown())],
+                &[
+                    (words::NAMES, listed(file_format::DRAW_NAMES).into()),
+                    (file_format::StatementPart::VALUE, shown()),
+                ],
             )
         }
         Check::DrawCheckSlots => {
@@ -496,19 +514,22 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             refused(
                 errors::ERR_BAD_DRAW_SLOTS,
                 &[
-                    ("lowest", limits::MIN_DRAW_SLOTS.into()),
-                    ("highest", limits::MAX_DRAW_SLOTS.into()),
-                    ("value", shown()),
+                    (spec::LOWEST, limits::MIN_DRAW_SLOTS.into()),
+                    (spec::HIGHEST, limits::MAX_DRAW_SLOTS.into()),
+                    (file_format::StatementPart::VALUE, shown()),
                 ],
             )
         }
         Check::DriftModelCheckRoot => match value {
             Data::Text(name) if ROOT_NAMES.contains(&name.as_str()) => Ok(()),
-            _ => refused(errors::ERR_DRIFT_BAD_ROOT, &[("roots", listed(ROOT_NAMES).into()), ("value", shown())]),
+            _ => refused(
+                errors::ERR_DRIFT_BAD_ROOT,
+                &[(words::ROOTS, listed(ROOT_NAMES).into()), (file_format::StatementPart::VALUE, shown())],
+            ),
         },
         Check::DriftModelCheckScaleName => match value {
             Data::Text(name) if !name.is_empty() => Ok(()),
-            _ => refused(errors::ERR_DRIFT_BAD_SCALE, &[("value", shown())]),
+            _ => refused(errors::ERR_DRIFT_BAD_SCALE, &[(file_format::StatementPart::VALUE, shown())]),
         },
         Check::ChordsModelCheckProgressionChords => {
             let fits = value.as_list().is_some_and(|chords| {
@@ -525,10 +546,10 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             refused(
                 errors::ERR_BAD_PROGRESSION_CHORDS,
                 &[
-                    ("most", limits::MAX_PROGRESSION_CHORDS.into()),
-                    ("lowest", limits::MIN_PROGRESSION_DEGREE.into()),
-                    ("highest", limits::MAX_PROGRESSION_DEGREE.into()),
-                    ("value", shown()),
+                    (spec::MOST, limits::MAX_PROGRESSION_CHORDS.into()),
+                    (spec::LOWEST, limits::MIN_PROGRESSION_DEGREE.into()),
+                    (spec::HIGHEST, limits::MAX_PROGRESSION_DEGREE.into()),
+                    (file_format::StatementPart::VALUE, shown()),
                 ],
             )
         }
@@ -543,7 +564,7 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_BAD_PROGRESSION_ROW, &[("value", shown())])
+            refused(errors::ERR_BAD_PROGRESSION_ROW, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::ChordsModelTensionsRow => {
             let is_tensions = |item: &Data| {
@@ -566,7 +587,7 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_BAD_PROGRESSION_TENSIONS, &[("value", shown())])
+            refused(errors::ERR_BAD_PROGRESSION_TENSIONS, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::GuitarifyModelCheckGuitarBar => {
             let fits = value.as_list().is_some_and(|strokes| {
@@ -578,7 +599,7 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_BAD_GUITAR_BAR, &[("value", shown())])
+            refused(errors::ERR_BAD_GUITAR_BAR, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::GuitarifyModelCheckGuitarAccents => {
             let fits = value
@@ -587,7 +608,7 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_BAD_GUITAR_ACCENTS, &[("value", shown())])
+            refused(errors::ERR_BAD_GUITAR_ACCENTS, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::TimingStepRowCheckStepRow => {
             let fits = value.as_list().is_some_and(|steps| {
@@ -596,16 +617,16 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_BAD_STEP_ROW, &[("value", shown())])
+            refused(errors::ERR_BAD_STEP_ROW, &[(file_format::StatementPart::VALUE, shown())])
         }
         Check::TimingModelCheckGlide => number(value).map(|_| ()),
         Check::ArpModelCheckArpOffsets => match value {
             Data::List(_) => Ok(()),
-            _ => refused(errors::ERR_GENERATOR_BAD_OFFSETS, &[("problem", shown())]),
+            _ => refused(errors::ERR_GENERATOR_BAD_OFFSETS, &[(words::PROBLEM, shown())]),
         },
         Check::BuiltInSoundCheckSound | Check::BuiltInsCheckBuiltIns | Check::MusicianModelCheckMusicianBySection => match value {
             Data::Map(_) => Ok(()),
-            _ => refused(errors::ERR_NOT_SETTINGS, &[("value", shown())]),
+            _ => refused(errors::ERR_NOT_SETTINGS, &[(file_format::StatementPart::VALUE, shown())]),
         },
         Check::InstrumentCheckKeyswitches => {
             let fits = value.as_list().is_some_and(|slots| slots.len() == file_format::KEYSWITCH_SLOT_COUNT as usize);
@@ -614,12 +635,15 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             }
             refused(
                 errors::ERR_BAD_KEYSWITCHES,
-                &[("count", file_format::KEYSWITCH_SLOT_COUNT.into()), ("value", shown())],
+                &[
+                    (words::COUNT, file_format::KEYSWITCH_SLOT_COUNT.into()),
+                    (file_format::StatementPart::VALUE, shown()),
+                ],
             )
         }
         Check::InstrumentCheckPreview => match value {
             Data::Map(_) => Ok(()),
-            _ => refused(errors::ERR_NOT_SETTINGS, &[("value", shown())]),
+            _ => refused(errors::ERR_NOT_SETTINGS, &[(file_format::StatementPart::VALUE, shown())]),
         },
         Check::GrooveCheckCells => {
             let fits = groove_amounts(value).is_some_and(|amounts| {
@@ -633,17 +657,17 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             refused(
                 errors::ERR_BAD_GROOVE_CELLS,
                 &[
-                    ("fewest", limits::MIN_GROOVE_CELLS.into()),
-                    ("most", limits::MAX_GROOVE_CELLS.into()),
-                    ("lowest", limits::MIN_GROOVE_AMOUNT.into()),
-                    ("highest", limits::MAX_GROOVE_AMOUNT.into()),
-                    ("value", shown()),
+                    (words::FEWEST, limits::MIN_GROOVE_CELLS.into()),
+                    (spec::MOST, limits::MAX_GROOVE_CELLS.into()),
+                    (spec::LOWEST, limits::MIN_GROOVE_AMOUNT.into()),
+                    (spec::HIGHEST, limits::MAX_GROOVE_AMOUNT.into()),
+                    (file_format::StatementPart::VALUE, shown()),
                 ],
             )
         }
         Check::NamedScaleCheckRoot => match value {
             Data::Text(root) if crate::values::note::semitones_above_c(root).is_some() => Ok(()),
-            _ => refused(errors::ERR_EXPECTED_ROOT_NOTE, &[("root", shown())]),
+            _ => refused(errors::ERR_EXPECTED_ROOT_NOTE, &[(file_format::ScaleSetting::ROOT, shown())]),
         },
         Check::NamedScaleCheckKind => {
             // A file's scale type is read as the member name it means, so that 'natural minor' is NATURAL_MINOR.
@@ -653,7 +677,10 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             }
             refused(
                 errors::ERR_UNKNOWN_SCALE_TYPE,
-                &[("kind", shown()), ("names", crate::values::scale::ScaleType::file_names().join(", ").into())],
+                &[
+                    (file_format::FileLayout::KIND, shown()),
+                    (words::NAMES, crate::values::scale::ScaleType::file_names().join(", ").into()),
+                ],
             )
         }
         Check::ConditionsStatementsSettingCheck => {
@@ -661,7 +688,10 @@ fn checked(function: Check, arguments: &[Plain], value: &Data, context: Option<&
             if fits {
                 return Ok(());
             }
-            refused(errors::ERR_TOO_MANY_STATEMENTS, &[("most", limits::MAX_STATEMENTS.into()), ("value", shown())])
+            refused(
+                errors::ERR_TOO_MANY_STATEMENTS,
+                &[(spec::MOST, limits::MAX_STATEMENTS.into()), (file_format::StatementPart::VALUE, shown())],
+            )
         }
     }
 }

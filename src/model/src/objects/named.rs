@@ -9,6 +9,9 @@ use crate::objects::holder::{in_table, passed_over};
 use crate::schema::checking::{check, InvalidValue};
 use crate::schema::generated::file_format::{ChainSetting, GrooveSetting, ScaleSetting};
 use crate::schema::generated::settings::{self as tables, Setting};
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -25,7 +28,7 @@ impl NamedScale {
         let names: Vec<&str> = pairs.iter().filter_map(|(key, _)| key.as_str()).collect();
         let exact = names.len() == 2 && names.contains(&ScaleSetting::ROOT) && names.contains(&ScaleSetting::TYPE);
         if !exact {
-            return Err(InvalidValue::new(named(errors::ERR_EXPECTED_ROOT_AND_TYPE, &[("data", data.into())])));
+            return Err(InvalidValue::new(named(errors::ERR_EXPECTED_ROOT_AND_TYPE, &[(spec::DATA, data.into())])));
         }
         for setting in tables::NAMED_SCALE {
             if let Some(value) = data.get(setting.name) {
@@ -72,7 +75,7 @@ pub struct Groove {
 impl Groove {
     pub fn from_data(data: &Data) -> Result<Groove, InvalidValue> {
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_GROOVE_EXPECTED_SETTINGS, &[("data", data.into())])));
+            return Err(InvalidValue::new(named(errors::ERR_GROOVE_EXPECTED_SETTINGS, &[(spec::DATA, data.into())])));
         }
         let data = passed_over(data, &|name| in_table(tables::GROOVE, name));
         let cells = data.get(GrooveSetting::CELLS).cloned().unwrap_or(Data::Null);
@@ -130,7 +133,7 @@ impl Chain {
         for step in listed {
             match step.as_map() {
                 Some([(Data::Text(kind), Data::Text(name))]) => steps.push((kind.clone(), name.clone())),
-                _ => return Err(InvalidValue::new(named(errors::ERR_ONE_GENERATOR_PER_STEP, &[("step", step.into())]))),
+                _ => return Err(InvalidValue::new(named(errors::ERR_ONE_GENERATOR_PER_STEP, &[(fill::STEP, step.into())]))),
             }
         }
         Ok(Chain { steps })
@@ -197,15 +200,15 @@ pub struct GeneratorSettings {
 /// A plugin's table of settings by its name.
 pub fn plugin_table(plugin: &str) -> Option<&'static [Setting]> {
     Some(match plugin {
-        "arp" => tables::ARP_PLUGIN,
-        "chords" => tables::CHORDS_PLUGIN,
-        "drift" => tables::DRIFT_PLUGIN,
-        "guitarify" => tables::GUITARIFY_PLUGIN,
-        "hocket" => tables::HOCKET_PLUGIN,
-        "musician" => tables::MUSICIAN_PLUGIN,
-        "phrasing" => tables::PHRASING_PLUGIN,
-        "shapes" => tables::SHAPES_PLUGIN,
-        "timing" => tables::TIMING_PLUGIN,
+        words::ARP => tables::ARP_PLUGIN,
+        words::CHORDS => tables::CHORDS_PLUGIN,
+        spec::DRIFT => tables::DRIFT_PLUGIN,
+        words::GUITARIFY => tables::GUITARIFY_PLUGIN,
+        words::HOCKET => tables::HOCKET_PLUGIN,
+        words::MUSICIAN => tables::MUSICIAN_PLUGIN,
+        words::PHRASING => tables::PHRASING_PLUGIN,
+        words::SHAPES => tables::SHAPES_PLUGIN,
+        words::TIMING => tables::TIMING_PLUGIN,
         _ => return None,
     })
 }
@@ -225,7 +228,7 @@ fn checked_voicing_range(data: &Data) -> Result<(), InvalidValue> {
     if lowest > highest {
         return Err(InvalidValue::new(named(
             errors::ERR_VOICE_LEADING_RANGE,
-            &[("lowest", lowest.into()), ("highest", highest.into())],
+            &[(spec::LOWEST, lowest.into()), (spec::HIGHEST, highest.into())],
         )));
     }
     Ok(())
@@ -235,7 +238,7 @@ impl GeneratorSettings {
     pub fn from_data(table: &'static [Setting], data: &Data) -> Result<GeneratorSettings, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_NOT_SETTINGS, &[("value", (&data).into())])));
+            return Err(InvalidValue::new(named(errors::ERR_NOT_SETTINGS, &[(fill::VALUE, (&data).into())])));
         }
         let data = passed_over(&data, &|name| in_table(table, name));
         for (key, value) in data.as_map().unwrap_or(&[]) {

@@ -12,6 +12,10 @@ use crate::schema::generated::midi::{MAX_MIDI_NUMBER, MAX_VELOCITY, MIN_MIDI_NUM
 use crate::values::generated::note::{FIRST_DEGREE, FLAT_NAMES, FLAT_SIGN, MAX_OCTAVE, MIN_OCTAVE, SEMITONES_ABOVE_C, SHARP_NAMES};
 use crate::ValueError;
 use llamatron_math::Number;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::{named, Value};
 
@@ -29,7 +33,7 @@ pub fn checked_length(length: Number) -> Result<Number, ValueError> {
     if length.is_finite() && length > Number::Whole(0) {
         return Ok(length);
     }
-    Err(ValueError(named(errors::ERR_BAD_LENGTH, &[("value", number_value(&length))])))
+    Err(ValueError(named(errors::ERR_BAD_LENGTH, &[(fill::VALUE, number_value(&length))])))
 }
 
 /// The half steps a spelling is above C, or None for a name the program does not know.
@@ -76,7 +80,7 @@ impl Degree {
         if number < FIRST_DEGREE {
             return Err(ValueError(named(
                 errors::ERR_BAD_DEGREE,
-                &[("value", number.into()), ("lowest", FIRST_DEGREE.into())],
+                &[(file_format::StatementPart::VALUE, number.into()), (spec::LOWEST, FIRST_DEGREE.into())],
             )));
         }
         let length = length.map(checked_length).transpose()?;
@@ -148,7 +152,11 @@ fn checked_velocity(velocity: Option<i64>) -> Result<Option<i64>, ValueError> {
     match velocity {
         Some(value) if !(MIN_VELOCITY..=MAX_VELOCITY).contains(&value) => Err(ValueError(named(
             errors::ERR_BAD_VELOCITY,
-            &[("value", value.into()), ("lowest", MIN_VELOCITY.into()), ("highest", MAX_VELOCITY.into())],
+            &[
+                (file_format::StatementPart::VALUE, value.into()),
+                (spec::LOWEST, MIN_VELOCITY.into()),
+                (spec::HIGHEST, MAX_VELOCITY.into()),
+            ],
         ))),
         _ => Ok(velocity),
     }
@@ -159,19 +167,27 @@ impl Note {
         let length = length.map(checked_length).transpose()?;
         let velocity = checked_velocity(velocity)?;
         let Some(name) = known_name(name) else {
-            return Err(ValueError(named(errors::ERR_BAD_NOTE_NAME, &[("value", name.into())])));
+            return Err(ValueError(named(errors::ERR_BAD_NOTE_NAME, &[(fill::VALUE, name.into())])));
         };
         if !(MIN_OCTAVE..=MAX_OCTAVE).contains(&octave_number) {
             return Err(ValueError(named(
                 errors::ERR_NOTE_BAD_OCTAVE,
-                &[("value", octave_number.into()), ("lowest", MIN_OCTAVE.into()), ("highest", MAX_OCTAVE.into())],
+                &[
+                    (file_format::StatementPart::VALUE, octave_number.into()),
+                    (spec::LOWEST, MIN_OCTAVE.into()),
+                    (spec::HIGHEST, MAX_OCTAVE.into()),
+                ],
             )));
         }
         let midi_number = octave_number * HALF_STEPS_PER_OCTAVE + semitones_above_c(name).unwrap_or(0);
         if !(MIN_MIDI_NUMBER..=MAX_MIDI_NUMBER).contains(&midi_number) {
             return Err(ValueError(named(
                 errors::ERR_OUTSIDE_MIDI,
-                &[("name", name.into()), ("octave", octave_number.into()), ("number", midi_number.into())],
+                &[
+                    (file_format::FileLayout::NAME, name.into()),
+                    (file_format::Row::OCTAVE, octave_number.into()),
+                    (words::NUMBER, midi_number.into()),
+                ],
             )));
         }
         Ok(Note {

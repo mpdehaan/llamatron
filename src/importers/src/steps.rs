@@ -11,6 +11,7 @@ use crate::keys::{degree_of, drum_note_of, MusicalKey};
 use crate::voices::{Played, Voice};
 use llamatron_math::Rational;
 use llamatron_model::schema::generated::file_format::BASS_NOTES;
+use llamatron_names::file_format;
 
 const SCALE_DEGREES: i64 = 7;
 const ROUNDING: f64 = 0.5;
@@ -152,7 +153,7 @@ fn bass_note_of(played: &Played, key: &MusicalKey) -> Option<&'static str> {
     let steps = (bass_degree - root_degree).rem_euclid(SCALE_DEGREES);
     let half = match bass_accidental {
         Some("#") => 1,
-        Some("b") => -1,
+        Some(file_format::Accidental::FLAT) => -1,
         _ => 0,
     };
     BASS_NOTES

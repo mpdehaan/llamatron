@@ -4,6 +4,11 @@
 //! How the things a set holds are named (the Python model/objects/naming.py): a copy's name, a name nothing has yet, and the
 //! order names sort in. Names compare without regard to capitals and are kept as typed.
 
+#[cfg(test)]
+use llamatron_names::file_format;
+use llamatron_names::fill;
+#[cfg(test)]
+use llamatron_names::words;
 use llamatron_strings::named;
 use llamatron_strings::names;
 
@@ -93,7 +98,7 @@ fn numbered_after<S: AsRef<str>>(word: &str, taken: &[S], template: &str) -> Str
             }
         }
     }
-    named(template, &[("base", word.into()), ("number", (highest + 1).into())])
+    named(template, &[(fill::BASE, word.into()), (fill::NUMBER, (highest + 1).into())])
 }
 
 /// What names sort by everywhere: the words ignoring capitals, then the number a name ends in read as a number.
@@ -110,13 +115,14 @@ mod tests {
 
     #[test]
     fn names_count_up_keeping_their_joiner() {
-        assert_eq!(split_trailing_number("bass-2"), Some(("bass".into(), "-".into(), 2)));
-        assert_eq!(split_trailing_number("name1"), Some(("name".into(), "".into(), 1)));
-        assert_eq!(split_trailing_number("bass 2"), Some(("bass".into(), " ".into(), 2)));
+        let second = 2;
+        assert_eq!(split_trailing_number("bass-2"), Some((file_format::Row::BASS.into(), "-".into(), second)));
+        assert_eq!(split_trailing_number(words::NAME1), Some((file_format::FileLayout::NAME.into(), "".into(), 1)));
+        assert_eq!(split_trailing_number("bass 2"), Some((file_format::Row::BASS.into(), " ".into(), second)));
         assert_eq!(split_trailing_number("12"), None);
-        assert_eq!(split_trailing_number("a1-2"), Some(("a1".into(), "-".into(), 2)));
-        assert_eq!(unique_name("foo", &["foo"]), "foo-2");
+        assert_eq!(split_trailing_number("a1-2"), Some((words::A1.into(), "-".into(), second)));
+        assert_eq!(unique_name(words::FOO, &[words::FOO]), "foo-2");
         assert_eq!(unique_name("bass-2", &["Bass-2", "bass-3"]), "bass-4");
-        assert_eq!(new_name("pattern", &["pattern-3", "other-9"]), "pattern-4");
+        assert_eq!(new_name(file_format::ClipSlotSetting::PATTERN, &["pattern-3", "other-9"]), "pattern-4");
     }
 }

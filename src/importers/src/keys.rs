@@ -10,6 +10,7 @@ use crate::python_sum;
 use crate::reading::PartNote;
 use llamatron_math::Rational;
 use llamatron_model::values::generated::note::{FLAT_NAMES, MAX_OCTAVE, MIN_OCTAVE, ROOT_NAMES, SHARP_NAMES};
+use llamatron_names::file_format;
 
 const MAJOR_PROFILE: [f64; 12] = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
 const MINOR_PROFILE: [f64; 12] = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
@@ -37,7 +38,7 @@ pub fn pitch_class_of(name: &str) -> i64 {
 
 impl MusicalKey {
     pub fn half_steps(&self) -> &'static [i64] {
-        if self.kind == "minor" {
+        if self.kind == file_format::NamedProgression::MINOR {
             &MINOR_STEPS
         } else {
             &MAJOR_STEPS
@@ -66,7 +67,12 @@ pub fn key_of_signature(text: &str) -> MusicalKey {
     }
     MusicalKey {
         root,
-        kind: if minor { "minor" } else { "major" }.to_string(),
+        kind: if minor {
+            file_format::NamedProgression::MINOR
+        } else {
+            file_format::Quality::MAJOR
+        }
+        .to_string(),
         flats,
     }
 }
@@ -124,7 +130,12 @@ pub fn key_of_notes(notes: &[impl Heard]) -> MusicalKey {
     let root = if minor { MINOR_ROOTS[tonic] } else { MAJOR_ROOTS[tonic] };
     MusicalKey {
         root: root.to_string(),
-        kind: if minor { "minor" } else { "major" }.to_string(),
+        kind: if minor {
+            file_format::NamedProgression::MINOR
+        } else {
+            file_format::Quality::MAJOR
+        }
+        .to_string(),
         flats: root.ends_with('b'),
     }
 }
@@ -139,13 +150,13 @@ pub fn degree_of(pitch: i64, key: &MusicalKey) -> Option<(i64, Option<&'static s
     let (degree, accidental, octave) = if let Some(degree) = place(above) {
         (degree, None, octave)
     } else if let Some(degree) = place(above + 1).filter(|_| key.flats) {
-        (degree, Some("b"), octave)
+        (degree, Some(file_format::Accidental::FLAT), octave)
     } else if let Some(degree) = place(above - 1) {
         (degree, Some("#"), octave)
     } else if above + 1 == 12 {
-        (1, Some("b"), octave + 1)
+        (1, Some(file_format::Accidental::FLAT), octave + 1)
     } else {
-        (place(above + 1).unwrap_or(1), Some("b"), octave)
+        (place(above + 1).unwrap_or(1), Some(file_format::Accidental::FLAT), octave)
     };
     (MIN_OCTAVE..=MAX_OCTAVE).contains(&octave).then_some((degree, accidental, octave))
 }

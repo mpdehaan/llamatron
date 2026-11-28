@@ -8,6 +8,7 @@
 
 use llamatron_model::fundamentals::role_of;
 use llamatron_model::schema::generated::file_format::{OMITTED_ROLES, TENSIONS};
+use llamatron_names::file_format;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -18,7 +19,17 @@ const INTERVAL_CHORDS: [&str; 6] = ["+P8", "+m3", "+M3", "+P4", "+m6", "+M6"];
 const DOUBLINGS: [&str; 4] = ["low_up", "all_up", "all_down", "top_down"];
 
 fn omission_rank(omission: Option<&str>, with_tension: bool) -> i64 {
-    let order: &[&str] = if with_tension { &["no15", "no1", "no5", "no3", "no35"] } else { &OMISSIONS };
+    let order: &[&str] = if with_tension {
+        &[
+            file_format::Omission::NO_ROOT_FIFTH,
+            file_format::Omission::NO_ROOT,
+            file_format::Omission::NO_FIFTH,
+            file_format::Omission::NO_THIRD,
+            file_format::Omission::NO_THIRD_FIFTH,
+        ]
+    } else {
+        &OMISSIONS
+    };
     omission
         .and_then(|omission| order.iter().position(|found| *found == omission))
         .map(|place| place as i64 + 1)
@@ -221,9 +232,9 @@ fn voiced_chord(pitches: &[i64], hearing: &Hearing, omitted: bool, tensioned: bo
 
 fn doubled_notes(doubling: &str) -> (isize, Option<isize>, i64) {
     match doubling {
-        "low_up" => (0, Some(1), 1),
-        "all_up" => (0, None, 1),
-        "all_down" => (0, None, -1),
+        file_format::Doubling::LOW_UP => (0, Some(1), 1),
+        file_format::Doubling::ALL_UP => (0, None, 1),
+        file_format::Doubling::ALL_DOWN => (0, None, -1),
         _ => (-1, None, -1),
     }
 }

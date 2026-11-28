@@ -11,6 +11,8 @@
 use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
+use llamatron_names::file_format;
+use llamatron_names::words;
 use std::collections::HashMap;
 
 const NUMBERS: &[&str] = &["velocity", "probability", "degree", "degree_random", "scale_probability", "root_probability"];
@@ -63,7 +65,7 @@ impl DriftPlay {
 
     /// How long one of a drift's triggers lasts.
     pub fn every(&self, name: &str) -> Rational {
-        match self.written(name, "every").and_then(|every| time_length(every).ok()) {
+        match self.written(name, words::EVERY).and_then(|every| time_length(every).ok()) {
             Some(TimeLength::Bars(count)) => self.bar * Rational::whole(count as i128),
             Some(TimeLength::Length(length)) => length,
             None => self.bar,
@@ -82,9 +84,9 @@ impl DriftPlay {
                 .unwrap_or(Rational::ZERO);
             let trigger = ((time - origin) / self.every(name)).floor();
             let picked = self.picked(name, trigger);
-            effects.velocity += picked.numbers["velocity"];
-            effects.probability += picked.numbers["probability"];
-            effects.degree += picked.numbers["degree"] + picked.random_degree;
+            effects.velocity += picked.numbers[file_format::TrackSetting::VELOCITY];
+            effects.probability += picked.numbers[file_format::Row::PROBABILITY];
+            effects.degree += picked.numbers[file_format::Row::DEGREE] + picked.random_degree;
             effects.scale = picked.scale.or(effects.scale);
             effects.root = picked.root.or(effects.root);
         }
@@ -112,15 +114,18 @@ impl DriftPlay {
     /// How far a drift is from A toward B at a trigger, by its direction.
     fn position(&mut self, name: &str, trigger: i128) -> Rational {
         let steps = self
-            .written(name, "steps_to_b")
+            .written(name, words::STEPS_TO_B)
             .and_then(Data::as_whole)
             .filter(|steps| *steps != 0)
             .unwrap_or(16);
-        let direction = self.written(name, "direction").map(Data::python_str).unwrap_or("forward".to_string());
+        let direction = self
+            .written(name, file_format::ClipSlotSetting::DIRECTION)
+            .map(Data::python_str)
+            .unwrap_or(file_format::Direction::FORWARD.to_string());
         let place = match direction.as_str() {
-            "forward" => trigger.min(steps),
-            "loop" => trigger.rem_euclid(steps + 1),
-            "pendulum" => {
+            file_format::Direction::FORWARD => trigger.min(steps),
+            file_format::ClipSlotSetting::LOOP => trigger.rem_euclid(steps + 1),
+            file_format::Direction::PENDULUM => {
                 let place = trigger.rem_euclid(2 * steps);
                 if place > steps {
                     2 * steps - place
@@ -154,14 +159,24 @@ impl DriftPlay {
             let (first, second) = (version("a"), version("b"));
             numbers.insert(*value, (Rational::whole(first) + Rational::whole(second - first) * position).round() as i64);
         }
-        let spread = numbers["degree_random"];
+        let spread = numbers[file_format::DriftValue::DEGREE_RANDOM];
         let random_degree = if spread != 0 {
             self.chooser(name).randint(-spread as i128, spread as i128) as i64
         } else {
             0
         };
-        let scale = self.overridden(name, "scale", numbers["scale_probability"], position);
-        let root = self.overridden(name, "root", numbers["root_probability"], position);
+        let scale = self.overridden(
+            name,
+            file_format::SongSetting::SCALE,
+            numbers[file_format::DriftValue::SCALE_PROBABILITY],
+            position,
+        );
+        let root = self.overridden(
+            name,
+            file_format::ScaleSetting::ROOT,
+            numbers[file_format::DriftValue::ROOT_PROBABILITY],
+            position,
+        );
         Trigger {
             numbers,
             random_degree,

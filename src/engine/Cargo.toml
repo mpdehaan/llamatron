@@ -10,6 +10,7 @@ description = "llamatron's engine: the realizer that plays a song into clips, th
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }
 llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
 llamatron-model = { path = "../model" }

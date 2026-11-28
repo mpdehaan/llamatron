@@ -15,6 +15,16 @@ use crate::sound::{scale_sound, Sound};
 use crate::tune_source::TuneSource;
 use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
+use llamatron_names::file_format;
+use llamatron_names::spec;
+use llamatron_names::words;
+
+/// The bassist's range, in MIDI numbers; how much softer a softer form plays, in velocity; every second beat being a
+/// backbeat; and an octave's semitones, by which a part moves lower or higher.
+const BASS_RANGE: (i64, i64) = (28, 55);
+const SOFTER_BY: i64 = 18;
+const BEATS_A_BACKBEAT: i128 = 2;
+const SEMITONES_AN_OCTAVE: i64 = 12;
 
 const SPARSE: &str = "sparse";
 const LIGHT: &str = "light";
@@ -38,8 +48,8 @@ struct Instrument {
 
 fn instrument(name: &str) -> Instrument {
     let (range, gives_way, notes) = match name {
-        "bassist" => (Some((28, 55)), NO_GIVING_WAY, AS_WRITTEN),
-        "drummer" | "percussionist" => (None, NO_GIVING_WAY, AS_WRITTEN),
+        words::BASSIST => (Some(BASS_RANGE), NO_GIVING_WAY, AS_WRITTEN),
+        words::DRUMMER | words::PERCUSSIONIST => (None, NO_GIVING_WAY, AS_WRITTEN),
         "backing piano" => (Some((36, 96)), GIVES_WAY_SOME, AS_WRITTEN),
         "backing organ" => (Some((36, 84)), GIVES_WAY_SOME, HELD_NOTES),
         "backing synth" => (Some((36, 96)), GIVES_WAY_SOME, HELD_NOTES),
@@ -85,7 +95,7 @@ pub struct Musician {
 
 /// The instrument and the tracks a Musician's settings name, for the Realizer to find what it hears.
 pub fn plays_pitches(settings: &Data) -> bool {
-    instrument(&settings.get("instrument").map(Data::python_str).unwrap_or_default())
+    instrument(&settings.get(file_format::TrackSetting::INSTRUMENT).map(Data::python_str).unwrap_or_default())
         .range
         .is_some()
 }
@@ -95,30 +105,30 @@ impl Musician {
         let written = |name: &str| settings.get(name).filter(|value| !value.is_null());
         let text = |name: &str, default: &str| written(name).map(Data::python_str).unwrap_or(default.to_string());
         let whole = |name: &str| written(name).and_then(Data::as_whole).unwrap_or(0) as i64;
-        let player = instrument(&text("instrument", "rhythm guitarist"));
+        let player = instrument(&text(file_format::TrackSetting::INSTRUMENT, "rhythm guitarist"));
         let own = surroundings
             .section
             .as_ref()
-            .and_then(|section| written("by_section").and_then(|by_section| by_section.get(section)).cloned())
+            .and_then(|section| written(words::BY_SECTION).and_then(|by_section| by_section.get(section)).cloned())
             .unwrap_or(Data::Map(Vec::new()));
-        let plays = own.get("plays") != Some(&Data::Bool(false));
+        let plays = own.get(words::PLAYS) != Some(&Data::Bool(false));
         let form = own
-            .get("played")
+            .get(words::PLAYED)
             .filter(|form| !form.is_null())
             .map(Data::python_str)
-            .unwrap_or("whole".to_string());
+            .unwrap_or(words::WHOLE.to_string());
         Musician {
-            gives_way: text("gives_way", player.gives_way),
-            notes: text("notes", player.notes),
+            gives_way: text(words::GIVES_WAY, player.gives_way),
+            notes: text(file_format::SetlistSetting::NOTES, player.notes),
             instrument: player,
             bar,
             beat,
             surroundings,
-            activity: text("activity", AS_WRITTEN),
-            loudness: whole("loudness"),
-            looseness: whole("looseness"),
-            accents: text("accents", "none"),
-            range: text("range", AS_WRITTEN),
+            activity: text(words::ACTIVITY, AS_WRITTEN),
+            loudness: whole(words::LOUDNESS),
+            looseness: whole(words::LOOSENESS),
+            accents: text(file_format::GuitarifySetting::ACCENTS, words::NONE),
+            range: text(spec::RANGE, AS_WRITTEN),
             plays,
             form,
             seed,
@@ -194,14 +204,14 @@ impl Musician {
         for place in notes {
             let part = &mut parts[*place];
             match self.form.as_str() {
-                "softer" => part.louder_by(-18),
-                "thinned" if !self.on_grid(part, self.beat) => part.silence(),
+                words::SOFTER => part.louder_by(-SOFTER_BY),
+                words::THINNED if !self.on_grid(part, self.beat) => part.silence(),
                 "head only" if (part.start / self.bar).floor() % 2 != 0 => part.silence(),
-                "muted" => {
+                words::MUTED => {
                     part.heard = part.heard.min(Rational::new(1, 16));
                     part.louder_by(-10);
                 }
-                "hits" => {
+                words::HITS => {
                     if self.on_grid(part, self.bar) {
                         part.heard = part.heard.min(Rational::new(1, 4));
                     } else {
@@ -282,15 +292,15 @@ impl Musician {
 
     /// The notes the musician leans on played louder.
     fn lean_on(&self, parts: &mut [Part], notes: &[usize]) {
-        if self.accents == "none" {
+        if self.accents == words::NONE {
             return;
         }
         for place in notes {
             let in_bar = self.in_bar(&parts[*place]);
             let on_beat = (in_bar / self.beat).is_whole();
             let leaned = match self.accents.as_str() {
-                "downbeat" => in_bar == Rational::ZERO,
-                "backbeat" => on_beat && (in_bar / self.beat).floor() % 2 == 1,
+                words::DOWNBEAT => in_bar == Rational::ZERO,
+                file_format::ReadyBar::BACKBEAT => on_beat && (in_bar / self.beat).floor() % BEATS_A_BACKBEAT == 1,
                 _ => !on_beat,
             };
             if leaned {
@@ -303,8 +313,8 @@ impl Musician {
     fn play_in_range(&self, parts: &mut [Part], notes: &[usize]) {
         let Some((lowest, highest)) = self.instrument.range else { return };
         let shift = match self.range.as_str() {
-            "low" => -12,
-            "high" => 12,
+            words::LOW => -SEMITONES_AN_OCTAVE,
+            words::HIGH => SEMITONES_AN_OCTAVE,
             _ => return,
         };
         for place in notes {

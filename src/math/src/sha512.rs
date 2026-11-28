@@ -99,6 +99,8 @@ const START: [u64; 8] = [
 ];
 
 /// The 64-byte digest of some bytes.
+#[cfg(test)]
+use llamatron_names::words;
 pub fn sha512(message: &[u8]) -> [u8; 64] {
     let mut padded = message.to_vec();
     padded.push(0x80);
@@ -160,11 +162,11 @@ mod tests {
     fn the_standards_test_vectors() {
         assert_eq!(
             hex(&sha512(b"abc")),
-            "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f"
+            words::DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F
         );
         assert_eq!(
             hex(&sha512(b"")),
-            "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e"
+            words::CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E
         );
     }
 }

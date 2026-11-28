@@ -28,6 +28,9 @@ use llamatron_model::schema::generated::file_format::GENERATOR_RESTART;
 use llamatron_model::schema::generated::file_format::{ClipSlotSetting, GuitarifySetting, Restart, SceneSetting, TrackSetting};
 use llamatron_model::schema::generated::limits::MAX_CLIP_REPEAT;
 use llamatron_model::values::scale::Scale;
+use llamatron_names::file_format;
+use llamatron_names::spec;
+use llamatron_names::words;
 use std::collections::HashMap;
 
 const PROBABILITY_SEED: &str = "{seed}/{scene}/{track}";
@@ -177,8 +180,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             // alone, since moving a drum note changes the drum.
             let runs = match step.kind.as_str() {
                 // A shape works on the finished clip, and a Hocket deals its notes out as the clip is finished.
-                "shapes" | "hocket" | "drift" => false,
-                "chords" => !self.realizer.plays_drums(self.scene, self.track_name),
+                words::SHAPES | words::HOCKET | spec::DRIFT => false,
+                words::CHORDS => !self.realizer.plays_drums(self.scene, self.track_name),
                 _ => true,
             };
             if !runs {
@@ -188,13 +191,13 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             let key = (step.kind.clone(), step.name.clone(), *count);
             *count += 1;
             let mut generator = match step.kind.as_str() {
-                "chords" => {
+                words::CHORDS => {
                     let settings = ChordsSettings::of(&step.settings)?;
                     let continuation = self
                         .realizer
                         .continuation(self.scene, self.track_name, &key, settings.get_restart().as_deref())?;
                     let followed = match settings.get_mode().as_str() {
-                        "follow_progression" => self
+                        words::FOLLOW_PROGRESSION => self
                             .realizer
                             .chords_followed(self.scene, self.track_name, settings.get_chords_from().as_deref())?,
                         _ => None,
@@ -202,16 +205,16 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     Generator::Chords(settings.make_generator(bar, &continuation, followed)?)
                 }
                 // In Strum mode a Guitarify leaves the notes as written and strums the chords at the very end.
-                "guitarify" if step.settings.get(GuitarifySetting::MODE).map(Data::python_str).as_deref() == Some("strum") => Generator::Unchanged,
-                "guitarify" => {
+                words::GUITARIFY if step.settings.get(GuitarifySetting::MODE).map(Data::python_str).as_deref() == Some(words::STRUM) => Generator::Unchanged,
+                words::GUITARIFY => {
                     let seed = self.realizer.chain_step_seed(self.scene, self.track_name, index as i128)?;
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
                     Generator::Guitarify(Guitarify::of(&step.settings, bar, self.tempo(), seed, continuation.offset)?)
                 }
-                "musician" => {
-                    let chords_from = step.settings.get("chords_from").filter(|name| !name.is_null()).map(Data::python_str);
-                    let tune_from = step.settings.get("tune_from").filter(|name| !name.is_null()).map(Data::python_str);
+                words::MUSICIAN => {
+                    let chords_from = step.settings.get(words::CHORDS_FROM).filter(|name| !name.is_null()).map(Data::python_str);
+                    let tune_from = step.settings.get(words::TUNE_FROM).filter(|name| !name.is_null()).map(Data::python_str);
                     let chords = match self.realizer.plays_drums(self.scene, self.track_name) {
                         true => None,
                         false => self.realizer.chords_followed(self.scene, self.track_name, chords_from.as_deref())?,
@@ -230,8 +233,8 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
                     let beat = self.realizer.song().get_time_signature().beat_length();
                     Generator::Musician(Box::new(Musician::of(&step.settings, bar, beat, surroundings, seed)))
                 }
-                "phrasing" => Generator::Phrasing(Phrasing::of(&step.settings, bar)?),
-                "timing" => {
+                words::PHRASING => Generator::Phrasing(Phrasing::of(&step.settings, bar)?),
+                words::TIMING => {
                     let restart = step.settings.get(GENERATOR_RESTART).map(|restart| restart.python_str());
                     let continuation = self.realizer.continuation(self.scene, self.track_name, &key, restart.as_deref())?;
                     Generator::Timing(TimingGenerator::of(&step.settings, self.pattern_step()?, bar, continuation.offset)?)
@@ -256,7 +259,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let bar = signature.bar_length();
         let mut named: HashMap<&str, Data> = HashMap::new();
         for step in self.realizer.chains_of(self.scene, self.track_name)? {
-            if step.kind != "shapes" {
+            if step.kind != words::SHAPES {
                 continue;
             }
             for shape in SHAPES {
@@ -271,7 +274,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         for shape in SHAPES {
             if let Some(settings) = named.get(shape) {
                 let accent = match *shape {
-                    SWELL => settings.get("swell_accent").and_then(Data::as_whole).unwrap_or(0) as i64,
+                    SWELL => settings.get(words::SWELL_ACCENT).and_then(Data::as_whole).unwrap_or(0) as i64,
                     _ => 0,
                 };
                 let restart = settings.get(GENERATOR_RESTART).map(Data::python_str);
@@ -315,7 +318,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
             .realizer
             .song()
             .instrument_of(track, setlist)
-            .and_then(|instrument| instrument.get_written("velocity"));
+            .and_then(|instrument| instrument.get_written(file_format::TrackSetting::VELOCITY));
         let outer = [percent(instrument), percent(track.get_written("velocity"))];
         let velocity = Velocity::of(
             &|name| self.scene.scene.get_written(name).cloned(),
@@ -387,7 +390,7 @@ impl<'r, 'a> ClipSlotPlayer<'r, 'a> {
         let named = setlist.get_named_scale(&name).ok_or_else(|| {
             crate::error::RenderError::Refused(llamatron_strings::named(
                 llamatron_strings::errors::ERR_SCENE_NO_SUCH_SCALE,
-                &[("scale", name.as_str().into())],
+                &[(file_format::SongSetting::SCALE, name.as_str().into())],
             ))
         })?;
         let pattern = setlist

@@ -23,6 +23,8 @@ use llamatron_model::schema::checking::{time_length, TimeLength};
 use llamatron_model::schema::generated::file_format::{ACCIDENTALS, GENERATOR_RESTART, ONE_BAR_WRITTEN, TENSIONS};
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
 use llamatron_model::values::scale::{Scale, ScaleType};
+use llamatron_names::file_format;
+use llamatron_names::fill;
 
 pub const MODE: &str = "mode";
 pub const CHORDS_FROM: &str = "chords_from";
@@ -207,7 +209,7 @@ impl<'a> ChordsSettings<'a> {
             AUTO_CHORD => Some(Moving::Auto(self.auto_chord())),
             VOICING => None,
             other => {
-                let problem = llamatron_strings::named(llamatron_strings::errors::ERR_NO_SUCH_CHORDS_MODE, &[("mode", other.into())]);
+                let problem = llamatron_strings::named(llamatron_strings::errors::ERR_NO_SUCH_CHORDS_MODE, &[(fill::MODE, other.into())]);
                 return Err(RenderError::Refused(problem));
             }
         };
@@ -263,7 +265,7 @@ fn replaced_places(symbol: Option<&str>, tensions: Option<&Data>) -> Vec<(i64, i
             continue;
         };
         let place = match name.as_str() {
-            "b9" | "9" | "#9" => NINTH_PLACE,
+            file_format::Tension::FLAT_NINTH | "9" | "#9" => NINTH_PLACE,
             "11" | "#11" => ELEVENTH_PLACE,
             _ => THIRTEENTH_PLACE,
         };

@@ -5,6 +5,12 @@
 //! GATE_MODIFIERS and DOUBLED_NOTES), written by hand.
 
 use llamatron_math::Rational;
+use llamatron_names::file_format;
+
+/// What a dotted and a triplet gate are multiplied by, as numerator and denominator: half as long again, and two
+/// thirds.
+const DOTTED: (i128, i128) = (3, 2);
+const TRIPLET: (i128, i128) = (2, 3);
 
 /// Each fixed chord symbol with the half steps its notes stand above the root (the Python FIXED_CHORDS).
 pub static FIXED_CHORDS: &[(&str, &[i64])] = &[
@@ -48,8 +54,8 @@ pub static FIXED_CHORDS: &[(&str, &[i64])] = &[
 /// What a step's gate is multiplied by when its Dot row makes it dotted or a triplet.
 pub fn gate_modifier(symbol: &str) -> Option<Rational> {
     match symbol {
-        "d" => Some(Rational::new(3, 2)),
-        "t" => Some(Rational::new(2, 3)),
+        file_format::GateModifier::DOTTED => Some(Rational::new(DOTTED.0, DOTTED.1)),
+        file_format::GateModifier::TRIPLET => Some(Rational::new(TRIPLET.0, TRIPLET.1)),
         _ => None,
     }
 }
@@ -58,10 +64,10 @@ pub fn gate_modifier(symbol: &str) -> Option<Rational> {
 /// octaves away it plays them.
 pub fn doubled_notes(symbol: &str) -> Option<(isize, Option<isize>, i64)> {
     match symbol {
-        "low_up" => Some((0, Some(1), 1)),
-        "all_up" => Some((0, None, 1)),
-        "all_down" => Some((0, None, -1)),
-        "top_down" => Some((-1, None, -1)),
+        file_format::Doubling::LOW_UP => Some((0, Some(1), 1)),
+        file_format::Doubling::ALL_UP => Some((0, None, 1)),
+        file_format::Doubling::ALL_DOWN => Some((0, None, -1)),
+        file_format::Doubling::TOP_DOWN => Some((-1, None, -1)),
         _ => None,
     }
 }

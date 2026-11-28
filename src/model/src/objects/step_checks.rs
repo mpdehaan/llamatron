@@ -18,6 +18,10 @@ use crate::schema::generated::limits::{INVERSIONS, MAX_GATE, MAX_STATEMENT_NUMBE
 use crate::schema::generated::rows::{RowDescription, ROW_DESCRIPTIONS};
 use crate::values::scale::ScaleType;
 use llamatron_math::Rational;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{errors, named};
 
 /// The part of a statement a row holds that is a number or a draw's name, rather than a choice.
@@ -57,7 +61,7 @@ enum StepCheck {
 fn check_of(row: &str) -> StepCheck {
     let choices = |items: &[&str]| listed(items);
     let numbers = |items: &[i64]| listed(&items.iter().map(i64::to_string).collect::<Vec<_>>());
-    let named_choices = |template: &str, list: String| named(template, &[("choices", list.into())]);
+    let named_choices = |template: &str, list: String| named(template, &[(fill::CHOICES, list.into())]);
     match row {
         Row::DEGREE => StepCheck::Degree,
         Row::GATE => StepCheck::Gate,
@@ -134,7 +138,7 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
     let check = check_of(row);
     if value.is_null() {
         if matches!(check, StepCheck::Toggle) {
-            return Err(InvalidValue::new(named(errors::ERR_TOGGLE_IS_NULL, &[("row", row.into())])));
+            return Err(InvalidValue::new(named(errors::ERR_TOGGLE_IS_NULL, &[(fill::ROW, row.into())])));
         }
         return Ok(());
     }
@@ -149,7 +153,11 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
         if !fits {
             let message = named(
                 errors::ERR_CHECKS_BAD_OCTAVE,
-                &[("lowest", lowest.into()), ("highest", highest.into()), ("value", value.into())],
+                &[
+                    (spec::LOWEST, lowest.into()),
+                    (spec::HIGHEST, highest.into()),
+                    (file_format::StatementPart::VALUE, value.into()),
+                ],
             );
             return Err(InvalidValue::new(message));
         }
@@ -159,19 +167,19 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
         StepCheck::Degree if drum => unless(is_note_letter(value), errors::ERR_NOT_NOTE_LETTER.to_string()),
         StepCheck::Degree => {
             let degree = value.as_whole().is_some_and(|degree| degree >= MIN_DEGREE as i128);
-            unless(degree, named(errors::ERR_NOT_DEGREE, &[("lowest", MIN_DEGREE.into())]))
+            unless(degree, named(errors::ERR_NOT_DEGREE, &[(fill::LOWEST, MIN_DEGREE.into())]))
         }
         StepCheck::Number => {
             let within = value.as_whole().is_some_and(|number| (lowest as i128..=highest as i128).contains(&number));
             unless(
                 within,
-                named(errors::ERR_NOT_IN_RANGE, &[("lowest", lowest.into()), ("highest", highest.into())]),
+                named(errors::ERR_NOT_IN_RANGE, &[(fill::LOWEST, lowest.into()), (fill::HIGHEST, highest.into())]),
             )
         }
         StepCheck::Chord if drum => Some(errors::ERR_CHORD_ON_DRUMS.to_string()),
         StepCheck::Chord => {
             let symbol = CHORD_SYMBOLS.contains(&value.python_str().as_str());
-            unless(symbol, named(errors::ERR_NOT_CHORD, &[("symbols", listed(CHORD_SYMBOLS).into())]))
+            unless(symbol, named(errors::ERR_NOT_CHORD, &[(fill::SYMBOLS, listed(CHORD_SYMBOLS).into())]))
         }
         StepCheck::Choice { on_drums: Some(on_drums), .. } if drum => Some(on_drums.to_string()),
         StepCheck::Choice { problem, .. } if problem.is_empty() => {
@@ -180,7 +188,7 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
             });
             unless(
                 is_a_choice(row, value),
-                named(errors::ERR_NOT_STATEMENT_CHOICE, &[("choices", listed(&choices).into())]),
+                named(errors::ERR_NOT_STATEMENT_CHOICE, &[(fill::CHOICES, listed(&choices).into())]),
             )
         }
         StepCheck::Choice { problem, .. } => unless(is_a_choice(row, value), problem),
@@ -204,9 +212,9 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
             let number = value.as_whole().is_some_and(|number| number.abs() <= MAX_STATEMENT_NUMBER as i128);
             let choices = listed(VALUE_NAMES);
             let bounds = [
-                ("lowest", (-MAX_STATEMENT_NUMBER).into()),
-                ("highest", MAX_STATEMENT_NUMBER.into()),
-                ("choices", choices.into()),
+                (spec::LOWEST, (-MAX_STATEMENT_NUMBER).into()),
+                (spec::HIGHEST, MAX_STATEMENT_NUMBER.into()),
+                (words::CHOICES, choices.into()),
             ];
             unless(named_draw || number, named(errors::ERR_NOT_STATEMENT_VALUE, &bounds))
         }
@@ -215,7 +223,11 @@ pub fn check_step(row: &str, value: &Data, drum: bool) -> Result<(), InvalidValu
     match problem {
         Some(problem) => Err(InvalidValue::new(named(
             errors::ERR_BAD_STEP_VALUE,
-            &[("row", row.into()), ("problem", problem.into()), ("value", value.into())],
+            &[
+                (words::ROW, row.into()),
+                (words::PROBLEM, problem.into()),
+                (file_format::StatementPart::VALUE, value.into()),
+            ],
         ))),
         None => Ok(()),
     }
@@ -290,22 +302,22 @@ mod tests {
             (Row::TENSION, Data::List(vec![Data::text("9")]), false),
             (Row::KEYSWITCH, Data::List(vec![Data::Whole(0), Data::Whole(2)]), true),
             (Row::TIE, Data::Bool(true), false),
-            ("ad_note", Data::Whole(-1), false),
-            ("ad_note", Data::Whole(0), true),
-            ("stop_c3", Data::text("AD"), false),
+            (file_format::Row::AD_NOTE, Data::Whole(-1), false),
+            (file_format::Row::AD_NOTE, Data::Whole(0), true),
+            (file_format::Row::STOP_C3, Data::text("AD"), false),
         ];
         for (row, value, drum) in &taken {
             assert!(check_step(row, value, *drum).is_ok(), "{row} {value:?}");
         }
         let refused = [
-            (Row::DEGREE, Data::text("banana"), false),
+            (Row::DEGREE, Data::text(words::BANANA), false),
             (Row::DEGREE, Data::Whole(3), true),
             (Row::VELOCITY, Data::Whole(500), false),
             (Row::CHORD, Data::text("M"), true),
             (Row::TENSION, Data::List(vec![Data::text("9"), Data::text("9")]), false),
             (Row::TIE, Data::Null, false),
-            ("ad_note", Data::Whole(1), true),
-            ("stop_c2", Data::text("about"), false),
+            (file_format::Row::AD_NOTE, Data::Whole(1), true),
+            (file_format::Row::STOP_C2, Data::text(words::ABOUT), false),
         ];
         for (row, value, drum) in &refused {
             assert!(check_step(row, value, *drum).is_err(), "{row} {value:?}");

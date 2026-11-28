@@ -5,9 +5,6 @@
 //! built from, by the name a spec gives it. A name no registry holds builds nothing rather than falling through to
 //! another kind, and the tests walk the registries, so that a component exists for the program only once registered.
 
-#[cfg(test)]
-use llamatron_names::spec;
-
 /// One registered component: the name a spec gives it, the file in its kind's folder that holds it, and how it is built.
 pub struct Entry<Build: 'static> {
     pub name: &'static str,
@@ -33,6 +30,8 @@ pub fn find<Build>(entries: &'static [Entry<Build>], name: &str) -> Option<&'sta
 }
 
 /// Every registry with its kind's folder, for the tests that hold each folder's files to its registry.
+#[cfg(test)]
+use llamatron_names::spec;
 #[cfg(test)]
 pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str])> {
     vec![
@@ -67,7 +66,6 @@ pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str
 #[cfg(test)]
 mod tests {
     use super::*;
-    use llamatron_names::spec;
 
     /// Every file in a component folder is a registered component's or one of the helpers its kind declares, and every
     /// registered file exists: a component added but never registered, or registered but never written, fails here.

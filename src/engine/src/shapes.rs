@@ -14,6 +14,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
 use llamatron_model::schema::generated::defaults::DEFAULT_VELOCITY;
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
+use llamatron_names::file_format;
 
 const FULL: i128 = 100;
 const UNCHANGED: i128 = 100;
@@ -59,12 +60,12 @@ fn percent(value: Option<&Data>) -> Option<Rational> {
 /// end are blank.
 pub fn shape_values(written: &dyn Fn(&str) -> Option<Data>, shape: &str, accent: i64, bar: Rational) -> Option<ShapeValues> {
     let part = |name: &str| written(&format!("{shape}_{name}")).filter(|value| !value.is_null());
-    let start = part("start");
-    let end = part("end");
+    let start = part(file_format::RampPart::START);
+    let end = part(file_format::RampPart::END);
     if start.is_none() && end.is_none() {
         return None;
     }
-    let over = part("over").and_then(|over| match time_length(&over).ok()? {
+    let over = part(file_format::RampPart::OVER).and_then(|over| match time_length(&over).ok()? {
         TimeLength::Bars(count) => Some(bar * Rational::whole(count as i128)),
         TimeLength::Length(length) => Some(length),
     });
@@ -72,10 +73,10 @@ pub fn shape_values(written: &dyn Fn(&str) -> Option<Data>, shape: &str, accent:
         start: percent(start.as_ref()).unwrap_or(Rational::whole(UNCHANGED)),
         end: percent(end.as_ref()).unwrap_or(Rational::whole(UNCHANGED)),
         over,
-        then: part("then")
+        then: part(file_format::ShapePart::THEN)
             .map(|then| then.python_str())
             .filter(|then| !then.is_empty())
-            .unwrap_or("hold".to_string()),
+            .unwrap_or(file_format::PartSetting::HOLD.to_string()),
         accent,
     })
 }
@@ -146,11 +147,10 @@ impl Velocity {
             None => level,
             Some(percent) => level * percent / Rational::whole(UNCHANGED),
         };
-        for share in outer
-            .iter()
-            .copied()
-            .chain([percent(scene("velocity").as_ref()), percent(clip("velocity").as_ref())])
-        {
+        for share in outer.iter().copied().chain([
+            percent(scene(file_format::TrackSetting::VELOCITY).as_ref()),
+            percent(clip(file_format::TrackSetting::VELOCITY).as_ref()),
+        ]) {
             level = scaled(level, share);
         }
         let ramp = |way: &str| {
@@ -160,9 +160,9 @@ impl Velocity {
                     .filter(|value| !value.is_null())
                     .or_else(|| scene(&name).filter(|value| !value.is_null()))
             };
-            let start = percent(taken("start").as_ref());
-            let end = percent(taken("end").as_ref());
-            let over = percent(taken("over").as_ref())?;
+            let start = percent(taken(file_format::RampPart::START).as_ref());
+            let end = percent(taken(file_format::RampPart::END).as_ref());
+            let over = percent(taken(file_format::RampPart::OVER).as_ref())?;
             if start.is_none() && end.is_none() {
                 return None;
             }
@@ -176,8 +176,8 @@ impl Velocity {
         };
         Velocity {
             level,
-            ramp_in: ramp("in"),
-            ramp_out: ramp("out"),
+            ramp_in: ramp(file_format::RampWay::IN),
+            ramp_out: ramp(file_format::RampWay::OUT),
         }
     }
 

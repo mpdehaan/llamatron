@@ -597,6 +597,7 @@ dependencies = [
  "llamatron-importers",
  "llamatron-math",
  "llamatron-model",
+ "llamatron-names",
  "llamatron-tracker",
 ]
 
@@ -606,6 +607,7 @@ version = "0.1.0"
 dependencies = [
  "llamatron-math",
  "llamatron-model",
+ "llamatron-names",
  "llamatron-strings",
 ]
 
@@ -617,6 +619,7 @@ dependencies = [
  "llamatron-engine",
  "llamatron-math",
  "llamatron-model",
+ "llamatron-names",
 ]
 
 [[package]]
@@ -626,12 +629,16 @@ dependencies = [
  "llamatron-engine",
  "llamatron-math",
  "llamatron-model",
+ "llamatron-names",
  "llamatron-strings",
 ]
 
 [[package]]
 name = "llamatron-math"
 version = "0.1.0"
+dependencies = [
+ "llamatron-names",
+]
 
 [[package]]
 name = "llamatron-model"

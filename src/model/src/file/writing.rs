@@ -8,6 +8,7 @@
 
 use crate::file::data::{json_text, load, yaml_float, Data};
 use crate::schema::generated::file_format::{FileLayout, PatternSetting, Section, SetlistSetting, SongSetting, OPEN_GENERATOR_TYPES, PATTERN_ROWS};
+use llamatron_names::words;
 
 const INDENT: &str = "  ";
 const LIST_ITEM: &str = "- ";
@@ -99,7 +100,7 @@ fn reads_back_as_itself(text: &str) -> bool {
 pub fn text(value: &Data) -> String {
     match value {
         Data::Null => NULL.into(),
-        Data::Bool(flag) => if *flag { "true" } else { "false" }.into(),
+        Data::Bool(flag) => if *flag { words::TRUE } else { words::FALSE }.into(),
         Data::Whole(whole) => whole.to_string(),
         Data::Float(float) => yaml_float(*float),
         Data::Text(written) if reads_back_as_itself(written) => written.clone(),

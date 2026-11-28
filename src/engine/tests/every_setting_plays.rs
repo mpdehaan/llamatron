@@ -10,6 +10,7 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain, Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
+use llamatron_names::file_format;
 
 /// What the small set names its things, and the seed it renders with.
 const SCALE: &str = "C Major";
@@ -78,54 +79,76 @@ fn set_with(place: Place, name: &'static str, value: Data) -> Data {
         }
         map(pairs)
     };
-    let mut clip = vec![("track", Data::text(TRACK_NAME)), ("pattern", Data::text(PATTERN_NAME))];
+    let mut clip = vec![
+        (file_format::FileLayout::TRACK, Data::text(TRACK_NAME)),
+        (file_format::ClipSlotSetting::PATTERN, Data::text(PATTERN_NAME)),
+    ];
     let mut generators = Vec::new();
     if let Place::Generator(kind) = place {
-        generators.push(with(vec![("name", Data::text(GENERATOR_NAME)), ("kind", Data::text(kind))], true));
-        clip.push(("generators", Data::List(vec![map(vec![("name", Data::text(GENERATOR_NAME))])])));
+        generators.push(with(
+            vec![
+                (file_format::FileLayout::NAME, Data::text(GENERATOR_NAME)),
+                (file_format::FileLayout::KIND, Data::text(kind)),
+            ],
+            true,
+        ));
+        clip.push((
+            file_format::FileLayout::GENERATORS,
+            Data::List(vec![map(vec![(file_format::FileLayout::NAME, Data::text(GENERATOR_NAME))])]),
+        ));
     }
     let degrees = Data::List(DEGREES.iter().map(|degree| Data::Whole(*degree)).collect());
     let mut set = vec![
         (
-            "scales",
+            file_format::Section::SCALES,
             Data::List(vec![map(vec![
-                ("name", Data::text(SCALE)),
-                ("root", Data::text("C")),
-                ("type", Data::text("major")),
+                (file_format::FileLayout::NAME, Data::text(SCALE)),
+                (file_format::ScaleSetting::ROOT, Data::text("C")),
+                (file_format::ScaleSetting::TYPE, Data::text(file_format::Quality::MAJOR)),
             ])]),
         ),
         (
-            "patterns",
+            file_format::Section::PATTERNS,
             Data::List(vec![with(
-                vec![("name", Data::text(PATTERN_NAME)), ("steps", Data::Whole(STEPS)), ("degree", degrees)],
+                vec![
+                    (file_format::FileLayout::NAME, Data::text(PATTERN_NAME)),
+                    (file_format::PatternSetting::STEPS, Data::Whole(STEPS)),
+                    (file_format::Row::DEGREE, degrees),
+                ],
                 matches!(place, Place::Pattern),
             )]),
         ),
         (
-            "instruments",
-            Data::List(vec![with(vec![("name", Data::text(INSTRUMENT_NAME))], matches!(place, Place::Instrument))]),
+            file_format::Section::INSTRUMENTS,
+            Data::List(vec![with(
+                vec![(file_format::FileLayout::NAME, Data::text(INSTRUMENT_NAME))],
+                matches!(place, Place::Instrument),
+            )]),
         ),
     ];
     if !generators.is_empty() {
-        set.push(("generators", Data::List(generators)));
+        set.push((file_format::FileLayout::GENERATORS, Data::List(generators)));
     }
     let song = with(
         vec![
-            ("name", Data::text(SONG_NAME)),
-            ("scale", Data::text(SCALE)),
+            (file_format::FileLayout::NAME, Data::text(SONG_NAME)),
+            (file_format::SongSetting::SCALE, Data::text(SCALE)),
             (
-                "tracks",
+                file_format::Section::TRACKS,
                 Data::List(vec![with(
-                    vec![("name", Data::text(TRACK_NAME)), ("instrument", Data::text(INSTRUMENT_NAME))],
+                    vec![
+                        (file_format::FileLayout::NAME, Data::text(TRACK_NAME)),
+                        (file_format::TrackSetting::INSTRUMENT, Data::text(INSTRUMENT_NAME)),
+                    ],
                     matches!(place, Place::Track),
                 )]),
             ),
             (
-                "scenes",
+                file_format::Section::SCENES,
                 Data::List(vec![with(
                     vec![
-                        ("name", Data::text(SCENE_NAME)),
-                        ("clips", Data::List(vec![with(clip, matches!(place, Place::Clip))])),
+                        (file_format::FileLayout::NAME, Data::text(SCENE_NAME)),
+                        (file_format::FileLayout::CLIPS, Data::List(vec![with(clip, matches!(place, Place::Clip))])),
                     ],
                     matches!(place, Place::Scene),
                 )]),
@@ -133,7 +156,7 @@ fn set_with(place: Place, name: &'static str, value: Data) -> Data {
         ],
         matches!(place, Place::Song),
     );
-    set.push(("songs", Data::List(vec![song])));
+    set.push((file_format::Section::SONGS, Data::List(vec![song])));
     map(set)
 }
 

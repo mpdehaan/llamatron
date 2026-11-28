@@ -15,6 +15,8 @@ use llamatron_engine::realizer::{Grid, GridColumn, GridRow};
 use llamatron_engine::timing::{keyswitch_events, timed_events};
 use llamatron_math::Rational;
 use llamatron_model::values::time_signature::TimeSignature;
+use llamatron_names::file_format;
+use llamatron_names::words;
 
 const TICKS_PER_BEAT: i128 = 480;
 const BEATS_PER_WHOLE_NOTE: i128 = 4;
@@ -367,7 +369,11 @@ pub fn clip_tree(grid: &Grid, name: &str) -> Rendered<Vec<MidiExport>> {
                     format!("{numbered}-{}", safe_file_name(named))
                 }
             };
-            let filename = format!("{name}_clip_{}-{}.mid", part("s", row_number, &row.name), part("t", track_number, &column.name));
+            let filename = format!(
+                "{name}_clip_{}-{}.mid",
+                part(words::S, row_number, &row.name),
+                part(file_format::GateModifier::TRIPLET, track_number, &column.name)
+            );
             let (_, clip_length) = timed_events(clip, clip.scale.as_ref())?;
             let signature = clip.time_signature.unwrap_or(grid.time_signature);
             let mut events = vec![time_signature_event(0, &signature)];

@@ -14,6 +14,8 @@ use crate::clip::Clip;
 use crate::error::Rendered;
 use crate::sound::{triad_above, NoteSound, Sound};
 use llamatron_model::values::scale::Scale;
+#[cfg(test)]
+use llamatron_names::file_format;
 
 /// The chords Auto chord builds, as the file names them.
 pub const FROM_SCALE: &str = "from_scale";
@@ -117,7 +119,7 @@ mod tests {
     #[test]
     fn auto_chord_builds_the_chord_asked_for() {
         let root = llamatron_model::values::note::Note::new("C", 4, None, None, false).expect("C");
-        let c_major = Scale::new(root, ScaleType::named("major").expect("major"));
+        let c_major = Scale::new(root, ScaleType::named(file_format::Quality::MAJOR).expect(file_format::Quality::MAJOR));
         let from_scale = AutoChord {
             chord: FROM_SCALE.to_string(),
             on_top: false,

@@ -8,6 +8,7 @@
 use crate::file::data::Data;
 use crate::schema::checking::{check, Context, InvalidValue};
 use crate::schema::generated::settings::Setting;
+use llamatron_names::words;
 
 /// A refusal of a file's data, with where in the file it was.
 #[derive(Clone, Debug, PartialEq)]
@@ -21,14 +22,14 @@ impl SongFileError {
         let place = match &problem.within {
             Some(within) => llamatron_strings::named(
                 llamatron_strings::errors::ERR_WHERE_IN_ROW,
-                &[("where", place.into()), ("row", within.as_str().into())],
+                &[(words::WHERE, place.into()), (words::ROW, within.as_str().into())],
             ),
             None => place.to_string(),
         };
         SongFileError {
             message: llamatron_strings::named(
                 llamatron_strings::errors::ERR_AT,
-                &[("where", place.into()), ("problem", problem.message.into())],
+                &[(words::WHERE, place.into()), (words::PROBLEM, problem.message.into())],
             ),
         }
     }

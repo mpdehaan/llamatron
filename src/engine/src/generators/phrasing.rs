@@ -10,6 +10,12 @@ use crate::error::{RenderError, Rendered};
 use crate::generators::parts::{parts_of, Part};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
+use llamatron_names::file_format;
+use llamatron_names::words;
+
+/// How many bars a line lasts where the settings name none, and a deep breath's length, a quarter of a whole note.
+const DEFAULT_LINE_BARS: i128 = 2;
+const DEEP_BREATH_DIVISOR: i128 = 4;
 
 const CHOPPY: &str = "choppy";
 const FLOWING: &str = "flowing";
@@ -31,14 +37,14 @@ impl Phrasing {
                 .map(Data::python_str)
                 .unwrap_or(default.to_string())
         };
-        let line_bars = settings.get("line_bars").and_then(Data::as_whole).unwrap_or(2);
-        let breath = match written("breath", "quick").as_str() {
-            "none" => Rational::ZERO,
-            "deep" => Rational::new(1, 4),
+        let line_bars = settings.get(words::LINE_BARS).and_then(Data::as_whole).unwrap_or(DEFAULT_LINE_BARS);
+        let breath = match written(words::BREATH, words::QUICK).as_str() {
+            words::NONE => Rational::ZERO,
+            words::DEEP => Rational::new(1, DEEP_BREATH_DIVISOR),
             _ => Rational::new(1, 8),
         };
-        let depth = match written("rise_and_fall", "a little").as_str() {
-            "none" => 0,
+        let depth = match written(words::RISE_AND_FALL, "a little").as_str() {
+            words::NONE => 0,
             "a lot" => 22,
             _ => 10,
         };
@@ -50,7 +56,7 @@ impl Phrasing {
             bar,
             breath,
             depth,
-            join: written("notes", "as written"),
+            join: written(file_format::SetlistSetting::NOTES, "as written"),
         })
     }
 

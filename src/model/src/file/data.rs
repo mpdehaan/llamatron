@@ -9,6 +9,8 @@
 //! is ninety, `1.5` and `1.0e+3` are floats, `1e3` and `1/4` are text, and `~`, `null` or nothing is nothing.
 
 use llamatron_math::number::python_float_text;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use yaml_rust2::parser::{Event, Parser};
 use yaml_rust2::scanner::TScalarStyle;
 
@@ -109,8 +111,8 @@ impl Data {
             Data::Null => "None".into(),
             Data::Bool(flag) => if *flag { "True" } else { "False" }.into(),
             Data::Whole(whole) => whole.to_string(),
-            Data::Float(float) if float.is_nan() => "nan".into(),
-            Data::Float(float) if float.is_infinite() => if *float > 0.0 { "inf" } else { "-inf" }.into(),
+            Data::Float(float) if float.is_nan() => words::NAN.into(),
+            Data::Float(float) if float.is_infinite() => if *float > 0.0 { words::INF } else { "-inf" }.into(),
             Data::Float(float) => python_float_text(*float),
             Data::Text(text) => llamatron_strings::fill::python_repr(text),
             Data::List(items) => format!("[{}]", items.iter().map(Data::python_repr).collect::<Vec<_>>().join(", ")),
@@ -200,7 +202,7 @@ impl Builder {
                 self.add(done, anchor);
             }
             Event::Scalar(value, style, anchor, tag) => {
-                let tagged_text = tag.as_ref().is_some_and(|tag| tag.suffix == "str");
+                let tagged_text = tag.as_ref().is_some_and(|tag| tag.suffix == words::STR);
                 let data = if style == TScalarStyle::Plain && !tagged_text {
                     resolved(&value)
                 } else {
@@ -250,7 +252,7 @@ impl Builder {
 
 /// A plain scalar's value by PyYAML's implicit resolvers, YAML 1.1's: null, a flag, a whole number, a float, or text.
 pub fn resolved(text: &str) -> Data {
-    if matches!(text, "" | "~" | "null" | "Null" | "NULL") {
+    if matches!(text, "" | "~" | words::NULL | "Null" | "NULL") {
         return Data::Null;
     }
     if let Some(flag) = flag_of(text) {
@@ -267,8 +269,8 @@ pub fn resolved(text: &str) -> Data {
 
 fn flag_of(text: &str) -> Option<bool> {
     match text {
-        "yes" | "Yes" | "YES" | "true" | "True" | "TRUE" | "on" | "On" | "ON" => Some(true),
-        "no" | "No" | "NO" | "false" | "False" | "FALSE" | "off" | "Off" | "OFF" => Some(false),
+        words::YES | "Yes" | "YES" | words::TRUE | "True" | "TRUE" | file_format::LfoSetting::ON | "On" | "ON" => Some(true),
+        words::NO | "No" | "NO" | words::FALSE | "False" | "FALSE" | file_format::InstrumentKind::OFF | "Off" | "OFF" => Some(false),
         _ => None,
     }
 }
@@ -429,9 +431,12 @@ mod tests {
     fn a_file_loads_with_its_order_and_quoting() {
         let data = load("b: [1, '2', x]\na: {c: on}\n").unwrap();
         let Data::Map(pairs) = &data else { panic!("a mapping") };
-        assert_eq!(pairs[0].0, Data::text("b"));
-        assert_eq!(data.get("b").unwrap(), &Data::List(vec![Data::Whole(1), Data::text("2"), Data::text("x")]));
-        assert_eq!(data.get("a").unwrap().get("c"), Some(&Data::Bool(true)));
+        assert_eq!(pairs[0].0, Data::text(file_format::Accidental::FLAT));
+        assert_eq!(
+            data.get(file_format::Accidental::FLAT).unwrap(),
+            &Data::List(vec![Data::Whole(1), Data::text("2"), Data::text(words::X)])
+        );
+        assert_eq!(data.get(file_format::DriftVersion::A).unwrap().get(words::C), Some(&Data::Bool(true)));
     }
 
     #[test]

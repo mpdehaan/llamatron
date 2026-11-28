@@ -49,7 +49,7 @@ impl Style {
             }
             match ATTRIBUTES.iter().position(|found| *found == word) {
                 Some(place) => style.attributes[place] = Some(true),
-                None if word != file_format::MatrixSource::NONE => style.color = Some(word.to_string()),
+                None if word != words::NONE => style.color = Some(word.to_string()),
                 None => {}
             }
         }

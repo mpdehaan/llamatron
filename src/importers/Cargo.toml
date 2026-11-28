@@ -10,6 +10,7 @@ description = "llamatron's importers: a MIDI file made into a song of a set (the
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }
 llamatron-math = { path = "../math" }
 llamatron-strings = { path = "../strings" }
 llamatron-model = { path = "../model" }

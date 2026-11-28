@@ -10,6 +10,8 @@ use crate::values::generated::note::FIRST_DEGREE;
 use crate::values::note::Note;
 use crate::ValueError;
 use llamatron_math::Number;
+use llamatron_names::file_format;
+use llamatron_names::spec;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -75,7 +77,7 @@ impl Scale {
         if degree < FIRST_DEGREE {
             return Err(ValueError(named(
                 errors::ERR_BAD_DEGREE,
-                &[("value", degree.into()), ("lowest", FIRST_DEGREE.into())],
+                &[(file_format::StatementPart::VALUE, degree.into()), (spec::LOWEST, FIRST_DEGREE.into())],
             )));
         }
         let shape = self.kind.get_shape();

@@ -12,6 +12,11 @@ use llamatron_math::Rational;
 use llamatron_model::schema::generated::defaults::KEYSWITCH_VELOCITY;
 use llamatron_model::schema::generated::midi::MAX_VELOCITY;
 use llamatron_model::values::scale::Scale;
+use llamatron_names::file_format;
+use llamatron_names::words;
+
+/// A down-up strum turns every second chord.
+const STRUMS_A_TURN: i64 = 2;
 
 /// How far a gliding note runs on into the next.
 fn glide_overlap() -> Rational {
@@ -42,9 +47,9 @@ impl StrumPlan {
         let mut pitches: Vec<(i64, NoteSound)> = notes.to_vec();
         pitches.sort_by_key(|(midi, _)| *midi);
         let down = match self.direction.as_str() {
-            "by_the_beat" => ((time + self.offset) / self.beat).is_whole(),
-            "down_up" => (count + self.chords_before) % 2 == 0,
-            other => other == "down",
+            file_format::StrumDirection::BY_THE_BEAT => ((time + self.offset) / self.beat).is_whole(),
+            file_format::StrumDirection::DOWN_UP => (count + self.chords_before) % STRUMS_A_TURN == 0,
+            other => other == words::DOWN,
         };
         if !down {
             pitches.reverse();

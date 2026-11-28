@@ -6,6 +6,11 @@
 //! use: a fill character and alignment (`<`, `>`, `^`) with a width that may itself be a field (`{name:<{width}}`), a `+`
 //! sign, zero padding (`02`), `d`, and a float's places (`.1f`); `{{` and `}}` for braces.
 
+#[cfg(test)]
+use llamatron_names::file_format;
+#[cfg(test)]
+use llamatron_names::spec;
+use llamatron_names::words;
 use std::fmt::Write;
 
 /// A value a template is filled with.
@@ -81,10 +86,10 @@ impl Value {
 /// A float as Python's str writes it: the shortest text that reads back exactly, with a point, and Python's exponent form.
 pub fn python_float(value: f64) -> String {
     if value.is_nan() {
-        return "nan".to_string();
+        return words::NAN.to_string();
     }
     if value.is_infinite() {
-        return if value > 0.0 { "inf" } else { "-inf" }.to_string();
+        return if value > 0.0 { words::INF } else { "-inf" }.to_string();
     }
     let size = value.abs();
     if size != 0.0 && !(1e-4..1e16).contains(&size) {
@@ -193,7 +198,7 @@ fn filled_field(field: &str, named: &[(&str, Value)], positional: &[Value], next
         return format!("{{{field}}}");
     };
     let spec = fill(spec, named, positional);
-    if conversion == "r" {
+    if conversion == words::R {
         return formatted(&Value::Text(value.repr()), &spec, true);
     }
     formatted(&value, &spec, false)
@@ -285,21 +290,49 @@ mod tests {
     // Every expected text here is what CPython printed for the same template and values.
     #[test]
     fn templates_fill_by_their_format_specs() {
-        assert_eq!(named("no pattern called ({name})", &[("name", "tune".into())]), "no pattern called (tune)");
-        assert_eq!(named("expected a Note, got {value!r}", &[("value", "C#".into())]), "expected a Note, got 'C#'");
-        assert_eq!(named("{name:<{width}}|", &[("name", "ab".into()), ("width", 5.into())]), "ab   |");
+        assert_eq!(
+            named("no pattern called ({name})", &[(llamatron_names::fill::NAME, spec::TUNE.into())]),
+            "no pattern called (tune)"
+        );
+        assert_eq!(
+            named("expected a Note, got {value!r}", &[(llamatron_names::fill::VALUE, "C#".into())]),
+            "expected a Note, got 'C#'"
+        );
+        assert_eq!(
+            named("{name:<{width}}|", &[(llamatron_names::fill::NAME, words::AB.into()), (words::WIDTH, 5.into())]),
+            "ab   |"
+        );
         assert_eq!(
             named(
                 "{n:+d} {m:02} {f:.1f} {x:>4}",
-                &[("n", 3.into()), ("m", 7.into()), ("f", 2.25.into()), ("x", "ab".into())]
+                &[
+                    (words::N, 3.into()),
+                    (file_format::ChordSymbol::MINOR, 7.into()),
+                    (words::F, 2.25.into()),
+                    (words::X, words::AB.into())
+                ]
             ),
             "+3 07 2.2   ab"
         );
-        assert_eq!(named("{v:.2f}|{w:>7}", &[("v", (-0.005).into()), ("w", (-3).into())]), "-0.01|     -3");
+        let (rounded_away, padded) = (-0.005, -3);
+        assert_eq!(
+            named("{v:.2f}|{w:>7}", &[(words::V, rounded_away.into()), (words::W, padded.into())]),
+            "-0.01|     -3"
+        );
         assert_eq!(python_float(1e16), "1e+16");
         assert_eq!(python_float(1.5e-05), "1.5e-05");
-        assert_eq!(named("{title:═^{width}}", &[("title", " Hi ".into()), ("width", 10.into())]), "═══ Hi ═══");
-        assert_eq!(fill("{} and {}, {{braces}}", &[], &["a".into(), "b".into()]), "a and b, {braces}");
+        assert_eq!(
+            named("{title:═^{width}}", &[(llamatron_names::fill::TITLE, " Hi ".into()), (words::WIDTH, 10.into())]),
+            "═══ Hi ═══"
+        );
+        assert_eq!(
+            fill(
+                "{} and {}, {{braces}}",
+                &[],
+                &[file_format::DriftVersion::A.into(), file_format::Accidental::FLAT.into()]
+            ),
+            "a and b, {braces}"
+        );
         assert_eq!(python_repr("it's"), "\"it's\"");
         assert_eq!(python_float(0.1), "0.1");
         assert_eq!(python_float(3.0), "3.0");

@@ -7,6 +7,10 @@
 
 use crate::registers::{draw_place, Values};
 use llamatron_model::file::data::Data;
+use llamatron_names::file_format;
+
+/// What a value is divided by to tell odd from even.
+const PARITY_DIVISOR: i64 = 2;
 
 #[derive(Clone, Debug, PartialEq)]
 enum Operand {
@@ -126,7 +130,7 @@ impl Statement {
     pub fn is_true(&self, values: &Values) -> bool {
         let held = values[self.register];
         if PARITY.contains(&self.operator.as_str()) {
-            return (held.rem_euclid(2) != 0) == (self.operator == "odd");
+            return (held.rem_euclid(PARITY_DIVISOR) != 0) == (self.operator == file_format::Operator::ODD);
         }
         let value = Statement::number(&self.value, values);
         if COMPARING.contains(&self.operator.as_str()) {

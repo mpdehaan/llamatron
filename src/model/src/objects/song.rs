@@ -14,6 +14,10 @@ use crate::schema::generated::genres::{GENRES, MASHUP, MASHUP_SUFFIX, SUBGENRES,
 use crate::schema::generated::limits;
 use crate::schema::generated::plugins::PLUGINS;
 use crate::schema::generated::settings::{CLIP_SLOT, DRAW, SCENE, SONG, TRACK};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -31,7 +35,7 @@ fn checked_octave_order(settings: &Holder) -> Result<(), InvalidValue> {
     if lowest > highest {
         return Err(InvalidValue::new(named(
             errors::ERR_OCTAVE_RANGE_BACKWARDS,
-            &[("lowest", lowest.into()), ("highest", highest.into())],
+            &[(spec::LOWEST, lowest.into()), (spec::HIGHEST, highest.into())],
         )));
     }
     Ok(())
@@ -45,7 +49,7 @@ fn checked_draw_range(settings: &Holder) -> Result<(), InvalidValue> {
     if lowest > highest {
         return Err(InvalidValue::new(named(
             errors::ERR_DRAW_VALUES_OUT_OF_ORDER,
-            &[("lowest", lowest.into()), ("highest", highest.into())],
+            &[(spec::LOWEST, lowest.into()), (spec::HIGHEST, highest.into())],
         )));
     }
     let slots = settings.get(DrawSetting::SLOTS).and_then(Data::as_list).unwrap_or(&[]);
@@ -54,7 +58,11 @@ fn checked_draw_range(settings: &Holder) -> Result<(), InvalidValue> {
         if !within {
             let message = named(
                 errors::ERR_DRAW_SLOT_OUT_OF_RANGE,
-                &[("lowest", lowest.into()), ("highest", highest.into()), ("value", slot.into())],
+                &[
+                    (spec::LOWEST, lowest.into()),
+                    (spec::HIGHEST, highest.into()),
+                    (file_format::StatementPart::VALUE, slot.into()),
+                ],
             );
             return Err(InvalidValue::new(message));
         }
@@ -79,7 +87,7 @@ fn checked_morph(settings: &Holder) -> Result<(), InvalidValue> {
     if morphs && repeat < MIN_MORPH_REPEAT {
         return Err(InvalidValue::new(named(
             errors::ERR_MORPH_TOO_FEW_REPEATS,
-            &[("lowest", MIN_MORPH_REPEAT.into())],
+            &[(spec::LOWEST, MIN_MORPH_REPEAT.into())],
         )));
     }
     Ok(())
@@ -144,7 +152,7 @@ impl Draw {
     pub fn from_data(data: &Data) -> Result<Draw, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_DRAW_EXPECTED_SETTINGS, &[("data", (&data).into())])));
+            return Err(InvalidValue::new(named(errors::ERR_DRAW_EXPECTED_SETTINGS, &[(spec::DATA, (&data).into())])));
         }
         // A setting left at its default, written as nothing, is not checked.
         let data = passed_over(&data, &|name| in_table(DRAW, name));
@@ -172,7 +180,7 @@ impl Track {
     pub fn from_data(data: &Data, names: &dyn Context) -> Result<Track, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_TRACK_EXPECTED_SETTINGS, &[("data", (&data).into())])));
+            return Err(InvalidValue::new(named(errors::ERR_TRACK_EXPECTED_SETTINGS, &[(spec::DATA, (&data).into())])));
         }
         let data = built_ins_passed_over(&passed_over(&data, &|name| in_table(TRACK, name)), TrackSetting::BUILT_IN);
         let settings = Holder::read(TRACK, &data, Some(names), &[])?;
@@ -207,7 +215,7 @@ pub struct ClipSlot {
 impl ClipSlot {
     pub fn from_data(data: &Data, names: &dyn Context, track: &str) -> Result<ClipSlot, InvalidValue> {
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_CLIP_SLOT_EXPECTED_SETTINGS, &[("data", data.into())])));
+            return Err(InvalidValue::new(named(errors::ERR_CLIP_SLOT_EXPECTED_SETTINGS, &[(spec::DATA, data.into())])));
         }
         let mut data = built_ins_passed_over(
             &passed_over(data, &|name| in_table(CLIP_SLOT, name) || name == ClipSlotSetting::PATTERN),
@@ -286,7 +294,7 @@ impl Scene {
             for (track, clip_slot) in tracks.as_map().unwrap_or(&[]) {
                 let track = track.python_str();
                 if !names.has_track(&track) {
-                    return Err(InvalidValue::new(named(errors::ERR_NO_SUCH_TRACK, &[("track", track.as_str().into())])));
+                    return Err(InvalidValue::new(named(errors::ERR_NO_SUCH_TRACK, &[(fill::TRACK, track.as_str().into())])));
                 }
                 read.push((track.clone(), ClipSlot::from_data(clip_slot, names, &track)?));
             }
@@ -373,7 +381,7 @@ impl Song {
         if lowest > highest {
             return Err(named(
                 errors::ERR_DRAW_VALUES_OUT_OF_ORDER,
-                &[("lowest", (lowest as i64).into()), ("highest", (highest as i64).into())],
+                &[(spec::LOWEST, (lowest as i64).into()), (spec::HIGHEST, (highest as i64).into())],
             ));
         }
         for (key, value) in pairs.iter_mut() {
@@ -480,7 +488,7 @@ impl Song {
     pub fn from_data(data: &Data, set: &dyn Context) -> Result<Song, InvalidValue> {
         let data = if data.is_null() { Data::Map(Vec::new()) } else { data.clone() };
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_NOT_A_SONG, &[("value", (&data).into())])));
+            return Err(InvalidValue::new(named(errors::ERR_NOT_A_SONG, &[(fill::VALUE, (&data).into())])));
         }
         let data = passed_over(&data, &|name| {
             in_table(SONG, name) || [Section::DRAWS, Section::TRACKS, Section::SCENES].contains(&name)
@@ -504,7 +512,7 @@ impl Song {
                     if !name.as_str().is_some_and(|name| DRAW_NAMES.contains(&name)) {
                         return Err(InvalidValue::new(named(
                             errors::ERR_DRAWS_NOT_NAMED,
-                            &[("names", DRAW_NAMES.join(", ").into())],
+                            &[(words::NAMES, DRAW_NAMES.join(", ").into())],
                         )));
                     }
                     read.push((name.python_str(), Draw::from_data(draw)?));

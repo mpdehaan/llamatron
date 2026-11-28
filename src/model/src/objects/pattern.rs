@@ -16,6 +16,10 @@ use crate::schema::generated::file_format::{PatternSetting, Row, CC_ROWS, CHORD_
 use crate::schema::generated::limits::{MAX_STEPS, MIN_STEPS};
 use crate::schema::generated::rows::{RowKind, ROWS, ROW_DESCRIPTIONS};
 use crate::schema::generated::settings::{Plain, PATTERN};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -100,7 +104,7 @@ impl Pattern {
             let found = data.get(PatternSetting::STEPS).cloned().unwrap_or(Data::Null);
             return Err(InvalidValue::new(named(
                 errors::ERR_BAD_STEPS,
-                &[("lowest", MIN_STEPS.into()), ("value", (&found).into())],
+                &[(spec::LOWEST, MIN_STEPS.into()), (file_format::StatementPart::VALUE, (&found).into())],
             )));
         };
         let settings = Holder::read(PATTERN, &data, None, &[])?;
@@ -118,7 +122,11 @@ impl Pattern {
                 Some(found) => {
                     return Err(InvalidValue::new(named(
                         errors::ERR_ROW_WRONG_LENGTH,
-                        &[("row", (*row).into()), ("steps", (steps as i64).into()), ("value", found.into())],
+                        &[
+                            (words::ROW, (*row).into()),
+                            (file_format::PatternSetting::STEPS, (steps as i64).into()),
+                            (file_format::StatementPart::VALUE, found.into()),
+                        ],
                     )));
                 }
             };
@@ -135,7 +143,7 @@ impl Pattern {
         for (step, tie) in ties.iter().enumerate() {
             if truthy(tie) && self.has_sound(step) {
                 let shown = step as i64 + FIRST_STEP_NUMBER;
-                return Err(InvalidValue::new(named(errors::ERR_TIE_ON_A_NOTE, &[("step", shown.into())])));
+                return Err(InvalidValue::new(named(errors::ERR_TIE_ON_A_NOTE, &[(fill::STEP, shown.into())])));
             }
         }
         Ok(())
@@ -157,13 +165,13 @@ impl Pattern {
     /// Whether a step plays something: a degree, or a grab.
     pub fn has_sound(&self, step: usize) -> bool {
         let at = |row: &str| self.row(row).and_then(|values| values.get(step)).filter(|value| !value.is_null());
-        at("degree").is_some() || matches!(at("grab"), Some(Data::Bool(true)))
+        at(file_format::Row::DEGREE).is_some() || matches!(at(file_format::Row::GRAB), Some(Data::Bool(true)))
     }
 
     /// Whether a step plays a note, holds one with a tie or sends a CC value.
     pub fn holds_anything(&self, step: usize) -> bool {
         let at = |row: &str| self.row(row).and_then(|values| values.get(step)).filter(|value| !value.is_null());
-        self.has_sound(step) || matches!(at("tie"), Some(Data::Bool(true))) || CC_ROWS.iter().any(|row| at(row).is_some())
+        self.has_sound(step) || matches!(at(file_format::Row::TIE), Some(Data::Bool(true))) || CC_ROWS.iter().any(|row| at(row).is_some())
     }
 
     /// How many steps from a place onward hold anything, which shortening the pattern there would lose.
@@ -291,7 +299,10 @@ impl Pattern {
         if step < 0 || step >= self.steps {
             return Err(InvalidValue::new(named(
                 errors::ERR_PATTERN_NO_SUCH_STEP,
-                &[("step", (step as i64).into()), ("steps", (self.steps as i64).into())],
+                &[
+                    (words::STEP, (step as i64).into()),
+                    (file_format::PatternSetting::STEPS, (self.steps as i64).into()),
+                ],
             )));
         }
         Ok(())
@@ -337,7 +348,7 @@ impl Pattern {
         if steps < MIN_STEPS as i128 {
             return Err(InvalidValue::new(named(
                 errors::ERR_BAD_STEPS,
-                &[("lowest", MIN_STEPS.into()), ("value", (steps as i64).into())],
+                &[(spec::LOWEST, MIN_STEPS.into()), (file_format::StatementPart::VALUE, (steps as i64).into())],
             )));
         }
         for (row, values) in PATTERN_ROWS.iter().zip(self.rows.iter_mut()) {
@@ -354,7 +365,10 @@ impl Pattern {
         if step as i128 > self.steps {
             return Err(InvalidValue::new(named(
                 errors::ERR_PATTERN_NO_SUCH_STEP,
-                &[("step", (step as i64).into()), ("steps", (self.steps as i64).into())],
+                &[
+                    (words::STEP, (step as i64).into()),
+                    (file_format::PatternSetting::STEPS, (self.steps as i64).into()),
+                ],
             )));
         }
         for (row, values) in PATTERN_ROWS.iter().zip(self.rows.iter_mut()) {
@@ -372,7 +386,10 @@ impl Pattern {
         if self.steps <= MIN_STEPS as i128 {
             return Err(InvalidValue::new(named(
                 errors::ERR_BAD_STEPS,
-                &[("lowest", MIN_STEPS.into()), ("value", ((self.steps - 1) as i64).into())],
+                &[
+                    (spec::LOWEST, MIN_STEPS.into()),
+                    (file_format::StatementPart::VALUE, ((self.steps - 1) as i64).into()),
+                ],
             )));
         }
         for values in self.rows.iter_mut().flatten() {
@@ -408,7 +425,7 @@ impl Pattern {
         if sorted != (0..self.steps as usize).collect::<Vec<_>>() {
             return Err(InvalidValue::new(named(
                 errors::ERR_PATTERN_NOT_AN_ORDER,
-                &[("order", format!("{order:?}").as_str().into())],
+                &[(words::ORDER, format!("{order:?}").as_str().into())],
             )));
         }
         self.take_steps(order)
@@ -420,7 +437,7 @@ impl Pattern {
         if order.is_empty() || order.len() > MAX_STEPS as usize || order.iter().any(|step| *step as i128 >= self.steps) {
             return Err(InvalidValue::new(named(
                 errors::ERR_PATTERN_NOT_AN_ORDER,
-                &[("order", format!("{order:?}").as_str().into())],
+                &[(words::ORDER, format!("{order:?}").as_str().into())],
             )));
         }
         for values in self.rows.iter_mut().flatten() {
@@ -476,7 +493,10 @@ impl Pattern {
         if at as i128 > self.steps {
             return Err(InvalidValue::new(named(
                 errors::ERR_PATTERN_NO_SUCH_STEP,
-                &[("step", (at as i64).into()), ("steps", (self.steps as i64).into())],
+                &[
+                    (words::STEP, (at as i64).into()),
+                    (file_format::PatternSetting::STEPS, (self.steps as i64).into()),
+                ],
             )));
         }
         if self.steps + other.steps > MAX_STEPS as i128 || other.is_drum() != self.is_drum() {
@@ -651,8 +671,10 @@ impl Pattern {
 
     /// Set the order its steps play in, forward left out of the file as the default.
     pub fn set_direction(&mut self, direction: &str) {
-        self.settings
-            .put(PatternSetting::DIRECTION, (direction != "forward").then(|| Data::text(direction)));
+        self.settings.put(
+            PatternSetting::DIRECTION,
+            (direction != file_format::Direction::FORWARD).then(|| Data::text(direction)),
+        );
     }
 }
 
@@ -670,7 +692,7 @@ impl Pattern {
     /// away; the first step never starts the pattern over.
     pub fn set_statement(&mut self, kind: &str, step: usize, statement: Option<&Data>) -> Result<(), InvalidValue> {
         self.check_step(step as i128)?;
-        if statement.is_some() && kind == "restart" && step == 0 {
+        if statement.is_some() && kind == file_format::LfoSetting::RESTART && step == 0 {
             return Err(InvalidValue::new(errors::ERR_RESTART_ON_FIRST_STEP.to_string()));
         }
         let rows = crate::schema::generated::file_format::STATEMENT_ROWS

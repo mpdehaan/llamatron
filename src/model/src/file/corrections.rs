@@ -21,6 +21,9 @@ use crate::schema::checking::{check, NearestValue};
 use crate::schema::generated::file_format::{FileLayout, PatternSetting, Section, PATTERN_ROWS};
 use crate::schema::generated::plugins::PLUGINS;
 use crate::schema::generated::settings::{Setting, CHAIN, CLIP_SLOT, DRAW, GROOVE, INSTRUMENT, NAMED_SCALE, PATTERN, SCENE, SETLIST, SONG, TRACK};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, messages, named, names};
 
 /// One value of a file that cannot be used, and what is used in its place: where it is, what a message calls it, what was
@@ -42,21 +45,29 @@ impl Correction {
         if let Some(count) = self.count {
             return named(
                 messages::MSG_CORRECTED_SEVERAL,
-                &[("where", place.into()), ("name", name.into()), ("count", (count as i64).into())],
+                &[
+                    (words::WHERE, place.into()),
+                    (file_format::FileLayout::NAME, name.into()),
+                    (words::COUNT, (count as i64).into()),
+                ],
             );
         }
         match &self.used {
             None => named(
                 messages::MSG_CORRECTED_TO_DEFAULT,
-                &[("where", place.into()), ("name", name.into()), ("found", (&self.found).into())],
+                &[
+                    (words::WHERE, place.into()),
+                    (file_format::FileLayout::NAME, name.into()),
+                    (words::FOUND, (&self.found).into()),
+                ],
             ),
             Some(used) => named(
                 messages::MSG_CORRECTED,
                 &[
-                    ("where", place.into()),
-                    ("name", name.into()),
-                    ("found", (&self.found).into()),
-                    ("used", used.into()),
+                    (words::WHERE, place.into()),
+                    (file_format::FileLayout::NAME, name.into()),
+                    (words::FOUND, (&self.found).into()),
+                    (words::USED, used.into()),
                 ],
             ),
         }
@@ -110,7 +121,7 @@ fn placed(section: &str, name: &str) -> String {
 
 /// A place inside another, as a refusal joins them.
 fn within(place: &str, part: &str) -> String {
-    named(errors::ERR_WHERE_IN_ROW, &[("where", place.into()), ("row", part.into())])
+    named(errors::ERR_WHERE_IN_ROW, &[(fill::WHERE, place.into()), (fill::ROW, part.into())])
 }
 
 /// Each item of a part of the data that keeps its items by name, changed in place.

@@ -14,6 +14,8 @@ use llamatron_math::{PythonRandom, Rational, Seed};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{time_length, TimeLength};
 use llamatron_model::values::scale::Scale;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use std::cell::RefCell;
 
 const STEP: &str = "step";
@@ -56,10 +58,10 @@ impl Arp {
             },
         };
         let order = match written(ORDER).map(Data::python_str).as_deref() {
-            None | Some("up") => Order::Up,
-            Some("down") => Order::Down,
-            Some("up_down") => Order::UpDown,
-            Some("down_up") => Order::DownUp,
+            None | Some(file_format::ChipDirection::UP) => Order::Up,
+            Some(file_format::ChipDirection::DOWN) => Order::Down,
+            Some(words::UP_DOWN) => Order::UpDown,
+            Some(file_format::StrumDirection::DOWN_UP) => Order::DownUp,
             Some(_) => Order::Random,
         };
         let offsets = written(OFFSETS)
@@ -70,7 +72,7 @@ impl Arp {
             order,
             seed,
             octave_range: written(OCTAVE_RANGE).and_then(Data::as_whole).map(|range| range as i64).unwrap_or(1),
-            after_each_note: written(OCTAVE_JUMP).map(Data::python_str).as_deref() == Some("after_each_note"),
+            after_each_note: written(OCTAVE_JUMP).map(Data::python_str).as_deref() == Some(words::AFTER_EACH_NOTE),
             offsets,
             start_state: match start_state {
                 Some(GeneratorState::Random(random)) => Some(*random),

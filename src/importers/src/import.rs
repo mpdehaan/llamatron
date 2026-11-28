@@ -14,6 +14,7 @@ use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::values::time_signature::TimeSignature;
+use llamatron_names::fill;
 
 const DEFAULT_LONGEST_PATTERN: i64 = 32;
 
@@ -250,7 +251,7 @@ impl MidiImport {
         counted
             .iter()
             .filter(|(count, _)| *count != 0)
-            .map(|(count, message)| llamatron_strings::named(message, &[("count", (*count).into()), ("numbers", numbers.as_str().into())]))
+            .map(|(count, message)| llamatron_strings::named(message, &[(fill::COUNT, (*count).into()), (fill::NUMBERS, numbers.as_str().into())]))
             .collect()
     }
 }

@@ -19,6 +19,9 @@ use crate::schema::generated::file_format::{InstrumentSetting, Section, SetlistS
 use crate::schema::generated::plugins::PLUGINS;
 use crate::schema::generated::settings::{INSTRUMENT, SETLIST};
 use crate::values::generated::lists::FACTORY_GROOVE_NAMES;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -32,7 +35,7 @@ pub struct Instrument {
 impl Instrument {
     pub fn from_data(data: &Data) -> Result<Instrument, InvalidValue> {
         if !matches!(data, Data::Map(_)) {
-            return Err(InvalidValue::new(named(errors::ERR_INSTRUMENT_EXPECTED_SETTINGS, &[("data", data.into())])));
+            return Err(InvalidValue::new(named(errors::ERR_INSTRUMENT_EXPECTED_SETTINGS, &[(spec::DATA, data.into())])));
         }
         let data = passed_over(data, &|name| in_table(INSTRUMENT, name));
         let settings = Holder::read(INSTRUMENT, &data, None, &[InstrumentSetting::PREVIEW])?;
@@ -162,7 +165,7 @@ fn sensible_generator_order(value: Option<Data>) -> Option<Data> {
     let kept: Vec<Data> = entries
         .into_iter()
         .filter(|entry| match entry.as_map() {
-            Some([(Data::Text(kind), Data::Text(_))]) => kind == "chain" || PLUGINS.iter().any(|plugin| plugin.name == kind),
+            Some([(Data::Text(kind), Data::Text(_))]) => kind == file_format::FileLayout::CHAIN || PLUGINS.iter().any(|plugin| plugin.name == kind),
             _ => false,
         })
         .collect();
@@ -346,7 +349,10 @@ fn checked_groove_names(grooves: &Data) -> Result<(), (String, InvalidValue)> {
         let name = name.python_str();
         if FACTORY_GROOVE_NAMES.contains(&name.as_str()) {
             let names = crate::schema::checking::listed(FACTORY_GROOVE_NAMES);
-            let problem = named(errors::ERR_FACTORY_GROOVE_NAME, &[("name", name.as_str().into()), ("names", names.into())]);
+            let problem = named(
+                errors::ERR_FACTORY_GROOVE_NAME,
+                &[(fill::NAME, name.as_str().into()), (fill::NAMES, names.into())],
+            );
             return Err((name, InvalidValue::new(problem)));
         }
     }

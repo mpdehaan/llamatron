@@ -10,6 +10,8 @@ use crate::file::data::Data;
 use crate::schema::checking::InvalidValue;
 use crate::schema::generated::file_format::{ClipSlotSetting, FileLayout, Section};
 use crate::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -232,7 +234,11 @@ fn set_in(pairs: &mut Vec<(Data, Data)>, key: String, value: Data) {
 /// A list of named items as the objects keep them, by name, each without its name.
 pub fn keyed(items: &Data, section: &str, key: &str) -> Result<Data, LayoutError> {
     let Some(listed) = items.as_list() else {
-        return Err(refusal(section, errors::ERR_EXPECTED_ITEMS, &[("value", items.into())]));
+        return Err(refusal(
+            section,
+            errors::ERR_EXPECTED_ITEMS,
+            &[(file_format::StatementPart::VALUE, items.into())],
+        ));
     };
     let mut by_name: Vec<(Data, Data)> = Vec::new();
     for item in listed {
@@ -242,10 +248,14 @@ pub fn keyed(items: &Data, section: &str, key: &str) -> Result<Data, LayoutError
             .cloned()
             .filter(|_| matches!(item, Data::Map(_)))
         else {
-            return Err(refusal(section, errors::ERR_ITEM_NEEDS_NAME, &[("value", item.into())]));
+            return Err(refusal(
+                section,
+                errors::ERR_ITEM_NEEDS_NAME,
+                &[(file_format::StatementPart::VALUE, item.into())],
+            ));
         };
         if by_name.iter().any(|(found, _)| *found == name) {
-            return Err(refusal(section, errors::ERR_NAMED_TWICE, &[("name", (&name).into())]));
+            return Err(refusal(section, errors::ERR_NAMED_TWICE, &[(file_format::FileLayout::NAME, (&name).into())]));
         }
         let own: Vec<(Data, Data)> = item
             .as_map()
@@ -272,7 +282,11 @@ fn generators_by_kind(items: &Data) -> Result<Vec<(String, Data)>, LayoutError> 
             return Err(refusal(
                 FileLayout::GENERATORS,
                 errors::ERR_NO_SUCH_KIND,
-                &[("name", name.into()), ("kinds", choices.join(", ").into()), ("value", (&kind).into())],
+                &[
+                    (file_format::FileLayout::NAME, name.into()),
+                    (words::KINDS, choices.join(", ").into()),
+                    (file_format::StatementPart::VALUE, (&kind).into()),
+                ],
             ));
         }
         kinds.push((name.clone(), kind));
@@ -308,13 +322,17 @@ fn chain_of_file(name: &Data, settings: &Data, kinds: &[(Data, Data)]) -> Result
     let mut steps = Vec::new();
     for step in names_of(&references)? {
         let Some((_, kind)) = kinds.iter().find(|(found, _)| *found == step) else {
-            return Err(refusal(FileLayout::GENERATORS, errors::ERR_NO_GENERATOR_CALLED, &[("name", (&step).into())]));
+            return Err(refusal(
+                FileLayout::GENERATORS,
+                errors::ERR_NO_GENERATOR_CALLED,
+                &[(file_format::FileLayout::NAME, (&step).into())],
+            ));
         };
         if kind.as_str() == Some(FileLayout::CHAIN) {
             return Err(refusal(
                 FileLayout::GENERATORS,
                 errors::ERR_CHAIN_IN_CHAIN,
-                &[("name", name.into()), ("step", (&step).into())],
+                &[(file_format::FileLayout::NAME, name.into()), (words::STEP, (&step).into())],
             ));
         }
         steps.push(map(vec![(kind.clone(), step)]));
@@ -336,7 +354,13 @@ fn chain_of_file(name: &Data, settings: &Data, kinds: &[(Data, Data)]) -> Result
 
 /// The names a list of `{ name: x }` holds.
 fn names_of(references: &Data) -> Result<Vec<Data>, LayoutError> {
-    let refused = || refusal(FileLayout::GENERATORS, errors::ERR_EXPECTED_NAMES, &[("value", references.into())]);
+    let refused = || {
+        refusal(
+            FileLayout::GENERATORS,
+            errors::ERR_EXPECTED_NAMES,
+            &[(file_format::StatementPart::VALUE, references.into())],
+        )
+    };
     let Some(listed) = references.as_list() else { return Err(refused()) };
     let mut names = Vec::new();
     for reference in listed {

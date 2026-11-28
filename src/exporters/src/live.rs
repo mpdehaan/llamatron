@@ -13,6 +13,7 @@ use llamatron_engine::realizer::{Grid, GridRow};
 use llamatron_engine::timing::{keyswitch_events, timed_events};
 use llamatron_math::Rational;
 use llamatron_model::values::time_signature::TimeSignature;
+use llamatron_names::words;
 use std::io::Read;
 
 /// The template that comes with the program.
@@ -66,9 +67,9 @@ fn tempo_text(tempo: f64, song: bool) -> String {
 
 fn live_boolean(value: bool) -> &'static str {
     if value {
-        "true"
+        words::TRUE
     } else {
-        "false"
+        words::FALSE
     }
 }
 
@@ -424,7 +425,7 @@ fn build_clip(
         set_value(&mut element, &format!("Loop/{setting}"), &value)?;
     }
     set_value(&mut element, "GrooveSettings/GrooveId", NO_GROOVE)?;
-    set_value(&mut element, "IsInKey", "false")?;
+    set_value(&mut element, "IsInKey", words::FALSE)?;
     let signature = clip.time_signature.unwrap_or(grid.time_signature);
     set_value(
         &mut element,
@@ -510,7 +511,7 @@ fn write_envelopes(envelopes: &mut Element, clip: &Clip, length: Rational, contr
             events.add("FloatEvent", &[("Id", &event_id.to_string()), ("Time", time), ("Value", &value.to_string())]);
         }
         let view = automation.add("AutomationTransformViewState", &[]);
-        view.add("IsTransformPending", &[("Value", "false")]);
+        view.add("IsTransformPending", &[("Value", words::FALSE)]);
         view.add("TimeAndValueTransforms", &[]);
         envelope.add("LoopSlot", &[]).add("Value", &[]);
         let scroller = envelope.add("ScrollerTimePreserver", &[]);

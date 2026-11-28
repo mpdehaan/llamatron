@@ -7,6 +7,9 @@
 use crate::values::generated::time_signature::{COMPOUND_GROUP, MAX_BEATS, MIN_BEATS, SMALLEST_COMPOUND, UNITS, UNITS_LISTED};
 use crate::ValueError;
 use llamatron_math::Rational;
+use llamatron_names::file_format;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
@@ -36,10 +39,10 @@ impl TimeSignature {
             return Err(ValueError(named(
                 errors::ERR_BAD_TIME_SIGNATURE,
                 &[
-                    ("lowest", MIN_BEATS.into()),
-                    ("highest", MAX_BEATS.into()),
-                    ("units", UNITS_LISTED.into()),
-                    ("value", text.into()),
+                    (spec::LOWEST, MIN_BEATS.into()),
+                    (spec::HIGHEST, MAX_BEATS.into()),
+                    (words::UNITS, UNITS_LISTED.into()),
+                    (file_format::StatementPart::VALUE, text.into()),
                 ],
             )));
         };

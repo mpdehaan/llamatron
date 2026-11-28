@@ -12,6 +12,7 @@ use crate::schema::generated::file_format::{PATTERN_ROWS, PITCH_ROWS};
 use crate::schema::generated::limits::{MAX_OCTAVE, MIN_DEGREE, MIN_OCTAVE, MIN_STEPS};
 use crate::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
 use llamatron_math::python_random::PythonRandom;
+use llamatron_names::file_format;
 use llamatron_strings::{errors, named};
 use std::collections::BTreeMap;
 
@@ -168,7 +169,10 @@ impl Pattern {
         if !(MIN_STEPS..=self.steps as i64).contains(&every) {
             return Err(InvalidValue::new(named(
                 errors::ERR_MUNGE_NUMBER_OUT_OF_RANGE,
-                &[("low", MIN_STEPS.into()), ("high", (self.steps as i64).into())],
+                &[
+                    (file_format::FilterMode::LOW, MIN_STEPS.into()),
+                    (file_format::FilterMode::HIGH, (self.steps as i64).into()),
+                ],
             )));
         }
         for step in (every as usize - 1..self.steps as usize).step_by(every as usize) {

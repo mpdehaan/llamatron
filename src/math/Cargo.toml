@@ -10,3 +10,4 @@ description = "llamatron's exact arithmetic and random sources (the Python packa
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }

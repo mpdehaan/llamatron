@@ -9,6 +9,7 @@ use crate::file::data::Data;
 use crate::objects::naming::name_order;
 use crate::schema::generated::file_format::TrackSetting;
 use crate::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
 
 /// The sections whose items a list of generators names: every plugin's, and the chains.
 const CHAINS: &str = "chains";
@@ -68,7 +69,7 @@ pub fn renamed_in_set(set: &Data, section: &str, old: &str, new: &str) -> Data {
             for (_, chain) in chains.iter_mut() {
                 let steps = match chain {
                     Data::List(steps) => Some(steps),
-                    Data::Map(_) => match entry_mut(chain, "steps") {
+                    Data::Map(_) => match entry_mut(chain, file_format::PatternSetting::STEPS) {
                         Some(Data::List(steps)) => Some(steps),
                         _ => None,
                     },
@@ -272,7 +273,7 @@ pub fn removed_from_set(set: &Data, section: &str, name: &str) -> Data {
             match chain {
                 Data::List(steps) => steps.retain(|each| *each != step),
                 Data::Map(_) => {
-                    if let Some(Data::List(steps)) = entry_mut(chain, "steps") {
+                    if let Some(Data::List(steps)) = entry_mut(chain, file_format::PatternSetting::STEPS) {
                         steps.retain(|each| *each != step);
                     }
                 }
@@ -347,7 +348,7 @@ pub fn removed_track(set: &Data, song: &str, name: &str) -> Data {
                 clips.retain(|(each, _)| each.as_str() != Some(name));
                 for (_, clip) in clips.iter_mut() {
                     if let Data::Map(settings) = clip {
-                        settings.retain(|(key, value)| !(key.as_str() == Some("grab_track") && value.as_str() == Some(name)));
+                        settings.retain(|(key, value)| !(key.as_str() == Some(file_format::ClipSlotSetting::GRAB_TRACK) && value.as_str() == Some(name)));
                     }
                 }
             }
@@ -502,14 +503,14 @@ pub fn clip_patterns(clip: &Data) -> Vec<String> {
 /// A blank pattern's data: its steps, its group, and a drum pattern marked as one, or a pattern written for a scale of a
 /// number of notes.
 pub fn blank_pattern(steps: i64, group: Option<&str>, drum: bool, scale_length: Option<i64>) -> Data {
-    let mut pairs = vec![(Data::text("steps"), Data::Whole(steps as i128))];
+    let mut pairs = vec![(Data::text(file_format::PatternSetting::STEPS), Data::Whole(steps as i128))];
     if let Some(group) = group {
-        pairs.push((Data::text("group"), Data::text(group)));
+        pairs.push((Data::text(file_format::PatternSetting::GROUP), Data::text(group)));
     }
     if drum {
-        pairs.push((Data::text("drum"), Data::Bool(true)));
+        pairs.push((Data::text(file_format::TrackSetting::DRUM), Data::Bool(true)));
     } else if let Some(length) = scale_length {
-        pairs.push((Data::text("scale_length"), Data::Whole(length as i128)));
+        pairs.push((Data::text(file_format::PatternSetting::SCALE_LENGTH), Data::Whole(length as i128)));
     }
     Data::Map(pairs)
 }

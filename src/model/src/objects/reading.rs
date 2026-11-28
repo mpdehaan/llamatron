@@ -20,6 +20,8 @@ use crate::values::scale::{Scale, ScaleType};
 use crate::values::time_signature::TimeSignature;
 use crate::ValueError;
 use llamatron_math::Rational;
+use llamatron_names::file_format;
+use llamatron_names::words;
 
 fn whole(value: Option<&Data>) -> Option<i64> {
     value.and_then(Data::as_whole).map(|value| value as i64)
@@ -230,7 +232,10 @@ impl ClipSlot {
         }
         llamatron_strings::named(
             llamatron_strings::marks::MSG_CLIP_PATTERNS_COUNTED,
-            &[("name", names[0].as_str().into()), ("more", ((names.len() - 1) as i64).into())],
+            &[
+                (file_format::FileLayout::NAME, names[0].as_str().into()),
+                (words::MORE, ((names.len() - 1) as i64).into()),
+            ],
         )
     }
 

@@ -12,6 +12,7 @@ use crate::statements::Statement;
 use llamatron_math::{PythonRandom, Rational};
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::DRAW_NAMES;
+use llamatron_names::file_format;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -45,12 +46,14 @@ impl Draw {
     pub fn of(data: Option<&Data>) -> Draw {
         let written = |name: &str| data.and_then(|data| data.get(name)).filter(|value| !value.is_null());
         Draw {
-            direction: written("direction").map(Data::python_str).unwrap_or("forward".to_string()),
-            slots: written("slots")
+            direction: written(file_format::ClipSlotSetting::DIRECTION)
+                .map(Data::python_str)
+                .unwrap_or(file_format::Direction::FORWARD.to_string()),
+            slots: written(file_format::DrawSetting::SLOTS)
                 .and_then(Data::as_list)
                 .map(|slots| slots.iter().map(|slot| slot.as_whole().map(|slot| slot as i64)).collect())
                 .unwrap_or_default(),
-            redraws_in_conditions: written("conditions_redraw") == Some(&Data::Bool(true)),
+            redraws_in_conditions: written(file_format::DrawSetting::CONDITIONS_REDRAW) == Some(&Data::Bool(true)),
         }
     }
 
@@ -101,10 +104,10 @@ impl DrawPlay {
     }
 
     fn next_of(&mut self, name: usize, count: usize, direction: &str, chooser: &mut PythonRandom) -> usize {
-        if direction == "any" || direction == "random" {
+        if direction == file_format::DrawDirection::ANY || direction == file_format::Direction::RANDOM {
             return chooser.randrange_to(count as i128) as usize;
         }
-        if direction == "serial" {
+        if direction == file_format::DrawDirection::SERIAL {
             let mut left = self.rounds[name].take().filter(|left| !left.is_empty()).unwrap_or((0..count).collect());
             let taken = left.remove(chooser.randrange_to(left.len() as i128) as usize);
             self.rounds[name] = Some(left);

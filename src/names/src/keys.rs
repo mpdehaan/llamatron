@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The names of the keys a person presses, as the key bindings and the tests name them.
 
+pub const A: &str = "a";
 pub const BACKSPACE: &str = "backspace";
+pub const D: &str = "d";
 pub const DELETE: &str = "delete";
 pub const DOWN: &str = "down";
 pub const END: &str = "end";

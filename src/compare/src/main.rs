@@ -10,14 +10,28 @@
 //! `llamatron-compare save SET` reads the set into objects and saves it, as the Python program saves a set.
 
 use llamatron_model::file::data::{json_text, load, Data};
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::keys;
+use llamatron_names::spec;
+use llamatron_names::words;
 use std::fmt::Write;
 use std::process::ExitCode;
+
+/// The made-up routes give every fourth track a built-in sound; an edited step's velocity; the steps the pattern
+/// edits add; and how many times the tour presses a key in a row.
+const SYNTH_EVERY: usize = 4;
+const EDITED_VELOCITY: i128 = 100;
+const ADDED_STEPS: i128 = 2;
+const FOUR_TIMES: usize = 4;
+const FIVE_TIMES: usize = 5;
+const SIX_TIMES: usize = 6;
 
 /// Data as Python's json.dumps writes it, with its default separators, keys in their order, every key made text.
 fn json(data: &Data) -> String {
     match data {
-        Data::Null => "null".into(),
-        Data::Bool(flag) => if *flag { "true" } else { "false" }.into(),
+        Data::Null => words::NULL.into(),
+        Data::Bool(flag) => if *flag { words::TRUE } else { words::FALSE }.into(),
         Data::Whole(whole) => whole.to_string(),
         Data::Float(float) if float.is_nan() => "NaN".into(),
         Data::Float(float) if float.is_infinite() => if *float > 0.0 { "Infinity" } else { "-Infinity" }.into(),
@@ -40,7 +54,7 @@ fn json_key(key: &Data) -> String {
     match key {
         Data::Text(text) => json_text(text),
         Data::Null => "\"null\"".into(),
-        Data::Bool(flag) => format!("\"{}\"", if *flag { "true" } else { "false" }),
+        Data::Bool(flag) => format!("\"{}\"", if *flag { words::TRUE } else { words::FALSE }),
         Data::Whole(whole) => format!("\"{whole}\""),
         Data::Float(float) => format!("\"{}\"", llamatron_math::number::python_float_text(*float)),
         other => json(other),
@@ -64,7 +78,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
         }
     };
     match command {
-        "load" => match load(&text) {
+        words::LOAD => match load(&text) {
             Ok(data) => {
                 let _ = writeln!(out, "{}", json(&data));
                 0
@@ -74,7 +88,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "layout" => match load(&text) {
+        words::LAYOUT => match load(&text) {
             Ok(data) => {
                 let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&data));
                 0
@@ -84,7 +98,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "migrate" => match load(&text) {
+        words::MIGRATE => match load(&text) {
             Ok(data) => {
                 let (moved, _) = llamatron_model::file::migrations::migrated(data);
                 match llamatron_model::file::layout::as_object_layout(&moved) {
@@ -104,7 +118,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "pattern_edits" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+        words::PATTERN_EDITS => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
             Ok(setlist) => {
                 let _ = writeln!(out, "{}", pattern_edits_of(&setlist));
                 0
@@ -114,7 +128,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "edits" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+        words::EDITS => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
             Ok(setlist) => {
                 let _ = writeln!(out, "{}", edits_of(&setlist));
                 0
@@ -124,7 +138,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "save" => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
+        words::SAVE => match llamatron_model::objects::setlist::Setlist::read_text(&text) {
             Ok(setlist) => {
                 let file = llamatron_model::file::layout::as_file_layout(&setlist.to_data());
                 let _ = write!(out, "{}", llamatron_model::file::writing::dump_file_layout(&file));
@@ -135,7 +149,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "import" => match imported(path, &text) {
+        words::IMPORT => match imported(path, &text) {
             Ok(json) => {
                 let _ = writeln!(out, "{json}");
                 0
@@ -145,7 +159,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 1
             }
         },
-        "player" => {
+        words::PLAYER => {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
@@ -164,7 +178,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 }
             }
         }
-        "timeline" => {
+        words::TIMELINE => {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
@@ -183,7 +197,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 }
             }
         }
-        "live" | "midi" => {
+        file_format::OctaveLabels::LIVE | file_format::InstrumentKind::MIDI => {
             let stem = std::path::Path::new(path)
                 .file_stem()
                 .map(|stem| stem.to_string_lossy().to_string())
@@ -195,7 +209,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                     return 1;
                 }
             };
-            let exported = if command == "live" {
+            let exported = if command == file_format::OctaveLabels::LIVE {
                 exported_live(&setlist)
             } else {
                 exported_midi(&setlist, &stem)
@@ -211,7 +225,7 @@ fn run_step(command: &str, path: &str, out: &mut String, err: &mut String) -> u8
                 }
             }
         }
-        "render" => {
+        words::RENDER => {
             let setlist = match llamatron_model::objects::setlist::Setlist::read_text(&text) {
                 Ok(setlist) => setlist,
                 Err(problem) => {
@@ -257,26 +271,26 @@ fn serve() -> ExitCode {
 
 fn main() -> ExitCode {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    if arguments.first().map(String::as_str) == Some("keymap") {
+    if arguments.first().map(String::as_str) == Some(words::KEYMAP) {
         return keymap(arguments.get(1).map(String::as_str), arguments.get(2).map(String::as_str));
     }
-    if arguments.first().map(String::as_str) == Some("explore") {
+    if arguments.first().map(String::as_str) == Some(words::EXPLORE) {
         return explore(arguments.get(1).map(String::as_str));
     }
-    if arguments.first().map(String::as_str) == Some("screenshots") {
+    if arguments.first().map(String::as_str) == Some(words::SCREENSHOTS) {
         return screenshots(arguments.get(1).map(String::as_str));
     }
-    if arguments.first().map(String::as_str) == Some("serve") {
+    if arguments.first().map(String::as_str) == Some(words::SERVE) {
         return serve();
     }
     let (Some(command), Some(path)) = (arguments.first(), arguments.get(1)) else {
         eprintln!("usage: llamatron-compare load SET");
         return ExitCode::from(2);
     };
-    if command == "serve" {
+    if command == words::SERVE {
         return serve();
     }
-    if !matches!(command.as_str(), "play" | "wav" | "screens") {
+    if !matches!(command.as_str(), words::PLAY | words::WAV | words::SCREENS) {
         let (mut out, mut err) = (String::new(), String::new());
         let code = run_step(command, path, &mut out, &mut err);
         print!("{out}");
@@ -284,7 +298,7 @@ fn main() -> ExitCode {
         return ExitCode::from(code);
     }
     match command.as_str() {
-        "play" => {
+        words::PLAY => {
             // The current song's first scene played in real time through its instruments for a few seconds, for checking
             // the sender with a loopback audio device (LLAMATRON_AUDIO_DEVICE) that a check records.
             let seconds: f64 = arguments.get(2).and_then(|text| text.parse().ok()).unwrap_or(3.0);
@@ -307,7 +321,7 @@ fn main() -> ExitCode {
                 }
             }
         }
-        "wav" => {
+        words::WAV => {
             // The set's current song exported to a WAV file, as Ctrl+X does, for checking the built-in synths and FluidSynth.
             let Some(out) = arguments.get(2) else {
                 eprintln!("usage: llamatron-compare wav SET OUT.wav");
@@ -327,7 +341,7 @@ fn main() -> ExitCode {
                 }
             }
         }
-        "screens" => {
+        words::SCREENS => {
             let (Some(keys), Some(width), Some(height)) = (arguments.get(2), arguments.get(3), arguments.get(4)) else {
                 eprintln!("usage: llamatron-compare screens SET KEYS WIDTH HEIGHT");
                 return ExitCode::from(2);
@@ -368,7 +382,7 @@ fn made_up_routes(track_names: &[&str]) -> Vec<(String, llamatron_tracker::realt
                 program: (place % 2 == 1).then_some(place as i64),
                 pan: None,
                 keyswitches: true,
-                sound: (place % 4 == 0).then(|| "synth".to_string()),
+                sound: (place % SYNTH_EVERY == 0).then(|| words::SYNTH.to_string()),
                 early: if place % 5 == 0 { 0.01 } else { 0.0 },
             };
             (name.to_string(), route)
@@ -521,7 +535,14 @@ fn live_edit_lines(setlist: &llamatron_model::objects::setlist::Setlist, name: &
         }
     });
     sender.lines.push("edit asap".to_string());
-    player.update_score(&mut sender, now, score_now(&document)?, "asap", &|old| Some(old), &|old| Some(old.to_string()));
+    player.update_score(
+        &mut sender,
+        now,
+        score_now(&document)?,
+        file_format::LiveResponsiveness::ASAP,
+        &|old| Some(old),
+        &|old| Some(old.to_string()),
+    );
     run(&mut player, &mut sender, &mut now, LIVE_EDIT_GAP_SECONDS);
     // Both programs check the edits as a person makes them; a refusal would show as a difference.
     let _ = document.add_scene(0, LIVE_EDIT_SCENE);
@@ -530,7 +551,7 @@ fn live_edit_lines(setlist: &llamatron_model::objects::setlist::Setlist, name: &
         &mut sender,
         now,
         score_now(&document)?,
-        "next_bar",
+        file_format::LiveResponsiveness::NEXT_BAR,
         &|old| (old < scenes).then_some(old + 1),
         &|old| Some(old.to_string()),
     );
@@ -540,7 +561,14 @@ fn live_edit_lines(setlist: &llamatron_model::objects::setlist::Setlist, name: &
         let _ = document.delete_named(Section::TRACKS, &last);
         sender.lines.push("edit clip_restart".to_string());
         let gone = |old: &str| (old != last).then(|| old.to_string());
-        player.update_score(&mut sender, now, score_now(&document)?, "clip_restart", &|old| Some(old), &gone);
+        player.update_score(
+            &mut sender,
+            now,
+            score_now(&document)?,
+            file_format::LiveResponsiveness::CLIP_RESTART,
+            &|old| Some(old),
+            &gone,
+        );
     }
     run(&mut player, &mut sender, &mut now, LIVE_EDIT_LAST_SECONDS);
     player.stop_all(&mut sender);
@@ -658,8 +686,8 @@ const NEW_SET: &str = include_str!("../sets/new_set.yml");
 /// Data as JSON, which the harness reads back as YAML.
 fn json_written(data: &Data, out: &mut String) {
     match data {
-        Data::Null => out.push_str("null"),
-        Data::Bool(value) => out.push_str(if *value { "true" } else { "false" }),
+        Data::Null => out.push_str(words::NULL),
+        Data::Bool(value) => out.push_str(if *value { words::TRUE } else { words::FALSE }),
         Data::Whole(value) => out.push_str(&value.to_string()),
         Data::Float(value) => out.push_str(&llamatron_math::number::python_float_text(*value)),
         Data::Text(text) => {
@@ -771,7 +799,7 @@ fn import_choices(import: &llamatron_importers::import::MidiImport, name: &str, 
             ..start.clone()
         },
     );
-    let mut names: Vec<String> = holding.items("patterns").iter().map(|(name, _)| name.clone()).collect();
+    let mut names: Vec<String> = holding.items(file_format::Section::PATTERNS).iter().map(|(name, _)| name.clone()).collect();
     names.sort();
     tried.push(Data::List(vec![
         Data::text(&again.song.name),
@@ -780,7 +808,10 @@ fn import_choices(import: &llamatron_importers::import::MidiImport, name: &str, 
         Data::Whole(again.song.shared as i128),
         Data::List(names.iter().map(|name| Data::text(name)).collect()),
     ]));
-    Ok(Data::Map(vec![(Data::text("found"), shown), (Data::text("tried"), Data::List(tried))]))
+    Ok(Data::Map(vec![
+        (Data::text(words::FOUND), shown),
+        (Data::text(words::TRIED), Data::List(tried)),
+    ]))
 }
 
 fn imported(path: &str, text: &str) -> Result<String, String> {
@@ -806,20 +837,20 @@ fn imported(path: &str, text: &str) -> Result<String, String> {
     let first_input = inputs.first().cloned();
     for (name, bytes) in inputs {
         let entry = match llamatron_importers::import::imported(&bytes, &new_set, &name) {
-            Err(_) => Data::Map(vec![(Data::text("refused"), Data::text(&name))]),
+            Err(_) => Data::Map(vec![(Data::text(words::REFUSED), Data::text(&name))]),
             Ok(song) => Data::Map(vec![
-                (Data::text("name"), Data::text(&song.name)),
-                (Data::text("song"), song.song),
+                (Data::text(file_format::FileLayout::NAME), Data::text(&song.name)),
+                (Data::text(spec::SONG), song.song),
                 (
-                    Data::text("patterns"),
+                    Data::text(file_format::Section::PATTERNS),
                     Data::Map(song.patterns.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
                 ),
                 (
-                    Data::text("scales"),
+                    Data::text(file_format::Section::SCALES),
                     Data::Map(song.scales.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
                 ),
                 (
-                    Data::text("instruments"),
+                    Data::text(file_format::Section::INSTRUMENTS),
                     Data::Map(song.instruments.into_iter().map(|(name, data)| (Data::text(&name), data)).collect()),
                 ),
             ]),
@@ -976,7 +1007,7 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
     let generator_sections: Vec<&str> = llamatron_model::schema::generated::plugins::PLUGINS
         .iter()
         .map(|plugin| plugin.section)
-        .chain(["chains"])
+        .chain([file_format::Section::CHAINS])
         .collect();
     let names_in = |section: &str| -> Vec<String> {
         data.get(section).and_then(Data::as_map).map_or(Vec::new(), |pairs| {
@@ -1006,17 +1037,27 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
             held.clone()
         };
         let new = copy_name(first, &taken);
-        add("rename", section, first, renamed_in_set(&data, section, first, &format!("{first}{RENAMED}")));
-        add("copy", section, first, copied_in_set(&data, section, first, &new));
-        add("delete", section, first, removed_from_set(&data, section, first));
+        add(
+            words::RENAME,
+            section,
+            first,
+            renamed_in_set(&data, section, first, &format!("{first}{RENAMED}")),
+        );
+        add(fill::COPY, section, first, copied_in_set(&data, section, first, &new));
+        add(keys::DELETE, section, first, removed_from_set(&data, section, first));
         let items = data.get(section).cloned().unwrap_or(Data::Null);
         if held.len() > 1 {
-            add("move", section, first, with_section(section, moved_in_section(&items, 0, 1)));
+            add(words::MOVE, section, first, with_section(section, moved_in_section(&items, 0, 1)));
         }
-        add("sort", section, first, with_section(section, Some(sorted_section(&items))));
+        add(words::SORT, section, first, with_section(section, Some(sorted_section(&items))));
     }
     for song in setlist.song_names() {
-        let Some(tracks) = data.get("songs").and_then(|songs| songs.get(song)).and_then(|held| held.get("tracks")).cloned() else {
+        let Some(tracks) = data
+            .get(file_format::Section::SONGS)
+            .and_then(|songs| songs.get(song))
+            .and_then(|held| held.get(file_format::Section::TRACKS))
+            .cloned()
+        else {
             continue;
         };
         let names: Vec<String> = tracks.as_map().map_or(Vec::new(), |pairs| {
@@ -1027,9 +1068,9 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
         let with_tracks = |items: Option<Data>| -> Data {
             let mut edited = data.clone();
             if let (Some(items), Data::Map(pairs)) = (items, &mut edited) {
-                if let Some((_, Data::Map(songs))) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some("songs")) {
+                if let Some((_, Data::Map(songs))) = pairs.iter_mut().find(|(key, _)| key.as_str() == Some(file_format::Section::SONGS)) {
                     if let Some((_, Data::Map(settings))) = songs.iter_mut().find(|(key, _)| key.as_str() == Some(song)) {
-                        if let Some(pair) = settings.iter_mut().find(|(key, _)| key.as_str() == Some("tracks")) {
+                        if let Some(pair) = settings.iter_mut().find(|(key, _)| key.as_str() == Some(file_format::Section::TRACKS)) {
                             pair.1 = items;
                         }
                     }
@@ -1037,23 +1078,23 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
             }
             edited
         };
-        add("rename", song, first, renamed_track(&data, song, first, &format!("{first}{RENAMED}")));
-        add("copy", song, first, copied_track(&data, song, first, &new));
-        add("delete", song, first, removed_track(&data, song, first));
+        add(words::RENAME, song, first, renamed_track(&data, song, first, &format!("{first}{RENAMED}")));
+        add(fill::COPY, song, first, copied_track(&data, song, first, &new));
+        add(keys::DELETE, song, first, removed_track(&data, song, first));
         if names.len() > 1 {
-            add("move", song, first, with_tracks(moved_in_section(&tracks, 0, 1)));
+            add(words::MOVE, song, first, with_tracks(moved_in_section(&tracks, 0, 1)));
         }
-        add("sort", song, first, with_tracks(Some(sorted_section(&tracks))));
-        add("add_track", song, ADDED, added_track(&data, song, ADDED, None, false, None));
-        add("add_track", song, ADDED, added_track(&data, song, ADDED, Some(0), false, None));
-        add("fracture", song, "", fractured(&data, song).0);
+        add(words::SORT, song, first, with_tracks(Some(sorted_section(&tracks))));
+        add(words::ADD_TRACK, song, ADDED, added_track(&data, song, ADDED, None, false, None));
+        add(words::ADD_TRACK, song, ADDED, added_track(&data, song, ADDED, Some(0), false, None));
+        add(words::FRACTURE, song, "", fractured(&data, song).0);
         let scenes = setlist.get_song(song).map_or(Vec::new(), |held| held.scenes().to_vec());
         let Some(scene) = scenes.first() else { continue };
-        add("add_scene", song, ADDED, added_scene(&data, song, 0, ADDED));
-        add("copy_scene", song, ADDED, copied_scene(&data, song, 0, ADDED));
-        add("remove_scene", song, "", removed_scene(&data, song, 0));
+        add(words::ADD_SCENE, song, ADDED, added_scene(&data, song, 0, ADDED));
+        add(words::COPY_SCENE, song, ADDED, copied_scene(&data, song, 0, ADDED));
+        add(words::REMOVE_SCENE, song, "", removed_scene(&data, song, 0));
         if let Some((track, _)) = scene.clip_slots().first() {
-            add("remove_clip", song, track, removed_clip(&data, song, 0, track));
+            add(words::REMOVE_CLIP, song, track, removed_clip(&data, song, 0, track));
         }
     }
     json(&Data::List(results))
@@ -1077,7 +1118,7 @@ const SCENE_VIEW_SEED: i64 = 7;
 fn scene_views(setlist: &llamatron_model::objects::setlist::Setlist) -> Vec<Data> {
     use llamatron_tracker::scene_notes::{chord_scale, effective_values, scene_notes};
     let mut results = Vec::new();
-    let Some((song_name, _)) = setlist.items("songs").first().cloned() else {
+    let Some((song_name, _)) = setlist.items(file_format::Section::SONGS).first().cloned() else {
         return results;
     };
     let Some(song) = setlist.get_song(&song_name) else { return results };
@@ -1100,7 +1141,7 @@ fn scene_views(setlist: &llamatron_model::objects::setlist::Setlist) -> Vec<Data
             ),
         ]);
         let shown = match scene_notes(setlist, &song_name, index, true, Some(SCENE_VIEW_SEED)) {
-            Err(_) => Data::List(vec![Data::text("refused"), values]),
+            Err(_) => Data::List(vec![Data::text(words::REFUSED), values]),
             Ok(notes) => {
                 let scale = effective.scale.as_deref().and_then(|name| chord_scale(setlist, name));
                 let heard: Vec<llamatron_tracker::heard_chords::HeardNote> = notes
@@ -1147,7 +1188,7 @@ fn scene_views(setlist: &llamatron_model::objects::setlist::Setlist) -> Vec<Data
                 Data::List(vec![Data::List(shown), Data::text(&rational_text(notes.length)), Data::List(chords), values])
             }
         };
-        results.push(Data::List(vec![Data::text("scene_view"), Data::text(&index.to_string()), shown]));
+        results.push(Data::List(vec![Data::text(words::SCENE_VIEW), Data::text(&index.to_string()), shown]));
     }
     results
 }
@@ -1165,7 +1206,7 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
     use llamatron_model::objects::pattern::Pattern;
     let mut results = Vec::new();
     // Every chord's name and numeral, each root with each chord a beat can be heard as, in the set's first scale and in none.
-    let first_scale = setlist.items("scales").first().and_then(|(scale, item)| match item {
+    let first_scale = setlist.items(file_format::Section::SCALES).first().and_then(|(scale, item)| match item {
         llamatron_model::objects::setlist::Item::Scale(held) => {
             llamatron_tracker::chord_text::ChordScale::new(&llamatron_tracker::patterns::scale_root(setlist, scale), held.get_kind().as_str()?)
         }
@@ -1186,10 +1227,10 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                 }
             }
         }
-        results.push(Data::List(vec![Data::text("chord_texts"), Data::text(""), Data::List(texts)]));
+        results.push(Data::List(vec![Data::text(words::CHORD_TEXTS), Data::text(""), Data::List(texts)]));
     }
     results.extend(scene_views(setlist));
-    for (name, item) in setlist.items("patterns").iter().take(EDITED_PATTERNS) {
+    for (name, item) in setlist.items(file_format::Section::PATTERNS).iter().take(EDITED_PATTERNS) {
         let llamatron_model::objects::setlist::Item::Pattern(original) = item else {
             continue;
         };
@@ -1201,100 +1242,100 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
         );
         let mut edits: Vec<Edit> = vec![
             (
-                "set_value",
+                words::SET_VALUE,
                 Box::new(|pattern| {
                     // A drum pattern's degree is a note letter.
                     let degree = if original.is_drum() { Data::text(DRUM_DEGREE) } else { Data::Whole(3) };
-                    pattern.set_value("degree", 0, Some(degree))
+                    pattern.set_value(file_format::Row::DEGREE, 0, Some(degree))
                 }),
             ),
             (
-                "set_value",
-                Box::new(move |pattern| pattern.set_value("velocity", steps - 1, Some(Data::Whole(100)))),
+                words::SET_VALUE,
+                Box::new(move |pattern| pattern.set_value(file_format::TrackSetting::VELOCITY, steps - 1, Some(Data::Whole(EDITED_VELOCITY)))),
             ),
-            ("clear_sound", Box::new(|pattern| pattern.clear_sound(0))),
-            ("set_steps", Box::new(move |pattern| pattern.set_steps(steps as i128 + 2))),
-            ("insert_step", Box::new(|pattern| pattern.insert_step(0))),
-            ("insert_step", Box::new(move |pattern| pattern.insert_step(steps))),
+            (words::CLEAR_SOUND, Box::new(|pattern| pattern.clear_sound(0))),
+            (words::SET_STEPS, Box::new(move |pattern| pattern.set_steps(steps as i128 + ADDED_STEPS))),
+            (words::INSERT_STEP, Box::new(|pattern| pattern.insert_step(0))),
+            (words::INSERT_STEP, Box::new(move |pattern| pattern.insert_step(steps))),
             (
-                "set_group",
+                words::SET_GROUP,
                 Box::new(|pattern| {
                     pattern.set_group(Some(EDITED_GROUP));
                     Ok(())
                 }),
             ),
             (
-                "set_direction",
+                words::SET_DIRECTION,
                 Box::new(|pattern| {
                     pattern.set_direction(EDITED_DIRECTION);
                     Ok(())
                 }),
             ),
-            ("reverse", Box::new(|pattern| pattern.reverse())),
-            ("roll", Box::new(|pattern| pattern.roll(1))),
-            ("roll", Box::new(|pattern| pattern.roll(-1))),
-            ("roll_through", Box::new(move |pattern| pattern.roll_through(middle))),
-            ("roll_from", Box::new(move |pattern| pattern.roll_from(middle))),
-            ("reverse_after", Box::new(|pattern| pattern.reverse_after(0))),
-            ("reverse_before", Box::new(move |pattern| pattern.reverse_before(steps - 1))),
-            ("pivot_around", Box::new(move |pattern| pattern.pivot_around(middle).map(|_| ()))),
-            ("repeat_at_end", Box::new(move |pattern| pattern.repeat_at_end(0, steps - 1))),
-            ("repeat_at_start", Box::new(|pattern| pattern.repeat_at_start(0, 0))),
+            (words::REVERSE, Box::new(|pattern| pattern.reverse())),
+            (words::ROLL, Box::new(|pattern| pattern.roll(1))),
+            (words::ROLL, Box::new(|pattern| pattern.roll(-1))),
+            (words::ROLL_THROUGH, Box::new(move |pattern| pattern.roll_through(middle))),
+            (words::ROLL_FROM, Box::new(move |pattern| pattern.roll_from(middle))),
+            (words::REVERSE_AFTER, Box::new(|pattern| pattern.reverse_after(0))),
+            (words::REVERSE_BEFORE, Box::new(move |pattern| pattern.reverse_before(steps - 1))),
+            (words::PIVOT_AROUND, Box::new(move |pattern| pattern.pivot_around(middle).map(|_| ()))),
+            (words::REPEAT_AT_END, Box::new(move |pattern| pattern.repeat_at_end(0, steps - 1))),
+            (words::REPEAT_AT_START, Box::new(|pattern| pattern.repeat_at_start(0, 0))),
             (
-                "clear_all_but_pitch",
+                words::CLEAR_ALL_BUT_PITCH,
                 Box::new(|pattern| {
                     pattern.clear_all_but_pitch();
                     Ok(())
                 }),
             ),
             (
-                "clear_chords",
+                words::CLEAR_CHORDS,
                 Box::new(|pattern| {
                     pattern.clear_chords();
                     Ok(())
                 }),
             ),
             (
-                "clear_statements",
+                words::CLEAR_STATEMENTS,
                 Box::new(|pattern| {
                     pattern.clear_statements();
                     Ok(())
                 }),
             ),
             (
-                "smooth_ccs",
+                words::SMOOTH_CCS,
                 Box::new(|pattern| {
                     pattern.smooth_ccs();
                     Ok(())
                 }),
             ),
             (
-                "smooth_velocity",
+                words::SMOOTH_VELOCITY,
                 Box::new(|pattern| {
                     pattern.smooth_velocity();
                     Ok(())
                 }),
             ),
-            ("mirror", Box::new(|pattern| pattern.mirror())),
-            ("interleave", Box::new(|pattern| pattern.interleave(original))),
-            ("splice", Box::new(|pattern| pattern.splice(original, Some(0)))),
-            ("splice", Box::new(|pattern| pattern.splice(original, None))),
+            (words::MIRROR, Box::new(|pattern| pattern.mirror())),
+            (words::INTERLEAVE, Box::new(|pattern| pattern.interleave(original))),
+            (words::SPLICE, Box::new(|pattern| pattern.splice(original, Some(0)))),
+            (words::SPLICE, Box::new(|pattern| pattern.splice(original, None))),
             (
-                "set_drum",
+                words::SET_DRUM,
                 Box::new(|pattern| {
                     pattern.set_drum(!original.is_drum());
                     Ok(())
                 }),
             ),
             (
-                "join_repeated_notes",
+                words::JOIN_REPEATED_NOTES,
                 Box::new(|pattern| {
                     pattern.join_repeated_notes();
                     Ok(())
                 }),
             ),
             (
-                "divide_long_notes",
+                words::DIVIDE_LONG_NOTES,
                 Box::new(|pattern| {
                     let covering = llamatron_tracker::patterns::covering_notes(pattern, llamatron_math::Rational::new(1, DIVIDED_STEP_PARTS));
                     pattern.divide_long_notes(&covering);
@@ -1302,18 +1343,21 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                 }),
             ),
             (
-                "reverse_pitches",
+                words::REVERSE_PITCHES,
                 Box::new(|pattern| {
                     pattern.reverse_pitches();
                     Ok(())
                 }),
             ),
-            ("clear_every", Box::new(|pattern| pattern.clear_every(EVERY_OTHER))),
-            ("invert_melody", Box::new(|pattern| pattern.invert_melody(0, INVERTED_SCALE, INVERTED_OCTAVE))),
+            (words::CLEAR_EVERY, Box::new(|pattern| pattern.clear_every(EVERY_OTHER))),
+            (
+                words::INVERT_MELODY,
+                Box::new(|pattern| pattern.invert_melody(0, INVERTED_SCALE, INVERTED_OCTAVE)),
+            ),
         ];
         if steps > 1 {
-            edits.push(("set_steps", Box::new(move |pattern| pattern.set_steps(steps as i128 - 1))));
-            edits.push(("remove_step", Box::new(|pattern| pattern.remove_step(0))));
+            edits.push((words::SET_STEPS, Box::new(move |pattern| pattern.set_steps(steps as i128 - 1))));
+            edits.push((words::REMOVE_STEP, Box::new(|pattern| pattern.remove_step(0))));
         }
         for (edit, change) in edits {
             let mut pattern = original.clone();
@@ -1324,7 +1368,7 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
             results.push(Data::List(vec![Data::text(edit), Data::text(name), outcome]));
         }
         // Every step's chord tones, in the set's first scale and with no scale known, as the roll draws them.
-        let first_scale = setlist.items("scales").first().and_then(|(scale, item)| match item {
+        let first_scale = setlist.items(file_format::Section::SCALES).first().and_then(|(scale, item)| match item {
             llamatron_model::objects::setlist::Item::Scale(held) => {
                 llamatron_tracker::chord_text::ChordScale::new(&llamatron_tracker::patterns::scale_root(setlist, scale), held.get_kind().as_str()?)
             }
@@ -1349,7 +1393,7 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                     )
                 })
                 .collect();
-            results.push(Data::List(vec![Data::text("chord_tones"), Data::text(name), Data::List(tones)]));
+            results.push(Data::List(vec![Data::text(words::CHORD_TONES), Data::text(name), Data::List(tones)]));
             if let Some(scale) = &scale {
                 for octaves in [false, true] {
                     let mut pattern = original.clone();
@@ -1357,7 +1401,7 @@ fn pattern_edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> Str
                         Ok(()) => pattern.to_data(),
                         Err(problem) => Data::text(&format!("refused: {}", problem.message)),
                     };
-                    results.push(Data::List(vec![Data::text("apply_voice_leading"), Data::text(name), outcome]));
+                    results.push(Data::List(vec![Data::text(words::APPLY_VOICE_LEADING), Data::text(name), outcome]));
                 }
             }
         }
@@ -1420,13 +1464,13 @@ fn turn_to_tab(tracker: &mut llamatron_tracker::app::Tracker, first_field: &str)
         llamatron_tracker::tour::composed(tracker, SHOT_COLUMNS, SHOT_ROWS);
     };
     for _ in 0..MOST_TABS {
-        press(tracker, "down");
+        press(tracker, keys::DOWN);
         let place = tracker.top().place_kind(&tracker.app);
         if place.trim() == first_field {
             return Ok(());
         }
-        press(tracker, "up");
-        press(tracker, "right");
+        press(tracker, keys::UP);
+        press(tracker, keys::RIGHT);
     }
     Err(format!("no tab starting with the field {first_field}"))
 }
@@ -1437,7 +1481,7 @@ fn go_to_field(tracker: &mut llamatron_tracker::app::Tracker, label: &str) -> Re
         if tracker.top().place_kind(&tracker.app).trim() == label {
             return Ok(());
         }
-        tracker.press(&llamatron_tracker::keys::pressed_key("down"));
+        tracker.press(&llamatron_tracker::keys::pressed_key(keys::DOWN));
         llamatron_tracker::tour::composed(tracker, SHOT_COLUMNS, SHOT_ROWS);
     }
     Err(format!("no field {label}"))
@@ -1451,19 +1495,19 @@ fn shots() -> Vec<Shot> {
     // The bass line the pattern editor's shots show, found by the Patterns page's search.
     let to_bass_line = || {
         joined(vec![
-            keys(&["p", "/"]),
-            "tumble".chars().map(|c| c.to_string()).collect(),
-            keys(&["enter", "enter"]),
+            keys(&[words::P, "/"]),
+            words::TUMBLE.chars().map(|c| c.to_string()).collect(),
+            keys(&[keys::ENTER, keys::ENTER]),
         ])
     };
     // A generator opened from the Generators page by searching for its name, then Down past the names found before it that
     // hold the same text.
     let to_generator = |name: &str, before: usize| {
         joined(vec![
-            keys(&["g", "/"]),
-            name.chars().map(|c| if c == ' ' { "space".to_string() } else { c.to_string() }).collect(),
-            repeated("down", before),
-            keys(&["enter", "enter"]),
+            keys(&[words::G, "/"]),
+            name.chars().map(|c| if c == ' ' { keys::SPACE.to_string() } else { c.to_string() }).collect(),
+            repeated(keys::DOWN, before),
+            keys(&[keys::ENTER, keys::ENTER]),
         ])
     };
     let shot = |name: &'static str, set: &'static str, keys: Vec<String>| Shot { name, set, keys, reach: None };
@@ -1471,132 +1515,166 @@ fn shots() -> Vec<Shot> {
     // of tabs, and the tab whose first field is named turned to.
     let to_instrument = |instrument: &str| {
         joined(vec![
-            keys(&["i", "/"]),
-            instrument.chars().map(|c| if c == ' ' { "space".to_string() } else { c.to_string() }).collect(),
-            keys(&["enter", "enter"]),
+            keys(&[words::I, "/"]),
+            instrument
+                .chars()
+                .map(|c| if c == ' ' { keys::SPACE.to_string() } else { c.to_string() })
+                .collect(),
+            keys(&[keys::ENTER, keys::ENTER]),
         ])
     };
     let synth = |name: &'static str, instrument: &str, first_field: &'static str| Shot {
         name,
         set: SYNTH_SET,
-        keys: joined(vec![to_instrument(instrument), keys(&["tab"])]),
+        keys: joined(vec![to_instrument(instrument), keys(&[keys::TAB])]),
         reach: Some(Reach::Tab(first_field)),
     };
     vec![
-        shot("main", SHOT_SET, vec![]),
-        shot("file", SHOT_SET, keys(&["f"])),
-        shot("songs", SHOT_SET, keys(&["s"])),
-        shot("song", SHOT_SET, keys(&["s", "enter"])),
-        shot("scales", SHOT_SET, keys(&["z"])),
-        shot("scale", SHOT_SET, keys(&["z", "enter"])),
-        shot("patterns", SHOT_SET, keys(&["p"])),
-        shot("pattern_editor", SHOT_SET, to_bass_line()),
-        shot("pattern_editor_rows", SHOT_SET, joined(vec![to_bass_line(), keys(&["tab"])])),
+        shot(words::MAIN, SHOT_SET, vec![]),
+        shot(words::FILE, SHOT_SET, keys(&[words::F])),
+        shot(file_format::Section::SONGS, SHOT_SET, keys(&[words::S])),
+        shot(spec::SONG, SHOT_SET, keys(&[words::S, keys::ENTER])),
+        shot(file_format::Section::SCALES, SHOT_SET, keys(&[words::Z])),
+        shot(file_format::SongSetting::SCALE, SHOT_SET, keys(&[words::Z, keys::ENTER])),
+        shot(file_format::Section::PATTERNS, SHOT_SET, keys(&[words::P])),
+        shot(words::PATTERN_EDITOR, SHOT_SET, to_bass_line()),
+        shot(words::PATTERN_EDITOR_ROWS, SHOT_SET, joined(vec![to_bass_line(), keys(&[keys::TAB])])),
         // PgDn jumps from heading to heading; Space opens the fifth, Advanced, and Down goes to its first row.
         shot(
-            "pattern_editor_advanced",
+            words::PATTERN_EDITOR_ADVANCED,
             SHOT_SET,
-            joined(vec![to_bass_line(), keys(&["tab"]), repeated("pagedown", 4), keys(&["space", "down"])]),
+            joined(vec![
+                to_bass_line(),
+                keys(&[keys::TAB]),
+                repeated(keys::PAGEDOWN, FOUR_TIMES),
+                keys(&[keys::SPACE, keys::DOWN]),
+            ]),
         ),
         // The Chord section's Chord row opens the Chord Selector, where Right four times reaches the scales and Down and
         // ENTER open the flyout of Common.
         shot(
-            "chord_selector",
+            words::CHORD_SELECTOR,
             SHOT_SET,
             joined(vec![
                 to_bass_line(),
-                keys(&["tab", "pagedown", "pagedown", "space", "down", "enter"]),
-                repeated("right", 4),
-                keys(&["down", "enter"]),
+                keys(&[keys::TAB, keys::PAGEDOWN, keys::PAGEDOWN, keys::SPACE, keys::DOWN, keys::ENTER]),
+                repeated(keys::RIGHT, FOUR_TIMES),
+                keys(&[keys::DOWN, keys::ENTER]),
             ]),
         ),
         shot(
-            "pattern_editor_cc",
+            words::PATTERN_EDITOR_CC,
             SHOT_SET,
-            joined(vec![to_bass_line(), keys(&["tab"]), repeated("pagedown", 5), keys(&["space", "down"])]),
+            joined(vec![
+                to_bass_line(),
+                keys(&[keys::TAB]),
+                repeated(keys::PAGEDOWN, FIVE_TIMES),
+                keys(&[keys::SPACE, keys::DOWN]),
+            ]),
         ),
         // Up from the first scene's name reaches Arrange's corner, and Right the first track's name.
-        shot("track_editor", SHOT_SET, keys(&["a", "up", "right", "enter"])),
-        shot("generators", ARP_SET, keys(&["g"])),
-        shot("arp_editor", ARP_SET, to_generator("trill_in_thirds", 0)),
+        shot(words::TRACK_EDITOR, SHOT_SET, keys(&[keys::A, keys::UP, keys::RIGHT, keys::ENTER])),
+        shot(file_format::FileLayout::GENERATORS, ARP_SET, keys(&[words::G])),
+        shot(words::ARP_EDITOR, ARP_SET, to_generator(words::TRILL_IN_THIRDS, 0)),
         // Offsets is the sixth setting of an arpeggiator after its Name.
         shot(
-            "offsets_editor",
+            words::OFFSETS_EDITOR,
             ARP_SET,
-            joined(vec![to_generator("trill_in_thirds", 0), repeated("down", 6), keys(&["enter"])]),
+            joined(vec![
+                to_generator(words::TRILL_IN_THIRDS, 0),
+                repeated(keys::DOWN, SIX_TIMES),
+                keys(&[keys::ENTER]),
+            ]),
         ),
-        shot("chain_editor", ARP_SET, to_generator("shred", 1)),
-        shot("grooves", SHOT_SET, keys(&["v"])),
-        shot("groove_editor", SHOT_SET, keys(&["v", "down", "down", "enter"])),
-        shot("arrange", SHOT_SET, keys(&["a"])),
-        shot("arrange_details", DRIFT_SET, keys(&["a", "d"])),
-        shot("arrange_details_locked", DRIFT_SET, keys(&["a", "d", "right", "down", "tab"])),
-        shot("scene_view", DENSITY_SET, keys(&["a", "p"])),
-        shot("scene_view_played", DENSITY_SET, keys(&["a", "p", "v"])),
-        shot("scene", SHOT_SET, keys(&["a", "enter"])),
-        shot("clip", SHOT_SET, keys(&["a", "right", "enter"])),
+        shot(words::CHAIN_EDITOR, ARP_SET, to_generator(words::SHRED, 1)),
+        shot(file_format::Section::GROOVES, SHOT_SET, keys(&[words::V])),
+        shot(words::GROOVE_EDITOR, SHOT_SET, keys(&[words::V, keys::DOWN, keys::DOWN, keys::ENTER])),
+        shot(words::ARRANGE, SHOT_SET, keys(&[keys::A])),
+        shot(words::ARRANGE_DETAILS, DRIFT_SET, keys(&[keys::A, keys::D])),
+        shot(
+            words::ARRANGE_DETAILS_LOCKED,
+            DRIFT_SET,
+            keys(&[keys::A, file_format::GateModifier::DOTTED, keys::RIGHT, keys::DOWN, keys::TAB]),
+        ),
+        shot(words::SCENE_VIEW, DENSITY_SET, keys(&[keys::A, words::P])),
+        shot(words::SCENE_VIEW_PLAYED, DENSITY_SET, keys(&[keys::A, words::P, words::V])),
+        shot(words::SCENE, SHOT_SET, keys(&[keys::A, keys::ENTER])),
+        shot(words::CLIP, SHOT_SET, keys(&[keys::A, keys::RIGHT, keys::ENTER])),
         // The Scene page's Velocity tab, the second, and Shapes, the fourth, gone into with Down.
-        shot("scene_swell", SWELL_SET, keys(&["a", "enter", "tab", "right", "down"])),
-        shot("scene_density", DENSITY_SET, keys(&["a", "enter", "tab", "right", "right", "right", "down"])),
-        shot("instruments", SHOT_SET, keys(&["i"])),
-        shot("instrument_editor", SHOT_SET, keys(&["i", "enter"])),
+        shot(words::SCENE_SWELL, SWELL_SET, keys(&[keys::A, keys::ENTER, keys::TAB, keys::RIGHT, keys::DOWN])),
+        shot(
+            words::SCENE_DENSITY,
+            DENSITY_SET,
+            keys(&[keys::A, keys::ENTER, keys::TAB, keys::RIGHT, keys::RIGHT, keys::RIGHT, keys::DOWN]),
+        ),
+        shot(file_format::Section::INSTRUMENTS, SHOT_SET, keys(&[words::I])),
+        shot(words::INSTRUMENT_EDITOR, SHOT_SET, keys(&[words::I, keys::ENTER])),
         // The instrument page with the cursor on Engine, the field that chooses a built-in synth.
         Shot {
-            name: "synth_engine_field",
+            name: words::SYNTH_ENGINE_FIELD,
             set: SYNTH_SET,
-            keys: to_instrument("basic"),
+            keys: to_instrument(file_format::OscillatorType::BASIC),
             reach: Some(Reach::Field("Engine")),
         },
-        synth("synth_basic", "basic", OSCILLATORS_FIELD),
-        synth("synth_sid", "sid", OSCILLATORS_FIELD),
-        synth("synth_pocket", "pocket", OSCILLATORS_FIELD),
-        synth("synth_oh3", "oh3", OSCILLATORS_FIELD),
-        synth("synth_asheville", "asheville", OSCILLATORS_FIELD),
-        synth("synth_mechadrum", "mechadrum", OSCILLATORS_FIELD),
-        synth("synth_oscillators", "wobble lead", OSCILLATORS_FIELD),
-        synth("synth_envelopes", "wobble lead", ENVELOPES_FIELD),
-        synth("envelope_adsr", "env adsr", ENVELOPES_FIELD),
-        synth("envelope_ar", "env ar", ENVELOPES_FIELD),
-        synth("envelope_asr", "env asr", ENVELOPES_FIELD),
-        synth("envelope_sid_adsr", "env sid adsr", ENVELOPES_FIELD),
-        synth("envelope_vactrol", "env vactrol", ENVELOPES_FIELD),
-        synth("envelope_acid_gate", "env acid gate", ENVELOPES_FIELD),
-        synth("envelope_chip_steps", "env chip steps", ENVELOPES_FIELD),
-        synth("filter_ladder", "filter ladder", FILTER_FIELD),
-        synth("filter_multimode", "filter multimode", FILTER_FIELD),
-        synth("filter_sallen_key", "filter sallen key", FILTER_FIELD),
-        synth("filter_diode", "filter diode", FILTER_FIELD),
-        synth("filter_ota", "filter ota", FILTER_FIELD),
-        synth("filter_low_pass_gate", "filter low pass gate", FILTER_FIELD),
-        synth("synth_lfos", "wobble lead", "LFO 1 shape"),
-        synth("synth_filter", "wobble lead", FILTER_FIELD),
-        synth("synth_effects", "wobble lead", "FX 1"),
-        synth("synth_matrix", "wobble lead", "Slot 1 source"),
-        shot("chords_generator", PROGRESSION_SET, to_generator("pop", 1)),
+        synth(words::SYNTH_BASIC, file_format::OscillatorType::BASIC, OSCILLATORS_FIELD),
+        synth(words::SYNTH_SID, file_format::OscillatorType::SID, OSCILLATORS_FIELD),
+        synth(words::SYNTH_POCKET, file_format::OscillatorType::POCKET, OSCILLATORS_FIELD),
+        synth(words::SYNTH_OH3, file_format::SoundEngine::OH3, OSCILLATORS_FIELD),
+        synth(words::SYNTH_ASHEVILLE, file_format::OscillatorType::ASHEVILLE, OSCILLATORS_FIELD),
+        synth(words::SYNTH_MECHADRUM, words::MECHADRUM, OSCILLATORS_FIELD),
+        synth(words::SYNTH_OSCILLATORS, "wobble lead", OSCILLATORS_FIELD),
+        synth(words::SYNTH_ENVELOPES, "wobble lead", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_ADSR, "env adsr", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_AR, "env ar", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_ASR, "env asr", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_SID_ADSR, "env sid adsr", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_VACTROL, "env vactrol", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_ACID_GATE, "env acid gate", ENVELOPES_FIELD),
+        synth(words::ENVELOPE_CHIP_STEPS, "env chip steps", ENVELOPES_FIELD),
+        synth(words::FILTER_LADDER, "filter ladder", FILTER_FIELD),
+        synth(words::FILTER_MULTIMODE, "filter multimode", FILTER_FIELD),
+        synth(words::FILTER_SALLEN_KEY, "filter sallen key", FILTER_FIELD),
+        synth(words::FILTER_DIODE, "filter diode", FILTER_FIELD),
+        synth(words::FILTER_OTA, "filter ota", FILTER_FIELD),
+        synth(words::FILTER_LOW_PASS_GATE, "filter low pass gate", FILTER_FIELD),
+        synth(words::SYNTH_LFOS, "wobble lead", "LFO 1 shape"),
+        synth(words::SYNTH_FILTER, "wobble lead", FILTER_FIELD),
+        synth(words::SYNTH_EFFECTS, "wobble lead", "FX 1"),
+        synth(words::SYNTH_MATRIX, "wobble lead", "Slot 1 source"),
+        shot(words::CHORDS_GENERATOR, PROGRESSION_SET, to_generator(file_format::NamedProgression::POP, 1)),
         // The fourth setting after the Name opens the chords editor.
         shot(
-            "chords_editor",
-            PROGRESSION_SET,
-            joined(vec![to_generator("pop", 1), repeated("down", 4), keys(&["enter"])]),
-        ),
-        shot("drift_editor", DRIFT_SET, to_generator("climb", 0)),
-        shot("hocket_editor", HOCKET_SET, to_generator("trade", 1)),
-        shot("shapes_editor", SWELL_SET, to_generator("hits", 1)),
-        // A clip's Timing tab: the second scene's acid track's clip, the row of tabs, and Right to Timing.
-        shot(
-            "timing_editor",
-            GLIDE_SET,
-            joined(vec![keys(&["a", "down"]), repeated("right", 4), keys(&["enter", "tab"]), repeated("right", 5)]),
-        ),
-        shot(
-            "chain_list",
+            words::CHORDS_EDITOR,
             PROGRESSION_SET,
             joined(vec![
-                keys(&["a"]),
-                repeated("down", 5),
-                repeated("right", 5),
-                keys(&["enter", "tab"]),
-                repeated("right", 4),
+                to_generator(file_format::NamedProgression::POP, 1),
+                repeated(keys::DOWN, FOUR_TIMES),
+                keys(&[keys::ENTER]),
+            ]),
+        ),
+        shot(words::DRIFT_EDITOR, DRIFT_SET, to_generator(words::CLIMB, 0)),
+        shot(words::HOCKET_EDITOR, HOCKET_SET, to_generator(words::TRADE, 1)),
+        shot(words::SHAPES_EDITOR, SWELL_SET, to_generator(words::HITS, 1)),
+        // A clip's Timing tab: the second scene's acid track's clip, the row of tabs, and Right to Timing.
+        shot(
+            words::TIMING_EDITOR,
+            GLIDE_SET,
+            joined(vec![
+                keys(&[keys::A, keys::DOWN]),
+                repeated(keys::RIGHT, FOUR_TIMES),
+                keys(&[keys::ENTER, keys::TAB]),
+                repeated(keys::RIGHT, FIVE_TIMES),
+            ]),
+        ),
+        shot(
+            words::CHAIN_LIST,
+            PROGRESSION_SET,
+            joined(vec![
+                keys(&[keys::A]),
+                repeated(keys::DOWN, FIVE_TIMES),
+                repeated(keys::RIGHT, FIVE_TIMES),
+                keys(&[keys::ENTER, keys::TAB]),
+                repeated(keys::RIGHT, FOUR_TIMES),
             ]),
         ),
     ]

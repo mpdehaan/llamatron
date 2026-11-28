@@ -10,6 +10,7 @@
 //! str() writes each kind: `3`, `5/16`, `0.25`.
 
 use crate::rational::Rational;
+use llamatron_names::words;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -249,10 +250,10 @@ pub fn floor_divided(numerator: i128, denominator: i128) -> i128 {
 /// A float as Python's str() writes it.
 pub fn python_float_text(value: f64) -> String {
     if value.is_nan() {
-        return "nan".to_string();
+        return words::NAN.to_string();
     }
     if value.is_infinite() {
-        return if value > 0.0 { "inf" } else { "-inf" }.to_string();
+        return if value > 0.0 { words::INF } else { "-inf" }.to_string();
     }
     let size = value.abs();
     if size != 0.0 && !(1e-4..1e16).contains(&size) {

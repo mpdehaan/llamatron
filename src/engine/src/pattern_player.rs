@@ -34,6 +34,9 @@ use llamatron_model::values::generated::note::SHARP_NAMES;
 use llamatron_model::values::generated::note::{MAX_OCTAVE, MIN_OCTAVE};
 use llamatron_model::values::scale::Scale;
 use llamatron_model::values::scale::ScaleType;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, named};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -372,7 +375,7 @@ impl<'a> PatternPlayer<'a> {
         let pattern = self.pattern(pattern_name)?;
         let step_length = self.setlist.get_pattern_step_size(pattern);
         let pass_length = self.pattern_length(pattern);
-        let where_ = named(errors::ERR_WHERE_PATTERN, &[("name", pattern_name.into())]);
+        let where_ = named(errors::ERR_WHERE_PATTERN, &[(fill::NAME, pattern_name.into())]);
         let values = every_step_values(pattern)?;
         let drum = pattern.is_drum();
         let own_direction = pattern.get_direction().unwrap_or(Direction::FORWARD.to_string());
@@ -623,7 +626,7 @@ impl<'a> PatternPlayer<'a> {
                 let Some(scale) = self.clip_scale.as_ref() else {
                     return Err(RenderError::Refused(named(
                         errors::ERR_NO_SCALE,
-                        &[("where", where_.into()), ("scene", self.scene_number.into())],
+                        &[(words::WHERE, where_.into()), (words::SCENE, self.scene_number.into())],
                     )));
                 };
                 let above = SCALE_CHORDS
@@ -675,7 +678,7 @@ impl<'a> PatternPlayer<'a> {
         }
         Err(RenderError::Refused(named(
             errors::ERR_CANT_PLAY,
-            &[("where", where_.into()), ("problem", problem.0.as_str().into())],
+            &[(words::WHERE, where_.into()), (words::PROBLEM, problem.0.as_str().into())],
         )))
     }
 
@@ -781,7 +784,7 @@ impl<'a> PatternPlayer<'a> {
         self.setlist.get_named_scale(name).ok_or_else(|| {
             RenderError::Refused(llamatron_strings::named(
                 llamatron_strings::errors::ERR_SCENE_NO_SUCH_SCALE,
-                &[("scale", name.into())],
+                &[(file_format::SongSetting::SCALE, name.into())],
             ))
         })
     }
@@ -801,7 +804,7 @@ impl<'a> PatternPlayer<'a> {
         let Some(scale_name) = &self.scale_name else {
             return Err(RenderError::Refused(named(
                 errors::ERR_NO_SCALE,
-                &[("where", where_.into()), ("scene", self.scene_number.into())],
+                &[(words::WHERE, where_.into()), (words::SCENE, self.scene_number.into())],
             )));
         };
         let scale: Scale = match self.scale_at(scale_name, octave, values.chord_scale.as_deref())? {

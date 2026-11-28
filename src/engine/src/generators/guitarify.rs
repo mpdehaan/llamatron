@@ -17,6 +17,8 @@ use llamatron_model::schema::checking::{time_length, TimeLength};
 use llamatron_model::schema::generated::file_format::{Approach, ChordColor, GuitarifySetting, SingleNotes, Stroke, Tuning, GENERATOR_ENABLED};
 use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER};
 use llamatron_model::values::scale::Scale;
+use llamatron_names::file_format;
+use llamatron_names::words;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -717,14 +719,14 @@ fn positions(events: Vec<Timed>, total: Rational) -> Vec<Sound> {
 /// how many top strings an upstroke catches, None for every string; or None for one in Guitar mode.
 pub fn strum_values(settings: &Data) -> Option<(String, i64, i64, i64, Option<i64>)> {
     let written = |name: &str| settings.get(name).filter(|value| !value.is_null());
-    if written(GuitarifySetting::MODE).map(Data::python_str).as_deref() != Some("strum") {
+    if written(GuitarifySetting::MODE).map(Data::python_str).as_deref() != Some(words::STRUM) {
         return None;
     }
     let whole = |name: &str, default: i64| written(name).and_then(Data::as_whole).map(|value| value as i64).unwrap_or(default);
     let direction = written(GuitarifySetting::DIRECTION)
         .map(Data::python_str)
         .filter(|direction| !direction.is_empty())
-        .unwrap_or("by_the_beat".to_string());
+        .unwrap_or(file_format::StrumDirection::BY_THE_BEAT.to_string());
     let upstroke = whole(GuitarifySetting::UPSTROKE, 4);
     Some((
         direction,

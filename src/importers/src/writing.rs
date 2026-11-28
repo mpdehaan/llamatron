@@ -15,6 +15,9 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::naming::{copy_name, new_name, unique_name};
 use llamatron_model::objects::setlist::{Item, Setlist};
 use llamatron_model::schema::generated::file_format::Section;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
 use llamatron_strings::texts::labels;
 
 const NOTE_ROWS: [&str; 11] = [
@@ -85,23 +88,23 @@ fn pattern_data(pattern: &CutPattern, set_step_size: Rational) -> Data {
     };
     for (place, step) in steps.iter().enumerate() {
         match step {
-            Some(Step::Tied) => put("tie", place, Data::Bool(true)),
+            Some(Step::Tied) => put(file_format::Row::TIE, place, Data::Bool(true)),
             Some(Step::Note(step)) => {
                 let degree = match &step.degree {
                     StepDegree::Number(number) => Data::Whole(*number as i128),
                     StepDegree::Letter(letter) => text(letter),
                 };
-                put("degree", place, degree);
-                put("accidental", place, optional(step.accidental));
-                put("octave", place, Data::Whole(step.octave as i128));
-                put("chord", place, optional(step.chord));
+                put(file_format::Row::DEGREE, place, degree);
+                put(file_format::Row::ACCIDENTAL, place, optional(step.accidental));
+                put(file_format::Row::OCTAVE, place, Data::Whole(step.octave as i128));
+                put(file_format::Row::CHORD, place, optional(step.chord));
                 put(
-                    "tension",
+                    file_format::Row::TENSION,
                     place,
                     step.tension.map(|tension| Data::List(vec![text(tension)])).unwrap_or(Data::Null),
                 );
                 put(
-                    "inversion",
+                    file_format::Row::INVERSION,
                     place,
                     if step.inversion == 0 {
                         Data::Null
@@ -109,12 +112,12 @@ fn pattern_data(pattern: &CutPattern, set_step_size: Rational) -> Data {
                         Data::Whole(step.inversion as i128)
                     },
                 );
-                put("double", place, optional(step.doubling));
-                put("omit", place, optional(step.omission));
-                put("bass", place, optional(step.bass));
-                put("gate", place, step.gate.map(fraction_text).unwrap_or(Data::Null));
+                put(file_format::Row::DOUBLE, place, optional(step.doubling));
+                put(file_format::Row::OMIT, place, optional(step.omission));
+                put(file_format::Row::BASS, place, optional(step.bass));
+                put(file_format::Row::GATE, place, step.gate.map(fraction_text).unwrap_or(Data::Null));
                 put(
-                    "velocity",
+                    file_format::TrackSetting::VELOCITY,
                     place,
                     if step.velocity == DEFAULT_VELOCITY {
                         Data::Null
@@ -122,18 +125,18 @@ fn pattern_data(pattern: &CutPattern, set_step_size: Rational) -> Data {
                         Data::Whole(step.velocity as i128)
                     },
                 );
-                put("glide", place, Data::Bool(step.glide));
-                put("bass_octave", place, Data::Bool(step.bass_octave));
+                put(file_format::Row::GLIDE, place, Data::Bool(step.glide));
+                put(file_format::Row::BASS_OCTAVE, place, Data::Bool(step.bass_octave));
             }
             None => {}
         }
     }
-    let mut data = vec![(text("steps"), Data::Whole(count as i128))];
+    let mut data = vec![(text(file_format::PatternSetting::STEPS), Data::Whole(count as i128))];
     if *step_size != set_step_size {
-        data.push((text("step_size"), fraction_text(*step_size)));
+        data.push((text(file_format::SetlistSetting::STEP_SIZE), fraction_text(*step_size)));
     }
     if *drum {
-        data.push((text("drum"), Data::Bool(true)));
+        data.push((text(file_format::TrackSetting::DRUM), Data::Bool(true)));
     }
     for (row, values) in rows {
         let holds = if SWITCH_ROWS.contains(&row) {
@@ -170,7 +173,7 @@ fn control_rows(controls: &ControlSteps) -> Vec<(Data, Data)> {
     }
     let slides: Vec<Data> = controls.iter().map(|step| Data::Bool(step.as_ref().is_some_and(|step| step.slide))).collect();
     if slides.contains(&Data::Bool(true)) {
-        rows.push((text("slide"), Data::List(slides)));
+        rows.push((text(file_format::Row::SLIDE), Data::List(slides)));
     }
     rows
 }
@@ -185,7 +188,13 @@ fn tempo_percent_of(microseconds: i64, song_microseconds: i64) -> Data {
 /// A pattern's data without its group.
 fn without_group(data: &Data) -> Data {
     match data {
-        Data::Map(pairs) => Data::Map(pairs.iter().filter(|(key, _)| key.as_str() != Some("group")).cloned().collect()),
+        Data::Map(pairs) => Data::Map(
+            pairs
+                .iter()
+                .filter(|(key, _)| key.as_str() != Some(file_format::PatternSetting::GROUP))
+                .cloned()
+                .collect(),
+        ),
         other => other.clone(),
     }
 }
@@ -206,7 +215,7 @@ fn suggested_word(text: &str) -> String {
 
 fn instrument_name(voice: &Voice) -> String {
     match voice.sound {
-        None => "drums".to_string(),
+        None => spec::DRUMS.to_string(),
         Some(sound) => suggested_word(&labels::MSG_GM_SOUNDS[(sound - 1) as usize].replace(['(', ')'], "")),
     }
 }
@@ -257,17 +266,17 @@ impl SongWriter<'_> {
         let track_names = self.track_names();
         let (patterns, shared, pattern_names) = self.patterns(&track_names);
         let (scales, scale_names) = self.scales();
-        let mut song = vec![("tempo", tempo_of(self.song_microseconds()))];
+        let mut song = vec![(file_format::SongSetting::TEMPO, tempo_of(self.song_microseconds()))];
         if let Some(signature) = time_signature {
-            song.push(("time_signature", text(&signature)));
+            song.push((file_format::SongSetting::TIME_SIGNATURE, text(&signature)));
         }
-        song.push(("scale", text(&scale_names[0])));
+        song.push((file_format::SongSetting::SCALE, text(&scale_names[0])));
         let tracks = track_names
             .iter()
             .zip(self.voices)
             .map(|(track, voice)| (text(track), self.track_data(voice)))
             .collect();
-        song.push(("tracks", Data::Map(tracks)));
+        song.push((file_format::Section::TRACKS, Data::Map(tracks)));
         let scenes = self
             .cut
             .scenes
@@ -275,7 +284,7 @@ impl SongWriter<'_> {
             .enumerate()
             .map(|(place, scene)| self.scene_data(scene, &scale_names[0], &pattern_names, &scale_names[place], &track_names))
             .collect();
-        song.push(("scenes", Data::List(scenes)));
+        song.push((file_format::Section::SCENES, Data::List(scenes)));
         let song_names: Vec<&str> = self.setlist.song_names();
         let song_name = if song_names.iter().any(|found| found.to_lowercase() == name.to_lowercase()) {
             copy_name(name, &song_names)
@@ -293,14 +302,14 @@ impl SongWriter<'_> {
     }
 
     fn track_data(&self, voice: &Voice) -> Data {
-        let mut data = vec![("instrument", text(&instrument_name(voice)))];
+        let mut data = vec![(file_format::TrackSetting::INSTRUMENT, text(&instrument_name(voice)))];
         if voice.drum {
-            data.push(("drum", Data::Bool(true)));
+            data.push((file_format::TrackSetting::DRUM, Data::Bool(true)));
         }
         if !voice.lanes.is_empty() {
             let mut lanes: Vec<Data> = voice.lanes.iter().map(|number| Data::Whole(*number as i128)).collect();
             lanes.resize(CC_ROWS.len(), Data::Null);
-            data.push(("cc", Data::List(lanes)));
+            data.push((file_format::TrackSetting::CC, Data::List(lanes)));
         }
         map(data)
     }
@@ -312,9 +321,9 @@ impl SongWriter<'_> {
             if self.setlist.get_instrument(&name).is_some() {
                 continue;
             }
-            let mut data = vec![("device", text(FLUIDSYNTH_DEVICE))];
+            let mut data = vec![(file_format::InstrumentSetting::DEVICE, text(FLUIDSYNTH_DEVICE))];
             if let Some(sound) = voice.sound {
-                data.push(("gm_sound", Data::Whole(sound as i128)));
+                data.push((file_format::InstrumentSetting::GM_SOUND, Data::Whole(sound as i128)));
             }
             match made.iter_mut().find(|(found, _)| *found == name) {
                 Some((_, found)) => *found = map(data),
@@ -395,7 +404,13 @@ impl SongWriter<'_> {
                 None => {
                     let name = unique_name(&default_scale_name(key), &taken);
                     taken.push(name.clone());
-                    added.push((name.clone(), map(vec![("root", text(&key.root)), ("type", text(&key.kind))])));
+                    added.push((
+                        name.clone(),
+                        map(vec![
+                            (file_format::ScaleSetting::ROOT, text(&key.root)),
+                            (file_format::ScaleSetting::TYPE, text(&key.kind)),
+                        ]),
+                    ));
                     name
                 }
             };
@@ -433,16 +448,16 @@ impl SongWriter<'_> {
     }
 
     fn scene_data(&self, scene: &CutScene, song_scale: &str, pattern_names: &[(CutPattern, String)], scale_name: &str, track_names: &[String]) -> Data {
-        let mut data = vec![("name", text(&self.bars_named(scene)))];
+        let mut data = vec![(fill::NAME, text(&self.bars_named(scene)))];
         if scene.repeat > 1 {
-            data.push(("repeat", Data::Whole(scene.repeat as i128)));
+            data.push((file_format::SceneSetting::REPEAT, Data::Whole(scene.repeat as i128)));
         }
         if scale_name != song_scale {
-            data.push(("scale", text(scale_name)));
+            data.push((file_format::SongSetting::SCALE, text(scale_name)));
         }
         let percent = tempo_percent_of(scene.tempo, self.song_microseconds());
         if percent != Data::Whole(100) {
-            data.push(("tempo", percent));
+            data.push((file_format::SongSetting::TEMPO, percent));
         }
         let mut clips: Vec<(Data, Data)> = Vec::new();
         for clip in &scene.clips {
@@ -458,12 +473,12 @@ impl SongWriter<'_> {
                 })
                 .collect();
             let mut clip_data = if names.len() > 1 {
-                vec![("patterns", Data::List(names.iter().map(|name| text(name)).collect()))]
+                vec![(file_format::Section::PATTERNS, Data::List(names.iter().map(|name| text(name)).collect()))]
             } else {
-                vec![("pattern", text(&names[0]))]
+                vec![(file_format::ClipSlotSetting::PATTERN, text(&names[0]))]
             };
             if clip.repeats > 1 {
-                clip_data.push(("repeat", Data::Whole(clip.repeats as i128)));
+                clip_data.push((file_format::SceneSetting::REPEAT, Data::Whole(clip.repeats as i128)));
             }
             let track = text(&track_names[clip.voice]);
             match clips.iter_mut().find(|(found, _)| *found == track) {
@@ -471,7 +486,7 @@ impl SongWriter<'_> {
                 None => clips.push((track, map(clip_data))),
             }
         }
-        data.push(("tracks", Data::Map(clips)));
+        data.push((file_format::Section::TRACKS, Data::Map(clips)));
         map(data)
     }
 
@@ -525,7 +540,7 @@ pub fn add_imported(setlist: &Setlist, imported: &ImportedSong) -> Result<Setlis
             .map(|(name, mut pattern)| {
                 let group = name.as_str().and_then(|name| groups.iter().find(|(found, _)| found == name));
                 if let Some((_, track)) = group {
-                    pattern.set("group", text(track));
+                    pattern.set(file_format::PatternSetting::GROUP, text(track));
                 }
                 (name, pattern)
             })
@@ -543,7 +558,7 @@ fn track_groups(setlist: &Setlist, song_name: &str) -> Vec<(String, String)> {
         for track in song.get_track_names() {
             let Some(clip) = scene.get_clip_slot(track) else { continue };
             for name in clip.get_pattern_names() {
-                let ungrouped = matches!(setlist.get_item(Section::PATTERNS, &name), Some(Item::Pattern(pattern)) if pattern.get_written("group").is_none_or(Data::is_null));
+                let ungrouped = matches!(setlist.get_item(Section::PATTERNS, &name), Some(Item::Pattern(pattern)) if pattern.get_written(file_format::PatternSetting::GROUP).is_none_or(Data::is_null));
                 if ungrouped && !groups.iter().any(|(found, _)| *found == name) {
                     groups.push((name, track.to_string()));
                 }

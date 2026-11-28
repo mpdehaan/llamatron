@@ -33,6 +33,10 @@ use llamatron_model::schema::generated::file_format::{ClipSlotSetting, SceneSett
 use llamatron_model::schema::generated::file_format::{Restart, GENERATOR_ENABLED, GENERATOR_RESTART};
 use llamatron_model::schema::generated::limits::{MAX_TEMPO, MIN_TEMPO};
 use llamatron_model::schema::generated::plugins::PLUGINS;
+use llamatron_names::file_format;
+use llamatron_names::fill;
+use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{errors, named, names};
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -60,7 +64,7 @@ impl WrittenScene<'_> {
                 let number = written.len() as i64 + 1;
                 let mut name = match scene.get_name() {
                     Some(name) => name,
-                    None => named(names::MSG_UNNAMED_SCENE, &[("number", number.into())]),
+                    None => named(names::MSG_UNNAMED_SCENE, &[(fill::NUMBER, number.into())]),
                 };
                 if repeat > 1 {
                     name = format!("{name} {}", place + 1);
@@ -82,7 +86,7 @@ impl WrittenScene<'_> {
     pub fn describe(&self) -> String {
         named(
             names::MSG_SCENE_DESCRIPTION,
-            &[("number", self.number.into()), ("name", self.name.as_str().into())],
+            &[(words::NUMBER, self.number.into()), (file_format::FileLayout::NAME, self.name.as_str().into())],
         )
     }
 }
@@ -136,12 +140,14 @@ struct TempoRamp {
 /// Whether either of a scene's tempo ramps changes its tempo.
 pub fn ramps_tempo(scene: &Scene, song: &Song) -> bool {
     let base = tempo_in(scene, song);
-    ["in", "out"].iter().any(|way| tempo_ramp(scene, way, base).is_some())
+    [file_format::RampWay::IN, file_format::RampWay::OUT]
+        .iter()
+        .any(|way| tempo_ramp(scene, way, base).is_some())
 }
 
 fn tempo_ramp(scene: &Scene, way: &str, base: Rational) -> Option<TempoRamp> {
     let written = |part: &str| scene.get_written(&format!("tempo_{way}_{part}")).filter(|value| !value.is_null());
-    let over = written("over")?.as_whole()?;
+    let over = written(file_format::RampPart::OVER)?.as_whole()?;
     let (start, end) = (written("start"), written("end"));
     if start.is_none() && end.is_none() {
         return None;
@@ -396,7 +402,7 @@ impl<'a> SongRealizer<'a> {
             let track = self.track(name)?;
             let instrument = self.song.instrument_of(track, self.setlist);
             let gm_sound = instrument
-                .and_then(|instrument| instrument.get_written("gm_sound"))
+                .and_then(|instrument| instrument.get_written(file_format::InstrumentSetting::GM_SOUND))
                 .and_then(Data::as_whole)
                 .map(|sound| sound as i64);
             let pan = instrument.and_then(|instrument| instrument.pan_control());
@@ -434,7 +440,7 @@ impl<'a> SongRealizer<'a> {
         let mut names = Vec::new();
         let mut origins = Vec::new();
         for step in self.chains_of(scene, track)? {
-            if step.kind == "drift" {
+            if step.kind == spec::DRIFT {
                 let restart = step.settings.get(GENERATOR_RESTART).map(Data::python_str);
                 let start = self.run_start(scene, restart.as_deref());
                 origins.push((step.name.clone(), self.scene_start(&self.scenes[start])?));
@@ -465,7 +471,7 @@ impl<'a> SongRealizer<'a> {
     fn handed_notes(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Vec<NoteEvent>> {
         let mut named: Vec<ChainStep> = Vec::new();
         for step in self.chains_of(scene, track)? {
-            if step.kind == "hocket" && !named.iter().any(|found| found.name == step.name) {
+            if step.kind == words::HOCKET && !named.iter().any(|found| found.name == step.name) {
                 named.push(step);
             }
         }
@@ -489,7 +495,7 @@ impl<'a> SongRealizer<'a> {
         }
         let source = step
             .settings
-            .get("source")
+            .get(file_format::MatrixSetting::SOURCE)
             .filter(|source| !source.is_null())
             .map(Data::python_str)
             .unwrap_or_default();
@@ -551,7 +557,7 @@ impl<'a> SongRealizer<'a> {
     fn strum_plan(&self, scene: &WrittenScene<'a>, track: &str) -> Rendered<Option<StrumPlan>> {
         let mut found = None;
         for step in self.chains_of(scene, track)? {
-            if step.kind == "guitarify" {
+            if step.kind == words::GUITARIFY {
                 if let Some(values) = crate::generators::guitarify::strum_values(&step.settings) {
                     found = Some((values, step.settings.get(GENERATOR_RESTART).map(Data::python_str)));
                 }
@@ -607,7 +613,7 @@ impl<'a> SongRealizer<'a> {
         let mut rows = Vec::new();
         let bar = self.song.get_time_signature().bar_length();
         for step in self.chains_of(scene, track)? {
-            if step.kind != "timing" {
+            if step.kind != words::TIMING {
                 continue;
             }
             let pattern = self
@@ -828,7 +834,7 @@ impl<'a> SongRealizer<'a> {
             if !self.looping_scenes_go_round {
                 return Err(RenderError::Refused(named(
                     errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
-                    &[("scene", scene.describe().as_str().into())],
+                    &[(words::SCENE, scene.describe().as_str().into())],
                 )));
             }
             for track in &every {
@@ -912,7 +918,10 @@ impl<'a> SongRealizer<'a> {
             let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
             return Err(RenderError::Refused(named(
                 errors::ERR_CIRCULAR_GRAB,
-                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+                &[
+                    (words::SCENE, scene.describe().as_str().into()),
+                    (file_format::ClipSlotSetting::LOOP, looped.as_str().into()),
+                ],
             )));
         }
         self.grabbing.borrow_mut().push(track.to_string());
@@ -939,7 +948,10 @@ impl<'a> SongRealizer<'a> {
             let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
             return Err(RenderError::Refused(named(
                 errors::ERR_CIRCULAR_FOLLOW,
-                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+                &[
+                    (words::SCENE, scene.describe().as_str().into()),
+                    (file_format::ClipSlotSetting::LOOP, looped.as_str().into()),
+                ],
             )));
         }
         self.following.borrow_mut().push((scene.number, track.to_string()));
@@ -1143,17 +1155,20 @@ impl<'a> SongRealizer<'a> {
         for track in scene.scene.get_track_names() {
             let Some(clip) = scene.scene.get_clip_slot(track) else { continue };
             let mut names = clip.get_pattern_names();
-            if let Some(target) = clip.get_written("morph_to").and_then(llamatron_model::file::data::Data::as_str) {
+            if let Some(target) = clip
+                .get_written(file_format::ClipSlotSetting::MORPH_TO)
+                .and_then(llamatron_model::file::data::Data::as_str)
+            {
                 names.push(target.to_string());
             }
             let has_scale = clip.get_scale_name().is_some() || scene.scale_name.is_some();
             for name in names {
                 let Some(pattern) = self.setlist.get_pattern(&name) else { continue };
                 if !has_scale && !pattern.is_drum() && pattern.has_note_steps() {
-                    let place = named(errors::ERR_WHERE_PATTERN, &[("name", name.as_str().into())]);
+                    let place = named(errors::ERR_WHERE_PATTERN, &[(fill::NAME, name.as_str().into())]);
                     return Err(RenderError::Refused(named(
                         errors::ERR_NO_SCALE,
-                        &[("where", place.as_str().into()), ("scene", scene.number.into())],
+                        &[(words::WHERE, place.as_str().into()), (words::SCENE, scene.number.into())],
                     )));
                 }
             }
@@ -1162,7 +1177,10 @@ impl<'a> SongRealizer<'a> {
             let looped = circle.join(llamatron_strings::marks::MSG_CIRCLE_ARROW);
             return Err(RenderError::Refused(named(
                 errors::ERR_CIRCULAR_GRAB,
-                &[("scene", scene.describe().as_str().into()), ("loop", looped.as_str().into())],
+                &[
+                    (words::SCENE, scene.describe().as_str().into()),
+                    (file_format::ClipSlotSetting::LOOP, looped.as_str().into()),
+                ],
             )));
         }
         Ok(())
@@ -1279,7 +1297,7 @@ impl<'a> SongRealizer<'a> {
             if !self.looping_scenes_go_round {
                 return Err(RenderError::Refused(named(
                     errors::ERR_RENDERER_EVERY_CLIP_LOOPS,
-                    &[("scene", scene.describe().as_str().into())],
+                    &[(words::SCENE, scene.describe().as_str().into())],
                 )));
             }
             let mut length = Rational::ZERO;
@@ -1311,7 +1329,7 @@ impl<'a> SongRealizer<'a> {
 /// Every drift of a set, by its name, with its settings.
 fn drift_settings(setlist: &Setlist) -> HashMap<String, Data> {
     setlist
-        .items("drifts")
+        .items(words::DRIFTS)
         .iter()
         .filter_map(|(name, item)| match item {
             Item::Generator(settings) => Some((name.clone(), settings.to_data())),
@@ -1355,7 +1373,7 @@ fn takes_draws(setlist: &Setlist) -> bool {
     let patterns = setlist.items(Section::PATTERNS).iter().any(|(_, item)| match item {
         Item::Pattern(pattern) => llamatron_model::schema::generated::file_format::PATTERN_ROWS
             .iter()
-            .filter(|row| draw_row(row) && **row != "ratchet_offset")
+            .filter(|row| draw_row(row) && **row != file_format::Row::RATCHET_OFFSET)
             .any(|row| {
                 pattern.row(row).is_some_and(|values| {
                     values
@@ -1450,7 +1468,7 @@ fn grab_circle(scene: &Scene) -> Option<Vec<String>> {
             let last = path.last().cloned().unwrap_or_default();
             let following = scene
                 .get_clip_slot(&last)
-                .and_then(|clip| clip.get_written("grab_track"))
+                .and_then(|clip| clip.get_written(file_format::ClipSlotSetting::GRAB_TRACK))
                 .and_then(llamatron_model::file::data::Data::as_str)
                 .map(str::to_string);
             let Some(following) = following else { break };

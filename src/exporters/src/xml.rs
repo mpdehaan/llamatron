@@ -146,11 +146,11 @@ fn unescaped(text: &str) -> String {
         };
         let entity = &rest[start + 1..start + length];
         let character = match entity {
-            "amp" => Some('&'),
-            "lt" => Some('<'),
-            "gt" => Some('>'),
-            "quot" => Some('"'),
-            "apos" => Some('\''),
+            file_format::MatrixDestination::AMP => Some('&'),
+            words::LT => Some('<'),
+            words::GT => Some('>'),
+            words::QUOT => Some('"'),
+            words::APOS => Some('\''),
             number if number.starts_with("#x") => u32::from_str_radix(&number[2..], 16).ok().and_then(char::from_u32),
             number if number.starts_with('#') => number[1..].parse().ok().and_then(char::from_u32),
             _ => None,
@@ -286,7 +286,9 @@ impl Reader {
     }
 }
 
+use llamatron_names::file_format;
 /// An element's text, or a tail, as ElementTree holds it: None where it is empty.
+use llamatron_names::words;
 pub fn tidied(element: &mut Element) {
     element.each_mut(&mut |element| {
         if element.text.as_deref() == Some("") {

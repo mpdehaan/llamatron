@@ -10,6 +10,7 @@ description = "llamatron's exporters: a rendered song as MIDI files and a Live s
 publish = false
 
 [dependencies]
+llamatron-names = { path = "../names" }
 llamatron-math = { path = "../math" }
 llamatron-model = { path = "../model" }
 llamatron-engine = { path = "../engine" }
