@@ -27,10 +27,6 @@ The professor's research is in `.claude/notes/synthesis/`.
   each note afresh, sending no CC.
 - **The Mod Matrix's destinations**: Which to drop (Drive and the like need not be destinations), a discussion; later, some
   effects' settings as destinations, effect by effect.
-- **Snail**: a Type of a Modulators slot beside LFO (`.claude/planning/DESIGNS.md`, "Snail"): three slow chaotic
-  circuits, Slow, Slower and Slowest (about 20 seconds, 2 minutes and 30 minutes a cycle), each travelling around two
-  attractors, Slow and Slower each with a gauge of its name setting which attractor it lingers around, Slowest with
-  none; each circuit's X, Y and Z as Mod Matrix sources, and the two gauges as destinations. Never restarted by a note.
 - **Snail's faster mode**: a switch on the Snail turning it from its slow circuits to faster chaotic systems, each a
   path in three dimensions, X, Y and Z, never repeating: Lorenz (two lobes it flips between), Rössler (a smoother
   spiral that now and then leaps out), Chua (the electronic double scroll), Thomas, a double pendulum, or predator and
