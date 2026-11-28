@@ -20,7 +20,7 @@ Moves is what it moves, Pitch, Pulse width, Detune and Fine (every
 oscillator's tuning, by up to a semitone and a tenth of one), SID interval (how far the
 SID's second oscillator stands from the note, for sweeping a sync lead), Cutoff,
 Resonance, Amp or an LFO's rate,
-and Amount how far, either way, as a share of what it moves. LFO 1 to Pitch is
+and Amount how far, either way, as a share of what it moves. Mod 1 to Pitch, with an LFO in Mod 1, is
 vibrato, with a Square shape and a large Amount a chip trill; Velocity to
 Cutoff makes harder notes brighter; Per Note S&H to Detune makes each note a little
 different.
@@ -36,10 +36,10 @@ as an envelope or Velocity, always moves from nothing to the Amount.
 ## LFO Rates
 
 An LFO can speed up and slow down another, the way a player turns a
-vibrato's speed knob while holding a note. Moves also offers LFO 1 rate to
-LFO 4 rate. A slot whose Source is an LFO moves that LFO's rate by up to two
+vibrato's speed knob while holding a note. Moves also offers Mod 1 rate to
+Mod 4 rate. A slot whose Source is an LFO moves that LFO's rate by up to two
 octaves either way at its full Amount: 50% doubles it at the source's top and
-halves it at its bottom. LFO 2, a slow sine, into LFO 1 rate makes LFO 1's
+halves it at its bottom. Mod 2, a slow sine, into Mod 1 rate makes Mod 1's
 vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
 racing through one half of its cycle and lingering in the other. Unipolar
 only ever speeds the rate up. A Via scales the route as elsewhere, by another

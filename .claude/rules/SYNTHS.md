@@ -37,6 +37,7 @@ holds how their code is written, and `.claude/notes/synthesis/` the research the
 - Every oscillator has a Detune in cents and a Fine in tenths of a cent, each a destination of the Mod Matrix, so that
   any oscillator can beat slowly against another or be moved by a modulator, as the slow chaotic modulators make most
   of.
-- Every modulator offers tempo sync: a Sync switch, off unless switched on, which when on sets its Rate as a length
-  of the song's beat, its cycle following the tempo, from 1/64 of a note up to 16 bars.
+- Every modulator with a rate offers tempo sync: a Sync switch, off unless switched on, which when on sets its Rate
+  as a length of the song's beat, its cycle following the tempo, from 1/64 of a note up to 16 bars. A modulator of
+  fixed, wandering cycles, such as Snail, has none.
 

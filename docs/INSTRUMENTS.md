@@ -110,7 +110,7 @@ tabs and back, and Left and Right choose a tab.
 | Keyswitch lead (MIDI) | How many milliseconds before its note a keyswitch is sent, 0 to 500, `0 ms` unless set. `[` and `]` step it, and `ENTER` types it. See Keyswitches below. |
 | Latency (MIDI) | How many milliseconds earlier the instrument's notes are sent, 0 to 500, `0 ms` unless set, for a device that is slow to sound. |
 | Oscillators, Envelopes, Filter | Each part's Type and its settings, and the Voice. See Built-in Instruments above. |
-| Modulators: LFO 1 to 4 | Whether each is on, its Shape, Sync, Speed, Rate, Fade in and Restart. See Built-in Instruments above. |
+| Modulators: Mod 1 to 4 | Whether each is on, its Shape, Sync, Speed, Rate, Fade in and Restart. See Built-in Instruments above. |
 | FX: FX 1 and 2 | Each effect and its settings. See Built-in Instruments above. |
 | Matrix: Slot 1 to 6 | Each slot's Source, Via, what it Moves and its Amount. See Built-in Instruments above. |
 | Preview pattern | A button that opens the instrument's own preview pattern in the pattern editor, for designing a sound before there is any music. Each instrument has its own, kept inside it in the set file and renamed, copied and deleted with it; no list of patterns shows it. It starts as sixteen sixteenth notes running up and down C major from middle C, on a hidden chromatic scale so that any note can be written without choosing a key, or, for a built-in drum, a C on each quarter in the set's drum octave. |
