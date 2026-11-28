@@ -20,6 +20,10 @@ use llamatron_names::spec;
 use rmpv::Value;
 
 const SILENT: f64 = 1e-4;
+/// How much of Drift's warmth a vactrol's rise takes, against its fall's whole; and a velocity's top, by which a
+/// velocity's share becomes the number an accent's threshold is set in.
+const RISE_WARMTH_SHARE: f64 = 0.5;
+const VELOCITY_TOP: f64 = 127.0;
 const T60: f64 = 6.908;
 /// The shortest rise that does not click, half a millisecond, about 24 samples: as snappy as the quickest analog
 /// envelopes, with no step at a note's start sharp enough to be heard as a tick.
@@ -307,7 +311,7 @@ impl EnvelopePart {
                     let (first, second, third) = vactrol::hit_normals(memory.hits);
                     let warmth = vactrol::room_warmth(seconds);
                     fall *= (unstable.0 * first).exp() * (1.0 + drift * warmth);
-                    rise *= (unstable.1 * second).exp() * (1.0 + 0.5 * drift * warmth);
+                    rise *= (unstable.1 * second).exp() * (1.0 + RISE_WARMTH_SHARE * drift * warmth);
                     light = (light * (unstable.2 * third).exp()).min(MOST_LIGHT_SPREAD);
                 }
                 memory.hits += 1;
@@ -327,7 +331,7 @@ impl EnvelopePart {
                 resonance,
                 ..
             } => {
-                let accented = (velocity * 127.0).round() >= *threshold;
+                let accented = (velocity * VELOCITY_TOP).round() >= *threshold;
                 memory.charge *= (-(seconds - memory.charged_at) / CHARGE_SECONDS).exp();
                 memory.charged_at = seconds;
                 state.accented = accented;
@@ -396,20 +400,27 @@ mod tests {
     use super::*;
     use rmpv::Value;
 
+    /// A millisecond's share of a second, the step the tests read an envelope at; half, a sustain the tests hold at and
+    /// the moment they release; the chip's top level; and the millisecond after a note's start.
+    const MILLISECONDS_A_SECOND: f64 = 1000.0;
+    const HALF: f64 = 0.5;
+    const CHIP_TOP_LEVEL: f64 = 15.0;
+
     /// Every envelope type at its snappiest settings is tight, at its top within a millisecond and silent within a few
     /// more of its release, yet never steps by more than a twelfth of its swing from one sample to the next, so that
     /// neither edge clicks.
     #[test]
     fn every_envelope_is_snappy_without_clicking() {
         let rate = 48_000.0;
-        let most_step = 1.0 / 12.0;
+        let twelfths = 12.0;
+        let most_step = 1.0 / twelfths;
         let (released, heard) = (0.005, 0.02);
         let snappiest = [
             spec(&[
                 (spec::TYPE, spec::ADSR.into()),
                 (spec::ATTACK, 0.0.into()),
                 (spec::DECAY, 0.0.into()),
-                (spec::SUSTAIN, 0.5.into()),
+                (spec::SUSTAIN, HALF.into()),
                 (spec::RELEASE, 0.0.into()),
             ]),
             spec(&[(spec::TYPE, spec::AR.into()), (spec::ATTACK, 0.0.into()), (spec::RELEASE, 0.0.into())]),
@@ -426,7 +437,7 @@ mod tests {
                 (spec::SOFT_ATTACK, 0.0.into()),
                 (spec::AMP_DECAY, 0.0.into()),
             ]),
-            spec(&[(spec::TYPE, spec::CHIP_STEPS.into()), (spec::START_LEVEL, 15.0.into())]),
+            spec(&[(spec::TYPE, spec::CHIP_STEPS.into()), (spec::START_LEVEL, CHIP_TOP_LEVEL.into())]),
         ];
         // Every envelope type with a shape of its own is held here: a new type fails until its snappiest settings join.
         let held: Vec<&str> = snappiest
@@ -461,8 +472,12 @@ mod tests {
         );
         let mut state = EnvelopeState::default();
         let at = |age: f64, state: &mut EnvelopeState| adsr.level(state, NoteTime { age, released: Some(released) }, None);
-        assert!(at(0.001, &mut state) > 0.99, "at its top within a millisecond");
-        assert!(at(released + 0.003, &mut state) < 0.01, "silent within three milliseconds of its release");
+        let (a_millisecond, three_milliseconds, near_top, near_silent) = (0.001, 0.003, 0.99, 0.01);
+        assert!(at(a_millisecond, &mut state) > near_top, "at its top within a millisecond");
+        assert!(
+            at(released + three_milliseconds, &mut state) < near_silent,
+            "silent within three milliseconds of its release"
+        );
     }
 
     fn spec(pairs: &[(&str, Value)]) -> Value {
@@ -471,12 +486,12 @@ mod tests {
 
     fn play(part: &EnvelopePart, released: Option<f64>, seconds: f64) -> (Vec<f64>, bool) {
         let mut state = EnvelopeState::default();
-        let levels: Vec<f64> = (0..(seconds * 1000.0) as usize)
+        let levels: Vec<f64> = (0..(seconds * MILLISECONDS_A_SECOND) as usize)
             .map(|ms| {
                 part.level(
                     &mut state,
                     NoteTime {
-                        age: ms as f64 / 1000.0,
+                        age: ms as f64 / MILLISECONDS_A_SECOND,
                         released,
                     },
                     None,
@@ -488,36 +503,40 @@ mod tests {
 
     #[test]
     fn an_adsr_peaks_at_its_attack_holds_its_sustain_and_releases_to_silence() {
+        let (attack, decay, release) = (0.01, 0.2, 0.1);
         let part = compiled(
             &spec(&[
                 (spec::TYPE, spec::ADSR.into()),
-                (spec::ATTACK, 0.01.into()),
-                (spec::DECAY, 0.2.into()),
-                (spec::SUSTAIN, 0.5.into()),
-                (spec::RELEASE, 0.1.into()),
+                (spec::ATTACK, attack.into()),
+                (spec::DECAY, decay.into()),
+                (spec::SUSTAIN, HALF.into()),
+                (spec::RELEASE, release.into()),
             ]),
             0.0,
         );
-        let (levels, done) = play(&part, Some(0.5), 1.0);
-        assert!((levels[10] - 1.0).abs() < 0.05);
-        assert!((levels[499] - 0.5).abs() < 0.01);
+        let (levels, done) = play(&part, Some(HALF), 1.0);
+        let (after_attack, before_release, near_top, near_sustain) = (10, 499, 0.05, 0.01);
+        assert!((levels[after_attack] - 1.0).abs() < near_top);
+        assert!((levels[before_release] - HALF).abs() < near_sustain);
         assert!(done);
     }
 
     #[test]
     fn the_sid_adsr_holds_its_sixteen_level_sustain() {
+        let (rate_step, sustain_step) = (9, 8);
         let part = compiled(
             &spec(&[
                 (spec::TYPE, spec::SID_ADSR.into()),
                 (spec::ATTACK, 0.into()),
-                (spec::DECAY, 9.into()),
-                (spec::SUSTAIN, 8.into()),
-                (spec::RELEASE, 9.into()),
+                (spec::DECAY, rate_step.into()),
+                (spec::SUSTAIN, sustain_step.into()),
+                (spec::RELEASE, rate_step.into()),
             ]),
             0.0,
         );
-        let (levels, done) = play(&part, Some(0.5), 3.0);
-        assert!((levels[499] * SID_TOP - 8.0 * SID_SUSTAIN_STEP).abs() <= 1.0);
+        let (heard_seconds, before_release) = (3.0, 499);
+        let (levels, done) = play(&part, Some(HALF), heard_seconds);
+        assert!((levels[before_release] * SID_TOP - sustain_step as f64 * SID_SUSTAIN_STEP).abs() <= 1.0);
         assert!(done);
     }
 
@@ -525,12 +544,12 @@ mod tests {
     /// short strike that lights the cell only a little still falls at the speed its heard level gives, as a pluck does.
     #[test]
     fn a_struck_vactrol_peaks_and_falls_to_a_tenth_by_its_fall_time() {
-        let fall = 0.25;
+        let (rise, fall) = (0.012, 0.25);
         let at_fall = |strike: f64| {
             let part = compiled(
                 &spec(&[
                     (spec::TYPE, spec::VACTROL.into()),
-                    (spec::RISE, 0.012.into()),
+                    (spec::RISE, rise.into()),
                     (spec::FALL, fall.into()),
                     (spec::STRIKE_WIDTH, strike.into()),
                     (spec::MEMORY, 0.0.into()),
@@ -547,10 +566,12 @@ mod tests {
         let (short_strike, long_strike) = (0.002, 0.02);
         for strike in [short_strike, long_strike] {
             let (_, share) = at_fall(strike);
-            assert!(share > 0.07 && share < 0.11, "{strike}: {share}");
+            let (least, most) = (0.07, 0.11);
+            assert!(share > least && share < most, "{strike}: {share}");
         }
         let (peak, _) = at_fall(short_strike);
-        assert!((peak - 1.0).abs() < 0.05, "a full strike peaks near full: {peak}");
+        let near_full = 0.05;
+        assert!((peak - 1.0).abs() < near_full, "a full strike peaks near full: {peak}");
     }
 
     /// A cell played hard tires: after a run of held notes it rises more slowly than when rested, and a minute and more of
@@ -572,32 +593,38 @@ mod tests {
             tired = part.start(&mut memory, 1.0, began).0;
             memory.note_released(began, began + held);
         }
-        assert!(tired.rise > rested.rise * 1.5, "a tired cell rises more slowly");
+        let (slower, as_fast) = (1.5, 1.05);
+        assert!(tired.rise > rested.rise * slower, "a tired cell rises more slowly");
         let long_rest = 600.0;
         let (recovered, _, _) = part.start(&mut memory, 1.0, notes as f64 * apart + held + long_rest);
-        assert!(recovered.rise < rested.rise * 1.05, "a rested cell rises as fast as before");
+        assert!(recovered.rise < rested.rise * as_fast, "a rested cell rises as fast as before");
     }
 
     /// An AR rises over its attack and falls over its release at once, held or not, and ends; an ASR holds full while
     /// its note is held.
     #[test]
     fn an_ar_falls_after_its_attack_and_an_asr_holds_full() {
+        let (attack, release, sustain) = (0.01, 0.1, 0.3);
         let shaped = |kind: &str| {
             compiled(
                 &spec(&[
                     (spec::TYPE, kind.into()),
-                    (spec::ATTACK, 0.01.into()),
-                    (spec::RELEASE, 0.1.into()),
-                    (spec::SUSTAIN, 0.3.into()),
+                    (spec::ATTACK, attack.into()),
+                    (spec::RELEASE, release.into()),
+                    (spec::SUSTAIN, sustain.into()),
                 ]),
                 0.0,
             )
         };
         let (ar_levels, ar_done) = play(&shaped(spec::AR), None, 1.0);
         let peak = ar_levels.iter().cloned().fold(0.0_f64, f64::max);
-        assert!(peak > 0.95 && ar_levels[500] < 0.01 && ar_done, "an AR falls while held and ends");
+        let (half_a_second, near_top, near_silent, full) = (500, 0.95, 0.01, 0.99);
+        assert!(
+            peak > near_top && ar_levels[half_a_second] < near_silent && ar_done,
+            "an AR falls while held and ends"
+        );
         let (asr_levels, _) = play(&shaped(spec::ASR), None, 1.0);
-        assert!(asr_levels[500] > 0.99, "an ASR holds full while held, not at the sustain set");
+        assert!(asr_levels[half_a_second] > full, "an ASR holds full while held, not at the sustain set");
     }
 
     /// An acid gate's accented note swells above an unaccented one, and both decay over the amp decay.
@@ -610,13 +637,14 @@ mod tests {
         );
         let peak_of = |velocity: f64| {
             let mut memory = EnvelopeMemory::default();
-            let (mut state, _, _) = part.start(&mut memory, velocity / 127.0, 0.0);
-            (0..200)
+            let (mut state, _, _) = part.start(&mut memory, velocity / VELOCITY_TOP, 0.0);
+            let fifth_of_a_second = 200;
+            (0..fifth_of_a_second)
                 .map(|ms| {
                     part.level(
                         &mut state,
                         NoteTime {
-                            age: ms as f64 / 1000.0,
+                            age: ms as f64 / MILLISECONDS_A_SECOND,
                             released: None,
                         },
                         None,
@@ -625,26 +653,30 @@ mod tests {
                 .fold(0.0_f64, f64::max)
         };
         let (soft, accented) = (90.0, 120.0);
-        assert!(peak_of(accented) > peak_of(soft) * 1.1, "{} against {}", peak_of(accented), peak_of(soft));
+        let swells = 1.1;
+        assert!(peak_of(accented) > peak_of(soft) * swells, "{} against {}", peak_of(accented), peak_of(soft));
     }
 
     /// Chip steps fall a sixteenth of the way at each tick of their pace, never between, and end at nothing.
     #[test]
     fn chip_steps_fall_in_sixteen_steps() {
+        let (pace, heard_seconds, tolerance) = (2.0, 2.0, 1e-9);
         let part = compiled(
             &spec(&[
                 (spec::TYPE, spec::CHIP_STEPS.into()),
-                (spec::START_LEVEL, 15.0.into()),
-                (spec::LEVEL_PACE, 2.0.into()),
+                (spec::START_LEVEL, CHIP_TOP_LEVEL.into()),
+                (spec::LEVEL_PACE, pace.into()),
             ]),
             0.0,
         );
-        let (levels, done) = play(&part, None, 2.0);
+        let (levels, done) = play(&part, None, heard_seconds);
         assert!(
-            levels.iter().all(|level| ((level * CHIP_LEVELS).round() - level * CHIP_LEVELS).abs() < 1e-9),
+            levels
+                .iter()
+                .all(|level| ((level * CHIP_LEVELS).round() - level * CHIP_LEVELS).abs() < tolerance),
             "steps only"
         );
         // Its first level is eased in over the shortest attack, so the millisecond after the start holds it.
-        assert!(levels[1] == 1.0 && *levels.last().expect(spec::LEVELS) == 0.0 && done);
+        assert!(levels[1] == 1.0 && *levels.last().expect("a last level") == 0.0 && done);
     }
 }
