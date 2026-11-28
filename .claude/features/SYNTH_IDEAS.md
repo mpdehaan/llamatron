@@ -180,6 +180,11 @@ The professor's research is in `.claude/notes/synthesis/`.
   with the stage's clean path) and Character: Tube (a push-pull cell at rest), Warm Tube (a single-ended stage leaning more
   as it gets louder), Iron (a transformer saturating the bass more than the treble), Desk (a class-A amplifier with a light
   transformer) and Tube and Iron (the whole chain).
+  The Mixer page has a few modulators of its own and a Mod Matrix that targets only the mixer, such as an LFO sweeping
+  a tilt EQ on a track or a bus.
+- **Tape-style saturation researched**: the professor researches how units that are not tape machines give a tape-like
+  saturation, compression and softening of the top, and what sound effects such a unit achieves, as the starting point
+  for a character of the mixer's.
 - **A tube compressor and limiter**, for buses: a variable-gain tube cell whose distortion grows as it compresses, a soft
   knee hardening toward limiting, a release that follows the programme; Input, Threshold, Knee, Time (six settings of its
   own, two following the programme), Link (stereo, dual or mid and side), Output, Mix and Colour, clean to dirty.

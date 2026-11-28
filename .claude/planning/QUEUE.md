@@ -9,6 +9,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 0. OTHER_IDEAS: The style rules reviewed by the Rust expert (once every value is named).
 0. OTHER_IDEAS: The rules reviewed by a Claude Code expert (after the Rust expert's review).
 0. SYNTH_IDEAS: Additive synthesis researched (after the expert reviews).
+0. SYNTH_IDEAS: Tape-style saturation researched (after the expert reviews).
 1. SYNTH_IDEAS: Synths on several threads.
 2. SYNTH_IDEAS: Steps, a per-frame table for every engine; SID closer to its chip; Glissando and LFO extras.
 3. OTHER_IDEAS: Page tests that read the page.
