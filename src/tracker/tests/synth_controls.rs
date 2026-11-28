@@ -412,7 +412,7 @@ fn every_effect_at_full_mix_sounds() {
         energy_after(&delayed, after_the_note) > energy_after(&dry, after_the_note),
         "MultiTap's echoes ring on after the note"
     );
-    for effect in ["bax", "bitcrush", "drive", "multitap"] {
+    for effect in llamatron_backend::effects::REGISTRY.iter().map(|entry| entry.name) {
         let wet = played(&instrument(&format!("{{ engine: asheville, effects: [{{ effect: {effect}, mix: 100 }}] }}")));
         let audible_share = 0.01;
         assert!(

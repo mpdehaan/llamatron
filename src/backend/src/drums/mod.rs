@@ -14,6 +14,7 @@
 //! pass, a fade where it falls silent, and a gain so that its loudest moment peaks at -3 dB.
 
 use crate::dsp::{self, band_pass_pair, Biquad, Random, BUTTERWORTH_Q};
+use crate::registry::{self, Entry};
 use std::f64::consts::PI;
 use std::sync::Arc;
 
@@ -33,8 +34,8 @@ const CENTER_MODES: [f64; 3] = [1.000, 2.296, 3.600];
 /// One hit of a drum, at the sample rate it was rendered for.
 pub type Hit = Arc<Vec<f32>>;
 
-/// The knobs as shares from 0 to 1, and what the note brings.
-struct Strike {
+/// The knobs as shares from 0 to 1, and what the note brings, which each machine's recipe reads.
+pub struct Strike {
     pitch: f64,
     decay: f64,
     color: f64,
@@ -47,6 +48,69 @@ struct Strike {
 
 /// One hit of a machine by its name, at its knobs, a note's pitch and velocity, and a sample rate; a machine this daemon
 /// does not know plays the kick, so that a newer tracker never crashes it.
+/// How a drum machine renders a hit: from the strike its knobs and the note make, drawing from the hit's own noise.
+pub type Build = fn(&Strike, &mut Random) -> Vec<f64>;
+
+/// The kick's recipe, which a new drum starts on.
+const KICK_BUILD: Build = |strike, noise| kick(strike, noise);
+
+/// Every drum machine, by the name a spec gives it, the file that holds it, and how it renders a hit.
+pub static REGISTRY: &[Entry<Build>] = &[
+    Entry {
+        name: "kick",
+        file: "mod.rs",
+        build: KICK_BUILD,
+    },
+    Entry {
+        name: "hard_kick",
+        file: "mod.rs",
+        build: |strike, noise| hard_kick(strike, noise),
+    },
+    Entry {
+        name: "synth_kick",
+        file: "mod.rs",
+        build: |strike, _noise| synth_kick(strike),
+    },
+    Entry {
+        name: "snare",
+        file: "mod.rs",
+        build: |strike, noise| snare(strike, noise),
+    },
+    Entry {
+        name: "clap",
+        file: "mod.rs",
+        build: |strike, noise| clap(strike, noise),
+    },
+    Entry {
+        name: "rim",
+        file: "mod.rs",
+        build: |strike, _noise| rim(strike),
+    },
+    Entry {
+        name: "hats",
+        file: "mod.rs",
+        build: |strike, noise| hats(strike, noise),
+    },
+    Entry {
+        name: "cowbell",
+        file: "mod.rs",
+        build: |strike, _noise| cowbell(strike),
+    },
+    Entry {
+        name: "acoustic_tom",
+        file: "mod.rs",
+        build: |strike, noise| acoustic_tom(strike, noise),
+    },
+    Entry {
+        name: "karplus_drum",
+        file: "mod.rs",
+        build: |strike, noise| karplus_drum(strike, noise),
+    },
+];
+
+/// The files of the drums' folder that are no machine of their own: none today.
+pub const HELPERS: &[&str] = &[];
+
 pub fn render_hit(machine: &str, knobs: &[f64], pitch: f64, velocity: f64, rate: f64) -> Hit {
     let knob = |place: usize| knobs.get(place).copied().unwrap_or(64.0) / KNOB_TOP;
     let strike = Strike {
@@ -62,18 +126,9 @@ pub fn render_hit(machine: &str, knobs: &[f64], pitch: f64, velocity: f64, rate:
     let whole: Vec<String> = knobs.iter().map(|knob| format!("{}", *knob as i64)).collect();
     let seed = dsp::crc32(format!("{machine}:{}:{pitch}:{velocity}", whole.join(",")).as_bytes());
     let mut noise = Random::new(seed as u64);
-    let made = match machine {
-        "hard_kick" => hard_kick(&strike, &mut noise),
-        "synth_kick" => synth_kick(&strike),
-        "snare" => snare(&strike, &mut noise),
-        "clap" => clap(&strike, &mut noise),
-        "rim" => rim(&strike),
-        "hats" => hats(&strike, &mut noise),
-        "cowbell" => cowbell(&strike),
-        "acoustic_tom" => acoustic_tom(&strike, &mut noise),
-        "karplus_drum" => karplus_drum(&strike, &mut noise),
-        _ => kick(&strike, &mut noise),
-    };
+    // A machine no registry holds plays the kick, the machine a new drum starts on.
+    let build = registry::find(REGISTRY, machine).map_or(KICK_BUILD, |entry| entry.build);
+    let made = build(&strike, &mut noise);
     Arc::new(finished(made, rate))
 }
 
@@ -471,22 +526,9 @@ fn resampled(line: &[f64], length: usize) -> Vec<f64> {
 mod tests {
     use super::*;
 
-    const MACHINES: [&str; 10] = [
-        "kick",
-        "hard_kick",
-        "synth_kick",
-        "snare",
-        "clap",
-        "rim",
-        "hats",
-        "cowbell",
-        "acoustic_tom",
-        "karplus_drum",
-    ];
-
     #[test]
     fn every_machine_renders_a_finite_hit_peaking_at_minus_three_decibels() {
-        for machine in MACHINES {
+        for machine in REGISTRY.iter().map(|entry| entry.name) {
             let hit = render_hit(machine, &[64.0; 5], 60.0, 100.0, 48000.0);
             assert!(hit.len() > 100, "{machine}");
             let peak = hit.iter().fold(0.0_f32, |most, sample| most.max(sample.abs()));

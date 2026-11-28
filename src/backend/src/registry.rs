@@ -33,6 +33,7 @@ pub fn find<Build>(entries: &'static [Entry<Build>], name: &str) -> Option<&'sta
 #[cfg(test)]
 pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str])> {
     vec![
+        ("drums", crate::drums::REGISTRY.iter().map(|entry| entry.file).collect(), crate::drums::HELPERS),
         (
             "effects",
             crate::effects::REGISTRY.iter().map(|entry| entry.file).collect(),

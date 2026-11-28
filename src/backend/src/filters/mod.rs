@@ -453,7 +453,7 @@ mod tests {
     fn no_filter_rings_on_by_itself() {
         let rate = 48000;
         let dies_within = 2 * rate;
-        for kind in ["ladder", "diode", "ota", "multimode", "sallen_key"] {
+        for kind in REGISTRY.iter().filter(|entry| matches!(entry.build, Slot::Filter(_))).map(|entry| entry.name) {
             for cutoff in [80.0, 1000.0, 8000.0] {
                 let filter = part_at(kind, 1.0, 1.0, cutoff);
                 let mut state = FilterState::default();
@@ -475,7 +475,7 @@ mod tests {
 
     #[test]
     fn every_filter_stays_finite_under_a_wild_sweep() {
-        for kind in ["ladder", "diode", "ota", "multimode", "sallen_key"] {
+        for kind in REGISTRY.iter().filter(|entry| matches!(entry.build, Slot::Filter(_))).map(|entry| entry.name) {
             let filter = part(kind, 1.0);
             let mut state = FilterState::default();
             for place in 0..48000 {

@@ -14,7 +14,7 @@ use llamatron_backend::modulation::{lfos, matrix};
 use llamatron_backend::oscillators;
 use llamatron_model::file::data::{load, Data};
 use llamatron_model::objects::setlist::Instrument;
-use llamatron_model::schema::generated::file_format::{EFFECTS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
+use llamatron_model::schema::generated::file_format::{DRUM_MACHINES, EFFECTS, LFO_SHAPES, MATRIX_DESTINATIONS, MATRIX_SOURCES};
 use llamatron_tracker::generated::sounds::PART_TYPES;
 use llamatron_tracker::instrument_sound::Sound;
 use llamatron_tracker::sound_spec::synth_spec;
@@ -150,4 +150,12 @@ fn every_matrix_source_and_destination_offered_is_registered_and_every_registere
         .chain(matrix::RATE_DESTINATIONS.iter().copied())
         .collect();
     assert_eq!(destinations, registered_destinations);
+}
+
+/// Every drum machine the file names is registered, and every registered machine is one the file names.
+#[test]
+fn every_drum_machine_offered_is_registered_and_every_registered_one_is_offered() {
+    let offered: BTreeSet<&str> = DRUM_MACHINES.iter().copied().collect();
+    let registered: BTreeSet<&str> = llamatron_backend::drums::REGISTRY.iter().map(|entry| entry.name).collect();
+    assert_eq!(offered, registered);
 }

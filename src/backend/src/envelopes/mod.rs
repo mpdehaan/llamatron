@@ -423,6 +423,15 @@ mod tests {
             spec(&[("type", "acid_gate".into()), ("soft_attack", 0.0.into()), ("amp_decay", 0.0.into())]),
             spec(&[("type", "chip_steps".into()), ("start_level", 15.0.into())]),
         ];
+        // Every envelope type with a shape of its own is held here: a new type fails until its snappiest settings join.
+        let held: Vec<&str> = snappiest
+            .iter()
+            .filter_map(|each| each.as_map())
+            .filter_map(|pairs| pairs.iter().find(|(key, _)| key.as_str() == Some("type")).and_then(|(_, value)| value.as_str()))
+            .collect();
+        for entry in REGISTRY.iter().filter(|entry| entry.name != OFF) {
+            assert!(held.contains(&entry.name), "the envelope type {} has no snappiest settings here", entry.name);
+        }
         for each in snappiest {
             let part = compiled(&each, 0.0);
             let (full_velocity, struck_at) = (1.0, 0.0);
