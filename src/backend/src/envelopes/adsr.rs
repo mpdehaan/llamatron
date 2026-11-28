@@ -4,28 +4,35 @@
 //! The snappy ADSR, and the AR and ASR it reads as: attack, hold, decay, sustain and release, with its curves.
 
 use super::*;
+use llamatron_names::spec;
+
+/// What an ADSR takes where its spec names none: its release, decay and attack in seconds, and its sustain level.
+const DEFAULT_RELEASE: f64 = 0.2;
+const DEFAULT_SUSTAIN: f64 = 0.6;
+const DEFAULT_DECAY: f64 = 0.3;
+const DEFAULT_ATTACK: f64 = 0.005;
 
 pub fn compiled(spec: &Value, kind: &str) -> EnvelopePart {
-    let struck = kind == "ar";
-    let release = number(spec, "release", 0.2).max(SHORTEST_TIME) / T60;
-    let mut sustain = number(spec, "sustain", 0.6);
-    let mut decay = number(spec, "decay", 0.3).max(SHORTEST_TIME) / T60;
+    let struck = kind == spec::AR;
+    let release = number(spec, spec::RELEASE, DEFAULT_RELEASE).max(SHORTEST_TIME) / T60;
+    let mut sustain = number(spec, spec::SUSTAIN, DEFAULT_SUSTAIN);
+    let mut decay = number(spec, spec::DECAY, DEFAULT_DECAY).max(SHORTEST_TIME) / T60;
     if struck {
         sustain = 0.0;
         decay = release;
-    } else if kind == "asr" {
+    } else if kind == spec::ASR {
         sustain = 1.0;
     }
-    let curve = number(spec, "attack_curve", TIMER_CURVE);
+    let curve = number(spec, spec::ATTACK_CURVE, TIMER_CURVE);
     let target = (curve > STRAIGHT).then(|| 1.0 + 0.5 * (TIMER_CURVE / curve).powf(CURVE_POWER));
     let bend = (curve < -STRAIGHT).then(|| SWELL_BEND * -curve / 100.0);
     EnvelopePart::Adsr {
-        attack: number(spec, "attack", 0.005).max(SHORTEST_ATTACK),
-        hold: number(spec, "hold", 0.0),
+        attack: number(spec, spec::ATTACK, DEFAULT_ATTACK).max(SHORTEST_ATTACK),
+        hold: number(spec, spec::HOLD, 0.0),
         decay,
         sustain,
         release,
-        snap: number(spec, "snap", 0.0),
+        snap: number(spec, spec::SNAP, 0.0),
         target,
         bend,
         struck,

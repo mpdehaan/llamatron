@@ -7,7 +7,11 @@
 
 use crate::dsp::blep;
 use crate::protocol::values::{number, truth};
+use llamatron_names::spec;
 use rmpv::Value;
+
+/// The bits a Bitcrush keeps where its spec names none.
+const DEFAULT_BITS: f64 = 16.0;
 
 /// Where Bitcrush's dither starts, the same every playing.
 const DITHER_SEED: u64 = 0x9E37_79B9_7F4A_7C15;
@@ -44,11 +48,11 @@ pub struct Bitcrush {
 impl Bitcrush {
     /// Bitcrush from its spec: its Bits, Dither and Rate in hertz, at a sample rate.
     pub fn compiled(spec: &Value, rate: f64) -> Bitcrush {
-        let bits = number(spec, "bits", 16.0);
-        let hold_rate = number(spec, "rate", 0.0);
+        let bits = number(spec, spec::BITS, DEFAULT_BITS);
+        let hold_rate = number(spec, spec::RATE, 0.0);
         Bitcrush {
             levels: if bits < 16.0 { 2f64.powf(bits - 1.0) } else { 0.0 },
-            dither: truth(spec, "dither", false),
+            dither: truth(spec, spec::DITHER, false),
             noise: DITHER_SEED,
             step: if hold_rate > 0.0 && hold_rate < rate { hold_rate / rate } else { 0.0 },
             phase: 0.0,

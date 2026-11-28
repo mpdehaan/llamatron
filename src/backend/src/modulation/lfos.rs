@@ -15,6 +15,7 @@ use crate::modulation::matrix::{BankSource, RateRoute, WeightRoute};
 use crate::modulation::snail::{Snail, OUTPUT_COUNT, WEIGHTED_COUNT};
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -58,7 +59,7 @@ struct Lfo {
 }
 
 /// The shape an LFO takes when its spec names none.
-const SINE: &str = "sine";
+const SINE: &str = spec::SINE;
 
 /// Every LFO shape a spec may name, and what it is.
 pub static SHAPES: &[Named<Shape>] = &[
@@ -67,27 +68,27 @@ pub static SHAPES: &[Named<Shape>] = &[
         value: Shape::Sine,
     },
     Named {
-        name: "triangle",
+        name: spec::TRIANGLE,
         value: Shape::Triangle,
     },
     Named {
-        name: "saw_up",
+        name: spec::SAW_UP,
         value: Shape::SawUp,
     },
     Named {
-        name: "saw_down",
+        name: spec::SAW_DOWN,
         value: Shape::SawDown,
     },
     Named {
-        name: "square",
+        name: spec::SQUARE,
         value: Shape::Square,
     },
     Named {
-        name: "sample_and_hold",
+        name: spec::SAMPLE_AND_HOLD,
         value: Shape::SampleAndHold,
     },
     Named {
-        name: "smooth_random",
+        name: spec::SMOOTH_RANDOM,
         value: Shape::SmoothRandom,
     },
 ];
@@ -118,7 +119,7 @@ pub struct LfoBank {
 }
 
 /// What a slot holds when its spec names a type: a Snail; any other is an LFO.
-const SNAIL_TYPE: &str = "snail";
+const SNAIL_TYPE: &str = spec::SNAIL;
 /// The settings of a Snail's weightings, Slow's and Slower's, each a fraction from -1 to 1.
 const WEIGHTINGS: [&str; WEIGHTED_COUNT] = ["slow", "slower"];
 
@@ -129,11 +130,11 @@ fn snail_seed(instrument: u64, place: usize) -> u64 {
 
 /// A slot's Snail where its spec names one, seeded by an instrument's number.
 fn snail_of(spec: &Value, instrument: u64, place: usize) -> Option<Snail> {
-    if spec.is_nil() || word(spec, "type", "lfo") != SNAIL_TYPE {
+    if spec.is_nil() || word(spec, spec::TYPE, spec::LFO) != SNAIL_TYPE {
         return None;
     }
     let weightings = std::array::from_fn(|circuit| number(spec, WEIGHTINGS[circuit], 0.0).clamp(-1.0, 1.0));
-    let given = crate::protocol::values::field(spec, "seconds").and_then(Value::as_array);
+    let given = crate::protocol::values::field(spec, spec::SECONDS).and_then(Value::as_array);
     let trips = std::array::from_fn(|lane| given.and_then(|seconds| seconds.get(lane)).and_then(crate::protocol::values::as_number));
     Some(Snail::seeded(snail_seed(instrument, place), weightings, trips))
 }
@@ -150,25 +151,25 @@ impl LfoBank {
         let lfos = (0..LFO_COUNT)
             .map(|place| {
                 let spec = specs.get(place)?;
-                if spec.is_nil() || word(spec, "type", "lfo") == SNAIL_TYPE {
+                if spec.is_nil() || word(spec, spec::TYPE, spec::LFO) == SNAIL_TYPE {
                     return None;
                 }
-                let shape = registry::named(SHAPES, word(spec, "shape", SINE)).unwrap_or(Shape::Sine);
-                let quarters = crate::protocol::values::field(spec, "quarters").and_then(crate::protocol::values::as_number);
+                let shape = registry::named(SHAPES, word(spec, spec::SHAPE, SINE)).unwrap_or(Shape::Sine);
+                let quarters = crate::protocol::values::field(spec, spec::QUARTERS).and_then(crate::protocol::values::as_number);
                 let step = match quarters {
                     Some(quarters) => tempo_step(FIRST_TEMPO, quarters, rate),
-                    None => number(spec, "rate", 1.0) / rate,
+                    None => number(spec, spec::RATE, 1.0) / rate,
                 };
                 Some(Lfo {
                     shape,
                     step,
-                    fade: number(spec, "fade_in", 0.0).max(0.0),
+                    fade: number(spec, spec::FADE_IN, 0.0).max(0.0),
                     quarters,
-                    ratio: crate::protocol::values::field(spec, "key_ratio").and_then(crate::protocol::values::as_number),
-                    restart: match word(spec, "restart", "on_play") {
-                        "each_note" => Restart::EachNote,
-                        "each_scene" => Restart::EachScene,
-                        "never" => Restart::Never,
+                    ratio: crate::protocol::values::field(spec, spec::KEY_RATIO).and_then(crate::protocol::values::as_number),
+                    restart: match word(spec, spec::RESTART, spec::ON_PLAY) {
+                        spec::EACH_NOTE => Restart::EachNote,
+                        spec::EACH_SCENE => Restart::EachScene,
+                        spec::NEVER => Restart::Never,
                         _ => Restart::OnPlay,
                     },
                     cycles: 0.0,
@@ -483,12 +484,12 @@ mod tests {
     /// slow square held high doubles a 10 Hz sine's cycles. A slot reading anything but an LFO moves no rate.
     #[test]
     fn an_lfo_moves_another_lfos_rate() {
-        let lfo = |shape: &str, hertz: f64| Value::Map(vec![("shape".into(), shape.into()), ("rate".into(), hertz.into())]);
+        let lfo = |shape: &str, hertz: f64| Value::Map(vec![(spec::SHAPE.into(), shape.into()), (spec::RATE.into(), hertz.into())]);
         let slot = |source: &str, amount: f64| {
             Value::Map(vec![
-                ("source".into(), source.into()),
-                ("destination".into(), "lfo1_rate".into()),
-                ("amount".into(), amount.into()),
+                (spec::SOURCE.into(), source.into()),
+                (spec::DESTINATION.into(), spec::LFO1_RATE.into()),
+                (spec::AMOUNT.into(), amount.into()),
             ])
         };
         let cycles = |slots: Vec<Value>| {
@@ -509,17 +510,17 @@ mod tests {
         let one_octave = 0.5;
         let cycles_of_10_hertz_in_half_a_second = 5;
         let still = cycles(Vec::new());
-        let doubled = cycles(vec![slot("lfo2", one_octave)]);
+        let doubled = cycles(vec![slot(spec::LFO2, one_octave)]);
         assert!((still as i64 - cycles_of_10_hertz_in_half_a_second).abs() <= 1, "{still}");
         assert!((doubled as i64 - 2 * still as i64).abs() <= 1, "{doubled} against {still}");
-        assert_eq!(cycles(vec![slot("velocity", one_octave)]), still);
+        assert_eq!(cycles(vec![slot(spec::VELOCITY, one_octave)]), still);
     }
 
     /// A Smooth random LFO glides between its random values: no sample jumps as Sample & Hold's steps do.
     #[test]
     fn smooth_random_glides_where_sample_and_hold_steps() {
         let most_jump = |shape: &str| {
-            let mut lfos = bank(&[("shape", shape.into()), ("rate", 10.0.into())]);
+            let mut lfos = bank(&[(spec::SHAPE, shape.into()), (spec::RATE, 10.0.into())]);
             lfos.advance(MOST_FRAMES, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
             lfos.now[0]
                 .windows(2)
@@ -528,8 +529,8 @@ mod tests {
                 .fold(0.0, f64::max)
         };
         let gliding_step = 0.01;
-        assert!(most_jump("smooth_random") < gliding_step, "{}", most_jump("smooth_random"));
-        assert!(most_jump("sample_and_hold") > gliding_step);
+        assert!(most_jump(spec::SMOOTH_RANDOM) < gliding_step, "{}", most_jump(spec::SMOOTH_RANDOM));
+        assert!(most_jump(spec::SAMPLE_AND_HOLD) > gliding_step);
     }
 
     /// An LFO following the tempo runs a cycle a division of the beat: a quarter note at 120 is two cycles a second,
@@ -537,7 +538,7 @@ mod tests {
     #[test]
     fn a_tempo_lfo_follows_the_song_tempo() {
         let quarter = 1.0;
-        let mut lfos = bank(&[("shape", "saw_up".into()), ("quarters", quarter.into())]);
+        let mut lfos = bank(&[(spec::SHAPE, spec::SAW_UP.into()), (spec::QUARTERS, quarter.into())]);
         let cycles_in = |lfos: &mut LfoBank| {
             let before = lfos.lfos[0].as_ref().expect("an LFO").cycles;
             lfos.advance(RATE as usize / 8, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
@@ -557,8 +558,8 @@ mod tests {
     fn on_play_starts_from_zero_and_never_goes_on() {
         let mut lfos = LfoBank::compiled(
             &[
-                Value::Map(vec![("restart".into(), "on_play".into()), ("rate".into(), 1.0.into())]),
-                Value::Map(vec![("restart".into(), "never".into()), ("rate".into(), 1.0.into())]),
+                Value::Map(vec![(spec::RESTART.into(), spec::ON_PLAY.into()), (spec::RATE.into(), 1.0.into())]),
+                Value::Map(vec![(spec::RESTART.into(), spec::NEVER.into()), (spec::RATE.into(), 1.0.into())]),
             ],
             RATE,
         );
@@ -584,7 +585,7 @@ mod tests {
         assert!((faded_in(fade / 2.0, fade) - 0.5).abs() < 1e-12);
         assert_eq!(faded_in(fade, fade), 1.0);
         assert_eq!(faded_in(0.0, 0.0), 1.0);
-        assert!(bank(&[("fade_in", fade.into())]).fades()[0] == fade);
+        assert!(bank(&[(spec::FADE_IN, fade.into())]).fades()[0] == fade);
     }
 
     /// A Mod Matrix route from an LFO to a Snail's Slow weighting moves the path Slow takes, leaning it the whole time
@@ -594,10 +595,10 @@ mod tests {
         let heard_seconds = 60.0;
         let specs = [Value::Map(vec![("type".into(), "snail".into())]), Value::Map(vec![("rate".into(), 0.5.into())])];
         let route = Value::Map(vec![
-            ("source".into(), "lfo2".into()),
-            ("destination".into(), "lfo1_slow".into()),
-            ("amount".into(), 1.0.into()),
-            ("polarity".into(), "unipolar".into()),
+            (spec::SOURCE.into(), spec::LFO2.into()),
+            (spec::DESTINATION.into(), spec::LFO1_SLOW.into()),
+            (spec::AMOUNT.into(), 1.0.into()),
+            (spec::POLARITY.into(), spec::UNIPOLAR.into()),
         ]);
         let slow_y = |slots: &[Value]| {
             let mut bank = LfoBank::compiled(&specs, RATE).with_weight_routes(crate::modulation::matrix::weight_routes(slots));

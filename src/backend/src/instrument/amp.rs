@@ -10,6 +10,7 @@
 
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
+use llamatron_names::spec;
 
 /// The kinds of Amp, each a circuit.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -55,7 +56,7 @@ impl Default for AmpPart {
 }
 
 /// The Amp's type when its spec names none.
-const CLEAN: &str = "clean";
+const CLEAN: &str = spec::CLEAN;
 
 /// Every Amp type a spec may name, and what it is.
 pub static TYPES: &[Named<AmpKind>] = &[
@@ -64,11 +65,11 @@ pub static TYPES: &[Named<AmpKind>] = &[
         value: AmpKind::Clean,
     },
     Named {
-        name: "transistor",
+        name: spec::TRANSISTOR,
         value: AmpKind::Transistor,
     },
     Named {
-        name: "ota_vca",
+        name: spec::OTA_VCA,
         value: AmpKind::Ota,
     },
     // The low-pass gate in the Amp's slot is the voice's amp itself (filters/gate.rs); the Amp's own circuit stays
@@ -81,13 +82,13 @@ pub static TYPES: &[Named<AmpKind>] = &[
 
 /// An Amp from its spec: its type, Response, Drive and Bleed as fractions; Clean for none or one it does not know.
 pub fn compiled(spec: &rmpv::Value) -> AmpPart {
-    let kind = registry::named(TYPES, word(spec, "type", CLEAN)).unwrap_or(AmpKind::Clean);
+    let kind = registry::named(TYPES, word(spec, spec::TYPE, CLEAN)).unwrap_or(AmpKind::Clean);
     AmpPart {
         kind,
-        response: number(spec, "response", 0.0).clamp(0.0, 1.0),
-        drive: number(spec, "drive", 0.0).clamp(0.0, 1.0),
-        bleed: number(spec, "bleed", 0.0).clamp(0.0, 1.0),
-        character: number(spec, "character", 0.0).clamp(0.0, 1.0),
+        response: number(spec, spec::RESPONSE, 0.0).clamp(0.0, 1.0),
+        drive: number(spec, spec::DRIVE, 0.0).clamp(0.0, 1.0),
+        bleed: number(spec, spec::BLEED, 0.0).clamp(0.0, 1.0),
+        character: number(spec, spec::CHARACTER, 0.0).clamp(0.0, 1.0),
     }
 }
 
@@ -144,17 +145,20 @@ mod tests {
 
     fn amp(kind: &str, response: f64, drive: f64, bleed: f64) -> AmpPart {
         compiled(&rmpv::Value::Map(vec![
-            ("type".into(), kind.into()),
-            ("response".into(), response.into()),
-            ("drive".into(), drive.into()),
-            ("bleed".into(), bleed.into()),
+            (spec::TYPE.into(), kind.into()),
+            (spec::RESPONSE.into(), response.into()),
+            (spec::DRIVE.into(), drive.into()),
+            (spec::BLEED.into(), bleed.into()),
         ]))
     }
 
     /// A Clean amp's Character rounds off a loud note and leaves a quiet one nearly as it was.
     #[test]
     fn a_clean_amps_character_rounds_off_loud_notes() {
-        let warm = compiled(&rmpv::Value::Map(vec![("type".into(), "clean".into()), ("character".into(), 1.0.into())]));
+        let warm = compiled(&rmpv::Value::Map(vec![
+            (spec::TYPE.into(), spec::CLEAN.into()),
+            (spec::CHARACTER.into(), 1.0.into()),
+        ]));
         let (quiet, loud, open) = (0.05, 1.0, 1.0);
         assert!((warm.process(quiet, open, 1.0) / quiet - 1.0).abs() < 0.05);
         assert!(warm.process(loud, open, 1.0) < loud * 0.9);
@@ -164,20 +168,21 @@ mod tests {
     #[test]
     fn a_clean_amp_is_the_signal_times_its_opening() {
         let (signal, half) = (0.8, 0.5);
-        assert_eq!(amp("clean", 0.0, 0.0, 0.0).process(signal, half, 1.0), signal * half);
-        assert!(amp("clean", 1.0, 0.0, 0.0).process(signal, half, 1.0) < signal * half);
+        assert_eq!(amp(spec::CLEAN, 0.0, 0.0, 0.0).process(signal, half, 1.0), signal * half);
+        assert!(amp(spec::CLEAN, 1.0, 0.0, 0.0).process(signal, half, 1.0) < signal * half);
     }
 
     /// A Transistor amp squashes a loud note harder than a quiet one and leaks a little when shut; an OTA saturates too.
     #[test]
     fn a_transistor_amp_warms_loud_notes_and_bleeds_when_shut() {
-        let transistor = amp("transistor", 0.0, 0.5, 1.0);
+        let (drive, full_bleed) = (0.5, 1.0);
+        let transistor = amp(spec::TRANSISTOR, 0.0, drive, full_bleed);
         let (quiet, loud, open, shut) = (0.05, 1.0, 1.0, 0.0);
         let quiet_gain = transistor.process(quiet, open, 1.0) / quiet;
         let loud_gain = transistor.process(loud, open, 1.0) / loud;
         assert!(loud_gain < quiet_gain * 0.9, "{loud_gain} against {quiet_gain}");
         assert!(transistor.process(loud, shut, 1.0) > 0.0, "it leaks when shut");
-        let ota = amp("ota_vca", 0.0, 0.5, 0.0);
+        let ota = amp(spec::OTA_VCA, 0.0, drive, 0.0);
         assert!(ota.process(loud, open, 1.0) / loud < ota.process(quiet, open, 1.0) / quiet);
     }
 }

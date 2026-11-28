@@ -14,23 +14,24 @@
 
 pub mod values;
 
+use llamatron_names::wire;
 use rmpv::Value;
 use std::io::{self, Read, Write};
 
-pub const READY: &str = "ready";
-pub const FAILED: &str = "failed";
-pub const LOAD: &str = "load";
-pub const STATISTICS: &str = "statistics";
-pub const RENDERED: &str = "rendered";
-pub const INSTRUMENT: &str = "instrument";
-pub const NOTES: &str = "notes";
-pub const SILENCE: &str = "silence";
-pub const CLOSE: &str = "close";
-pub const RENDER: &str = "render";
-pub const SOUNDFONT: &str = "soundfont";
-pub const SOUNDFONT_READY: &str = "soundfont_ready";
-pub const MIDI: &str = "midi";
-pub const FORGET_MIDI: &str = "forget_midi";
+pub const READY: &str = wire::READY;
+pub const FAILED: &str = wire::FAILED;
+pub const LOAD: &str = wire::LOAD;
+pub const STATISTICS: &str = wire::STATISTICS;
+pub const RENDERED: &str = wire::RENDERED;
+pub const INSTRUMENT: &str = wire::INSTRUMENT;
+pub const NOTES: &str = wire::NOTES;
+pub const SILENCE: &str = wire::SILENCE;
+pub const CLOSE: &str = wire::CLOSE;
+pub const RENDER: &str = wire::RENDER;
+pub const SOUNDFONT: &str = wire::SOUNDFONT;
+pub const SOUNDFONT_READY: &str = wire::SOUNDFONT_READY;
+pub const MIDI: &str = wire::MIDI;
+pub const FORGET_MIDI: &str = wire::FORGET_MIDI;
 /// The longest message the daemon reads, past which the stream is taken to be broken.
 const LONGEST_MESSAGE: usize = 64 << 20;
 

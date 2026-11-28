@@ -34,8 +34,12 @@ use crate::filters::ladder::{LadderSettings, LadderState};
 use crate::filters::sallen_key::SallenKeyState;
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Entry};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
+
+/// The cutoff a filter takes where its spec names none, in hertz.
+const DEFAULT_CUTOFF_HERTZ: f64 = 1200.0;
 
 pub const ENVELOPE_OCTAVES: f64 = 4.0;
 const LOWEST_CUTOFF: f64 = 20.0;
@@ -59,7 +63,7 @@ const DEFAULT_BASS_COMPENSATION: f64 = 0.8;
 const FM_OCTAVES: f64 = 2.0;
 
 /// The Filter slot's name when it holds no filter.
-pub const NO_FILTER: &str = "none";
+pub const NO_FILTER: &str = spec::NONE;
 
 /// What a registered filter is: one of the filters this module runs, or the low-pass gate, a part of its own
 /// (`gate.rs`) that is the voice's filter and amp together.
@@ -78,12 +82,12 @@ pub static REGISTRY: &[Entry<Slot>] = &[
         build: Slot::Empty,
     },
     Entry {
-        name: "diode",
+        name: spec::DIODE,
         file: "diode.rs",
         build: Slot::Filter(FilterKind::Diode),
     },
     Entry {
-        name: "ladder",
+        name: spec::LADDER,
         file: "ladder.rs",
         build: Slot::Filter(FilterKind::Ladder),
     },
@@ -93,17 +97,17 @@ pub static REGISTRY: &[Entry<Slot>] = &[
         build: Slot::Gate,
     },
     Entry {
-        name: "multimode",
+        name: spec::MULTIMODE,
         file: "multimode.rs",
         build: Slot::Filter(FilterKind::Multimode),
     },
     Entry {
-        name: "ota",
+        name: spec::OTA,
         file: "ota.rs",
         build: Slot::Filter(FilterKind::Ota),
     },
     Entry {
-        name: "sallen_key",
+        name: spec::SALLEN_KEY,
         file: "sallen_key.rs",
         build: Slot::Filter(FilterKind::SallenKey),
     },
@@ -190,16 +194,16 @@ impl FilterPart {
     /// The filter a spec describes, or None for none or the low-pass gate.
     pub fn compiled(spec: &Value, rate: f64) -> Option<FilterPart> {
         // No filter, the low-pass gate (its own part), or a name no registry holds builds no filter here.
-        let entry = registry::find(REGISTRY, word(spec, "type", NO_FILTER))?;
+        let entry = registry::find(REGISTRY, word(spec, spec::TYPE, NO_FILTER))?;
         let Slot::Filter(kind) = entry.build else { return None };
-        let mode = match word(spec, "mode", "low") {
-            "band" if kind == FilterKind::Multimode => FilterMode::Band,
-            "notch" if kind == FilterKind::Multimode => FilterMode::Notch,
-            "high" if !matches!(kind, FilterKind::Ladder | FilterKind::Diode | FilterKind::Ota) => FilterMode::High,
+        let mode = match word(spec, spec::MODE, spec::LOW) {
+            spec::BAND if kind == FilterKind::Multimode => FilterMode::Band,
+            spec::NOTCH if kind == FilterKind::Multimode => FilterMode::Notch,
+            spec::HIGH if !matches!(kind, FilterKind::Ladder | FilterKind::Diode | FilterKind::Ota) => FilterMode::High,
             _ => FilterMode::Low,
         };
-        let mut amount = number(spec, "env_amount", 0.0);
-        let mut cutoff = number(spec, "cutoff", 1200.0);
+        let mut amount = number(spec, spec::ENV_AMOUNT, 0.0);
+        let mut cutoff = number(spec, spec::CUTOFF, DEFAULT_CUTOFF_HERTZ);
         if kind == FilterKind::Diode {
             // The acid bass's measured mapping: the Env amount sets how far the envelope sweeps, and lowers where the
             // sweep starts, by the cutoff's place in the circuit's range; an amount below zero closes the filter instead.
@@ -217,10 +221,10 @@ impl FilterPart {
             FilterKind::Ota => push *= OTA_PUSH,
             _ => {}
         }
-        let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
+        let resonance = number(spec, spec::RESONANCE, 0.0).clamp(0.0, 1.0);
         let poles = (number(spec, "poles", 4.0) as usize).clamp(1, 4);
         let saturates = matches!(kind, FilterKind::Ladder | FilterKind::Ota | FilterKind::SallenKey);
-        let driven = number(spec, "drive", 0.0) > 0.0;
+        let driven = number(spec, spec::DRIVE, 0.0) > 0.0;
         // Drive's curve makes harmonics far above the note, so any driven filter runs it at twice the rate or more.
         // The Ladder's circuit runs at four times the rate always, and the Diode's at its own.
         let oversampled = kind != FilterKind::Ladder && ((saturates && resonance > OVERSAMPLED_FROM_RESONANCE) || (driven && kind != FilterKind::Diode));
@@ -230,11 +234,15 @@ impl FilterPart {
             cutoff,
             resonance,
             amount,
-            key_track: number(spec, "key_track", 0.0),
+            key_track: number(spec, spec::KEY_TRACK, 0.0),
             push,
-            ladder: LadderSettings::new(number(spec, "drive", 0.0), number(spec, "bass_compensation", DEFAULT_BASS_COMPENSATION), poles),
+            ladder: LadderSettings::new(
+                number(spec, spec::DRIVE, 0.0),
+                number(spec, spec::BASS_COMPENSATION, DEFAULT_BASS_COMPENSATION),
+                poles,
+            ),
             poles,
-            fm: number(spec, "filter_fm", 0.0) * FM_OCTAVES,
+            fm: number(spec, spec::FILTER_FM, 0.0) * FM_OCTAVES,
             rate,
             oversampled,
             every_sample: false,
@@ -410,9 +418,9 @@ mod tests {
 
     fn part(kind: &str, resonance: f64) -> FilterPart {
         let spec = Value::Map(vec![
-            ("type".into(), kind.into()),
-            ("cutoff".into(), 1000.0.into()),
-            ("resonance".into(), resonance.into()),
+            (spec::TYPE.into(), kind.into()),
+            (spec::CUTOFF.into(), 1000.0.into()),
+            (spec::RESONANCE.into(), resonance.into()),
         ]);
         FilterPart::compiled(&spec, 48000.0).unwrap()
     }
@@ -420,10 +428,10 @@ mod tests {
     /// A filter of a kind at a Resonance, a Drive and a cutoff.
     fn part_at(kind: &str, resonance: f64, drive: f64, cutoff: f64) -> FilterPart {
         let spec = Value::Map(vec![
-            ("type".into(), kind.into()),
-            ("cutoff".into(), cutoff.into()),
-            ("resonance".into(), resonance.into()),
-            ("drive".into(), drive.into()),
+            (spec::TYPE.into(), kind.into()),
+            (spec::CUTOFF.into(), cutoff.into()),
+            (spec::RESONANCE.into(), resonance.into()),
+            (spec::DRIVE.into(), drive.into()),
         ]);
         FilterPart::compiled(&spec, 48000.0).unwrap()
     }
@@ -442,7 +450,7 @@ mod tests {
 
     #[test]
     fn a_ladder_passes_the_bass_and_cuts_four_poles_an_octave_above() {
-        let ladder = part("ladder", 0.0);
+        let ladder = part(spec::LADDER, 0.0);
         assert!(loudness(&ladder, 100.0) > 0.9);
         assert!(loudness(&ladder, 8000.0) < 0.01);
     }
@@ -489,7 +497,8 @@ mod tests {
     /// A ladder's stages saturate: a sine near the cutoff loud comes out less than ten times as loud as it quiet.
     #[test]
     fn a_ladder_squashes_a_loud_sine() {
-        let ladder = part("ladder", 0.5);
+        let resonance = 0.5;
+        let ladder = part(spec::LADDER, resonance);
         let level = |amplitude: f64| {
             let mut state = FilterState::default();
             (0..48_000)
@@ -509,7 +518,7 @@ mod tests {
     /// few times full scale, while a quiet one still rings up its peak.
     #[test]
     fn a_multimode_peak_is_held_round_when_loud() {
-        let multimode = part("multimode", 1.0);
+        let multimode = part(spec::MULTIMODE, 1.0);
         let peak = |amplitude: f64| {
             let mut state = FilterState::default();
             (0..48_000)
@@ -533,7 +542,8 @@ mod tests {
         use crate::dsp::spectrum::stray_decibels;
         let hertz = 5_003;
         let rate = 48_000;
-        for (kind, most_stray) in [("ladder", -40.0), ("ota", -40.0), ("multimode", -40.0), ("diode", -30.0)] {
+        let (clean, diode) = (-40.0, -30.0);
+        for (kind, most_stray) in [(spec::LADDER, clean), (spec::OTA, clean), (spec::MULTIMODE, clean), (spec::DIODE, diode)] {
             let filter = part_at(kind, 0.6, 1.0, 9000.0);
             let mut state = FilterState::default();
             let tone = |place: usize| 0.9 * (2.0 * PI * hertz as f64 * place as f64 / rate as f64).sin();
@@ -545,10 +555,10 @@ mod tests {
     /// A Ladder's level in decibels for a quiet sine at a frequency, at a Resonance and a Bass compensation.
     fn ladder_level(frequency: f64, resonance: f64, compensation: f64) -> f64 {
         let spec = Value::Map(vec![
-            ("type".into(), "ladder".into()),
-            ("cutoff".into(), 1000.0.into()),
-            ("resonance".into(), resonance.into()),
-            ("bass_compensation".into(), compensation.into()),
+            (spec::TYPE.into(), spec::LADDER.into()),
+            (spec::CUTOFF.into(), 1000.0.into()),
+            (spec::RESONANCE.into(), resonance.into()),
+            (spec::BASS_COMPENSATION.into(), compensation.into()),
         ]);
         let filter = FilterPart::compiled(&spec, 48000.0).expect("a ladder");
         20.0 * loudness(&filter, frequency).log10()
@@ -572,7 +582,8 @@ mod tests {
         use crate::dsp::spectrum::harmonic_decibels;
         let hertz = 200;
         let second = |unit: LadderUnit| {
-            let mut filter = part_at("ladder", 0.3, 0.5, 4000.0);
+            let (resonance, drive, cutoff) = (0.3, 0.5, 4000.0);
+            let mut filter = part_at(spec::LADDER, resonance, drive, cutoff);
             filter.ladder.unit = unit;
             let mut state = FilterState::default();
             let out: Vec<f32> = (0..96_000)
@@ -589,7 +600,8 @@ mod tests {
     fn ladder_grit(drive: f64) -> f64 {
         use crate::dsp::spectrum::harmonic_decibels;
         let hertz = 100;
-        let filter = part_at("ladder", 0.0, drive, 6000.0);
+        let cutoff = 6000.0;
+        let filter = part_at(spec::LADDER, 0.0, drive, cutoff);
         let mut state = FilterState::default();
         let tone = |place: usize| 0.5 * (2.0 * PI * hertz as f64 * place as f64 / 48000.0).sin();
         let out: Vec<f32> = (0..96_000).map(|place| filter.process(&mut state, tone(place), 0.0, 0.0) as f32).collect();
@@ -610,7 +622,8 @@ mod tests {
         use crate::dsp::spectrum::harmonic_decibels;
         let hertz = 110;
         let near_cutoff = 9;
-        let filter = part_at("ladder", 1.0, 0.0, 1000.0);
+        let cutoff = 1000.0;
+        let filter = part_at(spec::LADDER, 1.0, 0.0, cutoff);
         let mut state = FilterState::default();
         let saw = |place: usize| 0.5 * (2.0 * ((place as f64 * hertz as f64 / 48000.0).fract()) - 1.0);
         let out: Vec<f32> = (0..96_000).map(|place| filter.process(&mut state, saw(place), 0.0, 0.0) as f32).collect();

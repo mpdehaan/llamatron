@@ -4,19 +4,26 @@
 //! The SID chip's ADSR: its rate table, its sixteen-level sustain and its counter's bugs.
 
 use super::*;
+use llamatron_names::spec;
+
+/// What the chip's envelope takes where its spec names none: its sustain, of its sixteen steps, the top of them, and the
+/// step of its rate table its decay and release take.
+const DEFAULT_SUSTAIN_STEP: f64 = 10.0;
+const TOP_SUSTAIN_STEP: f64 = 15.0;
+const DEFAULT_RATE_STEP: f64 = 9.0;
 
 pub fn sid_adsr(spec: &Value) -> EnvelopePart {
     let rate = |name: &str, default: f64| SID_PERIODS[(number(spec, name, default) as usize).min(15)] / SID_CLOCK;
-    let attack_step = rate("attack", 0.0);
-    let sustain = number(spec, "sustain", 10.0).clamp(0.0, 15.0) * SID_SUSTAIN_STEP;
+    let attack_step = rate(spec::ATTACK, 0.0);
+    let sustain = number(spec, spec::SUSTAIN, DEFAULT_SUSTAIN_STEP).clamp(0.0, TOP_SUSTAIN_STEP) * SID_SUSTAIN_STEP;
     let rise = SID_TOP * attack_step;
     let mut held = vec![(0.0, 0.0)];
-    for (time, level) in sid_fall(SID_TOP, sustain, rate("decay", 9.0)) {
+    for (time, level) in sid_fall(SID_TOP, sustain, rate(spec::DECAY, DEFAULT_RATE_STEP)) {
         held.push((rise + time, level));
     }
     EnvelopePart::SidAdsr {
         held,
-        release_step: rate("release", 9.0),
+        release_step: rate(spec::RELEASE, DEFAULT_RATE_STEP),
     }
 }
 

@@ -4,11 +4,12 @@
 //! Basic's oscillator: one plain wave, made every sample from its phase, its jumps smoothed by polyBLEPs.
 
 use super::*;
+use llamatron_names::spec;
 
 /// Basic's oscillator from its spec.
 pub fn compiled(spec: &Value) -> OscillatorPart {
     let mut partials = Vec::new();
-    for entry in list(spec, "oscillators") {
+    for entry in list(spec, spec::OSCILLATORS) {
         let Some(fields) = entry.as_array() else { continue };
         let Some(waveform) = fields.first().and_then(Value::as_str).and_then(Waveform::named) else {
             continue;

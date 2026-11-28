@@ -8,10 +8,20 @@
 //! for each octave band, holding its harmonics up to the highest that stays under half the sample rate at the band's top
 //! note; a note reads the table of its octave. Built when an instrument is compiled, never while playing.
 
+use llamatron_names::spec;
 use rustfft::num_complex::Complex;
 use rustfft::FftPlanner;
-use std::f64::consts::PI;
+use std::f64::consts::TAU;
 use std::sync::Arc;
+
+/// Half a cycle, where a square turns and a saw crosses zero; the second and third harmonics; and the organ's: the
+/// second's and third's levels, and the peak of the three together, which scales it to full.
+const HALF: f64 = 0.5;
+const SECOND: f64 = 2.0;
+const THIRD: f64 = 3.0;
+const ORGAN_SECOND: f64 = 0.5;
+const ORGAN_THIRD: f64 = 0.33;
+const ORGAN_PEAK: f64 = 1.5;
 
 pub const TABLE_SIZE: usize = 2048;
 pub const TABLE_MASK: usize = TABLE_SIZE - 1;
@@ -38,11 +48,11 @@ impl Waveform {
     /// The waveform a set names, or None for one it does not know.
     pub fn named(name: &str) -> Option<Waveform> {
         match name {
-            "sine" => Some(Waveform::Sine),
-            "saw" => Some(Waveform::Saw),
-            "pulse" => Some(Waveform::Pulse),
-            "square" => Some(Waveform::Square),
-            "triangle" => Some(Waveform::Triangle),
+            spec::SINE => Some(Waveform::Sine),
+            spec::SAW => Some(Waveform::Saw),
+            spec::PULSE => Some(Waveform::Pulse),
+            spec::SQUARE => Some(Waveform::Square),
+            spec::TRIANGLE => Some(Waveform::Triangle),
             _ => None,
         }
     }
@@ -118,10 +128,10 @@ fn drawn(function: fn(f64) -> f64) -> Vec<f64> {
 /// The tables of a drawn wave of 32 steps of four bits, by its shape's name; a triangle for a name it does not know.
 pub fn shape_tables(shape: &str, rate: f64) -> Tables {
     let steps = match shape {
-        "saw" => drawn(|x| 2.0 * x - 1.0),
-        "square" => drawn(|x| if x < 0.5 { 1.0 } else { -1.0 }),
-        "sine" => drawn(|x| (2.0 * PI * x).sin()),
-        "organ" => drawn(|x| ((2.0 * PI * x).sin() + 0.5 * (4.0 * PI * x).sin() + 0.33 * (6.0 * PI * x).sin()) / 1.5),
+        spec::SAW => drawn(|x| (x - HALF) / HALF),
+        spec::SQUARE => drawn(|x| if x < HALF { 1.0 } else { -1.0 }),
+        spec::SINE => drawn(|x| (TAU * x).sin()),
+        spec::ORGAN => drawn(|x| ((TAU * x).sin() + ORGAN_SECOND * (SECOND * TAU * x).sin() + ORGAN_THIRD * (THIRD * TAU * x).sin()) / ORGAN_PEAK),
         _ => drawn(|x| 1.0 - 4.0 * (x - 0.5).abs()),
     };
     let cycle: Vec<f64> = steps.iter().map(|step| step / 7.5 - 1.0).collect();

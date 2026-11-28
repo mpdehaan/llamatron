@@ -14,6 +14,8 @@ pub mod safety;
 use crate::drums::Hit;
 use crate::fluid::Fluid;
 use crate::instrument::patch::{Patch, Voice};
+#[cfg(test)]
+use llamatron_names::spec;
 use safety::OutputGuard;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
@@ -603,19 +605,22 @@ mod tests {
 
     fn basic_with_voices(voices: i64) -> Box<Patch> {
         let oscillators = Value::Map(vec![
-            ("type".into(), "basic".into()),
-            ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
+            (spec::TYPE.into(), spec::BASIC.into()),
+            (
+                spec::OSCILLATORS.into(),
+                Value::Array(vec![Value::Array(vec![spec::SAW.into(), 0.into(), 1.0.into()])]),
+            ),
         ]);
         let envelope = Value::Map(vec![
-            ("type".into(), "adsr".into()),
-            ("attack".into(), 0.001.into()),
-            ("release".into(), 0.05.into()),
+            (spec::TYPE.into(), spec::ADSR.into()),
+            (spec::ATTACK.into(), 0.001.into()),
+            (spec::RELEASE.into(), 0.05.into()),
         ]);
         let spec = Value::Map(vec![
-            ("oscillators".into(), oscillators),
-            ("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
-            ("voices".into(), voices.into()),
-            ("glide".into(), 0.06.into()),
+            (spec::OSCILLATORS.into(), oscillators),
+            (spec::ENVELOPES.into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
+            (spec::VOICES.into(), voices.into()),
+            (spec::GLIDE.into(), 0.06.into()),
         ]);
         Box::new(Patch::compiled(&spec, 48000.0))
     }
@@ -640,26 +645,29 @@ mod tests {
     /// The same, with Mod Matrix routes.
     fn swept_with(env_amount: f64, disconnected: bool, routes: Vec<Value>) -> Vec<f32> {
         let oscillators = Value::Map(vec![
-            ("type".into(), "basic".into()),
-            ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
+            (spec::TYPE.into(), spec::BASIC.into()),
+            (
+                spec::OSCILLATORS.into(),
+                Value::Array(vec![Value::Array(vec![spec::SAW.into(), 0.into(), 1.0.into()])]),
+            ),
         ]);
         let envelope = Value::Map(vec![
-            ("type".into(), "adsr".into()),
-            ("attack".into(), 0.001.into()),
-            ("release".into(), 0.05.into()),
+            (spec::TYPE.into(), spec::ADSR.into()),
+            (spec::ATTACK.into(), 0.001.into()),
+            (spec::RELEASE.into(), 0.05.into()),
         ]);
         let low_cutoff = 200.0;
         let filter = Value::Map(vec![
-            ("type".into(), "ladder".into()),
-            ("cutoff".into(), low_cutoff.into()),
-            ("env_amount".into(), env_amount.into()),
+            (spec::TYPE.into(), spec::LADDER.into()),
+            (spec::CUTOFF.into(), low_cutoff.into()),
+            (spec::ENV_AMOUNT.into(), env_amount.into()),
         ]);
         let spec = Value::Map(vec![
-            ("oscillators".into(), oscillators),
-            ("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
-            ("filter".into(), filter),
-            ("disconnect_filter".into(), disconnected.into()),
-            ("matrix".into(), Value::Array(routes)),
+            (spec::OSCILLATORS.into(), oscillators),
+            (spec::ENVELOPES.into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])),
+            (spec::FILTER.into(), filter),
+            (spec::DISCONNECT_FILTER.into(), disconnected.into()),
+            (spec::MATRIX.into(), Value::Array(routes)),
         ]);
         let mut engine = Engine::new(48000.0, None);
         engine.set_instrument(0, Box::new(Patch::compiled(&spec, 48000.0)));
@@ -676,10 +684,10 @@ mod tests {
     fn an_env2_nothing_hears_is_skipped_without_changing_the_sound() {
         let skipped = swept_with(0.0, false, Vec::new());
         let route = Value::Map(vec![
-            ("source".into(), "env2".into()),
-            ("via".into(), "none".into()),
-            ("destination".into(), "pitch".into()),
-            ("amount".into(), 0.0.into()),
+            (spec::SOURCE.into(), spec::ENV2.into()),
+            (spec::VIA.into(), spec::NONE.into()),
+            (spec::DESTINATION.into(), spec::PITCH.into()),
+            (spec::AMOUNT.into(), 0.0.into()),
         ]);
         let worked = swept_with(0.0, false, vec![route]);
         assert_eq!(skipped, worked);
@@ -701,30 +709,37 @@ mod tests {
     fn a_delays_echoes_ring_out_after_the_last_note() {
         let mut spec = Value::Map(Vec::new());
         let oscillators = Value::Map(vec![
-            ("type".into(), "basic".into()),
-            ("oscillators".into(), Value::Array(vec![Value::Array(vec!["saw".into(), 0.into(), 1.0.into()])])),
+            (spec::TYPE.into(), spec::BASIC.into()),
+            (
+                spec::OSCILLATORS.into(),
+                Value::Array(vec![Value::Array(vec![spec::SAW.into(), 0.into(), 1.0.into()])]),
+            ),
         ]);
         let envelope = Value::Map(vec![
-            ("type".into(), "adsr".into()),
-            ("attack".into(), 0.001.into()),
-            ("release".into(), 0.01.into()),
+            (spec::TYPE.into(), spec::ADSR.into()),
+            (spec::ATTACK.into(), 0.001.into()),
+            (spec::RELEASE.into(), 0.01.into()),
         ]);
-        let half_second_tap = Value::Map(vec![("seconds".into(), 0.5.into()), ("level".into(), 1.0.into()), ("on".into(), true.into())]);
-        let silent_tap = Value::Map(vec![("on".into(), false.into())]);
+        let half_second_tap = Value::Map(vec![
+            (spec::SECONDS.into(), 0.5.into()),
+            (spec::LEVEL.into(), 1.0.into()),
+            (spec::ON.into(), true.into()),
+        ]);
+        let silent_tap = Value::Map(vec![(spec::ON.into(), false.into())]);
         let delay = Value::Map(vec![
-            ("effect".into(), "multitap".into()),
-            ("sync".into(), false.into()),
+            (spec::EFFECT.into(), spec::MULTITAP.into()),
+            (spec::SYNC.into(), false.into()),
             (
-                "taps".into(),
+                spec::TAPS.into(),
                 Value::Array(vec![half_second_tap, silent_tap.clone(), silent_tap.clone(), silent_tap]),
             ),
-            ("feedback".into(), 0.5.into()),
-            ("mix".into(), 1.0.into()),
+            (spec::FEEDBACK.into(), 0.5.into()),
+            (spec::MIX.into(), 1.0.into()),
         ]);
         if let Value::Map(pairs) = &mut spec {
-            pairs.push(("oscillators".into(), oscillators));
-            pairs.push(("envelopes".into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])));
-            pairs.push(("effects".into(), Value::Array(vec![delay])));
+            pairs.push((spec::OSCILLATORS.into(), oscillators));
+            pairs.push((spec::ENVELOPES.into(), Value::Array(vec![envelope.clone(), envelope.clone(), envelope])));
+            pairs.push((spec::EFFECTS.into(), Value::Array(vec![delay])));
         }
         let rate = 48000.0;
         let mut engine = Engine::new(rate, None);

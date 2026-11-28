@@ -10,6 +10,7 @@ use crate::modulation::snail::{OUTPUT_COUNT, WEIGHTED_COUNT};
 use crate::oscillators::OWN_OSCILLATORS;
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Named};
+use llamatron_names::spec;
 use rmpv::Value;
 
 /// What a matrix slot reads.
@@ -70,10 +71,10 @@ pub const RATE_DESTINATIONS: [&str; LFO_COUNT] = ["lfo1_rate", "lfo2_rate", "lfo
 const LFO_SOURCES: [&str; LFO_COUNT] = ["lfo1", "lfo2", "lfo3", "lfo4"];
 /// The destinations that move a Snail's weightings, Slow's and Slower's, by the Snail's place.
 pub const WEIGHT_DESTINATIONS: [[&str; WEIGHTED_COUNT]; LFO_COUNT] = [
-    ["lfo1_slow", "lfo1_slower"],
-    ["lfo2_slow", "lfo2_slower"],
-    ["lfo3_slow", "lfo3_slower"],
-    ["lfo4_slow", "lfo4_slower"],
+    [spec::LFO1_SLOW, spec::LFO1_SLOWER],
+    [spec::LFO2_SLOW, spec::LFO2_SLOWER],
+    [spec::LFO3_SLOW, spec::LFO3_SLOWER],
+    [spec::LFO4_SLOW, spec::LFO4_SLOWER],
 ];
 
 /// A source of the whole instrument rather than of a note, which the modulators read themselves: an LFO by its place,
@@ -111,7 +112,7 @@ pub struct WeightRoute {
 
 /// Where a slot's destination is a Snail's weighting, the Snail's place and the circuit's.
 fn weight_destination(slot: &Value) -> Option<(usize, usize)> {
-    let destination = word(slot, "destination", "none");
+    let destination = word(slot, spec::DESTINATION, spec::NONE);
     WEIGHT_DESTINATIONS
         .iter()
         .enumerate()
@@ -121,8 +122,8 @@ fn weight_destination(slot: &Value) -> Option<(usize, usize)> {
 /// Whether a slot reads only the whole instrument's sources, as its source and its via, so that the bank moves its
 /// destination itself rather than through a note.
 fn reads_only_bank_sources(slot: &Value) -> bool {
-    let via = word(slot, "via", "none");
-    bank_source(word(slot, "source", "none")).is_some() && (via == "none" || bank_source(via).is_some())
+    let via = word(slot, spec::VIA, spec::NONE);
+    bank_source(word(slot, spec::SOURCE, spec::NONE)).is_some() && (via == spec::NONE || bank_source(via).is_some())
 }
 
 /// The matrix's routes that move a Snail's weighting from the whole instrument's sources; one reading a note's source
@@ -130,14 +131,16 @@ fn reads_only_bank_sources(slot: &Value) -> bool {
 pub fn weight_routes(slots: &[Value]) -> Vec<WeightRoute> {
     let mut routes = Vec::new();
     for slot in slots {
-        let amount = number(slot, "amount", 0.0);
+        let amount = number(slot, spec::AMOUNT, 0.0);
         let Some((place, circuit)) = weight_destination(slot) else { continue };
         if !reads_only_bank_sources(slot) {
             continue;
         }
-        let Some(source) = bank_source(word(slot, "source", "none")) else { continue };
-        let via = match word(slot, "via", "none") {
-            "none" => None,
+        let Some(source) = bank_source(word(slot, spec::SOURCE, spec::NONE)) else {
+            continue;
+        };
+        let via = match word(slot, spec::VIA, spec::NONE) {
+            spec::NONE => None,
             name => match bank_source(name) {
                 Some(via) => Some(via),
                 None => continue,
@@ -146,7 +149,7 @@ pub fn weight_routes(slots: &[Value]) -> Vec<WeightRoute> {
         if amount == 0.0 {
             continue;
         }
-        let unipolar = word(slot, "polarity", "bipolar") == "unipolar";
+        let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR;
         let (reach, offset) = if unipolar { (amount / 2.0, amount / 2.0) } else { (amount, 0.0) };
         routes.push(WeightRoute {
             source,
@@ -177,13 +180,15 @@ pub fn rate_routes(slots: &[Value]) -> Vec<RateRoute> {
     let lfo_place = |name: &str| LFO_SOURCES.iter().position(|each| *each == name);
     let mut routes = Vec::new();
     for slot in slots {
-        let amount = number(slot, "amount", 0.0);
-        let Some(target) = RATE_DESTINATIONS.iter().position(|each| *each == word(slot, "destination", "none")) else {
+        let amount = number(slot, spec::AMOUNT, 0.0);
+        let Some(target) = RATE_DESTINATIONS.iter().position(|each| *each == word(slot, spec::DESTINATION, spec::NONE)) else {
             continue;
         };
-        let Some(source) = lfo_place(word(slot, "source", "none")) else { continue };
-        let via = match word(slot, "via", "none") {
-            "none" => None,
+        let Some(source) = lfo_place(word(slot, spec::SOURCE, spec::NONE)) else {
+            continue;
+        };
+        let via = match word(slot, spec::VIA, spec::NONE) {
+            spec::NONE => None,
             name => match lfo_place(name) {
                 Some(place) => Some(place),
                 None => continue,
@@ -194,7 +199,7 @@ pub fn rate_routes(slots: &[Value]) -> Vec<RateRoute> {
         }
         // A Unipolar route moves the rate from its own to the amount's octaves, never below, as a matrix route does.
         let reach = amount * RATE_OCTAVES;
-        let unipolar = word(slot, "polarity", "bipolar") == "unipolar";
+        let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR;
         let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
         routes.push(RateRoute {
             source,
@@ -208,7 +213,7 @@ pub fn rate_routes(slots: &[Value]) -> Vec<RateRoute> {
 }
 
 /// What a CC source is called in a sound: `cc` and its number, such as `cc74`.
-const CONTROL_PREFIX: &str = "cc";
+const CONTROL_PREFIX: &str = spec::CC;
 /// The highest CC number.
 const HIGHEST_CONTROL: u8 = 127;
 /// The most CCs the matrix reads, one a slot at most.
@@ -225,199 +230,199 @@ fn control_named(name: &str) -> Option<u8> {
 /// Every Mod Matrix source a spec may name, besides a CC by its number: what each is.
 pub static SOURCES: &[Named<Source>] = &[
     Named {
-        name: "env1",
+        name: spec::ENV1,
         value: Source::Env1,
     },
     Named {
-        name: "env2",
+        name: spec::ENV2,
         value: Source::Env2,
     },
     Named {
-        name: "env3",
+        name: spec::ENV3,
         value: Source::Env3,
     },
     Named {
-        name: "lfo1",
+        name: spec::LFO1,
         value: Source::Lfo(0),
     },
     Named {
-        name: "lfo2",
+        name: spec::LFO2,
         value: Source::Lfo(1),
     },
     Named {
-        name: "lfo3",
+        name: spec::LFO3,
         value: Source::Lfo(2),
     },
     Named {
-        name: "lfo4",
+        name: spec::LFO4,
         value: Source::Lfo(3),
     },
     Named {
-        name: "lfo1_slow_x",
+        name: spec::LFO1_SLOW_X,
         value: Source::Snail(0, 0),
     },
     Named {
-        name: "lfo1_slow_y",
+        name: spec::LFO1_SLOW_Y,
         value: Source::Snail(0, 1),
     },
     Named {
-        name: "lfo1_slow_z",
+        name: spec::LFO1_SLOW_Z,
         value: Source::Snail(0, 2),
     },
     Named {
-        name: "lfo1_slower_x",
+        name: spec::LFO1_SLOWER_X,
         value: Source::Snail(0, 3),
     },
     Named {
-        name: "lfo1_slower_y",
+        name: spec::LFO1_SLOWER_Y,
         value: Source::Snail(0, 4),
     },
     Named {
-        name: "lfo1_slower_z",
+        name: spec::LFO1_SLOWER_Z,
         value: Source::Snail(0, 5),
     },
     Named {
-        name: "lfo1_slowest_x",
+        name: spec::LFO1_SLOWEST_X,
         value: Source::Snail(0, 6),
     },
     Named {
-        name: "lfo1_slowest_y",
+        name: spec::LFO1_SLOWEST_Y,
         value: Source::Snail(0, 7),
     },
     Named {
-        name: "lfo1_slowest_z",
+        name: spec::LFO1_SLOWEST_Z,
         value: Source::Snail(0, 8),
     },
     Named {
-        name: "lfo2_slow_x",
+        name: spec::LFO2_SLOW_X,
         value: Source::Snail(1, 0),
     },
     Named {
-        name: "lfo2_slow_y",
+        name: spec::LFO2_SLOW_Y,
         value: Source::Snail(1, 1),
     },
     Named {
-        name: "lfo2_slow_z",
+        name: spec::LFO2_SLOW_Z,
         value: Source::Snail(1, 2),
     },
     Named {
-        name: "lfo2_slower_x",
+        name: spec::LFO2_SLOWER_X,
         value: Source::Snail(1, 3),
     },
     Named {
-        name: "lfo2_slower_y",
+        name: spec::LFO2_SLOWER_Y,
         value: Source::Snail(1, 4),
     },
     Named {
-        name: "lfo2_slower_z",
+        name: spec::LFO2_SLOWER_Z,
         value: Source::Snail(1, 5),
     },
     Named {
-        name: "lfo2_slowest_x",
+        name: spec::LFO2_SLOWEST_X,
         value: Source::Snail(1, 6),
     },
     Named {
-        name: "lfo2_slowest_y",
+        name: spec::LFO2_SLOWEST_Y,
         value: Source::Snail(1, 7),
     },
     Named {
-        name: "lfo2_slowest_z",
+        name: spec::LFO2_SLOWEST_Z,
         value: Source::Snail(1, 8),
     },
     Named {
-        name: "lfo3_slow_x",
+        name: spec::LFO3_SLOW_X,
         value: Source::Snail(2, 0),
     },
     Named {
-        name: "lfo3_slow_y",
+        name: spec::LFO3_SLOW_Y,
         value: Source::Snail(2, 1),
     },
     Named {
-        name: "lfo3_slow_z",
+        name: spec::LFO3_SLOW_Z,
         value: Source::Snail(2, 2),
     },
     Named {
-        name: "lfo3_slower_x",
+        name: spec::LFO3_SLOWER_X,
         value: Source::Snail(2, 3),
     },
     Named {
-        name: "lfo3_slower_y",
+        name: spec::LFO3_SLOWER_Y,
         value: Source::Snail(2, 4),
     },
     Named {
-        name: "lfo3_slower_z",
+        name: spec::LFO3_SLOWER_Z,
         value: Source::Snail(2, 5),
     },
     Named {
-        name: "lfo3_slowest_x",
+        name: spec::LFO3_SLOWEST_X,
         value: Source::Snail(2, 6),
     },
     Named {
-        name: "lfo3_slowest_y",
+        name: spec::LFO3_SLOWEST_Y,
         value: Source::Snail(2, 7),
     },
     Named {
-        name: "lfo3_slowest_z",
+        name: spec::LFO3_SLOWEST_Z,
         value: Source::Snail(2, 8),
     },
     Named {
-        name: "lfo4_slow_x",
+        name: spec::LFO4_SLOW_X,
         value: Source::Snail(3, 0),
     },
     Named {
-        name: "lfo4_slow_y",
+        name: spec::LFO4_SLOW_Y,
         value: Source::Snail(3, 1),
     },
     Named {
-        name: "lfo4_slow_z",
+        name: spec::LFO4_SLOW_Z,
         value: Source::Snail(3, 2),
     },
     Named {
-        name: "lfo4_slower_x",
+        name: spec::LFO4_SLOWER_X,
         value: Source::Snail(3, 3),
     },
     Named {
-        name: "lfo4_slower_y",
+        name: spec::LFO4_SLOWER_Y,
         value: Source::Snail(3, 4),
     },
     Named {
-        name: "lfo4_slower_z",
+        name: spec::LFO4_SLOWER_Z,
         value: Source::Snail(3, 5),
     },
     Named {
-        name: "lfo4_slowest_x",
+        name: spec::LFO4_SLOWEST_X,
         value: Source::Snail(3, 6),
     },
     Named {
-        name: "lfo4_slowest_y",
+        name: spec::LFO4_SLOWEST_Y,
         value: Source::Snail(3, 7),
     },
     Named {
-        name: "lfo4_slowest_z",
+        name: spec::LFO4_SLOWEST_Z,
         value: Source::Snail(3, 8),
     },
     Named {
-        name: "velocity",
+        name: spec::VELOCITY,
         value: Source::Velocity,
     },
     Named {
-        name: "random",
+        name: spec::RANDOM,
         value: Source::Random,
     },
     Named {
-        name: "osc",
+        name: spec::OSC,
         value: Source::Oscillator,
     },
     Named {
-        name: "osc1",
+        name: spec::OSC1,
         value: Source::Osc(0),
     },
     Named {
-        name: "osc2",
+        name: spec::OSC2,
         value: Source::Osc(1),
     },
     Named {
-        name: "osc3",
+        name: spec::OSC3,
         value: Source::Osc(2),
     },
 ];
@@ -431,83 +436,83 @@ const FINE_REACH_CENTS: f64 = 10.0;
 /// source's full value.
 pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
     Named {
-        name: "pitch",
+        name: spec::PITCH,
         value: (Destination::Pitch, 24.0),
     },
     Named {
-        name: "pulse_width",
+        name: spec::PULSE_WIDTH,
         value: (Destination::PulseWidth, 0.4),
     },
     Named {
-        name: "detune",
+        name: spec::DETUNE,
         value: (Destination::Detune, DETUNE_REACH_CENTS),
     },
     Named {
-        name: "fine",
+        name: spec::FINE,
         value: (Destination::Fine, FINE_REACH_CENTS),
     },
     Named {
-        name: "interval",
+        name: spec::INTERVAL,
         value: (Destination::Interval, 24.0),
     },
     Named {
-        name: "osc1_pitch",
+        name: spec::OSC1_PITCH,
         value: (Destination::OscPitch(0), 24.0),
     },
     Named {
-        name: "osc1_pulse_width",
+        name: spec::OSC1_PULSE_WIDTH,
         value: (Destination::OscWidth(0), 0.4),
     },
     Named {
-        name: "osc1_detune",
+        name: spec::OSC1_DETUNE,
         value: (Destination::OscDetune(0), DETUNE_REACH_CENTS),
     },
     Named {
-        name: "osc1_fine",
+        name: spec::OSC1_FINE,
         value: (Destination::OscFine(0), FINE_REACH_CENTS),
     },
     Named {
-        name: "osc2_pitch",
+        name: spec::OSC2_PITCH,
         value: (Destination::OscPitch(1), 24.0),
     },
     Named {
-        name: "osc2_pulse_width",
+        name: spec::OSC2_PULSE_WIDTH,
         value: (Destination::OscWidth(1), 0.4),
     },
     Named {
-        name: "osc2_detune",
+        name: spec::OSC2_DETUNE,
         value: (Destination::OscDetune(1), DETUNE_REACH_CENTS),
     },
     Named {
-        name: "osc2_fine",
+        name: spec::OSC2_FINE,
         value: (Destination::OscFine(1), FINE_REACH_CENTS),
     },
     Named {
-        name: "osc3_pitch",
+        name: spec::OSC3_PITCH,
         value: (Destination::OscPitch(2), 24.0),
     },
     Named {
-        name: "osc3_pulse_width",
+        name: spec::OSC3_PULSE_WIDTH,
         value: (Destination::OscWidth(2), 0.4),
     },
     Named {
-        name: "osc3_detune",
+        name: spec::OSC3_DETUNE,
         value: (Destination::OscDetune(2), DETUNE_REACH_CENTS),
     },
     Named {
-        name: "osc3_fine",
+        name: spec::OSC3_FINE,
         value: (Destination::OscFine(2), FINE_REACH_CENTS),
     },
     Named {
-        name: "cutoff",
+        name: spec::CUTOFF,
         value: (Destination::Cutoff, 6.0),
     },
     Named {
-        name: "resonance",
+        name: spec::RESONANCE,
         value: (Destination::Resonance, 1.0),
     },
     Named {
-        name: "amp",
+        name: spec::AMP,
         value: (Destination::Amp, 1.0),
     },
 ];
@@ -613,23 +618,25 @@ impl ModMatrix {
             Some(Source::Control(place))
         };
         for slot in slots {
-            let amount = number(slot, "amount", 0.0);
+            let amount = number(slot, spec::AMOUNT, 0.0);
             if amount == 0.0 {
                 continue;
             }
-            let Some(source) = named(word(slot, "source", "none")) else { continue };
+            let Some(source) = named(word(slot, spec::SOURCE, spec::NONE)) else {
+                continue;
+            };
             // A Snail's weighting read from a note's source is moved by the newest note; from the instrument's own
             // sources, by the bank (weight_routes).
             let weighting = weight_destination(slot).filter(|_| !reads_only_bank_sources(slot));
             let Some((destination, range)) = weighting
                 .map(|(place, circuit)| (Destination::Weight(place, circuit), 1.0))
-                .or_else(|| destination_named(word(slot, "destination", "none")))
+                .or_else(|| destination_named(word(slot, spec::DESTINATION, spec::NONE)))
             else {
                 continue;
             };
-            let via = named(word(slot, "via", "none"));
+            let via = named(word(slot, spec::VIA, spec::NONE));
             // A Unipolar route moves its destination from 0 to the amount: a source of -1 to 1 is halved and lifted.
-            let unipolar = word(slot, "polarity", "bipolar") == "unipolar" && source.is_bipolar();
+            let unipolar = word(slot, spec::POLARITY, spec::BIPOLAR) == spec::UNIPOLAR && source.is_bipolar();
             let reach = amount * range;
             let (reach, offset) = if unipolar { (reach / 2.0, reach / 2.0) } else { (reach, 0.0) };
             routes.push(Route {
@@ -705,17 +712,18 @@ mod tests {
     fn a_unipolar_route_moves_from_nothing_to_its_amount() {
         let route = |polarity: &str| {
             ModMatrix::compiled(&[Value::Map(vec![
-                ("source".into(), "lfo1".into()),
-                ("destination".into(), "pitch".into()),
-                ("amount".into(), 50.0.into()),
-                ("polarity".into(), polarity.into()),
+                (spec::SOURCE.into(), spec::LFO1.into()),
+                (spec::DESTINATION.into(), spec::PITCH.into()),
+                (spec::AMOUNT.into(), 50.0.into()),
+                (spec::POLARITY.into(), polarity.into()),
             ])])
         };
         let mut sources = Sources::default();
         sources.lfos[0] = -1.0;
-        assert!(route("unipolar").moved(&sources).pitch.abs() < 1e-12);
-        assert!(route("bipolar").moved(&sources).pitch < 0.0);
+        let tolerance = 1e-12;
+        assert!(route(spec::UNIPOLAR).moved(&sources).pitch.abs() < tolerance);
+        assert!(route(spec::BIPOLAR).moved(&sources).pitch < 0.0);
         sources.lfos[0] = 1.0;
-        assert!((route("unipolar").moved(&sources).pitch - route("bipolar").moved(&sources).pitch).abs() < 1e-12);
+        assert!((route(spec::UNIPOLAR).moved(&sources).pitch - route(spec::BIPOLAR).moved(&sources).pitch).abs() < tolerance);
     }
 }

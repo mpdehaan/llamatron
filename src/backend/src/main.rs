@@ -10,6 +10,7 @@
 
 use llamatron_backend::protocol::Piped;
 use llamatron_backend::{daemon, protocol, sender};
+use llamatron_names::wire;
 use std::io;
 use std::panic;
 
@@ -43,10 +44,10 @@ fn arguments() -> Arguments {
     let mut given = std::env::args().skip(1);
     while let Some(argument) = given.next() {
         match argument.as_str() {
-            "render" => found.rendering = true,
-            "send" => found.sending = true,
-            "ports" => found.listing = true,
-            "play" => found.rendering = false,
+            wire::RENDER => found.rendering = true,
+            wire::SEND => found.sending = true,
+            wire::PORTS => found.listing = true,
+            wire::PLAY => found.rendering = false,
             "--block" => found.block = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_BLOCK),
             "--device" => found.device = given.next(),
             "--rate" => found.rate = given.next().and_then(|value| value.parse().ok()).unwrap_or(DEFAULT_RATE),
@@ -62,7 +63,7 @@ fn start_logging() -> Option<flexi_logger::LoggerHandle> {
     let home = std::env::var_os("HOME")?;
     let folder = std::path::Path::new(&home).join(LOG_FOLDER);
     let file = flexi_logger::FileSpec::default().directory(folder).basename(LOG_NAME).suppress_timestamp();
-    flexi_logger::Logger::try_with_str("info")
+    flexi_logger::Logger::try_with_str(wire::INFO)
         .ok()?
         .log_to_file(file)
         .append()
@@ -103,7 +104,7 @@ fn main() {
             &output,
             &protocol::message(
                 protocol::FAILED,
-                vec!["panic".into(), "the daemon stopped on an internal error; its log says where".into()],
+                vec![wire::PANIC.into(), "the daemon stopped on an internal error; its log says where".into()],
             ),
         );
         2

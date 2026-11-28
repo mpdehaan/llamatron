@@ -28,6 +28,7 @@ class NamedValuesTest(unittest.TestCase):
     def test_a_line_naming_a_value_passes(self):
         self.assertEqual(CHECK.breakages("const PREVIEW_CHANNEL: i64 = 15;"), [])
         self.assertEqual(CHECK.breakages("    let shown_rows = 7;"), [])
+        self.assertEqual(CHECK.breakages("    let (resonance, drive) = (0.3, 0.5);"), [])
 
     def test_shown_text_and_comments_pass(self):
         self.assertEqual(CHECK.breakages('    assert!(moved, "the A gauge moves Slow"); // 48 kHz'), [])

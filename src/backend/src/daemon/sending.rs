@@ -20,24 +20,25 @@ use crate::protocol::{self, message};
 use crate::sender::engine::{SenderEngine, NOTE_ON};
 use crate::sender::outputs::{Output, Shared, INSTRUMENTS_PER_PORT};
 use crate::sender::{self, Closed, SenderCommand};
+use llamatron_names::wire;
 use rmpv::Value;
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
-pub const OPEN: &str = "open";
-pub const START: &str = "start";
-pub const ADD: &str = "add";
-pub const FORGET: &str = "forget";
-pub const STOP_TAG: &str = "stop_tag";
-pub const STOP_ALL: &str = "stop_all";
-pub const SILENCE: &str = "silence";
-pub const SOUNDS: &str = "sounds";
-pub const CLOSED: &str = "closed";
-const MIDI: &str = "midi";
-const BUILT_IN: &str = "built_in";
-const FLUIDSYNTH: &str = "fluidsynth";
-const IMMEDIATE: &str = "immediate";
+pub const OPEN: &str = wire::OPEN;
+pub const START: &str = wire::START;
+pub const ADD: &str = wire::ADD;
+pub const FORGET: &str = wire::FORGET;
+pub const STOP_TAG: &str = wire::STOP_TAG;
+pub const STOP_ALL: &str = wire::STOP_ALL;
+pub const SILENCE: &str = wire::SILENCE;
+pub const SOUNDS: &str = wire::SOUNDS;
+pub const CLOSED: &str = wire::CLOSED;
+const MIDI: &str = wire::MIDI;
+const BUILT_IN: &str = wire::BUILT_IN;
+const FLUIDSYNTH: &str = wire::FLUIDSYNTH;
+const IMMEDIATE: &str = wire::IMMEDIATE;
 const DEFAULT_BLOCK: f64 = 128.0;
 
 /// A port as the tracker names it: its name, its kind, and a built-in port's group.
@@ -48,7 +49,7 @@ struct Port {
 }
 
 fn ports_of(opened: &Value) -> Vec<Port> {
-    list(opened, "ports")
+    list(opened, wire::PORTS)
         .iter()
         .filter_map(|port| {
             let items = port.as_array()?;
@@ -74,16 +75,16 @@ struct Failed(&'static str, String);
 
 fn open(opened: &Value) -> Result<Opened, Failed> {
     let ports = ports_of(opened);
-    let recording = truth(opened, "recording", false);
+    let recording = truth(opened, wire::RECORDING, false);
     // The tracker chooses the driver, as before: timestamped where CoreMIDI is, immediate elsewhere.
-    let scheduled = word(opened, "driver", "timestamped") != IMMEDIATE;
+    let scheduled = word(opened, wire::DRIVER, wire::TIMESTAMPED) != IMMEDIATE;
     let wants_sound = !recording && ports.iter().any(|port| port.kind == BUILT_IN || port.kind == FLUIDSYNTH);
     let hits = Arc::new(Mutex::new(HitStore::default()));
     let mut player = None;
     let (mut rate, mut delay) = (0.0, 0.0);
     if wants_sound {
-        let block = crate::protocol::values::number(opened, "block", DEFAULT_BLOCK) as usize;
-        let device = field(opened, "device").and_then(Value::as_str);
+        let block = crate::protocol::values::number(opened, wire::BLOCK, DEFAULT_BLOCK) as usize;
+        let device = field(opened, wire::DEVICE).and_then(Value::as_str);
         let started = Player::start(block, device).map_err(|problem| Failed(problem.code(), problem.to_string()))?;
         rate = started.rate;
         delay = started.delay;
@@ -112,10 +113,10 @@ fn open(opened: &Value) -> Result<Opened, Failed> {
             #[cfg(target_os = "macos")]
             _ => {
                 if client.is_none() {
-                    client = Some(crate::sender::coremidi::client().map_err(|problem| Failed("port", problem.to_string()))?);
+                    client = Some(crate::sender::coremidi::client().map_err(|problem| Failed(wire::PORT, problem.to_string()))?);
                 }
                 let opened = crate::sender::coremidi::CoreMidiOutput::open(client.clone().expect("made just above"), &port.name);
-                Output::CoreMidi(opened.map_err(|problem| Failed("port", problem.to_string()))?)
+                Output::CoreMidi(opened.map_err(|problem| Failed(wire::PORT, problem.to_string()))?)
             }
             #[cfg(not(target_os = "macos"))]
             _ => Output::Midir(midir_port(&port.name)?),
@@ -133,22 +134,24 @@ fn open(opened: &Value) -> Result<Opened, Failed> {
 
 #[cfg(not(target_os = "macos"))]
 fn midir_port(name: &str) -> Result<midir::MidiOutputConnection, Failed> {
-    let output = midir::MidiOutput::new("llamatron").map_err(|problem| Failed("port", problem.to_string()))?;
+    let output = midir::MidiOutput::new(wire::LLAMATRON).map_err(|problem| Failed(wire::PORT, problem.to_string()))?;
     let found = output
         .ports()
         .into_iter()
         .find(|port| output.port_name(port).is_ok_and(|found| found == name || found.starts_with(name)))
-        .ok_or_else(|| Failed("port", format!("no MIDI destination is called {name}")))?;
-    output.connect(&found, "llamatron").map_err(|problem| Failed("port", problem.to_string()))
+        .ok_or_else(|| Failed(wire::PORT, format!("no MIDI destination is called {name}")))?;
+    output
+        .connect(&found, wire::LLAMATRON)
+        .map_err(|problem| Failed(wire::PORT, problem.to_string()))
 }
 
 fn load_fluid(opened: &Value, player: &mut Player, rate: f64) -> Result<(), Failed> {
-    let Some(given) = field(opened, "fluid").and_then(Value::as_array) else {
+    let Some(given) = field(opened, wire::FLUID).and_then(Value::as_array) else {
         return Ok(());
     };
     let text = |place: usize| given.get(place).and_then(Value::as_str).unwrap_or("");
     let gain = given.get(2).and_then(as_number).unwrap_or(0.55);
-    let fluid = Fluid::load(text(0), text(1), rate, gain).map_err(|problem| Failed("fluidsynth", problem.to_string()))?;
+    let fluid = Fluid::load(text(0), text(1), rate, gain).map_err(|problem| Failed(wire::FLUIDSYNTH, problem.to_string()))?;
     log::info!("FluidSynth ready with {}", text(1));
     player.send(Command::Fluid(Box::new(fluid)));
     Ok(())

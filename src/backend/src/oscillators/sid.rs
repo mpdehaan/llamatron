@@ -5,13 +5,18 @@
 //! second oscillator, each a switch of its own as on the chip, and its arpeggio.
 
 use super::*;
+use llamatron_names::spec;
+
+/// What the SID takes where its spec names none: its pulse width, and its second oscillator's interval in semitones.
+const DEFAULT_PULSE_WIDTH: f64 = 0.5;
+const DEFAULT_INTERVAL: f64 = 7.0;
 
 /// The SID's oscillator from its spec.
 pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
-    let wave = match word(spec, "wave", "pulse") {
-        "triangle" => SidWave::Triangle,
-        "saw" => SidWave::Saw,
-        "noise" => SidWave::Noise,
+    let wave = match word(spec, spec::WAVE, spec::PULSE) {
+        spec::TRIANGLE => SidWave::Triangle,
+        spec::SAW => SidWave::Saw,
+        spec::NOISE => SidWave::Noise,
         _ => SidWave::Pulse,
     };
     let (chip_saw, triangle) = tables::sid_wave_tables(rate);
@@ -20,11 +25,11 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
         chip_saw,
         triangle,
         noise: tables::sid_noise(),
-        pulse_width: number(spec, "pulse_width", 0.5),
-        ring: truth(spec, "ring", false),
-        sync: truth(spec, "sync", false),
-        interval: number(spec, "interval", 7.0),
-        arpeggio: numbers(spec, "arpeggio"),
+        pulse_width: number(spec, spec::PULSE_WIDTH, DEFAULT_PULSE_WIDTH),
+        ring: truth(spec, spec::RING, false),
+        sync: truth(spec, spec::SYNC, false),
+        interval: number(spec, spec::INTERVAL, DEFAULT_INTERVAL),
+        arpeggio: numbers(spec, spec::ARPEGGIO),
     }
 }
 

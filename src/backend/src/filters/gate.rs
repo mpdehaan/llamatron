@@ -17,8 +17,17 @@
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::envelopes::{self, EnvelopeMemory, EnvelopePart, EnvelopeState, NoteTime};
 use crate::protocol::values::{number, word};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::{LN_10, PI};
+
+/// Env 3's place among the envelopes, and what a gate takes where its spec names none: how far it opens in hertz, a
+/// ping's and a trigger's length in seconds, and its cell's memory.
+const ENV3_PLACE: usize = 2;
+const DEFAULT_OPEN_HERTZ: f64 = 8000.0;
+const DEFAULT_PING_SECONDS: f64 = 0.001;
+const DEFAULT_TRIGGER_SECONDS: f64 = 0.002;
+const DEFAULT_MEMORY: f64 = 0.3;
 
 /// The cell's light as conductance: how sharply it opens with the lamp's brightness, its resistance lit and dark, and the
 /// divider it makes the loudness with.
@@ -38,7 +47,7 @@ const DARK_LIGHT: f64 = 1e-4;
 /// The cutoff worked out once every few samples, as the filters' is.
 const COEFFICIENT_STEP: usize = 4;
 /// The gate's type in a spec, in either place.
-pub const LOW_PASS_GATE: &str = "low_pass_gate";
+pub const LOW_PASS_GATE: &str = spec::LOW_PASS_GATE;
 
 /// How the gate shapes the sound: loudness, cutoff, or both.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -96,37 +105,37 @@ pub struct GatePart {
 impl GatePart {
     /// A gate from its spec, or None for a spec of another type.
     pub fn compiled(spec: &Value, rate: f64) -> Option<GatePart> {
-        if word(spec, "type", "none") != LOW_PASS_GATE {
+        if word(spec, spec::TYPE, spec::NONE) != LOW_PASS_GATE {
             return None;
         }
-        let mode = match word(spec, "mode", "both") {
-            "vca" => GateMode::Vca,
-            "lowpass" => GateMode::Lowpass,
+        let mode = match word(spec, spec::MODE, spec::BOTH) {
+            spec::VCA => GateMode::Vca,
+            spec::LOWPASS => GateMode::Lowpass,
             _ => GateMode::Both,
         };
-        let trigger_word = word(spec, "trigger", "trigger");
+        let trigger_word = word(spec, spec::TRIGGER, spec::TRIGGER);
         let trigger = match trigger_word {
-            "env1" => GateTrigger::Envelope(0),
-            "env2" => GateTrigger::Envelope(1),
-            "env3" => GateTrigger::Envelope(2),
+            spec::ENV1 => GateTrigger::Envelope(0),
+            spec::ENV2 => GateTrigger::Envelope(1),
+            spec::ENV3 => GateTrigger::Envelope(ENV3_PLACE),
             _ => GateTrigger::Cell,
         };
-        let signal = word(spec, "signal", "oscillator");
-        let resonance = number(spec, "resonance", 0.0).clamp(0.0, 1.0);
-        let response = number(spec, "response", envelopes::SLOW_RESPONSE);
-        let age = number(spec, "age", 0.0);
+        let signal = word(spec, spec::SIGNAL, spec::OSCILLATOR);
+        let resonance = number(spec, spec::RESONANCE, 0.0).clamp(0.0, 1.0);
+        let response = number(spec, spec::RESPONSE, envelopes::SLOW_RESPONSE);
+        let age = number(spec, spec::AGE, 0.0);
         let (rise, fall) = envelopes::vactrol::cell_times(response, age);
         Some(GatePart {
             mode,
             trigger,
             damping: 1.0 / (LEAST_GATE_Q + resonance * (MOST_GATE_Q - LEAST_GATE_Q)),
-            open: number(spec, "open", 8000.0),
-            key_track: number(spec, "key_track", 0.0),
-            feeds_oscillator: signal != "ping",
-            feeds_ping: signal != "oscillator",
-            ping_samples: number(spec, "ping_time", 0.001) * rate,
+            open: number(spec, spec::OPEN, DEFAULT_OPEN_HERTZ),
+            key_track: number(spec, spec::KEY_TRACK, 0.0),
+            feeds_oscillator: signal != spec::PING,
+            feeds_ping: signal != spec::OSCILLATOR,
+            ping_samples: number(spec, spec::PING_TIME, DEFAULT_PING_SECONDS) * rate,
             rate,
-            cell: envelopes::compiled(&cell_spec(spec, trigger_word == "gate"), 0.0),
+            cell: envelopes::compiled(&cell_spec(spec, trigger_word == spec::GATE), 0.0),
             rise_share: 1.0 - (-1.0 / (rise * rate)).exp(),
             fall_share: 1.0 - (-LN_10 / (fall * rate)).exp(),
         })
@@ -212,15 +221,15 @@ impl GatePart {
 
 /// The gate's own cell as the Envelopes tab's vactrol would be: struck by a flash as long as its Trigger time, or held.
 fn cell_spec(spec: &Value, held: bool) -> Value {
-    let drive = if held { "gate" } else { "strike" };
+    let drive = if held { spec::GATE } else { spec::STRIKE };
     Value::Map(vec![
-        ("type".into(), "vactrol".into()),
-        ("drive".into(), drive.into()),
-        ("strike_width".into(), number(spec, "trigger_time", 0.002).into()),
-        ("response".into(), number(spec, "response", envelopes::SLOW_RESPONSE).into()),
-        ("memory".into(), number(spec, "memory", 0.3).into()),
-        ("age".into(), number(spec, "age", 0.0).into()),
-        ("stability".into(), number(spec, "stability", 1.0).into()),
+        (spec::TYPE.into(), spec::VACTROL.into()),
+        (spec::DRIVE.into(), drive.into()),
+        (spec::STRIKE_WIDTH.into(), number(spec, spec::TRIGGER_TIME, DEFAULT_TRIGGER_SECONDS).into()),
+        (spec::RESPONSE.into(), number(spec, spec::RESPONSE, envelopes::SLOW_RESPONSE).into()),
+        (spec::MEMORY.into(), number(spec, spec::MEMORY, DEFAULT_MEMORY).into()),
+        (spec::AGE.into(), number(spec, spec::AGE, 0.0).into()),
+        (spec::STABILITY.into(), number(spec, spec::STABILITY, 1.0).into()),
     ])
 }
 
@@ -237,7 +246,7 @@ mod tests {
     const RATE: f64 = 48_000.0;
 
     fn gate(pairs: &[(&str, Value)]) -> GatePart {
-        let mut all = vec![("type".into(), LOW_PASS_GATE.into())];
+        let mut all = vec![(spec::TYPE.into(), LOW_PASS_GATE.into())];
         all.extend(pairs.iter().map(|(key, value)| (Value::from(*key), value.clone())));
         GatePart::compiled(&Value::Map(all), RATE).expect("a low-pass gate")
     }
@@ -245,7 +254,7 @@ mod tests {
     /// A gate on its own Trigger flashes its cell at the note, opens, then closes for good by itself, with no envelope.
     #[test]
     fn a_gate_on_its_own_trigger_opens_then_closes() {
-        let struck = gate(&[("trigger", "trigger".into()), ("mode", "vca".into())]);
+        let struck = gate(&[(spec::TRIGGER, spec::TRIGGER.into()), (spec::MODE, spec::VCA.into())]);
         let (mut state, mut memory) = (GateState::default(), EnvelopeMemory::default());
         struck.start(&mut state, &mut memory, 1.0, 0.0);
         let no_envelopes = [0.0; 3];
@@ -267,7 +276,7 @@ mod tests {
     /// is done and its light has faded after it.
     #[test]
     fn a_gate_lit_by_an_envelope_follows_it_smoothed() {
-        let lit = gate(&[("trigger", "env1".into()), ("response", 1.0.into())]);
+        let lit = gate(&[(spec::TRIGGER, spec::ENV1.into()), (spec::RESPONSE, 1.0.into())]);
         let mut state = GateState::default();
         let note = NoteTime { age: 0.0, released: None };
         let full = [1.0, 0.0, 0.0];
@@ -288,7 +297,7 @@ mod tests {
     /// In VCA mode the gate only sets loudness: a steady signal comes out in proportion, unfiltered, louder with more light.
     #[test]
     fn a_vca_gate_sets_loudness_alone() {
-        let vca = gate(&[("mode", "vca".into())]);
+        let vca = gate(&[(spec::MODE, spec::VCA.into())]);
         let mut state = GateState::default();
         let note = GateNote {
             place: 1_000.0,

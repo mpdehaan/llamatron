@@ -18,6 +18,7 @@
 
 use crate::dsp::oversample::{LinearHalfband, SteepDecimator};
 use crate::dsp::saturation::{log_cosh, CLOSEST_INPUTS};
+use llamatron_names::spec;
 use std::f64::consts::PI;
 
 const MOST_GAIN: f64 = 20.0;
@@ -49,10 +50,10 @@ impl Curve {
     /// The curve named, Soft for any other name.
     pub fn named(name: &str) -> Curve {
         match name {
-            "warm" => Curve::Warm,
-            "hard" => Curve::Hard,
-            "fold" => Curve::Fold,
-            "wrap" => Curve::Wrap,
+            spec::WARM => Curve::Warm,
+            spec::HARD => Curve::Hard,
+            spec::FOLD => Curve::Fold,
+            spec::WRAP => Curve::Wrap,
             _ => Curve::Soft,
         }
     }

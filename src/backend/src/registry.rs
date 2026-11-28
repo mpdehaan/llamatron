@@ -5,6 +5,9 @@
 //! built from, by the name a spec gives it. A name no registry holds builds nothing rather than falling through to
 //! another kind, and the tests walk the registries, so that a component exists for the program only once registered.
 
+#[cfg(test)]
+use llamatron_names::spec;
+
 /// One registered component: the name a spec gives it, the file in its kind's folder that holds it, and how it is built.
 pub struct Entry<Build: 'static> {
     pub name: &'static str,
@@ -33,24 +36,28 @@ pub fn find<Build>(entries: &'static [Entry<Build>], name: &str) -> Option<&'sta
 #[cfg(test)]
 pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str])> {
     vec![
-        ("drums", crate::drums::REGISTRY.iter().map(|entry| entry.file).collect(), crate::drums::HELPERS),
         (
-            "effects",
+            spec::DRUMS,
+            crate::drums::REGISTRY.iter().map(|entry| entry.file).collect(),
+            crate::drums::HELPERS,
+        ),
+        (
+            spec::EFFECTS,
             crate::effects::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::effects::HELPERS,
         ),
         (
-            "envelopes",
+            spec::ENVELOPES,
             crate::envelopes::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::envelopes::HELPERS,
         ),
         (
-            "filters",
+            spec::FILTERS,
             crate::filters::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::filters::HELPERS,
         ),
         (
-            "oscillators",
+            spec::OSCILLATORS,
             crate::oscillators::REGISTRY.iter().map(|entry| entry.file).collect(),
             crate::oscillators::HELPERS,
         ),
@@ -60,12 +67,13 @@ pub fn folders() -> Vec<(&'static str, Vec<&'static str>, &'static [&'static str
 #[cfg(test)]
 mod tests {
     use super::*;
+    use llamatron_names::spec;
 
     /// Every file in a component folder is a registered component's or one of the helpers its kind declares, and every
     /// registered file exists: a component added but never registered, or registered but never written, fails here.
     #[test]
     fn every_component_file_is_registered() {
-        let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src");
+        let source = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(spec::SRC);
         let shared = "mod.rs";
         for (folder, registered, helpers) in folders() {
             let mut files: Vec<String> = std::fs::read_dir(source.join(folder))

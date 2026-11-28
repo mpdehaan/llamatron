@@ -24,12 +24,16 @@ use crate::fluid::{Fluid, FluidProblem};
 use crate::instrument::patch::{Drum, Patch, VELOCITY_STEP};
 use crate::protocol::values::as_number;
 use crate::protocol::{self, mapping, message};
+use llamatron_names::wire;
 use rmpv::Value;
 use std::collections::HashMap;
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+
+/// How many nanoseconds make a millisecond, for the statistics' times.
+const NANOSECONDS_A_MILLISECOND: f64 = 1e6;
 
 const REPORT_EVERY: Duration = Duration::from_millis(500);
 const OFFLINE_CHUNK: usize = 128;
@@ -171,7 +175,7 @@ pub fn play(block: usize, device: Option<&str>, output: Output, input: &mut dyn 
     player.stop();
     drop(player);
     tell(&output, &message(protocol::STATISTICS, vec![statistics]));
-    log::info!("closed");
+    log::info!("{}", wire::CLOSED);
     0
 }
 
@@ -283,7 +287,7 @@ fn fluid_of(received: &Value, rate: f64) -> Result<Box<Fluid>, FluidProblem> {
 
 fn failed_fluid(problem: &FluidProblem) -> Value {
     log::error!("{problem}");
-    message(protocol::FAILED, vec!["fluidsynth".into(), problem.to_string().into()])
+    message(protocol::FAILED, vec![wire::FLUIDSYNTH.into(), problem.to_string().into()])
 }
 
 /// Report the load every half second: the share of the time the callback was busy, its longest chunk against its budget,
@@ -303,12 +307,12 @@ pub(crate) fn start_reporter(player: &Player, output: Output, reporting: Arc<Ato
             last_busy = busy;
             last_time = now;
             let report = mapping(vec![
-                ("load", load.into()),
-                ("peak", peak.into()),
-                ("voices", statistics.voices.load(Ordering::Relaxed).into()),
-                ("dropouts", statistics.stream_errors.load(Ordering::Relaxed).into()),
-                ("late_notes", statistics.late.load(Ordering::Relaxed).into()),
-                ("muted", statistics.muted.load(Ordering::Relaxed).into()),
+                (wire::LOAD, load.into()),
+                (wire::PEAK, peak.into()),
+                (wire::VOICES, statistics.voices.load(Ordering::Relaxed).into()),
+                (wire::DROPOUTS, statistics.stream_errors.load(Ordering::Relaxed).into()),
+                (wire::LATE_NOTES, statistics.late.load(Ordering::Relaxed).into()),
+                (wire::MUTED, statistics.muted.load(Ordering::Relaxed).into()),
             ]);
             tell(&output, &message(protocol::LOAD, vec![report]));
         }
@@ -319,19 +323,22 @@ pub(crate) fn statistics_of(player: &Player) -> Value {
     let statistics = &player.statistics;
     let count = |counter: &std::sync::atomic::AtomicU64| Value::from(counter.load(Ordering::Relaxed));
     mapping(vec![
-        ("rate", player.rate.into()),
-        ("block", (player.block as u64).into()),
-        ("delay_ms", (player.delay * MILLISECONDS).into()),
-        ("chunks", count(&statistics.chunks)),
-        ("underflows", count(&statistics.stream_errors)),
-        ("late_notes", count(&statistics.late)),
-        ("longest_callback_ms", (statistics.longest_ns.load(Ordering::Relaxed) as f64 / 1e6).into()),
-        ("p99_callback_ms", statistics.p99_ms().into()),
-        ("budget_ms", (player.block as f64 / player.rate * MILLISECONDS).into()),
-        ("failures", count(&statistics.failures)),
-        ("runaways", count(&statistics.runaways)),
-        ("faults", count(&statistics.faults)),
-        ("dropped_notes", count(&statistics.dropped)),
+        (wire::RATE, player.rate.into()),
+        (wire::BLOCK, (player.block as u64).into()),
+        (wire::DELAY_MS, (player.delay * MILLISECONDS).into()),
+        (wire::CHUNKS, count(&statistics.chunks)),
+        (wire::UNDERFLOWS, count(&statistics.stream_errors)),
+        (wire::LATE_NOTES, count(&statistics.late)),
+        (
+            wire::LONGEST_CALLBACK_MS,
+            (statistics.longest_ns.load(Ordering::Relaxed) as f64 / NANOSECONDS_A_MILLISECOND).into(),
+        ),
+        (wire::P99_CALLBACK_MS, statistics.p99_ms().into()),
+        (wire::BUDGET_MS, (player.block as f64 / player.rate * MILLISECONDS).into()),
+        (wire::FAILURES, count(&statistics.failures)),
+        (wire::RUNAWAYS, count(&statistics.runaways)),
+        (wire::FAULTS, count(&statistics.faults)),
+        (wire::DROPPED_NOTES, count(&statistics.dropped)),
     ])
 }
 
@@ -427,16 +434,16 @@ fn render_file(engine: &mut Engine, path: &str, seconds: f64) -> Value {
     let peak = left.iter().chain(right.iter()).fold(0.0_f32, |most, sample| most.max(sample.abs()));
     if let Err(problem) = wav::write_stereo(path, engine.rate as u32, &left, &right) {
         log::error!("could not write the rendered file: {problem}");
-        return message(protocol::FAILED, vec!["write".into(), problem.to_string().into()]);
+        return message(protocol::FAILED, vec![wire::WRITE.into(), problem.to_string().into()]);
     }
     let counts = engine.counts;
     message(
         protocol::RENDERED,
         vec![mapping(vec![
-            ("frames", (frames as u64).into()),
-            ("peak", (peak as f64).into()),
-            ("runaways", counts.runaways.into()),
-            ("faults", engine.guard.faults.into()),
+            (wire::FRAMES, (frames as u64).into()),
+            (wire::PEAK, (peak as f64).into()),
+            (wire::RUNAWAYS, counts.runaways.into()),
+            (wire::FAULTS, engine.guard.faults.into()),
         ])],
     )
 }

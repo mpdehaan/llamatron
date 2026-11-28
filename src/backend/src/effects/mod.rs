@@ -19,6 +19,7 @@ use crate::effects::drive::{Curve, Drive};
 use crate::effects::multitap::MultiTap;
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Entry};
+use llamatron_names::spec;
 use rmpv::Value;
 
 /// What an effect is, as its entry builds it.
@@ -38,9 +39,9 @@ pub struct Effect {
 pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
     let mut effects = Vec::new();
     for spec in specs {
-        let mix = number(spec, "mix", 1.0);
+        let mix = number(spec, spec::MIX, 1.0);
         // An empty block, or a name no registry holds, adds no effect.
-        let Some(entry) = registry::find(REGISTRY, word(spec, "effect", EMPTY)) else {
+        let Some(entry) = registry::find(REGISTRY, word(spec, spec::EFFECT, EMPTY)) else {
             continue;
         };
         effects.push(Effect {
@@ -55,30 +56,30 @@ pub fn compiled(specs: &[Value], rate: f64) -> Vec<Effect> {
 pub type Build = fn(&Value, f64) -> Kind;
 
 /// An effect block's name when it holds none.
-pub const EMPTY: &str = "none";
+pub const EMPTY: &str = spec::NONE;
 
 /// Every effect, by the name a spec gives it, the file that holds it, and how it is built.
 pub static REGISTRY: &[Entry<Build>] = &[
     Entry {
-        name: "bax",
+        name: spec::BAX,
         file: "bax.rs",
         build: |spec, rate| Kind::Bax(Box::new(Bax::compiled(spec, rate))),
     },
     Entry {
-        name: "bitcrush",
+        name: spec::BITCRUSH,
         file: "bitcrush.rs",
         build: |spec, rate| Kind::Bitcrush(Box::new(Bitcrush::compiled(spec, rate))),
     },
     Entry {
-        name: "drive",
+        name: spec::DRIVE,
         file: "drive.rs",
         build: |spec, _rate| {
-            let curve = Curve::named(word(spec, "curve", "soft"));
-            Kind::Drive(Box::new(Drive::new(curve, number(spec, "amount", 0.0))))
+            let curve = Curve::named(word(spec, spec::CURVE, spec::SOFT));
+            Kind::Drive(Box::new(Drive::new(curve, number(spec, spec::AMOUNT, 0.0))))
         },
     },
     Entry {
-        name: "multitap",
+        name: spec::MULTITAP,
         file: "multitap.rs",
         build: |spec, rate| Kind::MultiTap(Box::new(MultiTap::compiled(spec, rate))),
     },
@@ -176,8 +177,12 @@ mod tests {
     fn multitap_adds_its_echoes_under_the_whole_sound() {
         let mix = 0.35;
         let level = 0.7;
-        let tap = Value::Map(vec![("quarters".into(), 0.5.into()), ("level".into(), level.into())]);
-        let mut delay = effect(&[("effect", "multitap".into()), ("taps", Value::Array(vec![tap])), ("mix", mix.into())]);
+        let tap = Value::Map(vec![(spec::QUARTERS.into(), 0.5.into()), (spec::LEVEL.into(), level.into())]);
+        let mut delay = effect(&[
+            (spec::EFFECT, spec::MULTITAP.into()),
+            (spec::TAPS, Value::Array(vec![tap])),
+            (spec::MIX, mix.into()),
+        ]);
         let mut buffer = vec![0.0f32; RATE as usize];
         buffer[0] = 1.0;
         delay.apply(&mut buffer);
@@ -190,7 +195,7 @@ mod tests {
     #[test]
     fn bitcrush_bits_give_two_to_the_bits_levels() {
         for (bits, codes) in [(1.0, 2), (3.0, 8)] {
-            let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", bits.into())]);
+            let mut crush = effect(&[(spec::EFFECT, spec::BITCRUSH.into()), (spec::BITS, bits.into())]);
             let mut buffer = sine(1.0);
             crush.apply(&mut buffer);
             let mut levels: Vec<i64> = buffer.iter().map(|sample| (*sample as f64 * 1e6).round() as i64).collect();
@@ -206,7 +211,7 @@ mod tests {
     fn bitcrush_dither_keeps_a_quiet_sound() {
         let quiet = 10f64.powf(-56.0 / 20.0);
         let heard = |dither: bool| {
-            let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 8.0.into()), ("dither", dither.into())]);
+            let mut crush = effect(&[(spec::EFFECT, spec::BITCRUSH.into()), (spec::BITS, 8.0.into()), (spec::DITHER, dither.into())]);
             let mut buffer = sine(quiet);
             let original = buffer.clone();
             crush.apply(&mut buffer);
@@ -224,7 +229,7 @@ mod tests {
     #[test]
     fn bitcrush_rate_holds_at_its_own_rate() {
         let hold_rate = 7_000.0;
-        let mut crush = effect(&[("effect", "bitcrush".into()), ("bits", 16.0.into()), ("rate", hold_rate.into())]);
+        let mut crush = effect(&[(spec::EFFECT, spec::BITCRUSH.into()), (spec::BITS, 16.0.into()), (spec::RATE, hold_rate.into())]);
         let mut buffer: Vec<f32> = (0..48_000).map(|place| place as f32 / 48_000.0).collect();
         crush.apply(&mut buffer);
         // Each hold is a step up, smoothed over two samples: count each run of rising samples once.

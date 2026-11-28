@@ -5,25 +5,30 @@
 //! its frequency sweep.
 
 use super::*;
+use llamatron_names::spec;
+
+/// What the chip's voice takes where its spec names none: its pulse's duty, and its sweep's step.
+const DEFAULT_DUTY: f64 = 0.25;
+const DEFAULT_SWEEP_STEP: f64 = 3.0;
 
 /// The handheld chip's oscillator from its spec.
 pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
-    let voice = match word(spec, "chip_voice", "pulse") {
-        "wave" => ChipVoice::Wave,
-        "noise" => ChipVoice::Noise,
+    let voice = match word(spec, spec::CHIP_VOICE, spec::PULSE) {
+        spec::WAVE => ChipVoice::Wave,
+        spec::NOISE => ChipVoice::Noise,
         _ => ChipVoice::Pulse,
     };
     let (tables, noise) = match voice {
-        ChipVoice::Pulse => (Some(tables::duty_tables(number(spec, "duty", 0.25), rate)), None),
-        ChipVoice::Wave => (Some(tables::shape_tables(word(spec, "wave_shape", "triangle"), rate)), None),
-        ChipVoice::Noise => (None, Some(tables::shift_register_noise(word(spec, "noise", "long") == "short"))),
+        ChipVoice::Pulse => (Some(tables::duty_tables(number(spec, spec::DUTY, DEFAULT_DUTY), rate)), None),
+        ChipVoice::Wave => (Some(tables::shape_tables(word(spec, spec::WAVE_SHAPE, spec::TRIANGLE), rate)), None),
+        ChipVoice::Noise => (None, Some(tables::shift_register_noise(word(spec, spec::NOISE, spec::LONG) == spec::SHORT))),
     };
     OscillatorPart::Pocket {
         tables,
         noise,
-        sweep_pace: number(spec, "sweep_pace", 0.0) as i64,
-        sweep_up: truth(spec, "sweep_up", false),
-        sweep_step: number(spec, "sweep_step", 3.0) as i64,
+        sweep_pace: number(spec, spec::SWEEP_PACE, 0.0) as i64,
+        sweep_up: truth(spec, spec::SWEEP_UP, false),
+        sweep_step: number(spec, spec::SWEEP_STEP, DEFAULT_SWEEP_STEP) as i64,
     }
 }
 

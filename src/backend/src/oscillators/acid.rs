@@ -6,6 +6,7 @@
 //! whose constants were measured from the circuit.
 
 use super::*;
+use llamatron_names::spec;
 
 /// The square: the saw through a tanh this steep, offset so that it switches a little off the middle, shifted half a
 /// cycle, and played at half the saw's level.
@@ -52,14 +53,14 @@ pub fn square_cycle(length: usize) -> Vec<f64> {
 
 /// Oh3's oscillator from its spec: Open303's saw or its shaped square, as band-limited tables, and its tuning.
 pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
-    let cycle = if word(spec, "acid_wave", "saw") == "saw" {
+    let cycle = if word(spec, spec::ACID_WAVE, spec::SAW) == spec::SAW {
         saw_cycle(TABLE_SIZE)
     } else {
         square_cycle(TABLE_SIZE)
     };
     OscillatorPart::Acid {
         tables: tables::cycle_tables(&cycle, rate),
-        tuning: number(spec, "tuning", 0.0),
+        tuning: number(spec, spec::TUNING, 0.0),
         rate,
     }
 }

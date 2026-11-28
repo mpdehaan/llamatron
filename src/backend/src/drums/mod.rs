@@ -15,6 +15,7 @@
 
 use crate::dsp::{self, band_pass_pair, Biquad, Random, BUTTERWORTH_Q};
 use crate::registry::{self, Entry};
+use llamatron_names::spec;
 use std::f64::consts::PI;
 use std::sync::Arc;
 
@@ -57,52 +58,52 @@ const KICK_BUILD: Build = |strike, noise| kick(strike, noise);
 /// Every drum machine, by the name a spec gives it, the file that holds it, and how it renders a hit.
 pub static REGISTRY: &[Entry<Build>] = &[
     Entry {
-        name: "kick",
+        name: spec::KICK,
         file: "mod.rs",
         build: KICK_BUILD,
     },
     Entry {
-        name: "hard_kick",
+        name: spec::HARD_KICK,
         file: "mod.rs",
         build: |strike, noise| hard_kick(strike, noise),
     },
     Entry {
-        name: "synth_kick",
+        name: spec::SYNTH_KICK,
         file: "mod.rs",
         build: |strike, _noise| synth_kick(strike),
     },
     Entry {
-        name: "snare",
+        name: spec::SNARE,
         file: "mod.rs",
         build: |strike, noise| snare(strike, noise),
     },
     Entry {
-        name: "clap",
+        name: spec::CLAP,
         file: "mod.rs",
         build: |strike, noise| clap(strike, noise),
     },
     Entry {
-        name: "rim",
+        name: spec::RIM,
         file: "mod.rs",
         build: |strike, _noise| rim(strike),
     },
     Entry {
-        name: "hats",
+        name: spec::HATS,
         file: "mod.rs",
         build: |strike, noise| hats(strike, noise),
     },
     Entry {
-        name: "cowbell",
+        name: spec::COWBELL,
         file: "mod.rs",
         build: |strike, _noise| cowbell(strike),
     },
     Entry {
-        name: "acoustic_tom",
+        name: spec::ACOUSTIC_TOM,
         file: "mod.rs",
         build: |strike, noise| acoustic_tom(strike, noise),
     },
     Entry {
-        name: "karplus_drum",
+        name: spec::KARPLUS_DRUM,
         file: "mod.rs",
         build: |strike, noise| karplus_drum(strike, noise),
     },
@@ -542,7 +543,8 @@ mod tests {
     #[test]
     fn the_kick_at_no_color_shape_or_sweep_is_a_pure_sine() {
         let (rate, long_decay) = (48000.0, 100.0);
-        let hit = render_hit("kick", &[64.0, long_decay, 0.0, 0.0, 0.0], 60.0, 127.0, rate);
+        let (middle_knob, middle_c, loudest) = (64.0, 60.0, 127.0);
+        let hit = render_hit(spec::KICK, &[middle_knob, long_decay, 0.0, 0.0, 0.0], middle_c, loudest, rate);
         let fundamental = 30.0 * 2f64.powf(3.0 * 64.0 / KNOB_TOP);
         // A Hann window over a stretch of the ring, so that the decay's own spread of frequencies stays out of the reading.
         let (from, to) = ((0.2 * rate) as usize, (0.7 * rate) as usize);

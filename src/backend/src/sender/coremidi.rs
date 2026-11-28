@@ -8,6 +8,7 @@
 
 use crate::audio::clock;
 use coremidi::{Client, Destination, Destinations, OutputPort, PacketBuffer};
+use llamatron_names::wire;
 use std::sync::Arc;
 
 const NOW: u64 = 0;
@@ -25,7 +26,7 @@ pub enum OpenProblem {
 
 /// The process's one CoreMIDI client.
 pub fn client() -> Result<Arc<Client>, OpenProblem> {
-    Client::new("llamatron").map(Arc::new).map_err(OpenProblem::Client)
+    Client::new(wire::LLAMATRON).map(Arc::new).map_err(OpenProblem::Client)
 }
 
 /// Every MIDI destination's shown name, as the tracker lists the computer's ports.

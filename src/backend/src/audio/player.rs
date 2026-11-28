@@ -17,6 +17,7 @@ use crate::engine::{Engine, Event, MidiEvent, Trash};
 use crate::fluid::Fluid;
 use crate::instrument::patch::Patch;
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use llamatron_names::spec;
 use std::panic::{self, AssertUnwindSafe};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -98,10 +99,10 @@ impl StartProblem {
     /// The word the tracker reads to choose its message (user_strings/errors.py).
     pub fn code(&self) -> &'static str {
         match self {
-            StartProblem::NoDevice => "no_device",
-            StartProblem::Settings(_) => "settings",
-            StartProblem::Stream(_) => "stream",
-            StartProblem::TooSlow => "too_slow",
+            StartProblem::NoDevice => spec::NO_DEVICE,
+            StartProblem::Settings(_) => spec::SETTINGS,
+            StartProblem::Stream(_) => spec::STREAM,
+            StartProblem::TooSlow => spec::TOO_SLOW,
         }
     }
 }

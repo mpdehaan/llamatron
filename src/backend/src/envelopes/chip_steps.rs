@@ -4,13 +4,17 @@
 //! Chip steps: the handheld chip's volume envelope, sixteen levels stepped at its pace, up or down.
 
 use super::*;
+use llamatron_names::spec;
+
+/// The level, of the chip's sixteen, chip steps start at where the spec names none.
+const DEFAULT_START_LEVEL: f64 = 15.0;
 
 /// Chip steps from its spec.
 pub fn compiled(spec: &Value) -> EnvelopePart {
     EnvelopePart::ChipSteps {
-        start_level: number(spec, "start_level", 15.0),
-        pace: number(spec, "level_pace", 0.0),
-        up: crate::protocol::values::truth(spec, "level_up", false),
+        start_level: number(spec, spec::START_LEVEL, DEFAULT_START_LEVEL),
+        pace: number(spec, spec::LEVEL_PACE, 0.0),
+        up: crate::protocol::values::truth(spec, spec::LEVEL_UP, false),
     }
 }
 

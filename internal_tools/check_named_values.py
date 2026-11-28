@@ -40,8 +40,9 @@ NAME = re.compile(r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
 # A number standing alone, with a type suffix or not, and the numbers that need no name.
 NUMBER = re.compile(r"(?<![\w.])(\d[\d_]*(?:\.\d+)?(?:[eE]-?\d+)?)(?:_?(?:f32|f64|i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|usize|isize))?(?![\w.])")
 PLAIN_NUMBERS = {"0", "1", "0.0", "1.0"}
-# Lines that give a value its name: a constant or a static, or a `let` binding a plain number or text to a name.
-NAMING_LINE = re.compile(r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const|static)\s|^\s*let\s+(?:mut\s+)?[a-z_][a-z0-9_]*(?:\s*:\s*[\w<>]+)?\s*=\s*[-\d\"(\[]")
+# Lines that give a value its name: a constant or a static, or a `let` binding a plain number or text to a name, or
+# several to a tuple of names.
+NAMING_LINE = re.compile(r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const|static)\s|^\s*let\s+(?:mut\s+)?(?:[a-z_][a-z0-9_]*|\((?:\s*(?:mut\s+)?[a-z_][a-z0-9_]*\s*,?)+\))(?:\s*:\s*[\w<>(), \[\];]+)?\s*=\s*[-\d\"(\[]")
 # A comment, from where it starts to the line's end, and an attribute line.
 COMMENT = re.compile(r"//.*$")
 ATTRIBUTE = re.compile(r"^\s*#!?\[")

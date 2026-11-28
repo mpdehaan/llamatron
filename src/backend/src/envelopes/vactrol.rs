@@ -5,6 +5,14 @@
 //! a little its own.
 
 use super::*;
+use llamatron_names::spec;
+
+/// What a vactrol takes where its spec names none: its cell's rise and fall and a strike's width, in seconds, and its
+/// memory's share.
+const DEFAULT_RISE: f64 = 0.012;
+const DEFAULT_FALL: f64 = 0.25;
+const DEFAULT_STRIKE_WIDTH: f64 = 0.002;
+const DEFAULT_MEMORY: f64 = 0.3;
 
 /// A cell's rise and fall in seconds at a Response from 0 (fast) to 1 (lazy), each moving evenly in its logarithm between
 /// the two cells it lies between, and slowed by its Age, as an old cell is.
@@ -20,18 +28,18 @@ pub fn cell_times(response: f64, age: f64) -> (f64, f64) {
 }
 
 pub fn vactrol(spec: &Value) -> EnvelopePart {
-    let age = number(spec, "age", 0.0);
+    let age = number(spec, spec::AGE, 0.0);
     let light = 1.0 - AGE_DIMMING * age;
-    let (rise, fall) = match spec_number(spec, "response") {
+    let (rise, fall) = match spec_number(spec, spec::RESPONSE) {
         Some(response) => cell_times(response, age),
         None => (
-            number(spec, "rise", 0.012).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age),
-            number(spec, "fall", 0.25).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age),
+            number(spec, spec::RISE, DEFAULT_RISE).max(SHORTEST_ATTACK) * (1.0 + AGE_SLOWER_RISE * age),
+            number(spec, spec::FALL, DEFAULT_FALL).max(SHORTEST_CELL_FALL) * (1.0 + AGE_LONGER_FALL * age),
         ),
     };
     let unstable = 1.0 - number(spec, "stability", 1.0);
-    let gated = word(spec, "drive", "strike") != "strike";
-    let width = number(spec, "strike_width", 0.002);
+    let gated = word(spec, spec::DRIVE, spec::STRIKE) != spec::STRIKE;
+    let width = number(spec, spec::STRIKE_WIDTH, DEFAULT_STRIKE_WIDTH);
     let full = if gated {
         1.0
     } else {
@@ -42,7 +50,7 @@ pub fn vactrol(spec: &Value) -> EnvelopePart {
         fall,
         gated,
         width,
-        memory: (number(spec, "memory", 0.3) * (1.0 + AGE_MORE_MEMORY * age)).min(1.0),
+        memory: (number(spec, spec::MEMORY, DEFAULT_MEMORY) * (1.0 + AGE_MORE_MEMORY * age)).min(1.0),
         light,
         unstable: (
             FALL_SPREAD * unstable + AGE_SPREAD * age,

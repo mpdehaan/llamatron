@@ -10,6 +10,7 @@
 //! audio thread, the only thread that touches it afterwards, which is why FluidSynth's own locking is turned off.
 
 use libloading::Library;
+use llamatron_names::fluid_calls;
 use std::ffi::{c_char, c_double, c_int, c_void, CString};
 
 const SAMPLE_RATE: &str = "synth.sample-rate";
@@ -97,21 +98,21 @@ fn call<T: Copy>(library: &Library, name: &'static str) -> Result<T, FluidProble
 
 fn calls_of(library: &Library) -> Result<Calls, FluidProblem> {
     Ok(Calls {
-        new_settings: call(library, "new_fluid_settings")?,
-        set_number: call(library, "fluid_settings_setnum")?,
-        set_whole: call(library, "fluid_settings_setint")?,
-        new_synth: call(library, "new_fluid_synth")?,
-        load_soundfont: call(library, "fluid_synth_sfload")?,
-        note_on: call(library, "fluid_synth_noteon")?,
-        note_off: call(library, "fluid_synth_noteoff")?,
-        control_change: call(library, "fluid_synth_cc")?,
-        program_change: call(library, "fluid_synth_program_change")?,
-        pitch_bend: call(library, "fluid_synth_pitch_bend")?,
-        channel_pressure: call(library, "fluid_synth_channel_pressure")?,
-        all_sounds_off: call(library, "fluid_synth_all_sounds_off")?,
-        write_float: call(library, "fluid_synth_write_float")?,
-        delete_synth: call(library, "delete_fluid_synth")?,
-        delete_settings: call(library, "delete_fluid_settings")?,
+        new_settings: call(library, fluid_calls::NEW_FLUID_SETTINGS)?,
+        set_number: call(library, fluid_calls::FLUID_SETTINGS_SETNUM)?,
+        set_whole: call(library, fluid_calls::FLUID_SETTINGS_SETINT)?,
+        new_synth: call(library, fluid_calls::NEW_FLUID_SYNTH)?,
+        load_soundfont: call(library, fluid_calls::FLUID_SYNTH_SFLOAD)?,
+        note_on: call(library, fluid_calls::FLUID_SYNTH_NOTEON)?,
+        note_off: call(library, fluid_calls::FLUID_SYNTH_NOTEOFF)?,
+        control_change: call(library, fluid_calls::FLUID_SYNTH_CC)?,
+        program_change: call(library, fluid_calls::FLUID_SYNTH_PROGRAM_CHANGE)?,
+        pitch_bend: call(library, fluid_calls::FLUID_SYNTH_PITCH_BEND)?,
+        channel_pressure: call(library, fluid_calls::FLUID_SYNTH_CHANNEL_PRESSURE)?,
+        all_sounds_off: call(library, fluid_calls::FLUID_SYNTH_ALL_SOUNDS_OFF)?,
+        write_float: call(library, fluid_calls::FLUID_SYNTH_WRITE_FLOAT)?,
+        delete_synth: call(library, fluid_calls::DELETE_FLUID_SYNTH)?,
+        delete_settings: call(library, fluid_calls::DELETE_FLUID_SETTINGS)?,
     })
 }
 

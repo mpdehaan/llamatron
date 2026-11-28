@@ -13,8 +13,19 @@
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::effects::bucket_brigade::{BucketBrigade, Design};
 use crate::protocol::values::{as_number, field, list, number, truth, word};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
+
+/// What a MultiTap takes where its spec names none: its loop's tone and low cut in hertz, and the Analog mode's
+/// darkness, noise, drive, wow and flutter, each a share.
+const DEFAULT_TONE_HERTZ: f64 = 6000.0;
+const DEFAULT_LOW_CUT_HERTZ: f64 = 80.0;
+const DEFAULT_DARKNESS: f64 = 0.35;
+const DEFAULT_NOISE: f64 = 0.15;
+const DEFAULT_DRIVE: f64 = 0.3;
+const DEFAULT_WOW: f64 = 0.1;
+const DEFAULT_FLUTTER: f64 = 0.05;
 
 /// The taps, and the longest time a tap reaches, in seconds: a bar of 4/4 at 60 quarter notes a minute.
 pub const TAP_COUNT: usize = 4;
@@ -128,16 +139,16 @@ impl MultiTap {
             fade_step: 0.0,
             waiting: None,
         }; TAP_COUNT];
-        for (tap, given) in taps.iter_mut().zip(list(spec, "taps")) {
-            tap.time = match field(given, "quarters").and_then(as_number) {
+        for (tap, given) in taps.iter_mut().zip(list(spec, spec::TAPS)) {
+            tap.time = match field(given, spec::QUARTERS).and_then(as_number) {
                 Some(quarters) => TapTime::Quarters(quarters),
-                None => TapTime::Seconds(number(given, "seconds", 0.0)),
+                None => TapTime::Seconds(number(given, spec::SECONDS, 0.0)),
             };
-            tap.level = number(given, "level", 0.0);
-            tap.on = truth(given, "on", true);
+            tap.level = number(given, spec::LEVEL, 0.0);
+            tap.on = truth(given, spec::ON, true);
         }
         let length = ((LONGEST_DELAY_SECONDS * rate) as usize + 4).next_power_of_two();
-        let change = if word(spec, "time_change", "fade") == "glide" {
+        let change = if word(spec, spec::TIME_CHANGE, spec::FADE) == spec::GLIDE {
             Change::Glide
         } else {
             Change::Fade
@@ -147,10 +158,10 @@ impl MultiTap {
             mask: length - 1,
             write: 0,
             taps,
-            feedback_from: (number(spec, "feedback_from", TAP_COUNT as f64) as usize).clamp(1, TAP_COUNT) - 1,
-            feedback: number(spec, "feedback", 0.0).clamp(0.0, MOST_FEEDBACK),
-            tone: OnePole::new(number(spec, "tone", 6000.0), rate),
-            low_cut: OnePole::new(number(spec, "low_cut", 80.0), rate),
+            feedback_from: (number(spec, spec::FEEDBACK_FROM, TAP_COUNT as f64) as usize).clamp(1, TAP_COUNT) - 1,
+            feedback: number(spec, spec::FEEDBACK, 0.0).clamp(0.0, MOST_FEEDBACK),
+            tone: OnePole::new(number(spec, spec::TONE, DEFAULT_TONE_HERTZ), rate),
+            low_cut: OnePole::new(number(spec, spec::LOW_CUT, DEFAULT_LOW_CUT_HERTZ), rate),
             change,
             glide_share: 1.0 - (-1.0 / (GLIDE_SECONDS * rate)).exp(),
             rate,
@@ -164,7 +175,7 @@ impl MultiTap {
             tap.target = target;
             tap.from = target;
         }
-        if word(spec, "mode", "digital") == "analog" {
+        if word(spec, spec::MODE, spec::DIGITAL) == spec::ANALOG {
             delay.analog = Some(Box::new(delay.bucket_brigade(spec)));
         }
         delay
@@ -178,11 +189,11 @@ impl MultiTap {
             shares: self.taps.map(|tap| tap.target / longest),
             levels: self.taps.map(|tap| if tap.on { tap.level } else { 0.0 }),
             feedback_from: Some(self.feedback_from).filter(|tap| self.taps[*tap].on),
-            darkness: number(spec, "darkness", 0.35),
-            noise: number(spec, "noise", 0.15),
-            drive: number(spec, "drive", 0.3),
-            wow: number(spec, "wow", 0.1),
-            flutter: number(spec, "flutter", 0.05),
+            darkness: number(spec, spec::DARKNESS, DEFAULT_DARKNESS),
+            noise: number(spec, spec::NOISE, DEFAULT_NOISE),
+            drive: number(spec, spec::DRIVE, DEFAULT_DRIVE),
+            wow: number(spec, spec::WOW, DEFAULT_WOW),
+            flutter: number(spec, spec::FLUTTER, DEFAULT_FLUTTER),
         };
         BucketBrigade::new(&design, longest / self.rate, self.rate)
     }
@@ -348,19 +359,19 @@ mod tests {
         let taps = (0..TAP_COUNT)
             .map(|place| {
                 Value::Map(vec![
-                    ("quarters".into(), quarters[place].into()),
-                    ("level".into(), levels[place].into()),
-                    ("on".into(), on[place].into()),
+                    (spec::QUARTERS.into(), quarters[place].into()),
+                    (spec::LEVEL.into(), levels[place].into()),
+                    (spec::ON.into(), on[place].into()),
                 ])
             })
             .collect();
         let spec = Value::Map(vec![
-            ("taps".into(), Value::Array(taps)),
-            ("feedback".into(), feedback.into()),
-            ("feedback_from".into(), feedback_from.into()),
-            ("tone".into(), 18_000.0.into()),
-            ("low_cut".into(), 20.0.into()),
-            ("time_change".into(), change.into()),
+            (spec::TAPS.into(), Value::Array(taps)),
+            (spec::FEEDBACK.into(), feedback.into()),
+            (spec::FEEDBACK_FROM.into(), feedback_from.into()),
+            (spec::TONE.into(), 18_000.0.into()),
+            (spec::LOW_CUT.into(), 20.0.into()),
+            (spec::TIME_CHANGE.into(), change.into()),
         ]);
         MultiTap::compiled(&spec, RATE)
     }
@@ -384,7 +395,8 @@ mod tests {
     #[test]
     fn each_tap_echoes_on_its_beat_and_a_tap_off_is_silent() {
         let all = [true; TAP_COUNT];
-        let mut delay = multitap(0.0, "fade", all, 4);
+        let last_tap = 4;
+        let mut delay = multitap(0.0, spec::FADE, all, last_tap);
         let expected: Vec<(usize, f64)> = [(0.5, 0.7), (1.0, 0.5), (1.5, 0.35), (2.0, 0.25)]
             .iter()
             .map(|(quarters, level)| (beat(*quarters, FIRST_TEMPO), *level))
@@ -395,7 +407,7 @@ mod tests {
             assert_eq!(place, at);
             assert!((level - want).abs() < 1e-6, "{level} against {want}");
         }
-        let mut second_off = multitap(0.0, "fade", [true, false, true, true], 4);
+        let mut second_off = multitap(0.0, spec::FADE, [true, false, true, true], last_tap);
         let heard = echoes(&mut second_off, 1.2);
         assert!(heard.iter().all(|(place, _)| *place != beat(1.0, FIRST_TEMPO)));
     }
@@ -414,10 +426,11 @@ mod tests {
     fn feedback_comes_from_the_tap_chosen() {
         let feedback = 0.5;
         let again = beat(1.5, FIRST_TEMPO) + beat(1.0, FIRST_TEMPO);
-        let mut delay = multitap(feedback, "fade", [true; TAP_COUNT], 3);
+        let dotted_quarter_tap = 3;
+        let mut delay = multitap(feedback, spec::FADE, [true; TAP_COUNT], dotted_quarter_tap);
         let repeat = heard_around(&mut delay, again);
         assert!((repeat - 0.5 * feedback).abs() < 0.03, "{repeat}");
-        let mut silent_source = multitap(feedback, "fade", [true, true, false, true], 3);
+        let mut silent_source = multitap(feedback, spec::FADE, [true, true, false, true], dotted_quarter_tap);
         assert!(heard_around(&mut silent_source, again) < 0.01);
     }
 
@@ -425,7 +438,7 @@ mod tests {
     /// Fade and by Glide alike, where an abrupt jump would leave a step between two samples.
     #[test]
     fn a_tempo_change_moves_the_taps_without_a_click() {
-        for change in ["fade", "glide"] {
+        for change in [spec::FADE, spec::GLIDE] {
             let mut delay = multitap(0.0, change, [true, false, false, false], 4);
             let hertz = 110.0;
             let tone = |place: usize| (2.0 * PI * hertz * place as f64 / RATE).sin();

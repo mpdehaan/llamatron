@@ -25,6 +25,7 @@ use crate::dsp::one_pole::OnePoleHighpass;
 use crate::oscillators::tables::{Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
 use crate::registry::{self, Entry};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::sync::Arc;
 
@@ -170,7 +171,7 @@ pub enum ChipVoice {
 
 /// The oscillators a spec describes, built by their registry's entry; a type no entry holds sounds nothing.
 pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
-    match registry::find(REGISTRY, word(spec, "type", BASIC)) {
+    match registry::find(REGISTRY, word(spec, spec::TYPE, BASIC)) {
         Some(entry) => (entry.build)(spec, rate),
         None => OscillatorPart::Silent,
     }
@@ -180,20 +181,20 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
 pub type Build = fn(&Value, f64) -> OscillatorPart;
 
 /// The type of oscillator a spec that names none plays.
-const BASIC: &str = "basic";
+const BASIC: &str = spec::BASIC;
 /// The drum machine: a sound of its own (drums/), which the patch builds in place of any oscillator; its entry here
 /// builds nothing, since no voice of oscillators plays it.
-pub const DRUM: &str = "drum";
+pub const DRUM: &str = spec::DRUM;
 
 /// Every oscillator type, by the name a spec gives it, the file that holds it, and how it is built.
 pub static REGISTRY: &[Entry<Build>] = &[
     Entry {
-        name: "acid",
+        name: spec::ACID,
         file: "acid.rs",
         build: acid::compiled,
     },
     Entry {
-        name: "asheville",
+        name: spec::ASHEVILLE,
         file: "asheville.rs",
         build: |spec, _rate| OscillatorPart::Asheville(Box::new(asheville::compiled(spec))),
     },
@@ -208,12 +209,12 @@ pub static REGISTRY: &[Entry<Build>] = &[
         build: |_spec, _rate| OscillatorPart::Silent,
     },
     Entry {
-        name: "pocket",
+        name: spec::POCKET,
         file: "pocket.rs",
         build: pocket::compiled,
     },
     Entry {
-        name: "sid",
+        name: spec::SID,
         file: "sid.rs",
         build: sid::compiled,
     },
@@ -332,7 +333,7 @@ mod tests {
     /// FM does not fold harmonics back down; a note bent nowhere reads its own pitch's table.
     #[test]
     fn a_note_bent_up_reads_the_table_of_its_highest_pitch() {
-        let spec = rmpv::Value::Map(vec![("type".into(), "acid".into())]);
+        let spec = rmpv::Value::Map(vec![(spec::TYPE.into(), spec::ACID.into())]);
         let part = compiled(&spec, 48000.0);
         let mut state = OscillatorState::default();
         let (pitch, two_octaves) = (60.0, 24.0);
@@ -377,9 +378,12 @@ mod tests {
     #[test]
     fn every_basic_waveform_plays_at_its_pitch() {
         let (pitch, hertz) = (57.0, 220.0);
-        for waveform in ["sine", "saw", "square", "triangle", "pulse"] {
+        for waveform in [spec::SINE, spec::SAW, spec::SQUARE, spec::TRIANGLE, spec::PULSE] {
             let oscillator = Value::Array(vec![waveform.into(), 0.into(), 1.0.into()]);
-            let samples = played(vec![("type", "basic".into()), ("oscillators", Value::Array(vec![oscillator]))], pitch);
+            let samples = played(
+                vec![(spec::TYPE, spec::BASIC.into()), (spec::OSCILLATORS, Value::Array(vec![oscillator]))],
+                pitch,
+            );
             assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{waveform}");
             assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{waveform} {}", crossings(&samples));
         }
@@ -390,12 +394,12 @@ mod tests {
     #[test]
     fn the_pockets_channels_play_their_notes() {
         let (pitch, hertz) = (57.0, 220.0);
-        for voice in ["pulse", "wave"] {
-            let samples = played(vec![("type", "pocket".into()), ("chip_voice", voice.into())], pitch);
+        for voice in [spec::PULSE, spec::WAVE] {
+            let samples = played(vec![(spec::TYPE, spec::POCKET.into()), (spec::CHIP_VOICE, voice.into())], pitch);
             assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{voice}");
             assert!((crossings(&samples) as f64 - hertz).abs() <= 3.0, "{voice} {}", crossings(&samples));
         }
-        let noise = played(vec![("type", "pocket".into()), ("chip_voice", "noise".into())], pitch);
+        let noise = played(vec![(spec::TYPE, spec::POCKET.into()), (spec::CHIP_VOICE, spec::NOISE.into())], pitch);
         assert!(crossings(&noise) > 2 * hertz as usize, "{}", crossings(&noise));
     }
 
@@ -403,8 +407,8 @@ mod tests {
     #[test]
     fn oh3s_waves_play_at_their_pitch() {
         let (pitch, hertz) = (45.0, 110.0);
-        for wave in ["saw", "square"] {
-            let samples = played(vec![("type", "acid".into()), ("acid_wave", wave.into())], pitch);
+        for wave in [spec::SAW, spec::SQUARE] {
+            let samples = played(vec![(spec::TYPE, spec::ACID.into()), (spec::ACID_WAVE, wave.into())], pitch);
             assert!(samples.iter().all(|sample| sample.abs() <= 1.5), "{wave}");
             assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{wave} {}", crossings(&samples));
         }
@@ -414,12 +418,13 @@ mod tests {
     /// note's, whatever the Interval tunes the synced wave to.
     #[test]
     fn a_synced_sid_wave_sounds_at_its_note() {
+        let a_fifth = 7.0;
         let (pitch, hertz) = (57.0, 220usize);
         let pairs = vec![
-            ("type", Value::from("sid")),
-            ("wave", Value::from("saw")),
-            ("sync", Value::from(true)),
-            ("interval", Value::from(7.0)),
+            (spec::TYPE, Value::from(spec::SID)),
+            (spec::WAVE, Value::from(spec::SAW)),
+            (spec::SYNC, Value::from(true)),
+            (spec::INTERVAL, Value::from(a_fifth)),
         ];
         let out: Vec<f64> = played(pairs, pitch);
         let mut bins: Vec<rustfft::num_complex::Complex<f64>> = out.iter().map(|sample| rustfft::num_complex::Complex::new(*sample, 0.0)).collect();

@@ -6,6 +6,7 @@
 
 use crate::dsp::{flushed, HIGHEST_SHARE};
 use crate::protocol::values::number;
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
 
@@ -25,8 +26,8 @@ impl Bax {
     /// Bax from its spec: its Bass and Treble in decibels, at a sample rate.
     pub fn compiled(spec: &Value, rate: f64) -> Bax {
         Bax {
-            bass: Shelf::new(number(spec, "bass", 0.0), BASS_TURNOVER_HERTZ, End::Under, rate),
-            treble: Shelf::new(number(spec, "treble", 0.0), TREBLE_TURNOVER_HERTZ, End::Over, rate),
+            bass: Shelf::new(number(spec, spec::BASS, 0.0), BASS_TURNOVER_HERTZ, End::Under, rate),
+            treble: Shelf::new(number(spec, spec::TREBLE, 0.0), TREBLE_TURNOVER_HERTZ, End::Over, rate),
         }
     }
 
@@ -146,7 +147,7 @@ mod tests {
 
     /// The level of a steady sine at some hertz through a Bax, once its shelves have settled, against the sine's own.
     fn through_bax(bass: f64, treble: f64, hertz: f64) -> f64 {
-        let spec = Value::Map(vec![("bass".into(), bass.into()), ("treble".into(), treble.into())]);
+        let spec = Value::Map(vec![(spec::BASS.into(), bass.into()), (spec::TREBLE.into(), treble.into())]);
         let mut bax = Bax::compiled(&spec, RATE);
         let samples = 48_000;
         let input: Vec<f64> = (0..samples).map(|place| 0.5 * (2.0 * PI * hertz * place as f64 / RATE).sin()).collect();

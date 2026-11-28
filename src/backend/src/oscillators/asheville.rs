@@ -20,8 +20,15 @@
 use crate::dsp::blep::{pulse, saw, triangle};
 use crate::oscillators::{frequency_of, Moves, OscillatorState};
 use crate::protocol::values::{list, number, truth, word};
+use llamatron_names::spec;
 use rmpv::Value;
 use std::f64::consts::PI;
+
+/// What an oscillator takes where its spec names none: its shape and its level in the mix, each a share; and the
+/// lowest of its subs, two octaves under it.
+const DEFAULT_SHAPE: f64 = 0.33;
+const DEFAULT_MIX: f64 = 0.8;
+const LOWEST_SUB: f64 = 2.0;
 
 /// The waves of the panel: triangle, the shark tooth (between triangle and saw), saw, reverse saw (Osc 3's), square, and
 /// the wide and narrow pulses.
@@ -145,12 +152,12 @@ fn snapped(cents: f64) -> f64 {
 /// A wave's name in a spec.
 fn wave_named(name: &str) -> Wave {
     match name {
-        "triangle" => Wave::Triangle,
-        "shark" => Wave::SharkTooth,
-        "reverse_saw" => Wave::ReverseSaw,
-        "square" => Wave::Square,
-        "wide" => Wave::WidePulse,
-        "narrow" => Wave::NarrowPulse,
+        spec::TRIANGLE => Wave::Triangle,
+        spec::SHARK => Wave::SharkTooth,
+        spec::REVERSE_SAW => Wave::ReverseSaw,
+        spec::SQUARE => Wave::Square,
+        spec::WIDE => Wave::WidePulse,
+        spec::NARROW => Wave::NarrowPulse,
         _ => Wave::Saw,
     }
 }
@@ -168,34 +175,34 @@ pub fn compiled(spec: &Value) -> Asheville {
         sub: 0,
         hertz: None,
     };
-    let specs = list(spec, "oscillators");
+    let specs = list(spec, spec::OSCILLATORS);
     let oscillators = std::array::from_fn(|place| match specs.get(place) {
         Some(each) => Oscillator {
-            range: number(each, "range", 0.0),
-            wave: wave_named(word(each, "wave", "saw")),
-            shape: number(each, "shape", 0.33).clamp(0.0, 1.0),
-            cents: number(each, "cents", 0.0),
-            mix: number(each, "mix", 0.8).clamp(0.0, 1.0),
-            on: truth(each, "on", true),
-            sub: number(each, "sub", 0.0).clamp(0.0, 2.0) as u32,
-            hertz: crate::protocol::values::field(each, "hertz").and_then(crate::protocol::values::as_number),
+            range: number(each, spec::RANGE, 0.0),
+            wave: wave_named(word(each, spec::WAVE, spec::SAW)),
+            shape: number(each, spec::SHAPE, DEFAULT_SHAPE).clamp(0.0, 1.0),
+            cents: number(each, spec::CENTS, 0.0),
+            mix: number(each, spec::MIX, DEFAULT_MIX).clamp(0.0, 1.0),
+            on: truth(each, spec::ON, true),
+            sub: number(each, spec::SUB, 0.0).clamp(0.0, LOWEST_SUB) as u32,
+            hertz: crate::protocol::values::field(each, spec::HERTZ).and_then(crate::protocol::values::as_number),
         },
         None => defaults,
     });
-    let character = match word(spec, "character", "warm") {
-        "cold_start" => Character::ColdStart,
-        "worn" => Character::Worn,
+    let character = match word(spec, spec::CHARACTER, spec::WARM) {
+        spec::COLD_START => Character::ColdStart,
+        spec::WORN => Character::Worn,
         _ => Character::Warm,
     };
     let mut asheville = Asheville {
         oscillators,
-        continuous: word(spec, "model", "classic") == "continuous",
+        continuous: word(spec, spec::MODEL, spec::CLASSIC) == spec::CONTINUOUS,
         character,
-        drift: number(spec, "drift", 0.0).clamp(0.0, 1.0),
-        feedback: number(spec, "feedback", 0.0).clamp(0.0, 1.0),
-        noise: number(spec, "noise", 0.0).clamp(0.0, 1.0),
-        ring: number(spec, "ring", 0.0).clamp(0.0, 1.0),
-        snap: truth(spec, "snap", false),
+        drift: number(spec, spec::DRIFT, 0.0).clamp(0.0, 1.0),
+        feedback: number(spec, spec::FEEDBACK, 0.0).clamp(0.0, 1.0),
+        noise: number(spec, spec::NOISE, 0.0).clamp(0.0, 1.0),
+        ring: number(spec, spec::RING, 0.0).clamp(0.0, 1.0),
+        snap: truth(spec, spec::SNAP, false),
         spread: [0.0; 3],
         wander_phases: [[0.0; 2]; 3],
     };
@@ -377,9 +384,10 @@ mod tests {
     /// An oscillator switched off is silent in the mix but still runs, so the Mod Matrix can read it; noise alone sounds.
     #[test]
     fn an_oscillator_off_still_runs_for_the_matrix_and_noise_sounds() {
-        let oscillator = |on: bool| Value::Map(vec![("on".into(), on.into()), ("range".into(), (-48).into())]);
+        let four_octaves_down = -48;
+        let oscillator = |on: bool| Value::Map(vec![(spec::ON.into(), on.into()), (spec::RANGE.into(), four_octaves_down.into())]);
         let spec = Value::Map(vec![(
-            "oscillators".into(),
+            spec::OSCILLATORS.into(),
             Value::Array(vec![oscillator(false), oscillator(false), oscillator(false)]),
         )]);
         let asheville = compiled(&spec);
@@ -395,10 +403,10 @@ mod tests {
         assert!(highest - lowest > 1.0, "Osc 3 swings for the matrix");
         let noisy = Value::Map(vec![
             (
-                "oscillators".into(),
+                spec::OSCILLATORS.into(),
                 Value::Array(vec![oscillator(false), oscillator(false), oscillator(false)]),
             ),
-            ("noise".into(), 1.0.into()),
+            (spec::NOISE.into(), 1.0.into()),
         ]);
         let asheville = compiled(&noisy);
         let most = (0..4800)
@@ -411,10 +419,10 @@ mod tests {
     /// leaves one far from every interval alone.
     #[test]
     fn ring_sounds_alone_and_snap_pulls_toward_fifths() {
-        let off = || Value::Map(vec![("on".into(), false.into())]);
+        let off = || Value::Map(vec![(spec::ON.into(), false.into())]);
         let spec = Value::Map(vec![
-            ("oscillators".into(), Value::Array(vec![off(), off(), off()])),
-            ("ring".into(), 1.0.into()),
+            (spec::OSCILLATORS.into(), Value::Array(vec![off(), off(), off()])),
+            (spec::RING.into(), 1.0.into()),
         ]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
@@ -434,9 +442,9 @@ mod tests {
     #[test]
     fn an_oscillator_at_an_lfo_speed_ignores_the_note() {
         let swings = |pitch: f64| {
-            let lfo = Value::Map(vec![("on".into(), false.into()), ("hertz".into(), 2.0.into())]);
-            let off = Value::Map(vec![("on".into(), false.into())]);
-            let spec = Value::Map(vec![("oscillators".into(), Value::Array(vec![off.clone(), off, lfo]))]);
+            let lfo = Value::Map(vec![(spec::ON.into(), false.into()), (spec::HERTZ.into(), 2.0.into())]);
+            let off = Value::Map(vec![(spec::ON.into(), false.into())]);
+            let spec = Value::Map(vec![(spec::OSCILLATORS.into(), Value::Array(vec![off.clone(), off, lfo]))]);
             let asheville = compiled(&spec);
             let mut state = OscillatorState::default();
             let rate = 48_000.0;
@@ -455,8 +463,18 @@ mod tests {
     /// phase puts it, so that it switches only where its oscillator's cycle begins.
     #[test]
     fn a_sub_starts_locked_to_its_oscillator() {
-        let oscillator = |sub: i64| Value::Map(vec![("wave".into(), "saw".into()), ("mix".into(), 1.0.into()), ("sub".into(), sub.into())]);
-        let spec = Value::Map(vec![("oscillators".into(), Value::Array(vec![oscillator(1), oscillator(2), oscillator(0)]))]);
+        let oscillator = |sub: i64| {
+            Value::Map(vec![
+                (spec::WAVE.into(), spec::SAW.into()),
+                (spec::MIX.into(), 1.0.into()),
+                (spec::SUB.into(), sub.into()),
+            ])
+        };
+        let (one_octave_sub, two_octave_sub) = (1, 2);
+        let spec = Value::Map(vec![(
+            spec::OSCILLATORS.into(),
+            Value::Array(vec![oscillator(one_octave_sub), oscillator(two_octave_sub), oscillator(0)]),
+        )]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
         asheville.begin(&mut state, 0.3);

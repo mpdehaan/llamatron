@@ -27,7 +27,11 @@ use crate::modulation::matrix::{self, Destination, ModMatrix, Moved, Source, Sou
 use crate::modulation::snail::WEIGHTED_COUNT;
 use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState, OWN_OSCILLATORS};
 use crate::protocol::values::{field, list, number, truth, word};
+use llamatron_names::spec;
 use rmpv::Value;
+
+/// The level an instrument plays at where its spec names none.
+const DEFAULT_VOLUME: f64 = 0.9;
 
 const MIDDLE_C: f64 = 60.0;
 /// The two places a low-pass gate can stand in a voice: the Filter's, which the Amp follows, and the Amp's own.
@@ -240,17 +244,17 @@ impl Patch {
     /// The instrument a spec describes, as the tracker writes it (model/objects/built_in_sound.py).
     pub fn compiled(spec: &Value, rate: f64) -> Patch {
         let empty = Value::Nil;
-        let oscillators = field(spec, "oscillators").unwrap_or(&empty);
-        let sound = if word(oscillators, "type", "basic") == crate::oscillators::DRUM {
-            let choke = field(oscillators, "choke")
+        let oscillators = field(spec, spec::OSCILLATORS).unwrap_or(&empty);
+        let sound = if word(oscillators, spec::TYPE, spec::BASIC) == crate::oscillators::DRUM {
+            let choke = field(oscillators, spec::CHOKE)
                 .and_then(crate::protocol::values::as_number)
                 .map(|group| group as i64);
             Sound::Drum(Drum {
-                machine: word(oscillators, "machine", "kick").to_string(),
-                knobs: crate::protocol::values::numbers(oscillators, "knobs"),
+                machine: word(oscillators, spec::MACHINE, spec::KICK).to_string(),
+                knobs: crate::protocol::values::numbers(oscillators, spec::KNOBS),
                 choke,
-                overlap: truth(oscillators, "overlap", false),
-                tuned_from: number(spec, "tuned_from", MIDDLE_C),
+                overlap: truth(oscillators, spec::OVERLAP, false),
+                tuned_from: number(spec, spec::TUNED_FROM, MIDDLE_C),
             })
         } else {
             Sound::Modular(Box::new(modular(spec, oscillators, rate)))
@@ -262,14 +266,14 @@ impl Patch {
         };
         Patch {
             sound,
-            volume: number(spec, "volume", 0.9),
-            voices: (number(spec, "voices", 1.0) as usize).max(1),
-            glides: truth(spec, "glides", true),
-            glide: number(spec, "glide", 0.0),
-            effects: effects::compiled(list(spec, "effects"), rate),
-            lfos: LfoBank::compiled(list(spec, "lfos"), rate)
-                .with_rate_routes(matrix::rate_routes(list(spec, "matrix")))
-                .with_weight_routes(matrix::weight_routes(list(spec, "matrix")))
+            volume: number(spec, spec::VOLUME, DEFAULT_VOLUME),
+            voices: (number(spec, spec::VOICES, 1.0) as usize).max(1),
+            glides: truth(spec, spec::GLIDES, true),
+            glide: number(spec, spec::GLIDE, 0.0),
+            effects: effects::compiled(list(spec, spec::EFFECTS), rate),
+            lfos: LfoBank::compiled(list(spec, spec::LFOS), rate)
+                .with_rate_routes(matrix::rate_routes(list(spec, spec::MATRIX)))
+                .with_weight_routes(matrix::weight_routes(list(spec, spec::MATRIX)))
                 .hearing_only(&voices_read),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
@@ -611,7 +615,7 @@ impl Patch {
 }
 
 /// The envelope whose accent adds a sweep of its own to the filter through Env2.
-const ACCENTING_ENVELOPE: &str = "acid_gate";
+const ACCENTING_ENVELOPE: &str = spec::ACID_GATE;
 
 /// Cents to a semitone.
 const CENTS_A_SEMITONE: f64 = 100.0;
@@ -621,19 +625,19 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     let oscillator = oscillators::compiled(oscillators, rate);
     // An engine of one oscillator, such as the SID's, carries its Detune and Fine as one tuning in cents; the engines of
     // several tune each oscillator their own way and send none.
-    let tuning_cents = number(oscillators, "cents", 0.0);
-    let filter_spec = field(spec, "filter").unwrap_or(&empty);
-    let resonance = number(filter_spec, "resonance", 0.0);
-    let envelope_specs = list(spec, "envelopes");
+    let tuning_cents = number(oscillators, spec::CENTS, 0.0);
+    let filter_spec = field(spec, spec::FILTER).unwrap_or(&empty);
+    let resonance = number(filter_spec, spec::RESONANCE, 0.0);
+    let envelope_specs = list(spec, spec::ENVELOPES);
     let envelope = |place: usize| envelopes::compiled(envelope_specs.get(place).unwrap_or(&empty), resonance);
     let mut filter = FilterPart::compiled(filter_spec, rate);
-    let amp_spec = field(spec, "amp").unwrap_or(&empty);
+    let amp_spec = field(spec, spec::AMP).unwrap_or(&empty);
     let gates = [GatePart::compiled(filter_spec, rate), GatePart::compiled(amp_spec, rate)];
     let gates_read = |place: usize| gates.iter().flatten().any(|gate| gate.reads_envelope(place));
-    let matrix = ModMatrix::compiled(list(spec, "matrix"));
+    let matrix = ModMatrix::compiled(list(spec, spec::MATRIX));
     // A cutoff moved at audio rate, by an oscillator or an LFO past hearing's bottom, is worked out every sample, so that
     // filter FM is smooth rather than stepped.
-    let lfo_rates: Vec<f64> = list(spec, "lfos").iter().map(|lfo| number(lfo, "rate", 0.0)).collect();
+    let lfo_rates: Vec<f64> = list(spec, spec::LFOS).iter().map(|lfo| number(lfo, spec::RATE, 0.0)).collect();
     let audio_rate = |source: Source| match source {
         Source::Oscillator | Source::Osc(_) => true,
         Source::Lfo(place) => lfo_rates.get(place).is_some_and(|hertz| *hertz >= AUDIO_RATE_HERTZ),
@@ -647,16 +651,16 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     }
     let matrix_reads_env2 = matrix.uses(Source::Env2);
     let snail_reads = matrix.snail_outputs_read();
-    let env2_to_filter = !truth(spec, "disconnect_filter", false);
+    let env2_to_filter = !truth(spec, spec::DISCONNECT_FILTER, false);
     // Env2 sweeps the cutoff only through an Env amount or an accent's extra sweep; with neither, nothing hears it, and
     // its level is never worked out.
-    let can_accent = envelope_specs.iter().any(|envelope| word(envelope, "type", "") == ACCENTING_ENVELOPE);
+    let can_accent = envelope_specs.iter().any(|envelope| word(envelope, spec::TYPE, "") == ACCENTING_ENVELOPE);
     let env2_sweeps = env2_to_filter && filter.as_ref().is_some_and(|filter| filter.amount != 0.0 || can_accent);
     Modular {
         oscillator,
         envelopes: [envelope(0), envelope(1), envelope(2)],
         memory: [EnvelopeMemory::default(); 3],
-        own_filter: gates[FILTER_GATE].is_some() || truth(spec, "filter_per_note", true),
+        own_filter: gates[FILTER_GATE].is_some() || truth(spec, spec::FILTER_PER_NOTE, true),
         reads_env2: env2_sweeps || matrix_reads_env2 || gates_read(1),
         env2_to_filter,
         matrix_reads_env2,
@@ -690,15 +694,15 @@ mod tests {
     fn an_audio_rate_route_to_the_cutoff_works_the_filter_out_every_sample() {
         let every_sample = |source: &str, lfo_hertz: f64| {
             let route = Value::Map(vec![
-                ("source".into(), source.into()),
-                ("destination".into(), "cutoff".into()),
-                ("amount".into(), 0.5.into()),
+                (spec::SOURCE.into(), source.into()),
+                (spec::DESTINATION.into(), spec::CUTOFF.into()),
+                (spec::AMOUNT.into(), 0.5.into()),
             ]);
-            let lfo = Value::Map(vec![("rate".into(), lfo_hertz.into())]);
+            let lfo = Value::Map(vec![(spec::RATE.into(), lfo_hertz.into())]);
             let spec = Value::Map(vec![
-                ("filter".into(), Value::Map(vec![("type".into(), "ladder".into())])),
-                ("matrix".into(), Value::Array(vec![route])),
-                ("lfos".into(), Value::Array(vec![lfo])),
+                (spec::FILTER.into(), Value::Map(vec![(spec::TYPE.into(), spec::LADDER.into())])),
+                (spec::MATRIX.into(), Value::Array(vec![route])),
+                (spec::LFOS.into(), Value::Array(vec![lfo])),
             ]);
             let Sound::Modular(modular) = Patch::compiled(&spec, 48000.0).sound else {
                 panic!("a modular sound")
@@ -706,9 +710,9 @@ mod tests {
             modular.filter.expect("a filter").every_sample
         };
         let (slow, audio) = (5.0, 440.0);
-        assert!(every_sample("osc", slow));
-        assert!(every_sample("lfo1", audio));
-        assert!(!every_sample("lfo1", slow));
-        assert!(!every_sample("velocity", slow));
+        assert!(every_sample(spec::OSC, slow));
+        assert!(every_sample(spec::LFO1, audio));
+        assert!(!every_sample(spec::LFO1, slow));
+        assert!(!every_sample(spec::VELOCITY, slow));
     }
 }

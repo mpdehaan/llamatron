@@ -16,6 +16,7 @@ pub mod vactrol;
 
 use crate::protocol::values::{number, word};
 use crate::registry::{self, Entry};
+use llamatron_names::spec;
 use rmpv::Value;
 
 const SILENT: f64 = 1e-4;
@@ -180,12 +181,12 @@ const RESTING_SECONDS: f64 = 60.0;
 const TIRED_SLOWER: f64 = 1.0;
 
 /// The envelope type that is no envelope, which Env2 and Env3 may hold.
-const OFF: &str = "none";
+const OFF: &str = spec::NONE;
 
 /// An envelope part from its spec, built by its registry's entry; resonance is the filter's, which the acid gate's
 /// capacitor is fed through. A type no entry holds is no envelope.
 pub fn compiled(spec: &Value, resonance: f64) -> EnvelopePart {
-    match registry::find(REGISTRY, word(spec, "type", "adsr")) {
+    match registry::find(REGISTRY, word(spec, spec::TYPE, spec::ADSR)) {
         Some(entry) => (entry.build)(spec, resonance),
         None => EnvelopePart::Off,
     }
@@ -197,27 +198,27 @@ pub type Build = fn(&Value, f64) -> EnvelopePart;
 /// Every envelope type, by the name a spec gives it, the file that holds it, and how it is built.
 pub static REGISTRY: &[Entry<Build>] = &[
     Entry {
-        name: "acid_gate",
+        name: spec::ACID_GATE,
         file: "acid_gate.rs",
         build: acid_gate::compiled,
     },
     Entry {
-        name: "adsr",
+        name: spec::ADSR,
         file: "adsr.rs",
-        build: |spec, _resonance| adsr::compiled(spec, "adsr"),
+        build: |spec, _resonance| adsr::compiled(spec, spec::ADSR),
     },
     Entry {
-        name: "ar",
+        name: spec::AR,
         file: "adsr.rs",
-        build: |spec, _resonance| adsr::compiled(spec, "ar"),
+        build: |spec, _resonance| adsr::compiled(spec, spec::AR),
     },
     Entry {
-        name: "asr",
+        name: spec::ASR,
         file: "adsr.rs",
-        build: |spec, _resonance| adsr::compiled(spec, "asr"),
+        build: |spec, _resonance| adsr::compiled(spec, spec::ASR),
     },
     Entry {
-        name: "chip_steps",
+        name: spec::CHIP_STEPS,
         file: "chip_steps.rs",
         build: |spec, _resonance| chip_steps::compiled(spec),
     },
@@ -227,12 +228,12 @@ pub static REGISTRY: &[Entry<Build>] = &[
         build: |_spec, _resonance| EnvelopePart::Off,
     },
     Entry {
-        name: "sid_adsr",
+        name: spec::SID_ADSR,
         file: "sid_adsr.rs",
         build: |spec, _resonance| sid_adsr::sid_adsr(spec),
     },
     Entry {
-        name: "vactrol",
+        name: spec::VACTROL,
         file: "vactrol.rs",
         build: |spec, _resonance| vactrol::vactrol(spec),
     },
@@ -374,7 +375,7 @@ mod tests {
     /// Env3 bends no pitch.
     #[test]
     fn an_envelope_set_off_holds_at_nothing() {
-        let spec = Value::Map(vec![(Value::from("type"), Value::from(OFF))]);
+        let spec = Value::Map(vec![(Value::from(spec::TYPE), Value::from(OFF))]);
         let off = compiled(&spec, 0.0);
         let mut state = EnvelopeState::default();
         let (held, released) = (0.3, 0.5);
@@ -405,29 +406,38 @@ mod tests {
         let (released, heard) = (0.005, 0.02);
         let snappiest = [
             spec(&[
-                ("type", "adsr".into()),
-                ("attack", 0.0.into()),
-                ("decay", 0.0.into()),
-                ("sustain", 0.5.into()),
-                ("release", 0.0.into()),
+                (spec::TYPE, spec::ADSR.into()),
+                (spec::ATTACK, 0.0.into()),
+                (spec::DECAY, 0.0.into()),
+                (spec::SUSTAIN, 0.5.into()),
+                (spec::RELEASE, 0.0.into()),
             ]),
-            spec(&[("type", "ar".into()), ("attack", 0.0.into()), ("release", 0.0.into())]),
-            spec(&[("type", "asr".into()), ("attack", 0.0.into()), ("release", 0.0.into())]),
+            spec(&[(spec::TYPE, spec::AR.into()), (spec::ATTACK, 0.0.into()), (spec::RELEASE, 0.0.into())]),
+            spec(&[(spec::TYPE, spec::ASR.into()), (spec::ATTACK, 0.0.into()), (spec::RELEASE, 0.0.into())]),
             spec(&[
-                ("type", "sid_adsr".into()),
-                ("attack", 0.0.into()),
-                ("decay", 0.0.into()),
-                ("release", 0.0.into()),
+                (spec::TYPE, spec::SID_ADSR.into()),
+                (spec::ATTACK, 0.0.into()),
+                (spec::DECAY, 0.0.into()),
+                (spec::RELEASE, 0.0.into()),
             ]),
-            spec(&[("type", "vactrol".into()), ("rise", 0.0.into()), ("fall", 0.0.into())]),
-            spec(&[("type", "acid_gate".into()), ("soft_attack", 0.0.into()), ("amp_decay", 0.0.into())]),
-            spec(&[("type", "chip_steps".into()), ("start_level", 15.0.into())]),
+            spec(&[(spec::TYPE, spec::VACTROL.into()), (spec::RISE, 0.0.into()), (spec::FALL, 0.0.into())]),
+            spec(&[
+                (spec::TYPE, spec::ACID_GATE.into()),
+                (spec::SOFT_ATTACK, 0.0.into()),
+                (spec::AMP_DECAY, 0.0.into()),
+            ]),
+            spec(&[(spec::TYPE, spec::CHIP_STEPS.into()), (spec::START_LEVEL, 15.0.into())]),
         ];
         // Every envelope type with a shape of its own is held here: a new type fails until its snappiest settings join.
         let held: Vec<&str> = snappiest
             .iter()
             .filter_map(|each| each.as_map())
-            .filter_map(|pairs| pairs.iter().find(|(key, _)| key.as_str() == Some("type")).and_then(|(_, value)| value.as_str()))
+            .filter_map(|pairs| {
+                pairs
+                    .iter()
+                    .find(|(key, _)| key.as_str() == Some(spec::TYPE))
+                    .and_then(|(_, value)| value.as_str())
+            })
             .collect();
         for entry in REGISTRY.iter().filter(|entry| entry.name != OFF) {
             assert!(held.contains(&entry.name), "the envelope type {} has no snappiest settings here", entry.name);
@@ -445,7 +455,10 @@ mod tests {
                 last = level;
             }
         }
-        let adsr = compiled(&spec(&[("type", "asr".into()), ("attack", 0.0.into()), ("release", 0.0.into())]), 0.0);
+        let adsr = compiled(
+            &spec(&[(spec::TYPE, spec::ASR.into()), (spec::ATTACK, 0.0.into()), (spec::RELEASE, 0.0.into())]),
+            0.0,
+        );
         let mut state = EnvelopeState::default();
         let at = |age: f64, state: &mut EnvelopeState| adsr.level(state, NoteTime { age, released: Some(released) }, None);
         assert!(at(0.001, &mut state) > 0.99, "at its top within a millisecond");
@@ -477,11 +490,11 @@ mod tests {
     fn an_adsr_peaks_at_its_attack_holds_its_sustain_and_releases_to_silence() {
         let part = compiled(
             &spec(&[
-                ("type", "adsr".into()),
-                ("attack", 0.01.into()),
-                ("decay", 0.2.into()),
-                ("sustain", 0.5.into()),
-                ("release", 0.1.into()),
+                (spec::TYPE, spec::ADSR.into()),
+                (spec::ATTACK, 0.01.into()),
+                (spec::DECAY, 0.2.into()),
+                (spec::SUSTAIN, 0.5.into()),
+                (spec::RELEASE, 0.1.into()),
             ]),
             0.0,
         );
@@ -495,11 +508,11 @@ mod tests {
     fn the_sid_adsr_holds_its_sixteen_level_sustain() {
         let part = compiled(
             &spec(&[
-                ("type", "sid_adsr".into()),
-                ("attack", 0.into()),
-                ("decay", 9.into()),
-                ("sustain", 8.into()),
-                ("release", 9.into()),
+                (spec::TYPE, spec::SID_ADSR.into()),
+                (spec::ATTACK, 0.into()),
+                (spec::DECAY, 9.into()),
+                (spec::SUSTAIN, 8.into()),
+                (spec::RELEASE, 9.into()),
             ]),
             0.0,
         );
@@ -516,11 +529,11 @@ mod tests {
         let at_fall = |strike: f64| {
             let part = compiled(
                 &spec(&[
-                    ("type", "vactrol".into()),
-                    ("rise", 0.012.into()),
-                    ("fall", fall.into()),
-                    ("strike_width", strike.into()),
-                    ("memory", 0.0.into()),
+                    (spec::TYPE, spec::VACTROL.into()),
+                    (spec::RISE, 0.012.into()),
+                    (spec::FALL, fall.into()),
+                    (spec::STRIKE_WIDTH, strike.into()),
+                    (spec::MEMORY, 0.0.into()),
                 ]),
                 0.0,
             );
@@ -544,7 +557,10 @@ mod tests {
     /// rest brings it back.
     #[test]
     fn a_vactrol_played_hard_rises_more_slowly_and_recovers_at_rest() {
-        let part = compiled(&spec(&[("type", "vactrol".into()), ("drive", "gate".into()), ("memory", 0.0.into())]), 0.0);
+        let part = compiled(
+            &spec(&[(spec::TYPE, spec::VACTROL.into()), (spec::DRIVE, spec::GATE.into()), (spec::MEMORY, 0.0.into())]),
+            0.0,
+        );
         let mut memory = EnvelopeMemory::default();
         let (rested, _, _) = part.start(&mut memory, 1.0, 0.0);
         let (held, apart) = (1.0, 1.5);
@@ -568,21 +584,30 @@ mod tests {
     fn an_ar_falls_after_its_attack_and_an_asr_holds_full() {
         let shaped = |kind: &str| {
             compiled(
-                &spec(&[("type", kind.into()), ("attack", 0.01.into()), ("release", 0.1.into()), ("sustain", 0.3.into())]),
+                &spec(&[
+                    (spec::TYPE, kind.into()),
+                    (spec::ATTACK, 0.01.into()),
+                    (spec::RELEASE, 0.1.into()),
+                    (spec::SUSTAIN, 0.3.into()),
+                ]),
                 0.0,
             )
         };
-        let (ar_levels, ar_done) = play(&shaped("ar"), None, 1.0);
+        let (ar_levels, ar_done) = play(&shaped(spec::AR), None, 1.0);
         let peak = ar_levels.iter().cloned().fold(0.0_f64, f64::max);
         assert!(peak > 0.95 && ar_levels[500] < 0.01 && ar_done, "an AR falls while held and ends");
-        let (asr_levels, _) = play(&shaped("asr"), None, 1.0);
+        let (asr_levels, _) = play(&shaped(spec::ASR), None, 1.0);
         assert!(asr_levels[500] > 0.99, "an ASR holds full while held, not at the sustain set");
     }
 
     /// An acid gate's accented note swells above an unaccented one, and both decay over the amp decay.
     #[test]
     fn an_accented_acid_note_swells_above_an_unaccented_one() {
-        let part = compiled(&spec(&[("type", "acid_gate".into()), ("accent_threshold", 110.0.into())]), 0.5);
+        let (accented_from, resonance) = (110.0, 0.5);
+        let part = compiled(
+            &spec(&[(spec::TYPE, spec::ACID_GATE.into()), (spec::ACCENT_THRESHOLD, accented_from.into())]),
+            resonance,
+        );
         let peak_of = |velocity: f64| {
             let mut memory = EnvelopeMemory::default();
             let (mut state, _, _) = part.start(&mut memory, velocity / 127.0, 0.0);
@@ -607,7 +632,11 @@ mod tests {
     #[test]
     fn chip_steps_fall_in_sixteen_steps() {
         let part = compiled(
-            &spec(&[("type", "chip_steps".into()), ("start_level", 15.0.into()), ("level_pace", 2.0.into())]),
+            &spec(&[
+                (spec::TYPE, spec::CHIP_STEPS.into()),
+                (spec::START_LEVEL, 15.0.into()),
+                (spec::LEVEL_PACE, 2.0.into()),
+            ]),
             0.0,
         );
         let (levels, done) = play(&part, None, 2.0);
@@ -616,6 +645,6 @@ mod tests {
             "steps only"
         );
         // Its first level is eased in over the shortest attack, so the millisecond after the start holds it.
-        assert!(levels[1] == 1.0 && *levels.last().expect("levels") == 0.0 && done);
+        assert!(levels[1] == 1.0 && *levels.last().expect(spec::LEVELS) == 0.0 && done);
     }
 }
