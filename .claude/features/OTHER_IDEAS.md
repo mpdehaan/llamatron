@@ -4,6 +4,14 @@ Wanted work that is not the synths, the generators, the song wizard, a demo or t
 are in `.claude/planning/QUEUE.md`). An agreed design moves to `.claude/planning/DESIGNS.md`; an idea leaves this file once
 built.
 
+## The Rules
+
+- **The style rules reviewed by the Rust expert**: once every value in the program is named, the Rust performance
+  and code maintainability expert reviews every rule about style for whether it is enforced, and how, and reports;
+  proposes the wording of a rule that Claude reads the style of the code it is working on, and its rules, before
+  changing it, rather than copying the code nearby; and proposes how the rules can be made more concise without
+  losing anything they hold.
+
 ## The Model
 
 - **CC ramps** on a scene (954, 955 open).
