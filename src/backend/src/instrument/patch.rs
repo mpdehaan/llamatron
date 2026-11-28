@@ -255,6 +255,11 @@ impl Patch {
         } else {
             Sound::Modular(Box::new(modular(spec, oscillators, rate)))
         };
+        // Only the Snail outputs a voice's routes read, besides those the bank's own routes read, are worked out.
+        let voices_read = match &sound {
+            Sound::Modular(modular) => modular.snail_reads.clone(),
+            _ => Vec::new(),
+        };
         Patch {
             sound,
             volume: number(spec, "volume", 0.9),
@@ -264,7 +269,8 @@ impl Patch {
             effects: effects::compiled(list(spec, "effects"), rate),
             lfos: LfoBank::compiled(list(spec, "lfos"), rate)
                 .with_rate_routes(matrix::rate_routes(list(spec, "matrix")))
-                .with_weight_routes(matrix::weight_routes(list(spec, "matrix"))),
+                .with_weight_routes(matrix::weight_routes(list(spec, "matrix")))
+                .hearing_only(&voices_read),
             buffer: vec![0.0; MOST_FRAMES],
             used: false,
             tail_left: 0,

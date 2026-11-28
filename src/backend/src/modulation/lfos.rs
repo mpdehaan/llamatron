@@ -249,7 +249,7 @@ impl LfoBank {
     pub fn seed(&mut self, instrument: u64) {
         for (place, snail) in self.snails.iter_mut().enumerate() {
             if let Some(snail) = snail.as_mut() {
-                *snail = Snail::seeded(snail_seed(instrument, place), snail.weightings, snail.trips);
+                *snail = snail.reseeded(snail_seed(instrument, place));
             }
         }
     }
@@ -257,6 +257,26 @@ impl LfoBank {
     /// The bank with the Mod Matrix's routes that move its Snails' weightings.
     pub fn with_weight_routes(mut self, routes: Vec<WeightRoute>) -> LfoBank {
         self.weight_routes = routes;
+        self
+    }
+
+    /// The bank with each Snail working out only the outputs something reads: those the voices' routes read, by slot
+    /// and place, and those its own routes to the Snails' weightings read.
+    pub fn hearing_only(mut self, voices_read: &[(usize, usize)]) -> LfoBank {
+        let mut read: Vec<(usize, usize)> = voices_read.to_vec();
+        for route in &self.weight_routes {
+            for source in [Some(route.source), route.via].into_iter().flatten() {
+                if let BankSource::Snail(slot, output) = source {
+                    read.push((slot, output));
+                }
+            }
+        }
+        for (place, snail) in self.snails.iter_mut().enumerate() {
+            if let Some(snail) = snail.as_mut() {
+                let outputs: Vec<usize> = read.iter().filter(|(slot, _)| *slot == place).map(|(_, output)| *output).collect();
+                snail.hear_only(&outputs);
+            }
+        }
         self
     }
 

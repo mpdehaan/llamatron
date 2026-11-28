@@ -198,6 +198,8 @@ struct Circuit {
     into_step: f64,
     /// How much faster than built its clock runs, so that a trip takes the seconds its lane's speed chooses.
     pace: f64,
+    /// Which of its outputs something reads: all until told otherwise.
+    heard: [bool; OUTPUTS_A_CIRCUIT],
 }
 
 impl Circuit {
@@ -215,6 +217,7 @@ impl Circuit {
             after: [0.0; OUTPUTS_A_CIRCUIT],
             into_step: 0.0,
             pace: parts.trip / trip_seconds.max(f64::MIN_POSITIVE),
+            heard: [true; OUTPUTS_A_CIRCUIT],
         };
         circuit.after = circuit.outputs();
         circuit.before = circuit.after;
@@ -258,10 +261,10 @@ impl Circuit {
         }
     }
 
-    /// Move its clock on by some seconds, stepping where a step falls due at the weighting given, and give its outputs
-    /// there, read along a straight line between its last two steps.
+    /// Move its clock on by some seconds, stepping where a step falls due at the weighting given, and write the outputs
+    /// it is heard at, read along a straight line between its last two steps.
     #[inline]
-    fn advance(&mut self, seconds: f64, weighting: f64) -> [f64; OUTPUTS_A_CIRCUIT] {
+    fn advance(&mut self, seconds: f64, weighting: f64, written: &mut [f64]) {
         self.into_step += seconds * self.pace / self.parts.step;
         while self.into_step >= 1.0 {
             self.step(weighting);
@@ -270,7 +273,11 @@ impl Circuit {
             self.into_step -= 1.0;
         }
         let share = self.into_step;
-        std::array::from_fn(|place| self.before[place] + (self.after[place] - self.before[place]) * share)
+        for (place, value) in written.iter_mut().enumerate() {
+            if self.heard[place] {
+                *value = self.before[place] + (self.after[place] - self.before[place]) * share;
+            }
+        }
     }
 }
 
@@ -301,9 +308,29 @@ impl Snail {
     #[inline]
     pub fn advance(&mut self, seconds: f64, moved: [f64; WEIGHTED_COUNT], outputs: &mut [f64; OUTPUT_COUNT]) {
         for (place, circuit) in self.circuits.iter_mut().enumerate() {
+            // A lane nothing reads is never stepped, costing nothing.
+            if !circuit.heard.iter().any(|heard| *heard) {
+                continue;
+            }
             let weighting = if place < WEIGHTED_COUNT { self.weightings[place] + moved[place] } else { 0.0 };
-            let three = circuit.advance(seconds, weighting);
-            outputs[place * OUTPUTS_A_CIRCUIT..(place + 1) * OUTPUTS_A_CIRCUIT].copy_from_slice(&three);
+            circuit.advance(seconds, weighting, &mut outputs[place * OUTPUTS_A_CIRCUIT..(place + 1) * OUTPUTS_A_CIRCUIT]);
+        }
+    }
+
+    /// The same Snail seeded anew, hearing what it heard.
+    pub fn reseeded(&self, seed: u64) -> Snail {
+        let mut snail = Snail::seeded(seed, self.weightings, self.trips);
+        for (fresh, old) in snail.circuits.iter_mut().zip(self.circuits.iter()) {
+            fresh.heard = old.heard;
+        }
+        snail
+    }
+
+    /// Hear only the outputs something reads, by their places among the nine, so that a lane none of whose outputs is
+    /// read is never stepped and an output nobody reads is never worked out.
+    pub fn hear_only(&mut self, read: &[usize]) {
+        for (place, circuit) in self.circuits.iter_mut().enumerate() {
+            circuit.heard = std::array::from_fn(|output| read.contains(&(place * OUTPUTS_A_CIRCUIT + output)));
         }
     }
 }
@@ -319,7 +346,13 @@ mod tests {
     fn lobes(place: usize, seed: u64, weighting: f64, seconds: f64) -> Vec<bool> {
         let mut circuit = Circuit::seeded(&CIRCUITS[place], seed, CIRCUITS[place].trip);
         let reads = (seconds / READ_EVERY) as usize;
-        (0..reads).map(|_| circuit.advance(READ_EVERY, weighting)[1] > 0.0).collect()
+        (0..reads)
+            .map(|_| {
+                let mut three = [0.0; OUTPUTS_A_CIRCUIT];
+                circuit.advance(READ_EVERY, weighting, &mut three);
+                three[1] > 0.0
+            })
+            .collect()
     }
 
     /// The share of reads on the upper lobe, where Y is above 0, and the mean time between two switches of lobe, in seconds.
@@ -392,6 +425,31 @@ mod tests {
         assert!(moved_samples > heard * 9 / 10, "Slow X moved on {moved_samples} of {heard} samples");
     }
 
+    /// A Snail hearing one output works it out exactly as one hearing all, and leaves the lanes nothing reads unstepped.
+    #[test]
+    fn a_snail_works_out_only_what_is_read() {
+        let (rate, seconds, slow_x) = (48_000.0, 2.0, 0);
+        let run = |snail: &mut Snail| {
+            let mut outputs = [0.0; OUTPUT_COUNT];
+            for _ in 0..(rate * seconds) as usize {
+                snail.advance(1.0 / rate, [0.0, 0.0], &mut outputs);
+            }
+            outputs
+        };
+        let everything = run(&mut Snail::seeded(9, [0.0, 0.0], [None; CIRCUIT_COUNT]));
+        let mut one = Snail::seeded(9, [0.0, 0.0], [None; CIRCUIT_COUNT]);
+        one.hear_only(&[slow_x]);
+        let alone = run(&mut one);
+        assert_eq!(alone[slow_x], everything[slow_x]);
+        assert!(alone.iter().skip(1).all(|output| *output == 0.0), "only Slow X is worked out");
+        assert!(
+            one.circuits[1..].iter().all(|circuit| circuit.state == circuit.start),
+            "the unread lanes never step"
+        );
+        let reseeded = one.reseeded(9);
+        assert!(reseeded.circuits[1].heard.iter().all(|heard| !heard), "a reseeded Snail hears what it heard");
+    }
+
     /// A lane's speed sets how long its trips take: Slow at its fast 7 seconds switches sides about three times as
     /// often as at its built 21.
     #[test]
@@ -400,7 +458,13 @@ mod tests {
         let path = |trip: f64| {
             let mut circuit = Circuit::seeded(&CIRCUITS[0], seed, trip);
             let reads = (seconds / READ_EVERY) as usize;
-            (0..reads).map(|_| circuit.advance(READ_EVERY, 0.0)[1] > 0.0).collect::<Vec<_>>()
+            (0..reads)
+                .map(|_| {
+                    let mut three = [0.0; OUTPUTS_A_CIRCUIT];
+                    circuit.advance(READ_EVERY, 0.0, &mut three);
+                    three[1] > 0.0
+                })
+                .collect::<Vec<_>>()
         };
         let (_, built) = share_and_cycle(&path(CIRCUITS[0].trip));
         let (_, quick) = share_and_cycle(&path(fast));
