@@ -22,6 +22,10 @@ built.
   Python program, its frozen answers standing in for it, unless the song wizard's port in Rust needs it; and which of the
   tools that stay are rewritten in Rust, likely many.
 
+- **The code's churn studied**: after the expert reviews are discussed, an agent counts how often each Rust and test
+  file has changed in git, and reports what the most changed files suggest: a restructuring that would read more
+  plainly to a person, or that would need fewer changes as the program grows.
+
 ## The Model
 
 - **CC ramps** on a scene (954, 955 open).
