@@ -29,6 +29,16 @@ const DEFAULT_FLUTTER: f64 = 0.05;
 
 /// The taps, and the longest time a tap reaches, in seconds: a bar of 4/4 at 60 quarter notes a minute.
 pub const TAP_COUNT: usize = 4;
+/// The 4-point Hermite interpolation's points, the farthest's place past the sample read, and its coefficients:
+/// half, the near point's two and a half, the far point's two, and the cube's one and a half.
+const HERMITE_POINTS: usize = 4;
+const HERMITE_FAR: usize = 2;
+const HERMITE_HALF: f64 = 0.5;
+const HERMITE_NEAR_WEIGHT: f64 = 2.5;
+const HERMITE_FAR_WEIGHT: f64 = 2.0;
+const HERMITE_CUBE_WEIGHT: f64 = 1.5;
+/// A tap's crossfade lasts half its new delay, within its shortest and longest.
+const FADE_SHARE: f64 = 0.5;
 const LONGEST_DELAY_SECONDS: f64 = 4.0;
 /// An echo counts as gone once it has fallen 120 dB; a tail is never followed past this many repeats; and the filters and
 /// the interpolation are given this much more to settle.
@@ -147,7 +157,7 @@ impl MultiTap {
             tap.level = number(given, spec::LEVEL, 0.0);
             tap.on = truth(given, spec::ON, true);
         }
-        let length = ((LONGEST_DELAY_SECONDS * rate) as usize + 4).next_power_of_two();
+        let length = ((LONGEST_DELAY_SECONDS * rate) as usize + HERMITE_POINTS).next_power_of_two();
         let change = if word(spec, spec::TIME_CHANGE, spec::FADE) == spec::GLIDE {
             Change::Glide
         } else {
@@ -200,7 +210,7 @@ impl MultiTap {
 
     /// Each tap's time in samples at a tempo, held between the shortest the interpolation reads and the line's length.
     fn targets(&self, tempo: f64) -> [f64; TAP_COUNT] {
-        let longest = (self.line.len() - 4) as f64;
+        let longest = (self.line.len() - HERMITE_POINTS) as f64;
         std::array::from_fn(|place| {
             let seconds = match self.taps[place].time {
                 TapTime::Quarters(quarters) => quarters * SECONDS_PER_MINUTE / tempo.max(1.0),
@@ -244,10 +254,10 @@ impl MultiTap {
         let whole = behind.floor();
         let t = behind - whole;
         let whole = whole as usize;
-        let (newer, x0, x1, older) = (self.at(whole - 1), self.at(whole), self.at(whole + 1), self.at(whole + 2));
-        let c1 = 0.5 * (x1 - newer);
-        let c2 = newer - 2.5 * x0 + 2.0 * x1 - 0.5 * older;
-        let c3 = 0.5 * (older - newer) + 1.5 * (x0 - x1);
+        let (newer, x0, x1, older) = (self.at(whole - 1), self.at(whole), self.at(whole + 1), self.at(whole + HERMITE_FAR));
+        let c1 = HERMITE_HALF * (x1 - newer);
+        let c2 = newer - HERMITE_NEAR_WEIGHT * x0 + HERMITE_FAR_WEIGHT * x1 - HERMITE_HALF * older;
+        let c3 = HERMITE_HALF * (older - newer) + HERMITE_CUBE_WEIGHT * (x0 - x1);
         ((c3 * t + c2) * t + c1) * t + x0
     }
 
@@ -338,7 +348,7 @@ impl MultiTap {
 
 /// Start a tap's crossfade from where it reads now to a new time, over half the new delay, held between 10 and 500 ms.
 fn start_fade(tap: &mut Tap, target: f64, rate: f64) {
-    let seconds = (0.5 * target / rate).clamp(SHORTEST_FADE_SECONDS, LONGEST_FADE_SECONDS);
+    let seconds = (FADE_SHARE * target / rate).clamp(SHORTEST_FADE_SECONDS, LONGEST_FADE_SECONDS);
     tap.from = tap.behind;
     tap.behind = target;
     tap.target = target;
@@ -349,13 +359,23 @@ fn start_fade(tap: &mut Tap, target: f64, rate: f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::f64::consts::TAU;
+
+    /// The four taps' levels and lengths in quarter notes, a falling figure on the eighth, quarter, dotted quarter and
+    /// half; the loop's tone and low cut held open; how loud a sample is to count as an echo; and how long the tests
+    /// listen for echoes.
+    const TAP_LEVELS: [f64; TAP_COUNT] = [0.7, 0.5, 0.35, 0.25];
+    const TAP_QUARTERS: [f64; TAP_COUNT] = [0.5, 1.0, 1.5, 2.0];
+    const OPEN_TONE_HERTZ: f64 = 18_000.0;
+    const LOWEST_CUT_HERTZ: f64 = 20.0;
+    const HEARD: f64 = 0.01;
+    const LISTENED_SECONDS: f64 = 1.2;
 
     const RATE: f64 = 48_000.0;
 
     /// MultiTap of four synced taps at their levels and switches, with feedback from a tap, its Low Cut at the bottom.
     fn multitap(feedback: f64, change: &str, on: [bool; TAP_COUNT], feedback_from: i64) -> MultiTap {
-        let levels = [0.7, 0.5, 0.35, 0.25];
-        let quarters = [0.5, 1.0, 1.5, 2.0];
+        let (levels, quarters) = (TAP_LEVELS, TAP_QUARTERS);
         let taps = (0..TAP_COUNT)
             .map(|place| {
                 Value::Map(vec![
@@ -369,8 +389,8 @@ mod tests {
             (spec::TAPS.into(), Value::Array(taps)),
             (spec::FEEDBACK.into(), feedback.into()),
             (spec::FEEDBACK_FROM.into(), feedback_from.into()),
-            (spec::TONE.into(), 18_000.0.into()),
-            (spec::LOW_CUT.into(), 20.0.into()),
+            (spec::TONE.into(), OPEN_TONE_HERTZ.into()),
+            (spec::LOW_CUT.into(), LOWEST_CUT_HERTZ.into()),
             (spec::TIME_CHANGE.into(), change.into()),
         ]);
         MultiTap::compiled(&spec, RATE)
@@ -382,7 +402,7 @@ mod tests {
         (0..samples)
             .map(|place| delay.process(if place == 0 { 1.0 } else { 0.0 }))
             .enumerate()
-            .filter(|(_, sample)| sample.abs() > 0.01)
+            .filter(|(_, sample)| sample.abs() > HEARD)
             .collect()
     }
 
@@ -397,26 +417,29 @@ mod tests {
         let all = [true; TAP_COUNT];
         let last_tap = 4;
         let mut delay = multitap(0.0, spec::FADE, all, last_tap);
-        let expected: Vec<(usize, f64)> = [(0.5, 0.7), (1.0, 0.5), (1.5, 0.35), (2.0, 0.25)]
+        let expected: Vec<(usize, f64)> = TAP_QUARTERS
             .iter()
-            .map(|(quarters, level)| (beat(*quarters, FIRST_TEMPO), *level))
+            .zip(TAP_LEVELS)
+            .map(|(quarters, level)| (beat(*quarters, FIRST_TEMPO), level))
             .collect();
-        let heard = echoes(&mut delay, 1.2);
+        let heard = echoes(&mut delay, LISTENED_SECONDS);
         assert_eq!(heard.len(), expected.len());
         for ((place, level), (at, want)) in heard.iter().zip(&expected) {
             assert_eq!(place, at);
-            assert!((level - want).abs() < 1e-6, "{level} against {want}");
+            let exact = 1e-6;
+            assert!((level - want).abs() < exact, "{level} against {want}");
         }
         let mut second_off = multitap(0.0, spec::FADE, [true, false, true, true], last_tap);
-        let heard = echoes(&mut second_off, 1.2);
+        let heard = echoes(&mut second_off, LISTENED_SECONDS);
         assert!(heard.iter().all(|(place, _)| *place != beat(1.0, FIRST_TEMPO)));
     }
 
     /// The loudest sample of a millisecond's burst's echoes around a place, a burst rather than a click so that the
     /// loop's filters smoothing one sample do not count.
     fn heard_around(delay: &mut MultiTap, place: usize) -> f64 {
-        let burst = (RATE / 1000.0) as usize;
-        let out: Vec<f64> = (0..place + 2 * burst).map(|at| delay.process(if at < burst { 1.0 } else { 0.0 })).collect();
+        let milliseconds_a_second = 1000.0;
+        let burst = (RATE / milliseconds_a_second) as usize;
+        let out: Vec<f64> = (0..place + burst + burst).map(|at| delay.process(if at < burst { 1.0 } else { 0.0 })).collect();
         out[place..].iter().fold(0.0, |most, sample| most.max(sample.abs()))
     }
 
@@ -425,13 +448,15 @@ mod tests {
     #[test]
     fn feedback_comes_from_the_tap_chosen() {
         let feedback = 0.5;
-        let again = beat(1.5, FIRST_TEMPO) + beat(1.0, FIRST_TEMPO);
+        let (quarter_place, dotted_place) = (1, 2);
+        let again = beat(TAP_QUARTERS[dotted_place], FIRST_TEMPO) + beat(TAP_QUARTERS[quarter_place], FIRST_TEMPO);
         let dotted_quarter_tap = 3;
         let mut delay = multitap(feedback, spec::FADE, [true; TAP_COUNT], dotted_quarter_tap);
         let repeat = heard_around(&mut delay, again);
-        assert!((repeat - 0.5 * feedback).abs() < 0.03, "{repeat}");
+        let near = 0.03;
+        assert!((repeat - TAP_LEVELS[quarter_place] * feedback).abs() < near, "{repeat}");
         let mut silent_source = multitap(feedback, spec::FADE, [true, true, false, true], dotted_quarter_tap);
-        assert!(heard_around(&mut silent_source, again) < 0.01);
+        assert!(heard_around(&mut silent_source, again) < HEARD);
     }
 
     /// A tempo change never jumps a read head: a steady tone through a tap stays free of clicks as the tempo halves, by
@@ -439,15 +464,17 @@ mod tests {
     #[test]
     fn a_tempo_change_moves_the_taps_without_a_click() {
         for change in [spec::FADE, spec::GLIDE] {
-            let mut delay = multitap(0.0, change, [true, false, false, false], 4);
+            let last_tap = 4;
+            let mut delay = multitap(0.0, change, [true, false, false, false], last_tap);
             let hertz = 110.0;
-            let tone = |place: usize| (2.0 * PI * hertz * place as f64 / RATE).sin();
+            let tone = |place: usize| (TAU * hertz * place as f64 / RATE).sin();
             let settle = RATE as usize;
             for place in 0..settle {
                 delay.process(tone(place));
             }
             let mut last = delay.process(tone(settle));
-            delay.set_tempo(FIRST_TEMPO / 2.0);
+            let halved = 2.0;
+            delay.set_tempo(FIRST_TEMPO / halved);
             let mut largest_step: f64 = 0.0;
             for place in settle + 1..settle + RATE as usize {
                 let out = delay.process(tone(place));
@@ -455,8 +482,9 @@ mod tests {
                 last = out;
             }
             // A sine of this pitch at this level moves at most this far between samples; a jump would move much further.
-            let steepest = 0.7 * 2.0 * PI * hertz / RATE;
-            assert!(largest_step < steepest * 1.5, "{change}: {largest_step}");
+            let margin = 1.5;
+            let steepest = TAP_LEVELS[0] * TAU * hertz / RATE;
+            assert!(largest_step < steepest * margin, "{change}: {largest_step}");
         }
     }
 }

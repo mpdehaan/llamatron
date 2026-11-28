@@ -19,9 +19,16 @@
 use crate::dsp::oversample::{LinearHalfband, SteepDecimator};
 use crate::dsp::saturation::{log_cosh, CLOSEST_INPUTS};
 use llamatron_names::spec;
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 
 const MOST_GAIN: f64 = 20.0;
+/// Halving and twice, the curves' own constants: a fold's quarter turn and a wrap's span of -1 to 1; and half, where a
+/// hard clip's antiderivative meets its straight part.
+const HALVING: f64 = 2.0;
+const WRAP_SPAN: f64 = 2.0;
+const HARD_KNEE: f64 = 0.5;
+/// A power taken of a sample for its energy.
+const SQUARED: i32 = 2;
 const MOST_FOLDING_GAIN: f64 = 4.0;
 const WARM_LEAN: f64 = 0.3;
 
@@ -126,9 +133,9 @@ impl Drive {
     fn matched_level(&self) -> f64 {
         let (mut sine_power, mut shaped_power) = (0.0, 0.0);
         for point in 0..LEVEL_POINTS {
-            let sine = REFERENCE_LEVEL * (2.0 * PI * point as f64 / LEVEL_POINTS as f64).sin();
+            let sine = REFERENCE_LEVEL * (TAU * point as f64 / LEVEL_POINTS as f64).sin();
             sine_power += sine * sine;
-            shaped_power += self.shaped(sine * self.gain).powi(2);
+            shaped_power += self.shaped(sine * self.gain).powi(SQUARED);
         }
         if shaped_power <= 0.0 {
             return 1.0;
@@ -143,8 +150,8 @@ impl Drive {
             Curve::Soft => driven.tanh() * self.scale,
             Curve::Warm => ((driven + WARM_LEAN).tanh() - self.offset) * self.scale,
             Curve::Hard => driven.clamp(-1.0, 1.0),
-            Curve::Fold => (driven * PI / 2.0).sin(),
-            Curve::Wrap => (driven + 1.0).rem_euclid(2.0) - 1.0,
+            Curve::Fold => (driven * PI / HALVING).sin(),
+            Curve::Wrap => (driven + 1.0).rem_euclid(WRAP_SPAN) - 1.0,
         }
     }
 
@@ -155,13 +162,13 @@ impl Drive {
         match self.curve {
             Curve::Soft => log_cosh(driven) * self.scale,
             Curve::Warm => (log_cosh(driven + WARM_LEAN) - self.offset * driven) * self.scale,
-            Curve::Hard if driven.abs() <= 1.0 => driven * driven / 2.0,
-            Curve::Hard => driven.abs() - 0.5,
-            Curve::Fold => -(driven * PI / 2.0).cos() * 2.0 / PI,
+            Curve::Hard if driven.abs() <= 1.0 => driven * driven / HALVING,
+            Curve::Hard => driven.abs() - HARD_KNEE,
+            Curve::Fold => -(driven * PI / HALVING).cos() * HALVING / PI,
             // Each cycle of the wrap adds nothing to the area, so only the place in the cycle counts.
             Curve::Wrap => {
-                let place = (driven + 1.0).rem_euclid(2.0);
-                place * place / 2.0 - place
+                let place = (driven + 1.0).rem_euclid(WRAP_SPAN);
+                place * place / HALVING - place
             }
         }
     }
@@ -175,7 +182,7 @@ impl Drive {
         let driven = input * self.gain;
         let span = driven - self.previous;
         let out = if span.abs() < CLOSEST_INPUTS {
-            self.shaped((driven + self.previous) / 2.0)
+            self.shaped((driven + self.previous) / HALVING)
         } else {
             (self.antiderivative(driven) - self.antiderivative(self.previous)) / span
         };
@@ -245,12 +252,16 @@ mod tests {
     use crate::dsp::spectrum::stray_decibels_under;
 
     const RATE: usize = 48_000;
+    /// The note the tests play, its loud level, and a curve's Amount where the tests push it.
+    const NOTE: usize = 220;
+    const LOUD: f64 = 0.9;
+    const PUSHED: f64 = 0.8;
     const CURVES: [Curve; 5] = [Curve::Soft, Curve::Warm, Curve::Hard, Curve::Fold, Curve::Wrap];
 
     /// Two seconds of a loud sine at a whole number of hertz.
     fn sine(hertz: usize, amplitude: f64) -> Vec<f64> {
-        (0..2 * RATE)
-            .map(|place| amplitude * (2.0 * PI * hertz as f64 * place as f64 / RATE as f64).sin())
+        (0..RATE + RATE)
+            .map(|place| amplitude * (TAU * hertz as f64 * place as f64 / RATE as f64).sin())
             .collect()
     }
 
@@ -265,30 +276,31 @@ mod tests {
     fn every_curve_on_a_high_note_stays_clean_where_it_is_heard() {
         let hertz = 5_003;
         let heard_under = 18_000;
-        let input = sine(hertz, 0.8);
+        let most_stray = -40.0;
+        let input = sine(hertz, PUSHED);
         for curve in CURVES {
             let stray = stray_decibels_under(&driven(curve, &input), RATE, hertz, heard_under);
-            assert!(stray < -40.0, "curve {:?}: {stray:.1} dB", curve as u8);
+            assert!(stray < most_stray, "curve {:?}: {stray:.1} dB", curve as u8);
         }
     }
 
     /// The loudness of a second of sound, as the root of its mean square.
     fn loudness(samples: &[f32]) -> f64 {
-        (samples.iter().map(|sample| (*sample as f64).powi(2)).sum::<f64>() / samples.len() as f64).sqrt()
+        (samples.iter().map(|sample| (*sample as f64).powi(SQUARED)).sum::<f64>() / samples.len() as f64).sqrt()
     }
 
     /// Every curve at every Amount keeps a sine at the reference level as loud as it went in, within a decibel, so that
     /// turning Drive up changes the tone rather than the loudness.
     #[test]
     fn every_curve_keeps_the_reference_level() {
-        let hertz = 220;
-        let input = sine(hertz, REFERENCE_LEVEL);
+        let input = sine(NOTE, REFERENCE_LEVEL);
+        let (light, half) = (0.1, 0.5);
         let kept = loudness(&input.iter().map(|sample| *sample as f32).collect::<Vec<f32>>());
         for curve in CURVES {
-            for amount in [0.1, 0.5, 1.0] {
+            for amount in [light, half, 1.0] {
                 let mut drive = Drive::new(curve, amount);
                 let out: Vec<f32> = input.iter().map(|sample| drive.process(*sample, 1.0) as f32).collect();
-                let decibels = 20.0 * (loudness(&out[RATE..]) / kept).log10();
+                let decibels = crate::dsp::DECIBELS_A_DECADE * (loudness(&out[RATE..]) / kept).log10();
                 assert!(decibels.abs() < 1.0, "curve {:?} at {amount}: {decibels:.2} dB", curve as u8);
             }
         }
@@ -298,29 +310,31 @@ mod tests {
     /// comes through whole, delayed only by the halfband, and silence stays silent at any setting.
     #[test]
     fn drive_steps_aside_at_no_amount_no_mix_and_in_silence() {
-        let input = sine(220, 0.9);
+        let input = sine(NOTE, LOUD);
         for curve in CURVES {
             let mut untouched = Drive::new(curve, 0.0);
             assert!(input.iter().all(|sample| untouched.process(*sample, 1.0) == *sample), "curve {:?}", curve as u8);
             let mut quiet = Drive::new(curve, 1.0);
             let loudest_silence = (0..RATE).map(|_| quiet.process(0.0, 1.0)).fold(0.0f64, |most, sample| most.max(sample.abs()));
-            assert!(loudest_silence < 1e-9, "curve {:?}: {loudest_silence}", curve as u8);
+            let silent = 1e-9;
+            assert!(loudest_silence < silent, "curve {:?}: {loudest_silence}", curve as u8);
         }
         let mut dry = Drive::new(Curve::Hard, 1.0);
         let level = 0.5;
-        let out: Vec<f64> = sine(200, level).iter().map(|sample| dry.process(*sample, 0.0)).collect();
+        let (other_note, near) = (200, 0.01);
+        let out: Vec<f64> = sine(other_note, level).iter().map(|sample| dry.process(*sample, 0.0)).collect();
         let loudest = out[RATE..].iter().fold(0.0f64, |most, sample| most.max(sample.abs()));
-        assert!((loudest - level).abs() < 0.01, "{loudest}");
+        assert!((loudest - level).abs() < near, "{loudest}");
     }
 
     /// No two curves shape a loud sine alike.
     #[test]
     fn no_two_curves_shape_alike() {
-        let input = sine(220, 0.9);
+        let input = sine(NOTE, LOUD);
         let shapes: Vec<Vec<f64>> = CURVES
             .iter()
             .map(|curve| {
-                let mut drive = Drive::new(*curve, 0.8);
+                let mut drive = Drive::new(*curve, PUSHED);
                 input.iter().map(|sample| drive.process(*sample, 1.0)).collect()
             })
             .collect();
@@ -334,11 +348,12 @@ mod tests {
     /// Warm's lean makes even harmonics but leaves no steady offset: a loud sine through it averages to nothing.
     #[test]
     fn warm_leaves_no_offset() {
-        let input = sine(220, 0.9);
+        let input = sine(NOTE, LOUD);
         let mut drive = Drive::new(Curve::Warm, 1.0);
         let out: Vec<f64> = input.iter().map(|sample| drive.process(*sample, 1.0)).collect();
         let late = &out[RATE..];
         let offset = late.iter().sum::<f64>() / late.len() as f64;
-        assert!(offset.abs() < 1e-3, "{offset}");
+        let no_offset = 1e-3;
+        assert!(offset.abs() < no_offset, "{offset}");
     }
 }
