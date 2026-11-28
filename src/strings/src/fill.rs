@@ -6,12 +6,21 @@
 //! use: a fill character and alignment (`<`, `>`, `^`) with a width that may itself be a field (`{name:<{width}}`), a `+`
 //! sign, zero padding (`02`), `d`, and a float's places (`.1f`); `{{` and `}}` for braces.
 
-#[cfg(test)]
-use llamatron_names::file_format;
-#[cfg(test)]
-use llamatron_names::spec;
 use llamatron_names::words;
 use std::fmt::Write;
+
+/// The sizes Python writes a float plainly between, writing the rest with an exponent.
+const SMALLEST_PLAIN: f64 = 1e-4;
+const LARGEST_PLAIN: f64 = 1e16;
+/// A repr's two quotes; the first printable character, a space, and the delete character, which a repr writes as
+/// escapes; and the room a filled template is given beyond its own length.
+const QUOTES: usize = 2;
+const FIRST_PRINTABLE: u32 = 0x20;
+const DELETE: u32 = 0x7F;
+const ROOM_FOR_VALUES: usize = 16;
+/// A format spec's fill character and alignment, two characters; and the halves a centred value's padding falls into.
+const FILL_AND_ALIGN: usize = 2;
+const HALVES: usize = 2;
 
 /// A value a template is filled with.
 #[derive(Clone, Debug, PartialEq)]
@@ -92,7 +101,7 @@ pub fn python_float(value: f64) -> String {
         return if value > 0.0 { words::INF } else { "-inf" }.to_string();
     }
     let size = value.abs();
-    if size != 0.0 && !(1e-4..1e16).contains(&size) {
+    if size != 0.0 && !(SMALLEST_PLAIN..LARGEST_PLAIN).contains(&size) {
         let text = format!("{value:e}");
         let (mantissa, exponent) = text.split_once('e').unwrap_or((&text, "0"));
         let exponent: i32 = exponent.parse().unwrap_or(0);
@@ -110,7 +119,7 @@ pub fn python_float(value: f64) -> String {
 /// A text as Python's repr writes it: in single quotes, or double where it holds a single quote and no double.
 pub fn python_repr(text: &str) -> String {
     let quote = if text.contains('\'') && !text.contains('"') { '"' } else { '\'' };
-    let mut written = String::with_capacity(text.len() + 2);
+    let mut written = String::with_capacity(text.len() + QUOTES);
     written.push(quote);
     for character in text.chars() {
         match character {
@@ -122,7 +131,7 @@ pub fn python_repr(text: &str) -> String {
                 written.push('\\');
                 written.push(character);
             }
-            _ if (character as u32) < 32 || character as u32 == 127 => {
+            _ if (character as u32) < FIRST_PRINTABLE || character as u32 == DELETE => {
                 let _ = write!(written, "\\x{:02x}", character as u32);
             }
             _ => written.push(character),
@@ -135,7 +144,7 @@ pub fn python_repr(text: &str) -> String {
 /// Fill a template with named values and positional ones, as str.format does; a field with no value is left as written,
 /// so that a missing value shows rather than crashes.
 pub fn fill(template: &str, named: &[(&str, Value)], positional: &[Value]) -> String {
-    let mut out = String::with_capacity(template.len() + 16);
+    let mut out = String::with_capacity(template.len() + ROOM_FOR_VALUES);
     let mut characters = template.chars().peekable();
     let mut next_positional = 0;
     while let Some(character) = characters.next() {
@@ -216,10 +225,10 @@ fn formatted(value: &Value, spec: &str, as_text: bool) -> String {
     let mut place = 0;
     let is_align = |character: char| matches!(character, '<' | '>' | '^' | '=');
     let (mut fill_character, mut align) = (' ', None);
-    if characters.len() >= 2 && is_align(characters[1]) {
+    if characters.len() >= FILL_AND_ALIGN && is_align(characters[1]) {
         fill_character = characters[0];
         align = Some(characters[1]);
-        place = 2;
+        place = FILL_AND_ALIGN;
     } else if !characters.is_empty() && is_align(characters[0]) {
         align = Some(characters[0]);
         place = 1;
@@ -277,7 +286,7 @@ fn padded(sign: &str, body: &str, width: usize, fill_character: char, align: cha
     let padding = |count: usize| fill_character.to_string().repeat(count);
     match align {
         '<' => format!("{sign}{body}{}", padding(room)),
-        '^' => format!("{}{sign}{body}{}", padding(room / 2), padding(room - room / 2)),
+        '^' => format!("{}{sign}{body}{}", padding(room / HALVES), padding(room - room / HALVES)),
         '=' => format!("{sign}{}{body}", padding(room)),
         _ => format!("{}{sign}{body}", padding(room)),
     }
@@ -288,53 +297,50 @@ mod tests {
     use super::*;
 
     // Every expected text here is what CPython printed for the same template and values.
+
+    /// A named field takes its value, and !r its repr.
     #[test]
-    fn templates_fill_by_their_format_specs() {
-        assert_eq!(
-            named("no pattern called ({name})", &[(llamatron_names::fill::NAME, spec::TUNE.into())]),
-            "no pattern called (tune)"
-        );
-        assert_eq!(
-            named("expected a Note, got {value!r}", &[(llamatron_names::fill::VALUE, "C#".into())]),
-            "expected a Note, got 'C#'"
-        );
-        assert_eq!(
-            named("{name:<{width}}|", &[(llamatron_names::fill::NAME, words::AB.into()), (words::WIDTH, 5.into())]),
-            "ab   |"
-        );
+    fn a_named_field_takes_its_value_or_its_repr() {
+        let (name, value, pattern, note) = ("name", "value", "tune", "C#");
+        assert_eq!(named("no pattern called ({name})", &[(name, pattern.into())]), "no pattern called (tune)");
+        assert_eq!(named("expected a Note, got {value!r}", &[(value, note.into())]), "expected a Note, got 'C#'");
+    }
+
+    /// A spec pads, signs, zero-fills, rounds and aligns as str.format does, a width given by another field included.
+    #[test]
+    fn a_field_is_padded_signed_and_rounded_by_its_spec() {
+        let (name, width, text, narrow) = ("name", "width", "ab", 5);
+        assert_eq!(named("{name:<{width}}|", &[(name, text.into()), (width, narrow.into())]), "ab   |");
+        let (n, m, f, x) = ("n", "m", "f", "x");
+        let (signed, zero_filled, rounded) = (3, 7, 2.25);
         assert_eq!(
             named(
                 "{n:+d} {m:02} {f:.1f} {x:>4}",
-                &[
-                    (words::N, 3.into()),
-                    (file_format::ChordSymbol::MINOR, 7.into()),
-                    (words::F, 2.25.into()),
-                    (words::X, words::AB.into())
-                ]
+                &[(n, signed.into()), (m, zero_filled.into()), (f, rounded.into()), (x, text.into())]
             ),
             "+3 07 2.2   ab"
         );
-        let (rounded_away, padded) = (-0.005, -3);
-        assert_eq!(
-            named("{v:.2f}|{w:>7}", &[(words::V, rounded_away.into()), (words::W, padded.into())]),
-            "-0.01|     -3"
-        );
-        assert_eq!(python_float(1e16), "1e+16");
-        assert_eq!(python_float(1.5e-05), "1.5e-05");
-        assert_eq!(
-            named("{title:═^{width}}", &[(llamatron_names::fill::TITLE, " Hi ".into()), (words::WIDTH, 10.into())]),
-            "═══ Hi ═══"
-        );
-        assert_eq!(
-            fill(
-                "{} and {}, {{braces}}",
-                &[],
-                &[file_format::DriftVersion::A.into(), file_format::Accidental::FLAT.into()]
-            ),
-            "a and b, {braces}"
-        );
+        let (v, w, rounded_away, padded) = ("v", "w", -0.005, -3);
+        assert_eq!(named("{v:.2f}|{w:>7}", &[(v, rounded_away.into()), (w, padded.into())]), "-0.01|     -3");
+        let (title, heading, wide) = ("title", " Hi ", 10);
+        assert_eq!(named("{title:═^{width}}", &[(title, heading.into()), (width, wide.into())]), "═══ Hi ═══");
+    }
+
+    /// Positional fields take their values in order, and doubled braces stand for themselves.
+    #[test]
+    fn positional_fields_fill_in_order_and_doubled_braces_stay() {
+        let (first, second) = ("a", "b");
+        assert_eq!(fill("{} and {}, {{braces}}", &[], &[first.into(), second.into()]), "a and b, {braces}");
+    }
+
+    /// A float and a text are written as Python's str and repr write them.
+    #[test]
+    fn floats_and_texts_read_as_python_writes_them() {
+        let (huge, tiny, tenth, whole) = (1e16, 1.5e-05, 0.1, 3.0);
+        assert_eq!(python_float(huge), "1e+16");
+        assert_eq!(python_float(tiny), "1.5e-05");
+        assert_eq!(python_float(tenth), "0.1");
+        assert_eq!(python_float(whole), "3.0");
         assert_eq!(python_repr("it's"), "\"it's\"");
-        assert_eq!(python_float(0.1), "0.1");
-        assert_eq!(python_float(3.0), "3.0");
     }
 }

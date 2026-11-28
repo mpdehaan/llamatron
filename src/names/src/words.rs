@@ -4,7 +4,6 @@
 //! The words of the words the program uses as values, each named once.
 
 pub const A1: &str = "a1";
-pub const AB: &str = "ab";
 pub const ABLETON: &str = "ableton";
 pub const ABOUT: &str = "about";
 pub const ACCIDENTALS: &str = "accidentals";
@@ -289,7 +288,6 @@ pub const MUSICIANS: &str = "musicians";
 pub const MUTED: &str = "muted";
 pub const MUTE_WHEN: &str = "mute_when";
 pub const MYSTIFY: &str = "mystify";
-pub const N: &str = "n";
 pub const NAME1: &str = "name1";
 pub const NAMES: &str = "names";
 pub const NAMES_A_TUNE: &str = "names_a_tune";
@@ -487,7 +485,6 @@ pub const VARIETY: &str = "variety";
 pub const VERY_HIGH: &str = "very_high";
 pub const VOICE_LEADING: &str = "voice_leading";
 pub const VOICING: &str = "voicing";
-pub const W: &str = "w";
 pub const WARPZONE: &str = "warpzone";
 pub const WAV: &str = "wav";
 pub const WHERE: &str = "where";
@@ -495,7 +492,6 @@ pub const WHITE: &str = "white";
 pub const WHOLE: &str = "whole";
 pub const WHOSE: &str = "whose";
 pub const WIDEST: &str = "widest";
-pub const WIDTH: &str = "width";
 pub const WORD: &str = "word";
 pub const X: &str = "x";
 pub const YELLOW: &str = "yellow";
