@@ -14,9 +14,14 @@ plain code, comments that explain why, tests that read clearly.
 - **Timing comes first where it matters.** The synthesis and every timing-sensitive path (the audio callback, the sender, the
   player's tick, the render's per-note loop) MAY break any rule here where the rule would cost time (the user's standing
   allowance), with a comment saying why; their names stay plain.
-- **No bare constants.** A number or a text whose purpose is not plain from where it stands is given a name first, a `let` or a
-  named constant saying what it is for, such as `let shown_rows = 7;` or `const PREVIEW_CHANNEL: i64 = 15;`. Zero, one, and the
-  empty text in their plain sense need no name.
+- **Every value with a meaning is named, in the entire program, tests included.** A number other than 0 and 1 in
+  their plain sense, and every name used as a value (a file key or value, a setting, a kind, a mode, a note name,
+  a chord symbol, a key name, an exporter tag, a sound's setting, a Mod Matrix source or destination, a key the
+  tracker sends the backend), is a named constant or a named `let`, defined once and imported: `let shown_rows =
+  7;`, `const PREVIEW_CHANNEL: i64 = 15;`, `asheville(OSC2_PITCH, amount)`. A list or table of names is built from
+  the constants and keyed by them, never retyped. Code nearby that breaks this is no precedent: the line written
+  follows the rule. `internal_tools/check_named_values.py`, run by the commit check, fails any line that breaks it;
+  an exemption needs the user's yes. The empty text needs no name.
 - **A rule about shape is met by naming the thing a person would name**, never by cutting code into pieces or a clever line.
 - **Everything the program offers is registered.** Every component (engine, oscillator, filter, envelope, Amp,
   effect, LFO, Mod Matrix source and destination) and every page is an entry in its kind's registry, the one place the
@@ -64,11 +69,11 @@ plain code, comments that explain why, tests that read clearly.
   what went wrong, dialog titles too, in `errors.rs`; `MSG_`
   for all else, in the module of how it is used (labels, legends, messages, marks, names, the command line). Comments and
   documentation stay where they are.
-- **Every name used as a value is a named constant**: file keys, settings, kinds, modes, note names, chord symbols, key names,
-  exporter tags, and numbers with a meaning (`MIN_PROBABILITY`). Unused constants are removed. A constant is defined once, in
-  the model's schema or the strings crate, and imported, never redeclared as a local constant; no list of sections or
-  settings is kept by hand where the schema holds it. Different meanings are different constants even where their values
-  agree: a dozen minimums of 0 are a dozen constants, each named for what it bounds.
+- **Where names live**: every name used as a value is defined once, in the names crate (`src/names`), at the bottom of
+  the layers, and imported, never redeclared as a local constant; every crate, the strings and the backend
+  included, reads it there. Unused constants are removed. No list of sections or settings is kept by hand where the
+  schema holds it. Different meanings are different constants even where their values agree: a dozen minimums of 0
+  are a dozen constants, each named for what it bounds.
 - **No YAML in a string**, anywhere in the source, tests included: data is built as data structures and serialized where
   it is written. A set a test starts from is a data file beside the tests, read by name.
 - **A file is written by a serializer**: a format llamatron writes, YAML, JSON, MIDI or any other, is built as data and

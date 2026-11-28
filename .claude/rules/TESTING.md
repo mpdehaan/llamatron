@@ -66,6 +66,8 @@ internal_tools/check_before_commit.sh                              # before comm
 
 - Tests follow every rule of `.claude/rules/STYLE.md`; values a test names are named (`let seed = 7;`), and limits come from the
   program's constants.
+- A test names its values as the code does (`.claude/rules/STYLE.md`): every setting, source, kind and number is a
+  constant or a named `let`, never text or a number typed in place.
 - **A UI test reads the page, as a Selenium test does** (the user's rule): it draws the screen as a person sees it and
   decides everything from what is drawn. It finds a field, a tab, a heading, a cell or a choice by its drawn label; moves the
   cursor with the arrows until the drawn `▶` or box is on it, never by a count of presses and never by setting a page's
