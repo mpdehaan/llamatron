@@ -31,7 +31,7 @@ edge takes a fixed time, the square sounds like a pulse on low notes and more
 like a saw on high ones, as the original's does. The oscillator's output is
 turned over and coupled into the filter through a high-pass, as the circuit
 couples it, which shapes the low end. Tuning shifts the whole voice by
-semitones.
+semitones, Detune by cents and Fine by tenths of a cent.
 
 Oh3's character is in the parts its engine chooses around that
 oscillator: the acid gate's accent and its charging capacitor, the Diode

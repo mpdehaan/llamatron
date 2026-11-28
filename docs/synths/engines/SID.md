@@ -4,7 +4,8 @@ SID is one voice of an 8-bit sound chip: a Triangle, Saw, Pulse or Noise wave,
 a pulse of a width, Ring and Sync from a second oscillator an Interval away,
 and an Arpeggio of semitones stepped very fast, through the chip's own [SID
 ADSR](../ENVELOPES.md#sid-adsr) envelope. It is the sound of fast arpeggiated
-chords, buzzy sync leads and swept pulse basses.
+chords, buzzy sync leads and swept pulse basses. Detune moves the voice by
+cents and Fine by tenths of a cent, for beating against another track.
 
 ![The Oscillators tab of SID](../../screenshots/synth_sid.svg)
 

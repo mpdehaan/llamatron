@@ -1287,11 +1287,6 @@ impl InstrumentEditor {
                 Self::lfo_rate_field(ids, number, &speed, keyed, &lfo(number, "rate_percent"), &text(&lfo(number, "ratio")))
             };
             let mut fields = vec![
-                Field::toggle(
-                    ids.at(Write::Item("lfos", number, "on")),
-                    &numbered(labels::MSG_LFO_LABEL),
-                    flag(&lfo(number, "on")),
-                ),
                 chosen(
                     ids.at(Write::Item("lfos", number, "type")),
                     &numbered(labels::MSG_LFO_TYPE_LABEL),
@@ -1335,7 +1330,16 @@ impl InstrumentEditor {
                 &text(&lfo(number, "restart")),
             )
             .with_shown_label(&shown_label(labels::MSG_LFO_RESTART_LABEL))]);
-            let mut column = TabColumn::new(None, fields);
+            // The switch stands last, under the settings it turns on; each LFO starts on.
+            fields.push(
+                Field::toggle(
+                    ids.at(Write::Item("lfos", number, "on")),
+                    &numbered(labels::MSG_LFO_ON_LABEL),
+                    flag(&lfo(number, "on")),
+                )
+                .with_shown_label(&shown_label(labels::MSG_LFO_ON_LABEL)),
+            );
+            let mut column = TabColumn::new(Some(&numbered(labels::MSG_LFO_LABEL)), fields);
             column.boxed = true;
             columns.push(column);
         }

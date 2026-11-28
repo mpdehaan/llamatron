@@ -161,6 +161,8 @@ pub struct Modular {
     env2_to_filter: bool,
     reads_env2: bool,
     matrix_reads_env2: bool,
+    /// The oscillators' own tuning in cents, an engine of one oscillator's Detune and Fine together.
+    tuning_cents: f64,
     reads_env3: bool,
     last_pitch: Option<f64>,
     newest: u64,
@@ -471,7 +473,8 @@ impl Patch {
             } else {
                 modular.matrix.moved(&sources)
             };
-            let mut bend = moved.pitch;
+            // The Mod Matrix's Detune and Fine and the oscillators' own tuning move the pitch, in cents.
+            let mut bend = moved.pitch + (moved.detune + moved.fine + modular.tuning_cents) / CENTS_A_SEMITONE;
             if gliding {
                 bend += (voice.glide_from - voice.pitch) * (-((sample - voice.glide_at) as f64).max(0.0) / (glide * rate)).exp();
             }
@@ -479,7 +482,6 @@ impl Patch {
             let moves = Moves {
                 pitch: bend,
                 width: moved.pulse_width,
-                spread: moved.detune,
                 interval: moved.interval,
             };
             let seconds = note.age;
@@ -581,9 +583,15 @@ impl Patch {
 /// The envelope whose accent adds a sweep of its own to the filter through Env2.
 const ACCENTING_ENVELOPE: &str = "acid_gate";
 
+/// Cents to a semitone.
+const CENTS_A_SEMITONE: f64 = 100.0;
+
 fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
     let empty = Value::Nil;
     let oscillator = oscillators::compiled(oscillators, rate);
+    // An engine of one oscillator, such as the SID's, carries its Detune and Fine as one tuning in cents; the engines of
+    // several tune each oscillator their own way and send none.
+    let tuning_cents = number(oscillators, "cents", 0.0);
     let filter_spec = field(spec, "filter").unwrap_or(&empty);
     let resonance = number(filter_spec, "resonance", 0.0);
     let envelope_specs = list(spec, "envelopes");
@@ -622,6 +630,7 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
         env2_to_filter,
         matrix_reads_env2,
         reads_env3: matrix.uses(Source::Env3) || gates_read(2),
+        tuning_cents,
         filter,
         gates,
         gate_memory: [EnvelopeMemory::default(); 2],

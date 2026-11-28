@@ -13,7 +13,8 @@ and Osc to Amp a ring of AM, on any engine, even one that never had FM. An
 LFO at Very High speed routed to Pitch is the same analog-style FM from a
 second source ([LFOs](LFOS.md)). A Via scales the source by a second one, so
 that, for instance, an LFO moves the cutoff only as far as the note is loud.
-Moves is what it moves, Pitch, Pulse width, Detune, SID interval (how far the
+Moves is what it moves, Pitch, Pulse width, Detune and Fine (every
+oscillator's tuning, by up to a semitone and a tenth of one), SID interval (how far the
 SID's second oscillator stands from the note, for sweeping a sync lead), Cutoff,
 Resonance, Amp or an LFO's rate,
 and Amount how far, either way, as a share of what it moves. LFO 1 to Pitch is

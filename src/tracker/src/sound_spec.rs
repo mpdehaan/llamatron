@@ -9,6 +9,8 @@ use crate::generated::sounds::{Preset, EFFECT_DEFAULTS, SLOT_DEFAULTS};
 use crate::instrument_sound::Sound;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
+use llamatron_model::schema::generated::file_format::MatrixSetting;
+use llamatron_model::schema::generated::limits::LFO_COUNT;
 
 const MILLISECONDS: f64 = 1000.0;
 const TENTHS_OF_MILLISECONDS: f64 = 10000.0;
@@ -69,6 +71,11 @@ fn oscillators(sound: &Sound) -> Data {
         ]);
     }
     let mut spec = vec![("type", Data::text(&kind))];
+    // An engine of one oscillator carries its Detune and Fine as one tuning in cents; Basic and Asheville tune each
+    // oscillator of their own.
+    if ONE_OSCILLATOR_TYPES.contains(&kind.as_str()) {
+        spec.push(("cents", Data::Float(cents_with_fine(&setting("detune"), &setting("fine")))));
+    }
     match kind.as_str() {
         "sid" => spec.extend([
             ("wave", setting("wave")),
@@ -154,6 +161,9 @@ fn asheville(sound: &Sound) -> Vec<(&'static str, Data)> {
 }
 
 /// Basic's oscillators that sound, each its waveform, its detune in cents and its level as a fraction, those off left out.
+/// The oscillator types of one oscillator, whose Detune and Fine are the part's own settings.
+const ONE_OSCILLATOR_TYPES: [&str; 3] = ["sid", "pocket", "acid"];
+
 /// A tuning in cents and its Fine in tenths of a cent, together as cents.
 fn cents_with_fine(cents: &Data, fine: &Data) -> f64 {
     let tenths_a_cent = 10.0;
@@ -360,14 +370,18 @@ fn filter(sound: &Sound) -> Data {
     }
 }
 
-/// The LFOs in their places, None for one that is off, so that the matrix finds each by its number.
+/// How a Mod Matrix source names an LFO, followed by its number.
+const LFO_SOURCE_PREFIX: &str = "lfo";
+
+/// The LFOs in their places, every slot of the four, None for one that is off or that no Mod Matrix route reads, so that
+/// the matrix finds each by its number and the engine works out only the LFOs something hears.
 fn lfos(sound: &Sound) -> Data {
-    let count = sound.value("lfos").as_list().map_or(0, <[Data]>::len);
+    let read = lfos_read(sound);
     let mut lfos = Vec::new();
-    for number in 1..=count {
+    for number in 1..=LFO_COUNT as usize {
         // Each setting as the slot's Type plays it: an LFO leaves an LFO+'s own settings out (Sound::lfo_setting).
         let setting = |name: &str| sound.lfo_setting(number, name);
-        if is_falsy(&setting("on")) {
+        if is_falsy(&setting("on")) || !read.contains(&number) {
             lfos.push(Data::Null);
             continue;
         }
@@ -468,6 +482,26 @@ fn taps(sound: &Sound, number: usize) -> Data {
 }
 
 /// The matrix's slots, each amount a fraction either way.
+/// The LFOs a Mod Matrix route reads, by number, as its source or its via.
+fn lfos_read(sound: &Sound) -> Vec<usize> {
+    let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
+    let mut read = Vec::new();
+    for slot in 1..=count {
+        let settings = every_setting(sound, "matrix", slot, SLOT_DEFAULTS);
+        for end in [MatrixSetting::SOURCE, MatrixSetting::VIA] {
+            let number = settings
+                .get(end)
+                .and_then(Data::as_str)
+                .and_then(|name| name.strip_prefix(LFO_SOURCE_PREFIX))
+                .and_then(|number| number.parse::<usize>().ok());
+            if let Some(number) = number {
+                read.push(number);
+            }
+        }
+    }
+    read
+}
+
 fn matrix(sound: &Sound) -> Data {
     let count = sound.value("matrix").as_list().map_or(0, <[Data]>::len);
     let mut slots = Vec::new();

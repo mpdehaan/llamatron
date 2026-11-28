@@ -4,7 +4,8 @@ Pocket is one voice of a small 4-bit sound chip: a Pulse of one of four
 duties, a drawn Wave of a few dozen 4-bit steps in one of five shapes, or
 Noise, long or short, with a pitch sweep and the chip's stepped [Chip
 steps](../ENVELOPES.md#chip-steps) envelope. It is the sound of small, bright
-chip melodies and their chirps and zaps.
+chip melodies and their chirps and zaps. Detune moves the voice by cents and
+Fine by tenths of a cent, for beating against another track.
 
 ![The Oscillators tab of Pocket](../../screenshots/synth_pocket.svg)
 

@@ -388,6 +388,8 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("sync_on", Preset::Flag(false)),
             ("interval", Preset::Whole(7)),
             ("arpeggio", Preset::List(&[])),
+            ("detune", Preset::Whole(0)),
+            ("fine", Preset::Whole(0)),
         ]),
     ),
     (
@@ -400,9 +402,19 @@ pub static TYPE_DEFAULTS: &[(&str, Preset)] = &[
             ("sweep_pace", Preset::Whole(0)),
             ("sweep_direction", Preset::Text("down")),
             ("sweep_step", Preset::Whole(3)),
+            ("detune", Preset::Whole(0)),
+            ("fine", Preset::Whole(0)),
         ]),
     ),
-    ("acid", Preset::Map(&[("acid_wave", Preset::Text("saw")), ("tuning", Preset::Whole(0))])),
+    (
+        "acid",
+        Preset::Map(&[
+            ("acid_wave", Preset::Text("saw")),
+            ("tuning", Preset::Whole(0)),
+            ("detune", Preset::Whole(0)),
+            ("fine", Preset::Whole(0)),
+        ]),
+    ),
     (
         "drum",
         Preset::Map(&[
@@ -582,7 +594,7 @@ pub static OSCILLATOR_DEFAULTS: Preset = Preset::Map(&[
     ("level", Preset::Whole(100)),
 ]);
 pub static LFO_DEFAULTS: Preset = Preset::Map(&[
-    ("on", Preset::Flag(false)),
+    ("on", Preset::Flag(true)),
     ("type", Preset::Text("lfo")),
     ("fade_in", Preset::Whole(0)),
     ("division", Preset::Text("1/4")),
@@ -647,12 +659,22 @@ pub static ENGINES_OF_ROLE: &[(&str, &[&str])] = &[("normal", &["basic", "ashevi
 /// The settings each type of part shows, in order.
 pub static TYPE_SETTINGS: &[(&str, &[&str])] = &[
     ("basic", &[]),
-    ("sid", &["wave", "pulse_width", "ring_on", "sync_on", "interval", "arpeggio"]),
+    ("sid", &["wave", "pulse_width", "ring_on", "sync_on", "interval", "arpeggio", "detune", "fine"]),
     (
         "pocket",
-        &["chip_voice", "duty", "wave_shape", "noise", "sweep_pace", "sweep_direction", "sweep_step"],
+        &[
+            "chip_voice",
+            "duty",
+            "wave_shape",
+            "noise",
+            "sweep_pace",
+            "sweep_direction",
+            "sweep_step",
+            "detune",
+            "fine",
+        ],
     ),
-    ("acid", &["acid_wave", "tuning"]),
+    ("acid", &["acid_wave", "tuning", "detune", "fine"]),
     (
         "asheville",
         &[
@@ -1088,6 +1110,23 @@ pub static SETTING_KINDS: &[(&str, SettingKind)] = &[
             lowest: 0,
             highest: 100,
             what: "percent",
+        },
+    ),
+    (
+        "detune",
+        SettingKind::Number {
+            lowest: -100,
+            highest: 100,
+            unit: "{number:+d} c",
+            zero: None,
+        },
+    ),
+    (
+        "fine",
+        SettingKind::Gauge {
+            lowest: -100,
+            highest: 100,
+            what: "tenth_cents",
         },
     ),
     ("ring_on", SettingKind::Toggle),

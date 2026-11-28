@@ -85,9 +85,9 @@ pub struct OscillatorState {
     pub period: i64,
     pub ticks: i64,
     pub band: usize,
-    /// The pitch and spread the read speeds were last worked out for, and those speeds, so that a note whose pitch nothing
+    /// The pitch the read speeds were last worked out for, and those speeds, so that a note whose pitch nothing
     /// moves works out its powers of two once, not every sample.
-    pub speeds_for: (f64, f64),
+    pub speeds_for: f64,
     pub speeds: [f64; 3],
     /// Oh3's coupling into its filter, a one-pole high-pass, made as its note begins.
     pub coupling: OnePoleHighpass,
@@ -238,13 +238,12 @@ pub fn free_phase(random: f64, place: usize) -> f64 {
     (bits >> 11) as f64 / (1u64 << 53) as f64
 }
 
-/// What moves the oscillators at one sample: semitones of pitch, a share of the pulse's width, the detune's spread, and
-/// semitones added to the SID's Interval.
+/// What moves the oscillators at one sample: semitones of pitch, the Mod Matrix's Detune and Fine among them, a share of
+/// the pulse's width, and semitones added to the SID's Interval.
 #[derive(Clone, Copy, Default)]
 pub struct Moves {
     pub pitch: f64,
     pub width: f64,
-    pub spread: f64,
     pub interval: f64,
 }
 

@@ -67,9 +67,9 @@ pub fn compiled(spec: &Value, rate: f64) -> OscillatorPart {
 /// One sample of Oh3: its table read at the note's pitch, inverted and coupled through the high-pass, as Open303's
 /// oscillator feeds its filter.
 pub(super) fn acid_sample(tables: &Tables, state: &mut OscillatorState, pitch: f64, rate: f64) -> f64 {
-    if state.speeds_for.0 != pitch || state.speeds[0] == 0.0 {
+    if state.speeds_for != pitch || state.speeds[0] == 0.0 {
         state.speeds[0] = frequency_of(pitch) * TABLE_SIZE as f64 / rate;
-        state.speeds_for.0 = pitch;
+        state.speeds_for = pitch;
     }
     let speed = state.speeds[0];
     let position = state.phases[0];

@@ -2,9 +2,11 @@
 
 An LFO, a low-frequency oscillator, is a slow or fast wobble, as a player's
 hand shaking the pitch for vibrato or turning a knob back and forth. The
-Modulators tab holds four modulators, each off until switched on, and each
-with a Type: LFO, the plain one, or LFO+, the same with more choices. What
-each one moves is set in the [Mod Matrix](MOD_MATRIX.md).
+Modulators tab holds four modulators, each with a Type: LFO, the plain one,
+or LFO+, the same with more choices. What each one moves is set in the [Mod
+Matrix](MOD_MATRIX.md). Each is on unless switched off, its On switch at the
+foot of its column, so that a route to it is heard at once; one that no route
+reads costs nothing.
 
 ![The Modulators tab](../screenshots/synth_lfos.svg)
 

@@ -41,7 +41,10 @@ impl Source {
 pub enum Destination {
     Pitch,
     PulseWidth,
+    /// Every oscillator's Detune, in cents.
     Detune,
+    /// Every oscillator's Fine, in cents: the tuning moved by tenths of a cent.
+    Fine,
     /// The SID's Interval: how far its second oscillator stands from the note, in semitones.
     Interval,
     Cutoff,
@@ -178,6 +181,11 @@ pub static SOURCES: &[Named<Source>] = &[
     },
 ];
 
+/// How far Detune and Fine move every oscillator's tuning at their source's full value, in cents: a semitone, and a
+/// tenth of one.
+const DETUNE_REACH_CENTS: f64 = 100.0;
+const FINE_REACH_CENTS: f64 = 10.0;
+
 /// Every Mod Matrix destination a spec may name, besides an LFO's rate: what each is, and how far it moves at its
 /// source's full value.
 pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
@@ -191,7 +199,11 @@ pub static DESTINATIONS: &[Named<(Destination, f64)>] = &[
     },
     Named {
         name: "detune",
-        value: (Destination::Detune, 1.0),
+        value: (Destination::Detune, DETUNE_REACH_CENTS),
+    },
+    Named {
+        name: "fine",
+        value: (Destination::Fine, FINE_REACH_CENTS),
     },
     Named {
         name: "interval",
@@ -273,6 +285,7 @@ pub struct Moved {
     pub pitch: f64,
     pub pulse_width: f64,
     pub detune: f64,
+    pub fine: f64,
     pub interval: f64,
     pub cutoff: f64,
     pub resonance: f64,
@@ -344,6 +357,7 @@ impl ModMatrix {
                 Destination::Pitch => moved.pitch += value,
                 Destination::PulseWidth => moved.pulse_width += value,
                 Destination::Detune => moved.detune += value,
+                Destination::Fine => moved.fine += value,
                 Destination::Interval => moved.interval += value,
                 Destination::Cutoff => moved.cutoff += value,
                 Destination::Resonance => moved.resonance += value,

@@ -22,10 +22,10 @@ pub fn compiled(spec: &Value) -> OscillatorPart {
 
 pub(super) fn basic_sample(partials: &[Partial], state: &mut OscillatorState, pitch: f64, moves: Moves, rate: f64) -> f64 {
     let mut out = 0.0;
-    let wanted = (pitch + moves.pitch, moves.spread);
+    let wanted = pitch + moves.pitch;
     if state.speeds_for != wanted || state.speeds[0] == 0.0 {
         for (place, partial) in partials.iter().enumerate().take(3) {
-            let octaves = (wanted.0 - MIDDLE_A) / 12.0 + partial.cents / 1200.0 * (1.0 + wanted.1);
+            let octaves = (wanted - MIDDLE_A) / 12.0 + partial.cents / 1200.0;
             // In cycles a sample, held under half the rate and within hearing (frequency_of's bounds).
             let lowest = frequency_of(LOWEST_PITCH);
             let frequency = (A_FREQUENCY * 2f64.powf(octaves)).clamp(lowest, frequency_of(HIGHEST_PITCH));
