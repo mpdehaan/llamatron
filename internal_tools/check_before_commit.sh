@@ -15,6 +15,10 @@ changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard
 if [ -n "$changed" ]; then
     # The Rust's own checks: its layout, clippy with every warning an error, its tests in the quick dev build, and the
     # release build the comparisons run (.claude/rules/RUST.md).
+    # Every value with a meaning is named: no line the change adds types a number or a name in place
+    # (.claude/rules/STYLE.md).
+    echo 'check before commit: checking that every value is named'
+    .venv/bin/python internal_tools/check_named_values.py
     echo 'check before commit: checking the Rust with cargo'
     PATH="$HOME/.cargo/bin:$PATH"
     cargo fmt --manifest-path src/Cargo.toml --all --check
@@ -66,4 +70,4 @@ fi
 # The architecture diagram is made from the code, and fails the check where it is out of date.
 .venv/bin/python internal_tools/make_diagrams.py --check || { echo 'the architecture diagram is out of date: run internal_tools/make_diagrams.py'; exit 1; }
 # Every path a document names must still exist.
-exec .venv/bin/python -m unittest -q python.tests.test_doc_paths python.tests.test_record
+exec .venv/bin/python -m unittest -q python.tests.test_doc_paths python.tests.test_record python.tests.test_check_named_values

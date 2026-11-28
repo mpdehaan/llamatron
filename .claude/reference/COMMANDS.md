@@ -61,6 +61,7 @@ The batch videos' record_all.sh and the preview's preview_visualizer.sh are not 
 
 ```
 internal_tools/check_before_commit.sh            # before committing code: rustfmt, clippy, the tests, the release build, the comparisons
+.venv/bin/python internal_tools/check_named_values.py [--everything]   # lines a change adds, or every line, that type a number or a name in place; the commit check runs it
                                                  #   the change can affect, the crash sweep, the architecture diagram and the Python tests;
                                                  #   read its real exit code
 .venv/bin/python internal_tools/compare_llamatron.py STEP [--only TEXT] [--differences N] [--baseline]
