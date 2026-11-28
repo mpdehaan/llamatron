@@ -9,6 +9,7 @@ use llamatron_model::schema::generated::file_format::{
     Operator, ARITHMETIC_OPERATORS, DIVIDING_OPERATORS, OPERATORS, PARITY_OPERATORS, RESULT_COMPARISONS, VALUE_NAMES,
 };
 use llamatron_model::schema::generated::limits::MAX_STATEMENT_NUMBER;
+use llamatron_names::file_format;
 use llamatron_strings::labels;
 
 /// The widths of a statement's parts: its register, its operator, a value, a comparison and what is compared with.
@@ -34,11 +35,11 @@ fn parts_of(operator: &str) -> &'static [&'static str] {
 }
 
 // The parts of a statement, as the file names them.
-const REGISTER: &str = "register";
-const OPERATOR: &str = "operator";
-const VALUE: &str = "value";
-const COMPARISON: &str = "comparison";
-const AGAINST: &str = "against";
+const REGISTER: &str = file_format::StatementPart::REGISTER;
+const OPERATOR: &str = file_format::StatementPart::OPERATOR;
+const VALUE: &str = file_format::StatementPart::VALUE;
+const COMPARISON: &str = file_format::StatementPart::COMPARISON;
+const AGAINST: &str = file_format::StatementPart::AGAINST;
 /// What a new statement compares with, and what a dividing one divides by.
 const NEW_NUMBER: i128 = 0;
 const NEW_DIVISOR: i128 = 1;

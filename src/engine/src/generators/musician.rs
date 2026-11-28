@@ -26,17 +26,17 @@ const SOFTER_BY: i64 = 18;
 const BEATS_A_BACKBEAT: i128 = 2;
 const SEMITONES_AN_OCTAVE: i64 = 12;
 
-const SPARSE: &str = "sparse";
-const LIGHT: &str = "light";
-const BUSY: &str = "busy";
+const SPARSE: &str = words::SPARSE;
+const LIGHT: &str = words::LIGHT;
+const BUSY: &str = words::BUSY;
 const VERY_BUSY: &str = "very busy";
 const AS_WRITTEN: &str = "as written";
-const NO_GIVING_WAY: &str = "none";
-const GIVES_WAY_SOME: &str = "some";
-const GIVES_WAY_OFTEN: &str = "often";
+const NO_GIVING_WAY: &str = file_format::MatrixSource::NONE;
+const GIVES_WAY_SOME: &str = words::SOME;
+const GIVES_WAY_OFTEN: &str = words::OFTEN;
 const IN_THE_GAPS: &str = "plays in the gaps";
-const HELD_NOTES: &str = "held";
-const SHORT_NOTES: &str = "short";
+const HELD_NOTES: &str = file_format::ReadyBar::HELD;
+const SHORT_NOTES: &str = file_format::Noise::SHORT;
 
 /// An instrument's player: the pitches it can play, None for a drum, and how it gives way and plays its notes when its
 /// settings leave that out.

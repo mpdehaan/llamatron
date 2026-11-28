@@ -7,6 +7,7 @@
 use super::{made, Mode};
 use crate::app::App;
 use crate::text::Text;
+use llamatron_names::words;
 use std::time::{Duration, Instant};
 
 /// How long a mode's name shows when it changes.
@@ -14,7 +15,7 @@ const NAME_SECONDS: f64 = 8.0;
 /// How often the page draws a frame while the visualizer shows.
 pub const FRAME_INTERVAL: Duration = Duration::from_millis(50);
 /// A name is shown with a space either side, in reverse video.
-const NAME_STYLE: &str = "reverse";
+const NAME_STYLE: &str = words::REVERSE;
 const NAME_PADDING: &str = " ";
 
 /// A visualizer showing: its mode, and what it needs to draw each frame.

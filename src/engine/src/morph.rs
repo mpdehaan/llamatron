@@ -10,9 +10,10 @@ use crate::clip::{Clip, Control};
 use crate::error::{RenderError, Rendered};
 use crate::sound::Sound;
 use llamatron_math::Rational;
+use llamatron_names::words;
 
-pub const LEFT: &str = "left";
-pub const RIGHT: &str = "right";
+pub const LEFT: &str = words::LEFT;
+pub const RIGHT: &str = words::RIGHT;
 const AMOUNT_PRECISION: i128 = 1_000_000;
 const ALL_OF_THE_TARGET: i128 = 100;
 

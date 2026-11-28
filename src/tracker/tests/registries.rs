@@ -25,7 +25,7 @@ use std::collections::BTreeSet;
 /// Where the drums sound from, which a spec needs and these tests do not.
 const DRUMS_FROM: i64 = 36;
 /// A choice that leaves a slot empty, written as its own name.
-const NOTHING: &str = "none";
+const NOTHING: &str = file_format::MatrixSource::NONE;
 
 /// The spec the tracker writes for a sound written as a set file writes one.
 fn spec_of(sound: &str) -> Data {

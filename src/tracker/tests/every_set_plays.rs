@@ -6,13 +6,14 @@
 //! value with an allowed one near it, and played into clips without a problem. What lasts of a change to the layout or a
 //! new setting is held here, by every set, rather than by a test of the change.
 
+use llamatron_names::words;
 use llamatron_tracker::document::Document;
 use std::path::{Path, PathBuf};
 
 /// The folders of sets the tests and the comparisons start from, each beside the crate it serves.
 const SET_FOLDERS: [&str; 2] = ["tests/data", "../compare/sets"];
 /// A set file's extension.
-const SET_EXTENSION: &str = "yml";
+const SET_EXTENSION: &str = words::YML;
 
 /// Every set file in the folders.
 fn every_set() -> Vec<PathBuf> {

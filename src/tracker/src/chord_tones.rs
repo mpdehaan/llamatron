@@ -22,7 +22,7 @@ const SCALE_CHORD_ROLES: [(i64, &str); 2] = [(2, "third"), (4, "fifth")];
 /// The notes of a scale where the roll's scale isn't known, which a Bass counts in.
 const DIATONIC_NOTES: i64 = 7;
 const SHARP: &str = "#";
-const FLAT: &str = "b";
+const FLAT: &str = file_format::Accidental::FLAT;
 
 /// The half steps a sharp or flat moves a note.
 fn accidental_steps(accidental: Option<&str>) -> i64 {

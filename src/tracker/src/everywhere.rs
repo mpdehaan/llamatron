@@ -6,12 +6,13 @@
 
 use crate::app::App;
 use crate::screens::dialogs::{Answer, ConfirmDialog, MessageDialog, PromptDialog, QuitDialog, SAVE_THEN_QUIT};
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::{errors, messages, named};
 use std::path::{Path, PathBuf};
 
 /// Where Save as offers to save a set that has no file yet.
-const DEFAULT_SAVE_FOLDER: &str = "songs";
+const DEFAULT_SAVE_FOLDER: &str = file_format::Section::SONGS;
 const DEFAULT_SAVE_NAME: &str = "untitled.yml";
 /// The ending a set's file is given where its name has none, and the endings a set's file may have.
 const SET_SUFFIX: &str = ".yml";

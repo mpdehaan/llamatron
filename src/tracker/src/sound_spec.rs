@@ -11,7 +11,9 @@ use llamatron_model::file::data::Data;
 use llamatron_model::objects::lfo_speed;
 use llamatron_model::schema::generated::file_format::MatrixSetting;
 use llamatron_model::schema::generated::limits::LFO_COUNT;
+use llamatron_names::file_format;
 use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::marks;
 
 const MILLISECONDS: f64 = 1000.0;
@@ -23,13 +25,13 @@ const FOUR_POLES: i64 = 4;
 /// The pulse shares of the chip's duty cycles, and the rise and fall in seconds of each vactrol cell.
 const DUTY_SHARES: [(&str, f64); 4] = [("eighth", 0.125), ("quarter", 0.25), ("half", 0.5), ("three_quarters", 0.75)];
 const ENVELOPE_PARTS: [&str; 3] = ["env1", "env2", "env3"];
-const OSCILLATORS: &str = "oscillators";
-const AMP: &str = "amp";
+const OSCILLATORS: &str = spec::OSCILLATORS;
+const AMP: &str = spec::AMP;
 /// The low-pass gate's type in the backend's spec, and its type on the Amp tab.
-const LOW_PASS_GATE: &str = "low_pass_gate";
-const AMP_GATE: &str = "low_pass_gate_amp";
-const FILTER: &str = "filter";
-const UP: &str = "up";
+const LOW_PASS_GATE: &str = spec::LOW_PASS_GATE;
+const AMP_GATE: &str = words::LOW_PASS_GATE_AMP;
+const FILTER: &str = spec::FILTER;
+const UP: &str = file_format::ChipDirection::UP;
 
 /// The sound as the backend compiles it; a drum plays at its own pitch on drums_from, the set's drum tuning note.
 pub fn synth_spec(sound: &Sound, drums_from: i64) -> Data {
@@ -111,7 +113,7 @@ fn oscillators(sound: &Sound) -> Data {
 /// LO, Osc 3's range for an LFO, four octaves under.
 const FOOTAGES: &[(&str, i128)] = &[("lo", -48), ("32", -24), ("16", -12), ("8", 0), ("4", 12), ("2", 24)];
 /// An Asheville oscillator's Speed that plays the note at its Range, rather than an LFO's rate.
-const AUDIO_SPEED: &str = "audio";
+const AUDIO_SPEED: &str = words::AUDIO;
 /// A knob of the panel's 0 to 10, as the fraction the backend reads.
 const PANEL_TOP: f64 = 10.0;
 
@@ -196,8 +198,8 @@ fn basic_oscillators(sound: &Sound) -> Data {
 }
 
 /// A part's Circuit, and its modded choice, which shows the classic modifications' settings.
-const CIRCUIT: &str = "circuit";
-const MODDED: &str = "modded";
+const CIRCUIT: &str = words::CIRCUIT;
+const MODDED: &str = words::MODDED;
 
 /// A setting's default for a type of part, as a new part of that type holds it.
 fn default_of(kind: &str, name: &str) -> Data {
@@ -215,7 +217,7 @@ fn glide(sound: &Sound) -> Data {
 }
 
 /// The envelope type that is no envelope, as the backend names it.
-const NO_ENVELOPE: &str = "none";
+const NO_ENVELOPE: &str = spec::NONE;
 
 /// An envelope part, as the backend's envelopes read it.
 fn envelope(sound: &Sound, part: &str) -> Data {
@@ -378,9 +380,9 @@ fn filter(sound: &Sound) -> Data {
 
 /// How a Mod Matrix source names a Modulators slot, followed by its number and, for one of a Snail's outputs, the
 /// output's name.
-const LFO_SOURCE_PREFIX: &str = "lfo";
+const LFO_SOURCE_PREFIX: &str = spec::LFO;
 /// A slot's Type that holds a Snail.
-const SNAIL_TYPE: &str = "snail";
+const SNAIL_TYPE: &str = spec::SNAIL;
 /// A Snail's lane's speed: its setting, held as a whole number of its unit, the seconds a unit lasts, its lowest,
 /// highest and default in its units, and how its value is shown.
 pub struct LaneSpeed {
@@ -506,7 +508,7 @@ fn effects(sound: &Sound) -> Data {
 }
 
 /// MultiTap's effect name, and each division of the beat a synced tap may take with the quarter notes it lasts.
-const MULTITAP: &str = "multitap";
+const MULTITAP: &str = spec::MULTITAP;
 const THIRD: f64 = 1.0 / 3.0;
 pub const DELAY_DIVISIONS: [(&str, f64); 13] = [
     ("1/32", 0.125),

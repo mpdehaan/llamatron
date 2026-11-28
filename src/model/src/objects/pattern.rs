@@ -273,8 +273,8 @@ const NOTE_ROWS: [&str; 18] = [
     "hd_note",
 ];
 const RESTART_ROWS: [&str; 5] = ["restart_c1", "restart_c2", "restart_c3", "restart_c4", "restart_c5"];
-const TIE: &str = "tie";
-const VELOCITY: &str = "velocity";
+const TIE: &str = file_format::Row::TIE;
+const VELOCITY: &str = file_format::TrackSetting::VELOCITY;
 
 /// A step's value as a step of its own may hold it: a list is a copy, so that two steps never share one.
 fn own_step_value(value: &Data) -> Data {

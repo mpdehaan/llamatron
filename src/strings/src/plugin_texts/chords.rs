@@ -6,9 +6,11 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Chords";
-pub const MSG_KIND_WORD: &str = "chords";
-pub const MSG_CAPTION_WORD: &str = "chords";
+pub const MSG_KIND_WORD: &str = words::CHORDS;
+pub const MSG_CAPTION_WORD: &str = words::CHORDS;
 pub const MSG_CHANGED_WORD: &str = "Chords";
 pub const MSG_MODE_LABEL: &str = "Mode";
 pub const MSG_VOICING_MODE: &str = "Voicing";

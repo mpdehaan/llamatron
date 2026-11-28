@@ -6,8 +6,10 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::spec;
+
 pub const MSG_LABEL: &str = "Drift";
-pub const MSG_KIND_WORD: &str = "drift";
-pub const MSG_CAPTION_WORD: &str = "drift";
-pub const MSG_CHANGED_WORD: &str = "drift";
+pub const MSG_KIND_WORD: &str = spec::DRIFT;
+pub const MSG_CAPTION_WORD: &str = spec::DRIFT;
+pub const MSG_CHANGED_WORD: &str = spec::DRIFT;
 pub const HELP_PAGE: &str = "\nEvery: how often it triggers and picks new amounts. Steps to B: how many triggers it takes to reach the second version.\nDirection: forward stays at the second, loop starts again at the first, pendulum goes back and forth, brownian wanders.\nBelow, each value has two versions side by side. Left and Right move between them, [ and ] change one, ENTER types or picks,\nBksp clears. Vel+= and Prob are added to every note's; Degree + moves notes along the scale, and Degree random by a random\namount. Scale and Root take over the clip's scale with their prob. AX+= to DX+= add to the registers at each trigger.\n";

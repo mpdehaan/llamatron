@@ -19,11 +19,12 @@ use llamatron_model::schema::generated::limits::{MAX_SCALE_LENGTH, MAX_STEPS, MA
 use llamatron_model::schema::generated::midi::{MAX_VELOCITY, MIN_VELOCITY};
 use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, labels, legends, marks, messages, named};
 use std::cell::RefCell;
 
 /// What the cursor request says to send the rows view to its top.
-pub const TOP: &str = "top";
+pub const TOP: &str = words::TOP;
 /// The fewest steps a pattern is rolled or split into.
 const FIRST_ROLL: usize = 1;
 /// How many steps each new pattern of a split has unless told otherwise, and how many of their names a split lists.

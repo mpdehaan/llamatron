@@ -30,6 +30,7 @@ use llamatron_names::file_format;
 use llamatron_names::fill;
 #[cfg(test)]
 use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{errors, labels, legends, marks, messages, named, names};
 
 const NAME: usize = 0;
@@ -49,7 +50,7 @@ const ADD_ROW: usize = 99;
 /// How many ids each built-in tab's fields have to themselves, past the shared tabs' own.
 const BUILT_IN_IDS: usize = 1000;
 /// The morph style a clip takes where it names none.
-const FIRST_MORPH_STYLE: &str = "left";
+const FIRST_MORPH_STYLE: &str = words::LEFT;
 
 /// The answers the Add Pattern picker gives: a pattern the set has, or a new one; no pattern's name starts so.
 const ADD_EXISTING: &str = "\0existing";

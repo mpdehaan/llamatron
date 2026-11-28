@@ -11,8 +11,8 @@ pub const SPEEDS: &[(&str, f64, f64)] = &[("low", 0.01, 1.0), ("medium", 0.1, 20
 /// The Speeds by name, slowest first, as their picker lists them.
 pub const SPEED_NAMES: &[&str] = &["low", "medium", "high", "very_high"];
 /// The Speed a new LFO has, and the only one a Key ratio is offered at.
-pub const DEFAULT_SPEED: &str = "medium";
-pub const AUDIO_SPEED: &str = "very_high";
+pub const DEFAULT_SPEED: &str = spec::MEDIUM;
+pub const AUDIO_SPEED: &str = words::VERY_HIGH;
 pub const MOST_PERCENT: f64 = 100.0;
 /// The ratios to the note a Key LFO offers, as the file writes them, and the one a new one has.
 pub const RATIOS: &[&str] = &["1:4", "1:2", "1:1", "3:2", "2:1", "3:1", "4:1", "5:1", "6:1", "7:1", "8:1"];
@@ -61,6 +61,8 @@ pub fn hertz(speed: &str, percent: f64) -> f64 {
 }
 
 /// A ratio's multiple of the note's frequency, such as 1.5 for 3:2, or 1 for text that is not one.
+use llamatron_names::spec;
+use llamatron_names::words;
 pub fn ratio_multiple(ratio: &str) -> f64 {
     let Some((above, below)) = ratio.split_once(':') else { return 1.0 };
     match (above.trim().parse::<f64>(), below.trim().parse::<f64>()) {

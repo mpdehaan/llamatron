@@ -9,19 +9,20 @@
 use crate::preferences::TrackInstrumentDefault;
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, FLUIDSYNTH_DEVICE};
+use llamatron_names::file_format;
 
 /// The instrument's kinds and roles as the set file writes them.
-const OFF: &str = "off";
-const BUILT_IN: &str = "built_in";
-const NORMAL: &str = "normal";
-const PERCUSSION: &str = "percussion";
+const OFF: &str = file_format::InstrumentKind::OFF;
+const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
+const NORMAL: &str = file_format::InstrumentRole::NORMAL;
+const PERCUSSION: &str = file_format::InstrumentRole::PERCUSSION;
 /// The sound's engine key, and the engines a new track's built-in instrument plays: Basic, and MechaDrum, whose
 /// Machine starts on its Kick.
-const ENGINE: &str = "engine";
-const BASIC_ENGINE: &str = "basic";
-const DRUM_ENGINE: &str = "drum";
-const MACHINE: &str = "machine";
-const KICK: &str = "kick";
+const ENGINE: &str = file_format::SoundSetting::ENGINE;
+const BASIC_ENGINE: &str = file_format::OscillatorType::BASIC;
+const DRUM_ENGINE: &str = file_format::TrackSetting::DRUM;
+const MACHINE: &str = file_format::PartSetting::MACHINE;
+const KICK: &str = file_format::DrumMachine::KICK;
 /// General MIDI's first sound, the Acoustic Grand Piano, and the first MIDI channel.
 const GRAND_PIANO: i128 = 1;
 const FIRST_CHANNEL: i128 = 1;

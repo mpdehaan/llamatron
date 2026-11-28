@@ -9,6 +9,7 @@ use llamatron_model::file::corrections::Correction;
 use llamatron_model::file::data::Data;
 use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::objects::song::Song;
+use llamatron_names::words;
 use std::path::{Path, PathBuf};
 
 pub struct Document {
@@ -309,7 +310,7 @@ fn without_version(data: &Data) -> Data {
 }
 
 /// The set's name for its exports: its file's name without the ending, or untitled until it is saved.
-const UNTITLED: &str = "untitled";
+const UNTITLED: &str = words::UNTITLED;
 
 impl Document {
     /// The set's name, its file's name without the ending, or untitled until it is saved.

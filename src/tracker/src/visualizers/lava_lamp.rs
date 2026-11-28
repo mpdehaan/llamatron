@@ -23,10 +23,11 @@ use super::fields::{add_colour_disc, add_disc, blurred, ripple_step, Field};
 use super::picture::{Colour, Painter, Picture};
 use super::warp::rotozoomed;
 use super::{Hearing, FULL_VELOCITY};
+use llamatron_names::words;
 use std::collections::BTreeMap;
 use std::f64::consts::TAU;
 
-pub const OPTION: &str = "lava_lamp";
+pub const OPTION: &str = words::LAVA_LAMP;
 
 /// How much finer the simulation is than the big pixels, each way, and the colour steps the big pixels are rounded to.
 const SUPERSAMPLE: usize = 2;

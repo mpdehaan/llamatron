@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 const CONFIG_FOLDER: &str = ".llamatron";
 const CONFIG_FILE: &str = "settings.yml";
 /// The config file's key for Track Inst. Default.
-const TRACK_INSTRUMENT_DEFAULT: &str = "track_instrument_default";
+const TRACK_INSTRUMENT_DEFAULT: &str = words::TRACK_INSTRUMENT_DEFAULT;
 
 /// What a new track's own instrument plays through.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]

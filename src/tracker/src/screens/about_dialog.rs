@@ -12,6 +12,7 @@ use crate::page::Page;
 use crate::screens::dialogs::dialog_box;
 use crate::text::Text;
 use llamatron_math::python_random::PythonRandom;
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::named;
 use llamatron_strings::texts::about;
@@ -24,7 +25,7 @@ const BUBBLE_MARGIN: usize = 2;
 const EIGHT_BALL_CHANCE: f64 = 1.0 / 3.0;
 const QUOTE_LINES: usize = 4;
 /// The name the cow says.
-const PROGRAM_NAME: &str = "llamatron";
+const PROGRAM_NAME: &str = file_format::OctaveLabels::LLAMATRON;
 
 /// The cow with text in its speech bubble.
 fn cow_saying(text: &str) -> Vec<String> {

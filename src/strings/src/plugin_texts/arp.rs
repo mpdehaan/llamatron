@@ -6,10 +6,12 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Arpeggiator";
-pub const MSG_KIND_WORD: &str = "arp";
-pub const MSG_CAPTION_WORD: &str = "arpeggiator";
-pub const MSG_CHANGED_WORD: &str = "arp";
+pub const MSG_KIND_WORD: &str = words::ARP;
+pub const MSG_CAPTION_WORD: &str = words::ARPEGGIATOR;
+pub const MSG_CHANGED_WORD: &str = words::ARP;
 pub const MSG_NOTES_HEADING: &str = "Notes";
 pub const HELP_PAGE: &str = "\nStep: how long each note of the chord plays, the pattern's step size unless set.\nOrder: which way it goes through the chord. Random uses the seed.\nOctave range: plays the chord again in up to 4 octaves. Octave jump: up after the whole chord, or after each note.\nOffsets: the arp's own steps, like a groovebox's. Each moves its note along the scale, and a blank step is silent.\nENTER on Offsets opens them, and Bksp removes them.\n";
 pub const MSG_TAB_LABEL: &str = "Arp";

@@ -12,14 +12,14 @@ use crate::schema::generated::plugins::PLUGINS;
 use llamatron_names::file_format;
 
 /// The sections whose items a list of generators names: every plugin's, and the chains.
-const CHAINS: &str = "chains";
-const CHAIN_KIND: &str = "chain";
-const TRACKS: &str = "tracks";
-const SCENES: &str = "scenes";
-const SONGS: &str = "songs";
-const PATTERNS: &str = "patterns";
-const GENERATOR_ORDER: &str = "generator_order";
-const BUILT_IN: &str = "built_in";
+const CHAINS: &str = file_format::Section::CHAINS;
+const CHAIN_KIND: &str = file_format::FileLayout::CHAIN;
+const TRACKS: &str = file_format::Section::TRACKS;
+const SCENES: &str = file_format::Section::SCENES;
+const SONGS: &str = file_format::Section::SONGS;
+const PATTERNS: &str = file_format::Section::PATTERNS;
+const GENERATOR_ORDER: &str = file_format::SetlistSetting::GENERATOR_ORDER;
+const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
 
 /// Each kind of object's settings that name an item of a section, as the Python's REFERENCES give them; the settings that
 /// list generators are the generators' own, below.
@@ -368,9 +368,9 @@ fn song_mut<'a>(set: &'a mut Data, song: &str) -> Option<&'a mut Data> {
 // Arrange's edits of a song's scenes, tracks and clips (the Python song.py's and scene.py's).
 
 /// The setting that names a scene, and those that name a clip's one pattern or its several.
-const SCENE_NAME: &str = "name";
-const CLIP_PATTERN: &str = "pattern";
-const CLIP_PATTERNS: &str = "patterns";
+const SCENE_NAME: &str = file_format::FileLayout::NAME;
+const CLIP_PATTERN: &str = file_format::ClipSlotSetting::PATTERN;
+const CLIP_PATTERNS: &str = file_format::Section::PATTERNS;
 
 /// The scenes of a song in a set's data, to change.
 fn scenes_mut<'a>(set: &'a mut Data, song: &str) -> Option<&'a mut Vec<Data>> {

@@ -1341,8 +1341,8 @@ fn drift_settings(setlist: &Setlist) -> HashMap<String, Data> {
 /// What the draws' seed adds, so that their random values draw apart from everything else.
 const REGISTER_SEED_OFFSET: i128 = 7;
 /// The rows naming a Stop's and a Restart's register, which say a step holds one.
-const STOP_REGISTER_ROW: &str = "stop_c1";
-const RESTART_REGISTER_ROW: &str = "restart_c1";
+const STOP_REGISTER_ROW: &str = file_format::Row::STOP_C1;
+const RESTART_REGISTER_ROW: &str = file_format::Row::RESTART_C1;
 
 /// A clip played to count what its steps draw, with what they draw.
 type Counted = (Clip, Vec<Change>);

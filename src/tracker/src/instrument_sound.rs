@@ -10,12 +10,12 @@ use llamatron_model::objects::setlist::Instrument;
 use llamatron_model::schema::generated::file_format::InstrumentSetting;
 use llamatron_names::spec;
 /// A sound's list of LFOs.
-const LFOS: &str = "lfos";
+const LFOS: &str = spec::LFOS;
 
 /// The envelopes' parts, in the order a sound's list of envelopes holds them.
 pub const ENVELOPE_PARTS: [&str; 3] = ["env1", "env2", "env3"];
-const TYPE: &str = "type";
-const ENGINE: &str = "engine";
+const TYPE: &str = spec::TYPE;
+const ENGINE: &str = spec::ENGINE;
 
 impl Preset {
     pub fn to_data(self) -> Data {

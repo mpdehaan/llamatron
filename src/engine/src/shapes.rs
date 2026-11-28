@@ -25,14 +25,14 @@ const ON_AN_EIGHTH: i64 = 3;
 const ON_A_SIXTEENTH: i64 = 4;
 const FINER: i64 = 5;
 const ACCENTED: i64 = ON_A_BEAT;
-pub const DENSITY: &str = "density";
-pub const SWELL: &str = "swell";
-pub const ARTICULATE: &str = "articulate";
+pub const DENSITY: &str = file_format::Shape::DENSITY;
+pub const SWELL: &str = file_format::Shape::SWELL;
+pub const ARTICULATE: &str = file_format::Shape::ARTICULATE;
 /// The shapes, in the order a file and a reshaping take them; Density and Articulate a clip or scene may set itself.
 pub const SHAPES: &[&str] = &[DENSITY, SWELL, ARTICULATE];
 pub const PLACED_SHAPES: &[&str] = &[DENSITY, ARTICULATE];
-const REPEAT: &str = "repeat";
-const BOUNCE: &str = "bounce";
+const REPEAT: &str = file_format::SceneSetting::REPEAT;
+const BOUNCE: &str = file_format::ShapeThen::BOUNCE;
 
 /// One shape as set somewhere: its start and end percentages, its over in whole notes or None for the whole span, its then,
 /// and a Swell's accent.

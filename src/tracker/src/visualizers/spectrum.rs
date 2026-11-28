@@ -13,8 +13,9 @@
 use super::picture::{colour_style, filled_style, Colour};
 use super::{FrameClock, Hearing, Mode, FULL_VELOCITY};
 use crate::text::Text;
+use llamatron_names::words;
 
-pub const OPTION: &str = "spectrum";
+pub const OPTION: &str = words::SPECTRUM;
 
 /// The bars: each this many columns wide with a gap after it, and the pitches they span, low to high.
 const BAR_COLUMNS: usize = 2;

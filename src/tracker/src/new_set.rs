@@ -10,6 +10,7 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::file_format::{
     ClipSlotSetting, FileLayout, PatternSetting, Row, ScaleSetting, Section, SetlistSetting, SongSetting, TrackSetting,
 };
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::named;
 use llamatron_strings::names;
@@ -18,10 +19,10 @@ use llamatron_strings::names;
 const STEP_SIZE: &str = "1/16";
 const DEFAULT_OCTAVE: i128 = 5;
 const DEFAULT_DRUM_OCTAVE: i128 = 3;
-const OCTAVE_LABELS: &str = "live";
+const OCTAVE_LABELS: &str = file_format::OctaveLabels::LIVE;
 /// The scale: C major.
 const ROOT: &str = "C";
-const SCALE_TYPE: &str = "major";
+const SCALE_TYPE: &str = file_format::Quality::MAJOR;
 /// The song's tempo, and the pattern's length and the steps of it that sound the root, one a beat.
 const TEMPO: i128 = 120;
 const STEPS: usize = 16;

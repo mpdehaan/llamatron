@@ -6,9 +6,11 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Shapes";
-pub const MSG_KIND_WORD: &str = "shapes";
-pub const MSG_CAPTION_WORD: &str = "shapes";
+pub const MSG_KIND_WORD: &str = words::SHAPES;
+pub const MSG_CAPTION_WORD: &str = words::SHAPES;
 pub const MSG_CHANGED_WORD: &str = "Shapes";
 pub const MSG_SWELL_ACCENT_LABEL: &str = "Swell accent";
 pub const HELP_PAGE: &str = "\nShapes a section over time: Density, how many notes play; Swell, how loud; Articulate, how long each sounds.\nEach runs from its Start to its End, in percent, over its Over, then holds, repeats or bounces back by Then.\nA shape whose Start and End are both blank does nothing. Swell accent makes the strong beats louder.\n";

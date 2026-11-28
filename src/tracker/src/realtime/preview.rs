@@ -35,7 +35,7 @@ const MIN_GM_SOUND: i64 = 1;
 const MIDDLE_PAN: i64 = 64;
 const CHANNEL_OFFSET: i64 = 1;
 const ONE_PASS: i64 = 1;
-const CLIP_RESTART: &str = "clip_restart";
+const CLIP_RESTART: &str = file_format::LiveResponsiveness::CLIP_RESTART;
 
 /// A sound is tried once through.
 const TRIAL_PASSES: i64 = 1;
@@ -43,7 +43,7 @@ const TRIAL_PASSES: i64 = 1;
 const TRIAL_VELOCITY: i128 = 100;
 const HALF_STEPS_PER_OCTAVE: i64 = 12;
 const SHARP_NAMES: [&str; 12] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const MIDI_KIND: &str = "midi";
+const MIDI_KIND: &str = file_format::InstrumentKind::MIDI;
 
 /// What the preview plays: a pattern of the set, a clip of the song through General MIDI, an instrument's preview
 /// pattern through the instrument, or a sound being tried, by what its picker tells it by.

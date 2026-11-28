@@ -135,8 +135,8 @@ fn setting_limits(kind: &str, setting: &str) -> (i64, i64) {
 }
 
 /// The ends of a voicing's range of octaves, each kept from passing the other.
-const LOWEST_OCTAVE: &str = "lowest_octave";
-const HIGHEST_OCTAVE: &str = "highest_octave";
+const LOWEST_OCTAVE: &str = file_format::TrackSetting::LOWEST_OCTAVE;
+const HIGHEST_OCTAVE: &str = file_format::TrackSetting::HIGHEST_OCTAVE;
 
 /// What a drift's scale or root may be, (none) aside: the set's scales by name, or the roots.
 fn drift_choices(app: &App, setting: &str) -> Vec<String> {

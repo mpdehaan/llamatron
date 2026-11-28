@@ -41,7 +41,7 @@ pub struct SceneNotes {
 }
 
 /// The rows of a pattern that change what plays by chance or by a statement, which a scene as written leaves out.
-const PROBABILITY: &str = "probability";
+const PROBABILITY: &str = file_format::Row::PROBABILITY;
 /// A scene's and a clip's Shapes settings, which work after the patterns.
 const SHAPE_SETTINGS: [&str; 8] = [
     file_format::SceneSetting::DENSITY_START,
@@ -53,11 +53,11 @@ const SHAPE_SETTINGS: [&str; 8] = [
     file_format::SceneSetting::ARTICULATE_OVER,
     file_format::SceneSetting::ARTICULATE_THEN,
 ];
-const CHAINS: &str = "chains";
-const TRACKS: &str = "tracks";
-const SCENES: &str = "scenes";
-const SONGS: &str = "songs";
-const PATTERNS: &str = "patterns";
+const CHAINS: &str = file_format::Section::CHAINS;
+const TRACKS: &str = file_format::Section::TRACKS;
+const SCENES: &str = file_format::Section::SCENES;
+const SONGS: &str = file_format::Section::SONGS;
+const PATTERNS: &str = file_format::Section::PATTERNS;
 
 /// A set's data with everything that works after the patterns taken out, so that a song is realized as written: the
 /// chains, the grooves, the shapes, and the patterns' probability and the steps' statements.

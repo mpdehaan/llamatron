@@ -6,8 +6,10 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Hocket";
-pub const MSG_KIND_WORD: &str = "hocket";
-pub const MSG_CAPTION_WORD: &str = "hocket";
+pub const MSG_KIND_WORD: &str = words::HOCKET;
+pub const MSG_CAPTION_WORD: &str = words::HOCKET;
 pub const MSG_CHANGED_WORD: &str = "Hocket";
 pub const HELP_PAGE: &str = "\nSource track: the track of the current song whose notes the hocketing tracks take turns at. Renaming that track renames\nit here too. A track the song lacks hands out nothing.\nRestart: every clip starts the turns again with the first track at each clip the source plays; on new scene and whole\nsong carry them on.\nEach track still plays its own pattern's notes besides those it is handed.\n";

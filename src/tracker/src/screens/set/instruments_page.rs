@@ -42,10 +42,10 @@ const COLUMNS: [ListColumn; 4] = [
         align: Align::Right,
     },
 ];
-const MIDI: &str = "midi";
-const OFF: &str = "off";
-const BUILT_IN: &str = "built_in";
-const FIRST_ENGINE: &str = "basic";
+const MIDI: &str = file_format::InstrumentKind::MIDI;
+const OFF: &str = file_format::InstrumentKind::OFF;
+const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
+const FIRST_ENGINE: &str = file_format::OscillatorType::BASIC;
 
 /// What an instrument is: off, a MIDI device and channel, or a sound llamatron makes; a file that leaves it out means MIDI.
 fn kind_of(instrument: &Instrument) -> &str {

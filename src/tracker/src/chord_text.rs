@@ -9,6 +9,7 @@ use llamatron_model::schema::generated::file_format::{ChordSymbol, ACCIDENTALS, 
 use llamatron_model::values::generated::note::{FLAT_NAMES, SHARP_NAMES};
 use llamatron_model::values::note::semitones_above_c;
 use llamatron_model::values::scale::ScaleType;
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::{labels, marks, messages, named};
 
@@ -19,7 +20,7 @@ const MOST_SIGNS: i64 = 1;
 const ROOT_WITHOUT_A_SCALE: &str = "C";
 const SHAPE_WITHOUT_A_SCALE: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];
 const PLACED_SCALE_SIZE: usize = 7;
-const FLAT: &str = "b";
+const FLAT: &str = file_format::Accidental::FLAT;
 /// How many letters a note above the root stands past it, by its half steps within the octave, and past the octave.
 const LETTER_STEPS_WITHIN_THE_OCTAVE: [usize; 12] = [0, 1, 1, 2, 2, 3, 4, 4, 4, 5, 6, 6];
 const LETTER_STEPS_PAST_THE_OCTAVE: [(i64, usize); 7] = [(1, 1), (2, 1), (3, 1), (5, 3), (6, 3), (8, 5), (9, 5)];

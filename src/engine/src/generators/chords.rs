@@ -25,27 +25,28 @@ use llamatron_model::schema::generated::midi::{MAX_MIDI_NUMBER, MIN_MIDI_NUMBER}
 use llamatron_model::values::scale::{Scale, ScaleType};
 use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 
-pub const MODE: &str = "mode";
-pub const CHORDS_FROM: &str = "chords_from";
-const VOICING: &str = "voicing";
-const PROGRESSION: &str = "progression";
-const FOLLOW_PROGRESSION: &str = "follow_progression";
-const AUTO_CHORD: &str = "auto_chord";
+pub const MODE: &str = file_format::PartSetting::MODE;
+pub const CHORDS_FROM: &str = words::CHORDS_FROM;
+const VOICING: &str = words::VOICING;
+const PROGRESSION: &str = words::PROGRESSION;
+const FOLLOW_PROGRESSION: &str = words::FOLLOW_PROGRESSION;
+const AUTO_CHORD: &str = words::AUTO_CHORD;
 /// Auto chord's chord, and whether the note ends it.
-const CHORD: &str = "chord";
-const NOTE_ON_TOP: &str = "note_on_top";
-const EVERY: &str = "every";
-const CHORDS: &str = "chords";
-const ACCIDENTAL_ROW: &str = "accidentals";
-const INVERSIONS: &str = "inversions";
-const SCALES: &str = "scales";
-const QUALITIES: &str = "qualities";
-const TENSION_ROW: &str = "tensions";
-const VOICE_LEADING: &str = "voice_leading";
-const LOWEST_OCTAVE: &str = "lowest_octave";
-const HIGHEST_OCTAVE: &str = "highest_octave";
-const ROOT_IN_BASS: &str = "root_in_bass";
+const CHORD: &str = file_format::Row::CHORD;
+const NOTE_ON_TOP: &str = words::NOTE_ON_TOP;
+const EVERY: &str = words::EVERY;
+const CHORDS: &str = words::CHORDS;
+const ACCIDENTAL_ROW: &str = words::ACCIDENTALS;
+const INVERSIONS: &str = words::INVERSIONS;
+const SCALES: &str = file_format::Section::SCALES;
+const QUALITIES: &str = words::QUALITIES;
+const TENSION_ROW: &str = words::TENSIONS;
+const VOICE_LEADING: &str = words::VOICE_LEADING;
+const LOWEST_OCTAVE: &str = file_format::TrackSetting::LOWEST_OCTAVE;
+const HIGHEST_OCTAVE: &str = file_format::TrackSetting::HIGHEST_OCTAVE;
+const ROOT_IN_BASS: &str = words::ROOT_IN_BASS;
 /// A chord's places above its root, in a scale of seven notes: the 9th, 3rd, 11th, 5th, 13th and 7th.
 const ROOT_PLACE: i64 = 0;
 const NINTH_PLACE: i64 = 1;

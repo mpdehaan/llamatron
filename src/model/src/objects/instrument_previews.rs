@@ -14,6 +14,7 @@
 use crate::file::data::Data;
 use crate::objects::named::NamedScale;
 use crate::schema::generated::file_format::{PatternSetting, Row, ScaleSetting};
+use llamatron_names::file_format;
 use std::sync::OnceLock;
 
 /// What a preview's key starts with: a character no name typed or read from a file holds, so that no pattern of the set
@@ -29,7 +30,7 @@ const MAJOR_STEPS: [i128; 16] = [1, 3, 5, 6, 8, 10, 12, 13, 13, 12, 10, 8, 6, 5,
 const STEPS_IN_AN_OCTAVE: i128 = 12;
 const QUARTER_STEPS: usize = 4;
 const PREVIEW_ROOT: &str = "C";
-const CHROMATIC: &str = "chromatic";
+const CHROMATIC: &str = file_format::ScaleKind::CHROMATIC;
 
 /// The key the pattern editor reaches an instrument's preview pattern by, in place of a pattern's name.
 pub fn preview_key(instrument: &str) -> String {

@@ -8,21 +8,23 @@
 use crate::app::App;
 use crate::screens::dialogs::{Answer, ConfirmDialog, ExportDialog, MessageDialog, EXPORT_CHOICES};
 use crate::uses::scene_label;
+use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, messages, named, names};
 use std::path::{Path, PathBuf};
 
 /// The kinds of export, as their files name them.
-const ABLETON: &str = "ableton";
-const STEMS: &str = "stems";
-const MIDI_FILE: &str = "midi";
-const CLIP_TREE: &str = "cliptree";
-const GENERAL_MIDI: &str = "gm";
-const WAV: &str = "wav";
+const ABLETON: &str = words::ABLETON;
+const STEMS: &str = words::STEMS;
+const MIDI_FILE: &str = file_format::InstrumentKind::MIDI;
+const CLIP_TREE: &str = words::CLIPTREE;
+const GENERAL_MIDI: &str = words::GM;
+const WAV: &str = words::WAV;
 /// How many never-ending scenes the loop errors dialog lists, the rest counted.
 const LOOP_ERRORS_SHOWN: usize = 10;
 /// The row that holds a step's statement that stops its clip.
-const STOP_ROW: &str = "stop_c1";
+const STOP_ROW: &str = file_format::Row::STOP_C1;
 
 /// Ask which kind of export to write for the current song, and write it; a set with no file is saved first.
 pub fn export(app: &mut App) {

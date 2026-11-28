@@ -11,21 +11,23 @@ use llamatron_model::objects::setlist::Setlist;
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_model::schema::generated::settings::{Described, Plain, Setting, CLIP_SLOT, INSTRUMENT, PATTERN, SCENE, SONG, TRACK};
 use llamatron_names::file_format;
+use llamatron_names::spec;
+use llamatron_names::words;
 
 /// What the small set names its things, and the seed it renders with.
 const SCALE: &str = "C Major";
-const PATTERN_NAME: &str = "tune";
-const INSTRUMENT_NAME: &str = "keys";
-const SONG_NAME: &str = "song";
-const TRACK_NAME: &str = "lead";
-const SCENE_NAME: &str = "one";
-const GENERATOR_NAME: &str = "tried";
+const PATTERN_NAME: &str = spec::TUNE;
+const INSTRUMENT_NAME: &str = words::KEYS;
+const SONG_NAME: &str = spec::SONG;
+const TRACK_NAME: &str = words::LEAD;
+const SCENE_NAME: &str = words::ONE;
+const GENERATOR_NAME: &str = words::TRIED;
 const SEED: i64 = 7;
 /// The pattern's steps and the degrees they play.
 const STEPS: i128 = 4;
 const DEGREES: [i128; 4] = [1, 2, 3, 4];
 /// How the name of the top of a range of settings starts, such as highest_octave.
-const TOP_OF_A_RANGE: &str = "highest";
+const TOP_OF_A_RANGE: &str = spec::HIGHEST;
 /// A length every length setting takes, a quarter note.
 const A_QUARTER: &str = "1/4";
 

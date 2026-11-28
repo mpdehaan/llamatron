@@ -15,9 +15,10 @@ use super::{FrameClock, Hearing, Mode, REFERENCE_SECONDS_PER_BEAT};
 use crate::text::Text;
 use llamatron_model::schema::generated::file_format::LIVE_OCTAVE_OFFSET;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::texts::visualizers;
 
-pub const OPTION: &str = "piano_roll";
+pub const OPTION: &str = words::PIANO_ROLL;
 
 /// How fast the notes roll, in columns a beat, so a sixteenth is one column.
 const COLUMNS_PER_BEAT: f64 = 4.0;

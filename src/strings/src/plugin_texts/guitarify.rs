@@ -6,25 +6,28 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+use llamatron_names::file_format;
+
 pub const MSG_LABEL: &str = "Guitarify";
-pub const MSG_KIND_WORD: &str = "guitar";
-pub const MSG_CAPTION_WORD: &str = "guitarify";
+pub const MSG_KIND_WORD: &str = words::GUITAR;
+pub const MSG_CAPTION_WORD: &str = words::GUITARIFY;
 pub const MSG_CHANGED_WORD: &str = "Guitarify";
 pub const MSG_MODE_LABEL: &str = "Mode";
 pub const MSG_GUITAR_MODE: &str = "Guitar";
 pub const MSG_STRUM_MODE: &str = "Strum";
 pub const MSG_DIRECTION_LABEL: &str = "Direction";
 pub const MSG_BY_THE_BEAT: &str = "by the beat";
-pub const MSG_DOWN: &str = "down";
-pub const MSG_UP: &str = "up";
+pub const MSG_DOWN: &str = file_format::ChipDirection::DOWN;
+pub const MSG_UP: &str = file_format::ChipDirection::UP;
 pub const MSG_DOWN_UP: &str = "down up";
 pub const MSG_LEFT_HAND_HEADING: &str = "Left Hand";
 pub const MSG_RIGHT_HAND_HEADING: &str = "Right Hand";
 pub const MSG_STRUM_HEADING: &str = "Strum";
-pub const MSG_OPEN_POSITION: &str = "open";
+pub const MSG_OPEN_POSITION: &str = file_format::PartSetting::OPEN;
 pub const MSG_NO_CAPO: &str = "(none)";
 pub const MSG_FRET: &str = "fret {number}";
 pub const MSG_MILLISECONDS: &str = "{number} ms";
-pub const MSG_EVERY_STRING: &str = "all";
+pub const MSG_EVERY_STRING: &str = words::ALL;
 pub const HELP_PAGE: &str = "\nMode: Guitar plays a clip's chords and notes as a guitar does; Strum plays them as written and strums each chord at the very end.\nStrum mode: Direction, by the beat, down, up or down up, and the Spread, Fade, Loose timing and Upstroke strings below.\nGuitar mode, Left Hand: a chord is held as a hand holds it, one note a string, in the tuning, within four frets of the position,\nabove the capo. Single notes: leave, power chord or scale chord. Right Hand: the bar of strokes is played on whatever sounds;\nENTER on Bar edits it. Let ring: a string sounds until struck again. Each hand can be switched off.\nSpread, Fade and Loose timing: the time between a strum's strings, how much quieter each is, and how uneven the gaps are.\n";
 pub const MSG_TAB_LABEL: &str = "Guitarify";

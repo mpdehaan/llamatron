@@ -345,7 +345,7 @@ fn pan_control_of(percent: i64) -> i64 {
 }
 
 /// The key of a keyswitch slot's MIDI note in the file.
-const KEYSWITCH_NOTE: &str = "note";
+const KEYSWITCH_NOTE: &str = file_format::KeyswitchSetting::NOTE;
 
 /// The highest value a MIDI CC carries, and half of one percent's share of it, rounding a pan to its nearest CC value.
 const HIGHEST_CONTROL_VALUE: i64 = 127;

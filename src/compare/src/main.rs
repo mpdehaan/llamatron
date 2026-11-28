@@ -576,7 +576,7 @@ fn live_edit_lines(setlist: &llamatron_model::objects::setlist::Setlist, name: &
 }
 
 const LIVE_EDIT_TEMPO: i128 = 150;
-const LIVE_EDIT_SCENE: &str = "live_edit";
+const LIVE_EDIT_SCENE: &str = words::LIVE_EDIT;
 const LIVE_EDIT_FIRST_SECONDS: f64 = 2.0;
 const LIVE_EDIT_GAP_SECONDS: f64 = 1.0;
 const LIVE_EDIT_LAST_SECONDS: f64 = 2.0;
@@ -1101,12 +1101,12 @@ fn edits_of(setlist: &llamatron_model::objects::setlist::Setlist) -> String {
 }
 
 /// The name the edits step gives a scene or a track it adds.
-const ADDED: &str = "added";
+const ADDED: &str = words::ADDED;
 
 /// How many of a set's patterns the pattern_edits step edits, and the direction and group it gives them.
 const EDITED_PATTERNS: usize = 3;
-const EDITED_DIRECTION: &str = "pendulum";
-const EDITED_GROUP: &str = "edited";
+const EDITED_DIRECTION: &str = file_format::Direction::PENDULUM;
+const EDITED_GROUP: &str = words::EDITED;
 const DRUM_DEGREE: &str = "C";
 
 /// Each of a set's first patterns after each of the pattern_edits step's edits on a fresh copy, as JSON.
@@ -1415,7 +1415,7 @@ const SHOT_COLUMNS: usize = 112;
 const SHOT_ROWS: usize = 32;
 /// The name in the picture's title bar, and what the version is written as, so that a version bump alone changes no
 /// screenshot.
-const SHOT_TITLE: &str = "llamatron";
+const SHOT_TITLE: &str = file_format::OctaveLabels::LLAMATRON;
 const VERSION_PLACEHOLDER: &str = "$VERSION";
 /// The set most shots show, and the others' sets, from the top folder.
 const SHOT_SET: &str = "examples/by_genre/electronic/minimal_techno.yml";
@@ -1808,7 +1808,7 @@ the place. The keys that work everywhere are listed once:
 /// A kind of place and the keys offered there, each the name its legend shows and what it does.
 type PlaceKeys = (String, Vec<(String, String)>);
 /// What a place is called where its page names no kind of place.
-const ANY_PLACE: &str = "anywhere";
+const ANY_PLACE: &str = words::ANYWHERE;
 
 /// Write KEYMAP.md from a walk of the program on the sets named, separated by commas: each page's keys at each kind of place.
 fn keymap(sets: Option<&str>, out: Option<&str>) -> ExitCode {

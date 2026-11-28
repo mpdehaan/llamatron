@@ -9,6 +9,7 @@ use crate::objects::holder::{in_table, passed_over};
 use crate::schema::checking::{check, InvalidValue};
 use crate::schema::generated::file_format::{ChainSetting, GrooveSetting, ScaleSetting};
 use crate::schema::generated::settings::{self as tables, Setting};
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_names::spec;
 use llamatron_names::words;
@@ -217,8 +218,8 @@ pub fn plugin_table(plugin: &str) -> Option<&'static [Setting]> {
 pub const DEFAULT_VOICING_LOWEST_OCTAVE: i64 = 4;
 pub const DEFAULT_VOICING_HIGHEST_OCTAVE: i64 = 6;
 /// The Chords generator's settings of the octaves it voices between.
-const VOICING_LOWEST_OCTAVE: &str = "lowest_octave";
-const VOICING_HIGHEST_OCTAVE: &str = "highest_octave";
+const VOICING_LOWEST_OCTAVE: &str = file_format::TrackSetting::LOWEST_OCTAVE;
+const VOICING_HIGHEST_OCTAVE: &str = file_format::TrackSetting::HIGHEST_OCTAVE;
 
 /// Refuse a Chords generator voicing from an octave above the one it voices up to, once each is checked on its own.
 fn checked_voicing_range(data: &Data) -> Result<(), InvalidValue> {

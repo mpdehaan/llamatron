@@ -31,21 +31,23 @@ use llamatron_model::schema::generated::limits::{
     MAX_KNOB, MAX_MATRIX_AMOUNT, MAX_PAN, MAX_SID_RATE, MAX_TAP_FEEDBACK, MAX_TAP_LOW_CUT, MAX_TAP_MS, MAX_TAP_TONE, MAX_VOICES, MAX_VOLUME_PERCENT, MIN_BITS,
     MIN_GM_SOUND, MIN_INSTRUMENT_LATENCY, MIN_KEYSWITCH_LEAD, MIN_PAN, MIN_TAP_LOW_CUT, MIN_TAP_TONE, MOST_BAX_DECIBELS,
 };
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_names::spec;
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, messages, named};
 
 const NAME: usize = 0;
 const GM_CELLS: usize = 12;
 const BLOCK_CELLS: usize = 8;
 /// A Mod Matrix route's Polarity that moves its destination from nothing to its amount.
-const UNIPOLAR: &str = "unipolar";
+const UNIPOLAR: &str = spec::UNIPOLAR;
 /// Which Modulators slots hold a Snail, by place, and none holding one.
 type Snails = [bool; LFO_COUNT as usize];
 #[cfg(test)]
 const NO_SNAILS: Snails = [false; LFO_COUNT as usize];
 /// How a Mod Matrix source or destination names a Modulators slot, followed by its number.
-const SLOT_PREFIX: &str = "lfo";
+const SLOT_PREFIX: &str = spec::LFO;
 
 /// Whether the Mod Matrix offers a source or destination for what its Modulators slot holds: an LFO's value and rate
 /// where the slot holds an LFO, a Snail's outputs and weightings where it holds a Snail; any other always.
@@ -60,7 +62,7 @@ fn offered_by_slots(name: &str, snails: &Snails) -> bool {
 }
 
 /// A Modulators slot's Type that holds a Snail, and how far either way its weightings reach, in percent.
-const SNAIL_TYPE: &str = "snail";
+const SNAIL_TYPE: &str = spec::SNAIL;
 const SNAIL_WEIGHTING_REACH: i64 = 100;
 /// The longest an LFO+ takes to fade in, in milliseconds.
 const LONGEST_FADE_IN_MS: i64 = 10_000;
@@ -70,31 +72,31 @@ const DEFAULT_ACCENT: i64 = 0;
 const UNCHANGED: i64 = 100;
 const TENTHS: i64 = 10;
 const CRUSH_RATES: [i64; 11] = [0, 32000, 22050, 16000, 11025, 8000, 6000, 4000, 3000, 2000, 1000];
-const MIDI: &str = "midi";
-const BUILT_IN: &str = "built_in";
+const MIDI: &str = file_format::InstrumentKind::MIDI;
+const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
 /// The engines the Engine tab offers, in order: off, an outside MIDI device, FluidSynth, the built-in synths.
-const OFF: &str = "off";
-const FLUIDSYNTH: &str = "fluidsynth";
-const LLAMASYNTH: &str = "llamasynth";
+const OFF: &str = spec::OFF;
+const FLUIDSYNTH: &str = words::FLUIDSYNTH;
+const LLAMASYNTH: &str = words::LLAMASYNTH;
 const ENGINES: &[&str] = &[OFF, MIDI, FLUIDSYNTH, LLAMASYNTH];
 /// The instrument's two roles.
-const NORMAL: &str = "normal";
-const PERCUSSION: &str = "percussion";
-const NONE_EFFECT: &str = "none";
-const BITCRUSH: &str = "bitcrush";
-const BAX: &str = "bax";
-const MULTITAP: &str = "multitap";
+const NORMAL: &str = file_format::InstrumentRole::NORMAL;
+const PERCUSSION: &str = spec::PERCUSSION;
+const NONE_EFFECT: &str = spec::NONE;
+const BITCRUSH: &str = spec::BITCRUSH;
+const BAX: &str = spec::BAX;
+const MULTITAP: &str = spec::MULTITAP;
 /// The cells of a MultiTap tap's level gauge, narrow to share its row with the tap's time.
 const TAP_LEVEL_CELLS: usize = 3;
 /// How wide a tap's time is shown, its widest choice's width, a division such as 1/16t or a time such as 4000 ms, so that
 /// the taps' levels line up.
 const DIVISION_WIDTH: usize = 5;
 const TAP_MS_WIDTH: usize = 7;
-const ARPEGGIO: &str = "arpeggio";
+const ARPEGGIO: &str = spec::ARPEGGIO;
 /// A Mod Matrix source that is a MIDI CC is `cc` and its number; the picker's entry that asks for one; the CC it asks
 /// with first, the filter's cutoff by custom, and the highest CC.
-const CONTROL_PREFIX: &str = "cc";
-const MIDI_CC_CHOICE: &str = "midi_cc";
+const CONTROL_PREFIX: &str = spec::CC;
+const MIDI_CC_CHOICE: &str = words::MIDI_CC;
 const DEFAULT_CC: i64 = 74;
 const HIGHEST_CC: i64 = 127;
 
@@ -112,7 +114,7 @@ fn control_number(source: &str) -> Option<i64> {
 const BASIC_OSCILLATORS: usize = 1;
 /// Fine tuning's reach either way, in tenths of a cent: ten cents.
 const MOST_FINE_TENTHS: i64 = 100;
-const ASHEVILLE: &str = "asheville";
+const ASHEVILLE: &str = spec::ASHEVILLE;
 const ASHEVILLE_OSCILLATORS: [[&str; 10]; 3] = [
     [
         spec::OSC1_SPEED,
@@ -152,16 +154,16 @@ const ASHEVILLE_OSCILLATORS: [[&str; 10]; 3] = [
     ],
 ];
 /// An oscillator's Speed that plays the note at its Range; at any other it runs at its Rate, as an LFO.
-const AUDIO_SPEED: &str = "audio";
+const AUDIO_SPEED: &str = words::AUDIO;
 const RATE_SUFFIX: &str = "_rate";
 const RANGE_SUFFIX: &str = "_range";
 const ASHEVILLE_PANEL: [&str; 8] = ["model", "character", "noise_level", "ring", "tune_snap", "drift", "feedback_on", "feedback"];
-const CONTINUOUS: &str = "continuous";
+const CONTINUOUS: &str = spec::CONTINUOUS;
 const ASHEVILLE_SOURCES: [&str; 3] = ["osc1", "osc2", "osc3"];
 /// The destinations that move an engine's one oscillator, which Asheville offers for each of its oscillators instead,
 /// and how each of Asheville's is named: `osc`, its number and `_`.
 const ONE_OSCILLATOR_DESTINATIONS: [&str; 4] = ["pitch", "pulse_width", "detune", "fine"];
-const OWN_OSCILLATOR_PREFIX: &str = "osc";
+const OWN_OSCILLATOR_PREFIX: &str = spec::OSC;
 
 /// Whether the Mod Matrix offers a destination for the engine's oscillators: each of Asheville's alone, an engine of
 /// one oscillator its oscillator; any other always.
@@ -176,13 +178,13 @@ fn offered_by_oscillators(name: &str, asheville: bool) -> bool {
 }
 
 /// An engine of one oscillator's output as a source, which Asheville names by each oscillator instead.
-const ONE_OSCILLATOR_SOURCE: &str = "osc";
+const ONE_OSCILLATOR_SOURCE: &str = spec::OSC;
 /// The sources a route may read but never scale another by.
 const SOURCES_ONLY: [&str; 1] = ["random"];
 const WAVE_SUFFIX: &str = "_wave";
 const SHAPE_SUFFIX: &str = "_shape";
-const CIRCUIT: &str = "circuit";
-const MODDED: &str = "modded";
+const CIRCUIT: &str = words::CIRCUIT;
+const MODDED: &str = words::MODDED;
 
 pub struct InstrumentEditor {
     pub name: String,
@@ -201,7 +203,7 @@ const FEEDBACK_FROM_TAPS: [&str; 4] = ["1", "2", "3", "4"];
 const TIME_CHANGES: [&str; 2] = ["fade", "glide"];
 /// MultiTap's modes: a clean digital delay, or a bucket-brigade device's darker echoes on one clock.
 const DELAY_MODES: [&str; 2] = ["digital", "analog"];
-const ANALOG: &str = "analog";
+const ANALOG: &str = spec::ANALOG;
 /// The analog device's own settings, each a gauge of percent, with its label.
 const ANALOG_SETTINGS: [(&str, &str); 5] = [
     (spec::DARKNESS, labels::MSG_EFFECT_DARKNESS_LABEL),
@@ -330,7 +332,7 @@ fn with_names(mut field: Field, names: Vec<String>) -> Field {
 
 /// A choice among values, each shown by its name.
 /// The part whose types are filters, and how a choice that is no name, such as (none), begins.
-const FILTER_PART: &str = "filter";
+const FILTER_PART: &str = spec::FILTER;
 const NOT_A_NAME: char = '(';
 
 /// A part's types, each with its name, in the order its picker lists them: the filter's and the envelopes' by name, as a
@@ -383,9 +385,9 @@ const TIME_STRIDES: Strides = (&[(20, 1), (100, 5), (500, 10), (2000, 50)], 100)
 const HERTZ_STRIDES: Strides = (&[(100, 5), (500, 10), (1000, 25), (2000, 50), (5000, 100), (10000, 250)], 500);
 
 /// The envelope wired to the filter, the switch that unhooks it, and an envelope that is off.
-const FILTER_ENVELOPE: &str = "env2";
-const DISCONNECT_FILTER: &str = "disconnect_filter";
-const NO_ENVELOPE: &str = "none";
+const FILTER_ENVELOPE: &str = spec::ENV2;
+const DISCONNECT_FILTER: &str = spec::DISCONNECT_FILTER;
+const NO_ENVELOPE: &str = spec::NONE;
 
 /// Ids for the fields, counting on, with what each that writes writes, and how far a gauge steps.
 #[derive(Default)]

@@ -248,10 +248,10 @@ impl Renames {
 }
 
 /// The section that holds the current song's tracks, which renamed_items looks at in the song current on arrival.
-const TRACKS: &str = "tracks";
-const SCENES: &str = "scenes";
-const SONGS: &str = "songs";
-const SCENE_NAME: &str = "name";
+const TRACKS: &str = file_format::Section::TRACKS;
+const SCENES: &str = file_format::Section::SCENES;
+const SONGS: &str = file_format::Section::SONGS;
+const SCENE_NAME: &str = file_format::FileLayout::NAME;
 
 /// What the step between two snapshots renamed (the Python history.py's renamed_items). A rename keeps an item's place and
 /// its own data and changes only its name, which tells it from a removal and an addition; the references a rename updates

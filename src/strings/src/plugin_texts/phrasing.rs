@@ -6,9 +6,11 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Phrasing";
-pub const MSG_KIND_WORD: &str = "phrasing";
-pub const MSG_CAPTION_WORD: &str = "phrasing";
+pub const MSG_KIND_WORD: &str = words::PHRASING;
+pub const MSG_CAPTION_WORD: &str = words::PHRASING;
 pub const MSG_CHANGED_WORD: &str = "Phrasing";
 pub const MSG_LINE_LABEL: &str = "Line";
 pub static MSG_LINE_NAMES: &[(i64, &str)] = &[(1, "1 bar"), (2, "2 bars"), (4, "4 bars")];

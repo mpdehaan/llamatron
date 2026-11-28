@@ -16,11 +16,12 @@ use crate::text::Text;
 use crate::themes::{self, Colour};
 use llamatron_model::file::corrections::Correction;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 use std::path::{Path, PathBuf};
 
 /// Where the picker starts: the examples folder where there is one, else the folder llamatron runs in.
-const EXAMPLES_FOLDER: &str = "examples";
+const EXAMPLES_FOLDER: &str = words::EXAMPLES;
 const HERE: &str = ".";
 /// The row of the folder above, and what starts a hidden folder's name.
 const PARENT: &str = "..";

@@ -19,15 +19,16 @@ use llamatron_model::objects::setlist::Item;
 use llamatron_model::schema::generated::file_format::STROKES;
 use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 
-const KIND: &str = "guitarify";
-const SECTION: &str = "guitarifies";
+const KIND: &str = words::GUITARIFY;
+const SECTION: &str = words::GUITARIFIES;
 const CELL_WIDTH: usize = 3;
 const MOST_CELLS: usize = 32;
 /// The cell lengths S steps through, in order.
 const CELL_LENGTHS: [&str; 5] = ["1/4", "1/8", "1/16", "1/12", "1/32"];
-const NOTHING: &str = "nothing";
+const NOTHING: &str = file_format::Stroke::NOTHING;
 
 /// A bar of strokes: a stroke a cell, whether each is accented, and how long a cell lasts.
 pub struct GuitarBar {

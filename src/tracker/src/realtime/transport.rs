@@ -17,6 +17,7 @@ use llamatron_model::objects::setlist::{Instrument, Item};
 use llamatron_model::objects::song::Song;
 use llamatron_model::schema::generated::defaults;
 use llamatron_model::schema::generated::file_format::{InstrumentSetting, Section, SetlistSetting, SongSetting, TrackSetting, FLUIDSYNTH_DEVICE};
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::{errors, messages, named};
 
@@ -28,7 +29,7 @@ const BUILT_IN_PORT_PREFIX: &str = "llamatron built-in";
 const INSTRUMENTS_PER_PORT: usize = 16;
 /// An instrument's kind of built-in sound, a channel counted from 1, latency in milliseconds, and the General MIDI channels
 /// FluidSynth's tracks take: the drums' and the melodic ones in turn.
-const BUILT_IN_KIND: &str = "built_in";
+const BUILT_IN_KIND: &str = file_format::TrackSetting::BUILT_IN;
 const CHANNEL_OFFSET: i64 = 1;
 const MILLISECONDS: f64 = 1000.0;
 const DRUM_CHANNEL: i64 = 9;

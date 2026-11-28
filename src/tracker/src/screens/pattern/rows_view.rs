@@ -29,20 +29,19 @@ use llamatron_names::file_format;
 use llamatron_names::fill;
 #[cfg(test)]
 use llamatron_names::spec;
-#[cfg(test)]
 use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, named};
 
-pub const BASICS: &str = "basics";
-pub const CHORD: &str = "chord_section";
-pub const TIMING: &str = "timing";
-pub const KEYSWITCH: &str = "keyswitch_section";
-pub const ADVANCED: &str = "advanced";
-pub const CC: &str = "cc";
-pub const DRAW_APPLY: &str = "draw_apply";
-pub const STOP_WHEN: &str = "stop_when";
-pub const RESTART_WHEN: &str = "restart_when";
-pub const MUTE_WHEN: &str = "mute_when";
+pub const BASICS: &str = words::BASICS;
+pub const CHORD: &str = words::CHORD_SECTION;
+pub const TIMING: &str = words::TIMING;
+pub const KEYSWITCH: &str = words::KEYSWITCH_SECTION;
+pub const ADVANCED: &str = words::ADVANCED;
+pub const CC: &str = file_format::TrackSetting::CC;
+pub const DRAW_APPLY: &str = words::DRAW_APPLY;
+pub const STOP_WHEN: &str = words::STOP_WHEN;
+pub const RESTART_WHEN: &str = words::RESTART_WHEN;
+pub const MUTE_WHEN: &str = words::MUTE_WHEN;
 /// The sections open when the tracker starts.
 pub const OPEN_AT_START: [&str; 2] = [BASICS, TIMING];
 const SECTIONS: [&str; 10] = [BASICS, CHORD, TIMING, KEYSWITCH, ADVANCED, CC, DRAW_APPLY, STOP_WHEN, RESTART_WHEN, MUTE_WHEN];

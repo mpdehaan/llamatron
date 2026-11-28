@@ -18,11 +18,11 @@ use llamatron_names::file_format;
 use llamatron_names::words;
 use std::cell::RefCell;
 
-const STEP: &str = "step";
-const ORDER: &str = "order";
-const OCTAVE_RANGE: &str = "octave_range";
-const OCTAVE_JUMP: &str = "octave_jump";
-const OFFSETS: &str = "offsets";
+const STEP: &str = words::STEP;
+const ORDER: &str = words::ORDER;
+const OCTAVE_RANGE: &str = words::OCTAVE_RANGE;
+const OCTAVE_JUMP: &str = words::OCTAVE_JUMP;
+const OFFSETS: &str = words::OFFSETS;
 
 #[derive(Clone, Copy, PartialEq)]
 enum Order {

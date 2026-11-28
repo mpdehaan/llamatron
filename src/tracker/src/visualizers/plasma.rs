@@ -13,10 +13,11 @@
 use super::colour::{note_colour, Energy, Limiter, TRACK_COLOURS};
 use super::picture::{Colour, Painter, Picture};
 use super::{Hearing, FULL_VELOCITY};
+use llamatron_names::words;
 use std::collections::BTreeMap;
 use std::f64::consts::TAU;
 
-pub const OPTION: &str = "plasma";
+pub const OPTION: &str = words::PLASMA;
 
 const SUPERSAMPLE: usize = 2;
 const COLOUR_STEP_SHIFT: u32 = 3;

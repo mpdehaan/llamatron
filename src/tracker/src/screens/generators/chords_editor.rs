@@ -24,7 +24,7 @@ use llamatron_names::fill;
 use llamatron_names::words;
 use llamatron_strings::{labels, marks, messages, named};
 
-const KIND: &str = "chords";
+const KIND: &str = words::CHORDS;
 const CELL_WIDTH: usize = 7;
 const CHORD_ROW: usize = 0;
 const ACCIDENTAL_ROW: usize = 1;
@@ -636,7 +636,7 @@ impl OneRow for ChordsEditor {
 }
 
 /// How a named progression writes a flat and a sharp before a numeral, and the half steps each moves it.
-const FLAT_WRITTEN: &str = "b";
+const FLAT_WRITTEN: &str = file_format::Accidental::FLAT;
 const SHARP_WRITTEN: &str = "#";
 /// The major scale's half steps, which a named progression's numerals are counted along.
 const MAJOR_SHAPE: [i64; 7] = [0, 2, 4, 5, 7, 9, 11];

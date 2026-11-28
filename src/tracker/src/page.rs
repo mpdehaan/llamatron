@@ -11,6 +11,7 @@ use crate::keys::{arrows_joined, in_order, KeyItem};
 use crate::style::Style as RichStyle;
 use crate::text::Text;
 use crate::themes::{self, Colour};
+use llamatron_names::file_format;
 use llamatron_names::fill;
 use llamatron_strings::{labels, marks, named};
 
@@ -23,7 +24,7 @@ const HEADER_LINES: usize = 3;
 const ROOM_FOR_THE_GAP: usize = 30;
 /// The space between the set's and song's names and the marks at the header's right.
 const HEADER_GAP: &str = "  ";
-const PROGRAM_NAME: &str = "llamatron";
+const PROGRAM_NAME: &str = file_format::OctaveLabels::LLAMATRON;
 
 /// What the header's right shows of time: nothing, or a clock of seconds, None where they aren't known.
 pub enum Duration {

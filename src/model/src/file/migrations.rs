@@ -7,8 +7,9 @@
 
 use crate::file::data::Data;
 use crate::schema::generated::file_format::{Row, Section, SetlistSetting};
+use llamatron_names::file_format;
 
-const VERSION: &str = "version";
+const VERSION: &str = file_format::SetlistSetting::VERSION;
 
 /// What reading a file moved: whether any migration ran.
 #[derive(Clone, Debug, Default, PartialEq)]

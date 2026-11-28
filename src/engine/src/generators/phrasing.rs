@@ -17,8 +17,8 @@ use llamatron_names::words;
 const DEFAULT_LINE_BARS: i128 = 2;
 const DEEP_BREATH_DIVISOR: i128 = 4;
 
-const CHOPPY: &str = "choppy";
-const FLOWING: &str = "flowing";
+const CHOPPY: &str = words::CHOPPY;
+const FLOWING: &str = words::FLOWING;
 
 pub struct Phrasing {
     line: Rational,

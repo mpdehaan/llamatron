@@ -21,21 +21,21 @@ use llamatron_strings::errors;
 use rmpv::Value;
 
 /// The sender's words.
-const OPEN: &str = "open";
-const START: &str = "start";
-const ADD: &str = "add";
-const FORGET: &str = "forget";
-const STOP_TAG: &str = "stop_tag";
-const STOP_ALL: &str = "stop_all";
-const SILENCE: &str = "silence";
-const SOUNDS: &str = "sounds";
-const CLOSE: &str = "close";
-const READY: &str = "ready";
+const OPEN: &str = file_format::PartSetting::OPEN;
+const START: &str = file_format::RampPart::START;
+const ADD: &str = words::ADD;
+const FORGET: &str = words::FORGET;
+const STOP_TAG: &str = words::STOP_TAG;
+const STOP_ALL: &str = words::STOP_ALL;
+const SILENCE: &str = words::SILENCE;
+const SOUNDS: &str = words::SOUNDS;
+const CLOSE: &str = words::CLOSE;
+const READY: &str = words::READY;
 /// The kinds of port the sender opens, and the drivers.
-pub const MIDI: &str = "midi";
-pub const BUILT_IN: &str = "built_in";
-pub const FLUIDSYNTH: &str = "fluidsynth";
-const TIMESTAMPED: &str = "timestamped";
+pub const MIDI: &str = file_format::InstrumentKind::MIDI;
+pub const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
+pub const FLUIDSYNTH: &str = words::FLUIDSYNTH;
+const TIMESTAMPED: &str = words::TIMESTAMPED;
 /// The records' version; how long the sender has to open its ports and sound card, and to end once closed.
 const RECORDS_VERSION: u8 = 1;
 const OPEN_TIMEOUT: Duration = Duration::from_secs(20);
@@ -53,7 +53,7 @@ const SYSTEM_LIBRARY_FOLDERS: [&str; 6] = [
     "/usr/lib64",
     "/usr/lib",
 ];
-const LIBRARY_FOLDER: &str = "lib";
+const LIBRARY_FOLDER: &str = words::LIB;
 const GAIN: f64 = 0.55;
 
 /// The computer's MIDI output ports by their shown names; none in a screen tour, which lists no ports, as the Python's
@@ -158,8 +158,8 @@ impl SynthLoad {
 }
 
 /// A load report's figures, as the backend names them.
-const BUSY: &str = "load";
-const DROPOUTS: &str = "dropouts";
+const BUSY: &str = words::LOAD;
+const DROPOUTS: &str = words::DROPOUTS;
 
 impl BackendSender {
     /// Start the sender on the ports and take this moment as the timeline's zero; why it could not start where it can't.

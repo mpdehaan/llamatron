@@ -10,9 +10,10 @@
 use super::{made, Hearing, Mode};
 use crate::text::Text;
 use llamatron_math::python_random::{PythonRandom, Seed};
+use llamatron_names::words;
 use std::sync::OnceLock;
 
-pub const OPTION: &str = "cycle";
+pub const OPTION: &str = words::CYCLE;
 
 /// How long each mode shows before the next.
 const CYCLE_SECONDS: f64 = 15.0;

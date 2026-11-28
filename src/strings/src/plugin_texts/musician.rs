@@ -6,9 +6,11 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Musician";
-pub const MSG_KIND_WORD: &str = "player";
-pub const MSG_CAPTION_WORD: &str = "musician";
+pub const MSG_KIND_WORD: &str = words::PLAYER;
+pub const MSG_CAPTION_WORD: &str = words::MUSICIAN;
 pub const MSG_CHANGED_WORD: &str = "Musician";
 pub const MSG_PLAYER_HEADING: &str = "Player";
 pub const MSG_TOUCH_HEADING: &str = "Touch";

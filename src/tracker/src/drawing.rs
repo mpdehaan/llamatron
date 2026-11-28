@@ -7,7 +7,9 @@
 use crate::keys::KeyItem;
 use crate::style::Style as RichStyle;
 use crate::text::Text;
+use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::legends;
 
 pub const ELLIPSIS: char = '…';
@@ -28,31 +30,31 @@ pub fn cursor_mark(selected: bool) -> &'static str {
 pub struct Style;
 
 impl Style {
-    pub const BOLD: &'static str = "bold";
-    pub const DIM: &'static str = "dim";
-    pub const REVERSE: &'static str = "reverse";
+    pub const BOLD: &'static str = words::BOLD;
+    pub const DIM: &'static str = file_format::ChordSymbol::DIMINISHED;
+    pub const REVERSE: &'static str = words::REVERSE;
     pub const PLAIN: &'static str = "";
     pub const SELECTED_EDGE: &'static str = "";
     pub const PLAYING: &'static str = "bold red";
     pub const SOUNDING: &'static str = "bold green";
-    pub const CHORD_NOTE: &'static str = "green";
+    pub const CHORD_NOTE: &'static str = words::GREEN;
     /// A chord's keys and a scale's on a dialog's keyboard, green and cyan by the terminal's palette numbers, as the
     /// Python's dialogs come out of Rich.
     pub const CHORD_KEY: &'static str = "bold color(2)";
     pub const SCALE_KEY: &'static str = "color(6)";
-    pub const READ_HEAD: &'static str = "khaki1";
+    pub const READ_HEAD: &'static str = words::KHAKI1;
     pub const KEYSWITCH_LIGHT: &'static str = "bold magenta";
     pub const DRAW_LIGHT: &'static str = "bold #be5aff";
     pub const DRAW_LIGHT_REVERSED: &'static str = "bold reverse #be5aff";
     pub const REFUSAL: &'static str = "rgb(255,176,0)";
     /// Red, as the Python's dialogs come out of Rich: by the terminal's palette number, which is its red.
     pub const DELETE_TITLE: &'static str = "bold color(1)";
-    pub const DETAILS_DIVIDER: &'static str = "blue";
+    pub const DETAILS_DIVIDER: &'static str = words::BLUE;
     /// Arrange's frame of its headings and the line between its main and drum tracks.
-    pub const GRID_FRAME: &'static str = "green";
-    pub const PLAYING_SCENE: &'static str = "blue";
-    pub const DETAILS_LOCKED: &'static str = "green";
-    pub const DETAILS_STOCK: &'static str = "red";
+    pub const GRID_FRAME: &'static str = words::GREEN;
+    pub const PLAYING_SCENE: &'static str = words::BLUE;
+    pub const DETAILS_LOCKED: &'static str = words::GREEN;
+    pub const DETAILS_STOCK: &'static str = words::RED;
     pub const KEY: &'static str = "bold reverse";
 }
 

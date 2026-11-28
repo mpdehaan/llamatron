@@ -14,16 +14,16 @@ use crate::clip::Clip;
 use crate::error::Rendered;
 use crate::sound::{triad_above, NoteSound, Sound};
 use llamatron_model::values::scale::Scale;
-#[cfg(test)]
 use llamatron_names::file_format;
+use llamatron_names::words;
 
 /// The chords Auto chord builds, as the file names them.
-pub const FROM_SCALE: &str = "from_scale";
-const MAJOR: &str = "major";
-const MINOR: &str = "minor";
-const AUGMENTED: &str = "augmented";
-const DIMINISHED: &str = "diminished";
-const POWER: &str = "power";
+pub const FROM_SCALE: &str = words::FROM_SCALE;
+const MAJOR: &str = file_format::Quality::MAJOR;
+const MINOR: &str = file_format::NamedProgression::MINOR;
+const AUGMENTED: &str = file_format::Quality::AUGMENTED;
+const DIMINISHED: &str = file_format::Quality::DIMINISHED;
+const POWER: &str = words::POWER;
 /// The half steps above the root of each fixed chord: its third and fifth, a power chord's fifth and octave.
 const FIXED_CHORDS: [(&str, [i64; 2]); 5] = [(MAJOR, [4, 7]), (MINOR, [3, 7]), (AUGMENTED, [4, 8]), (DIMINISHED, [3, 6]), (POWER, [7, 12])];
 const HALF_STEPS_PER_OCTAVE: i64 = 12;

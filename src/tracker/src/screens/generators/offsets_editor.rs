@@ -20,7 +20,7 @@ const MOST: i64 = 24;
 const MOST_STEPS: usize = 16;
 const LINES_AROUND_GAUGE: usize = 7;
 const MAX_GAUGE_LEVELS: usize = 7;
-const SECTION: &str = "arps";
+const SECTION: &str = words::ARPS;
 
 pub struct OffsetsEditor {
     pub name: String,

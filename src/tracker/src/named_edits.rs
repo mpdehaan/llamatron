@@ -16,23 +16,24 @@ use llamatron_model::schema::generated::file_format::Section;
 use llamatron_model::schema::generated::plugins::PLUGINS;
 use llamatron_names::file_format;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{errors, named, names};
 
 /// The cells of a new groove: one bar of sixteenths.
 const NEW_GROOVE_CELLS: usize = 16;
 
-pub const TRACKS: &str = "tracks";
-const SONGS: &str = "songs";
-const GROOVES: &str = "grooves";
-const INSTRUMENTS: &str = "instruments";
-const CHAINS: &str = "chains";
-const PATTERNS: &str = "patterns";
-const GROUP: &str = "group";
+pub const TRACKS: &str = file_format::Section::TRACKS;
+const SONGS: &str = file_format::Section::SONGS;
+const GROOVES: &str = file_format::Section::GROOVES;
+const INSTRUMENTS: &str = file_format::Section::INSTRUMENTS;
+const CHAINS: &str = file_format::Section::CHAINS;
+const PATTERNS: &str = file_format::Section::PATTERNS;
+const GROUP: &str = file_format::PatternSetting::GROUP;
 /// The cell length a factory groove's copy leaves out, its sixteenths.
 const SIXTEENTHS: (i128, i128) = (1, 16);
 /// What a new scale is: C major.
 const NEW_SCALE_ROOT: &str = "C";
-const NEW_SCALE_KIND: &str = "major";
+const NEW_SCALE_KIND: &str = file_format::Quality::MAJOR;
 const FIRST_NUMBER: i64 = 1;
 
 impl Document {
@@ -623,6 +624,6 @@ fn renamed_group(data: &Data, old: &str, new: &str) -> Data {
 }
 
 /// The arpeggiators' section, and the order a new one plays in.
-const ARPS: &str = "arps";
-const ARP_ORDER: &str = "order";
-const ARP_ORDER_UP: &str = "up";
+const ARPS: &str = words::ARPS;
+const ARP_ORDER: &str = words::ORDER;
+const ARP_ORDER_UP: &str = file_format::ChipDirection::UP;

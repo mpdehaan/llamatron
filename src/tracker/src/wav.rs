@@ -22,7 +22,7 @@ use std::process::Command;
 
 /// Where install_fluidsynth.sh puts FluidSynth, the Apple Silicon Homebrew's and then an Intel Mac's, and its SoundFont.
 const HOMEBREW_FLUIDSYNTHS: [&str; 2] = ["/opt/homebrew/bin/fluidsynth", "/usr/local/bin/fluidsynth"];
-const FLUIDSYNTH_COMMAND: &str = "fluidsynth";
+const FLUIDSYNTH_COMMAND: &str = words::FLUIDSYNTH;
 const SOUNDFONT: &str = "soundfonts/GeneralUser-GS.sf2";
 /// What turns FluidSynth off for a computer where it does not work.
 const DISABLED_VARIABLE: &str = "NO_FLUIDSYNTH";
@@ -44,7 +44,7 @@ const TEMPO_COARSE: i64 = 6;
 const TEMPO_FINE: i64 = 7;
 /// Playback starting, at the export's start, so that a built-in instrument's modulators run (the backend's PLAY_STARTED).
 const PLAY_STARTED: i64 = 8;
-const BUILT_IN: &str = "built_in";
+const BUILT_IN: &str = file_format::TrackSetting::BUILT_IN;
 /// A 16-bit sample's most, and the level a normalized file peaks at, 1 dB below full scale.
 const HIGHEST_SAMPLE: f64 = 32767.0;
 const LOWEST_SAMPLE: f64 = -32768.0;

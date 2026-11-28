@@ -6,9 +6,11 @@
 #![allow(dead_code)]
 #![allow(clippy::type_complexity)]
 
+use llamatron_names::words;
+
 pub const MSG_LABEL: &str = "Timing";
-pub const MSG_KIND_WORD: &str = "timing";
-pub const MSG_CAPTION_WORD: &str = "timing";
+pub const MSG_KIND_WORD: &str = words::TIMING;
+pub const MSG_CAPTION_WORD: &str = words::TIMING;
 pub const MSG_CHANGED_WORD: &str = "Timing";
 pub const MSG_RUSH: &str = "Rush";
 pub const MSG_DRAG: &str = "Drag";

@@ -15,9 +15,9 @@ use llamatron_names::words;
 use llamatron_strings::errors;
 use llamatron_strings::named;
 
-pub const OBJECT_CHAINS: &str = "chains";
-pub const OBJECT_SCENE_TRACKS: &str = "tracks";
-pub const OBJECT_CHAIN_STEPS: &str = "steps";
+pub const OBJECT_CHAINS: &str = file_format::Section::CHAINS;
+pub const OBJECT_SCENE_TRACKS: &str = file_format::Section::TRACKS;
+pub const OBJECT_CHAIN_STEPS: &str = file_format::PatternSetting::STEPS;
 pub const GENERATORS_WITHOUT_PLUGIN: &str = "generators without a plugin";
 
 fn listed_sections() -> [&'static str; 4] {

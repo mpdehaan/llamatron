@@ -17,13 +17,13 @@ use llamatron_strings::{errors, named};
 use std::collections::BTreeMap;
 
 /// The rows the munges read and write by name.
-const DEGREE: &str = "degree";
-const OCTAVE: &str = "octave";
-const TIE: &str = "tie";
-const GRAB: &str = "grab";
-const GATE: &str = "gate";
-const DOT: &str = "dot";
-const VELOCITY: &str = "velocity";
+const DEGREE: &str = file_format::Row::DEGREE;
+const OCTAVE: &str = file_format::Row::OCTAVE;
+const TIE: &str = file_format::Row::TIE;
+const GRAB: &str = file_format::Row::GRAB;
+const GATE: &str = file_format::Row::GATE;
+const DOT: &str = file_format::Row::DOT;
+const VELOCITY: &str = file_format::TrackSetting::VELOCITY;
 /// What says how long a note lasts, which a note made of another's steps takes none of.
 const LENGTH_ROWS: [&str; 3] = [GATE, DOT, TIE];
 

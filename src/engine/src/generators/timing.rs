@@ -12,11 +12,13 @@ use crate::sound::{NoteSound, Sound};
 use llamatron_math::Rational;
 use llamatron_model::file::data::Data;
 use llamatron_model::schema::checking::{number, time_length, TimeLength};
+use llamatron_names::file_format;
+use llamatron_names::words;
 
-const RUSH: &str = "rush";
-const DRAG: &str = "drag";
-const SHORTEN: &str = "shorten";
-const GLIDE: &str = "glide";
+const RUSH: &str = words::RUSH;
+const DRAG: &str = words::DRAG;
+const SHORTEN: &str = words::SHORTEN;
+const GLIDE: &str = file_format::Row::GLIDE;
 const PERCENT: i128 = 100;
 
 /// A part's row of steps, on or off, and how long each step is.

@@ -16,6 +16,7 @@ use crate::page::{Duration, Page};
 use crate::text::Text;
 use crate::themes::Colour;
 use llamatron_names::fill;
+use llamatron_names::words;
 use llamatron_strings::{labels, legends, marks, named};
 use std::cell::Cell;
 
@@ -118,8 +119,8 @@ pub trait Form {
 }
 
 /// The keys a field that types with Space as well as ENTER answers to.
-const SPACE: &str = "space";
-const ENTER: &str = "enter";
+const SPACE: &str = words::SPACE;
+const ENTER: &str = words::ENTER;
 
 /// What a settings page keeps of its cursor and of how it was last drawn.
 #[derive(Default)]
