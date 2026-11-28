@@ -22,7 +22,7 @@ is gone, it was likely done on another computer: check `git log` and drop the li
 14. OTHER_IDEAS: The song wizard's screens comparison in Rust.
 15. DEMO_IDEAS: Engines and effects under each synth demo.
 16. SYNTH_IDEAS: Modulators for MIDI instruments (the user's top priority, next).
-17. SYNTH_IDEAS: Figures; Snail's faster mode; New-instrument choices
+17. SYNTH_IDEAS: Snail's lane speeds; Figures; Snail's faster mode; New-instrument choices
    (mockup).
 18. SYNTH_IDEAS: Durham (mockup).
 19. SYNTH_IDEAS: The drum instruments (mockup); The vactrol's age.
@@ -64,4 +64,4 @@ When a question waits on the user, do synth work that needs no mockup, or the so
 33. SYNTH_IDEAS: Asheville's later-version features; Asheville-Poly.
 34. SYNTH_IDEAS: The Mod Matrix names each destination by its block.
 35. Each file's More Ideas section, in the order it stands, alongside the work above where an idea fits it.
-36. SYNTH_IDEAS: QuadLFO
+36. SYNTH_IDEAS: MultiLFO
