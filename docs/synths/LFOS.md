@@ -64,10 +64,11 @@ brightness opens and closes over half a minute, never twice the same way, or a
 delay that comes and goes over a whole song. Each of its three circuits, Slow,
 Slower and Slowest, wanders around two places and switches between them at
 times no one can predict, Slow about every 20 seconds, Slower about every 2
-minutes and Slowest about every 30 minutes. No note starts a Snail again: it
-goes on drifting through the song, and starts from the same place each time
-playback starts, so that a song sounds the same at every playing, live and in a
-WAV export. Each instrument's Snails wander paths of their own.
+minutes and Slowest about every 30 minutes. Nothing starts a Snail again: it
+goes on drifting from wherever it stands each time playback starts, as a
+circuit left switched on would, while a WAV export always starts it from the
+same place, so that an export sounds the same every time. Each instrument's
+Snails wander paths of their own.
 
 Each circuit gives three outputs to the Mod Matrix, X, Y and Z, each from -100%
 to +100%: X its first stage, which bends sharply at each switch, Y its last
@@ -82,8 +83,10 @@ of the circuit. For Mod 2 they are listed as
 | On | on or off | whether the Snail runs |
 
 Slowest has no setting of its own. Slow and Slower are also Mod Matrix
-destinations, `Mod 2 / Slow` and `Mod 2 / Slower`, which another modulator of
-the same instrument, an LFO or a Snail, can move.
+destinations, `Mod 2 / Slow` and `Mod 2 / Slower`, which every source can move:
+an LFO, a Snail or a MIDI CC at once, and a note's own sources, such as its
+envelopes and Velocity, from the newest note, since a Snail belongs to the
+whole instrument.
 
 Each circuit is a slow chaotic electronic circuit, two integrators, an inverter
 and a switch, modelled part for part with its op-amps' limits, stepped on a

@@ -44,9 +44,9 @@ halves it at its bottom. Mod 2, a slow sine, into Mod 1 rate makes Mod 1's
 vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
 racing through one half of its cycle and lingering in the other. Unipolar
 only ever speeds the rate up. A Via scales the route as elsewhere, by another
-LFO. A Snail's Slow and Slower are moved the same way, `Mod 2 / Slow` and
-`Mod 2 / Slower` among the destinations while Mod 2 holds a Snail, by an LFO
-or a Snail's output. The LFOs belong to the whole instrument, not to a note,
+LFO. A Snail's Slow and Slower, `Mod 2 / Slow` and `Mod 2 / Slower` among the
+destinations while Mod 2 holds a Snail, take every source
+([Snail](LFOS.md#snail)). The LFOs belong to the whole instrument, not to a note,
 so only an LFO moves a rate: a slot reading an envelope, Velocity, Per Note S&H, an oscillator
 or a CC into a rate, or scaling it by one of them, moves nothing. An LFO
 following the key keeps its ratio to the note and is not moved.
