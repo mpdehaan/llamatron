@@ -1,0 +1,1 @@
+import{_ as t,o as a,c as s,a2 as n}from"./chunks/framework.hw3Av5Vn.js";const m=JSON.parse('{"title":"Backend","description":"","frontmatter":{},"headers":[],"relativePath":"BACKEND.md","filePath":"BACKEND.md"}'),d={name:"BACKEND.md"};function o(r,e,i,h,c,l){return a(),s("div",null,[...e[0]||(e[0]=[n("",36)])])}const p=t(d,[["render",o]]);export{m as __pageData,p as default};

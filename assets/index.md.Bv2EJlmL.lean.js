@@ -1,0 +1,1 @@
+import{_ as e,o as a,c as d,a2 as r}from"./chunks/framework.hw3Av5Vn.js";const g=JSON.parse('{"title":"llamatron","description":"","frontmatter":{},"headers":[],"relativePath":"index.md","filePath":"index.md"}'),n={name:"index.md"};function o(s,t,h,i,l,c){return a(),d("div",null,[...t[0]||(t[0]=[r("",74)])])}const m=e(n,[["render",o]]);export{g as __pageData,m as default};
