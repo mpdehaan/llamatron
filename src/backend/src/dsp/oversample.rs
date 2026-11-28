@@ -14,11 +14,24 @@
 //! Where a part's output is a curve near full scale, such as Drive, whose jumps a phase that is not linear would push
 //! higher, the linear-phase halfband keeps their shape, at twice the cost and more delay.
 
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 
 /// The all-pass coefficients, the even ones for one chain and the odd ones for the other, from hiir's design by its
 /// elliptic method for eight coefficients and a transition band of 0.04 of the rate.
-const COEFFICIENTS: [f64; 8] = [
+/// How many all-pass coefficients there are, alternating between the two chains; the chains, two, as the oversampling
+/// doubles the rate; and each ring written twice over.
+const COEFFICIENT_COUNT: usize = 8;
+const CHAINS: usize = 2;
+const FACTOR: f64 = 2.0;
+const COPIES: usize = 2;
+/// Half, the average of two samples and a band's middle.
+const HALF: f64 = 0.5;
+/// How small a term of the Bessel series is, against its sum, before the series stops; and the power each term's
+/// share is raised to.
+const BESSEL_PRECISION: f64 = 1e-12;
+const SQUARED: i32 = 2;
+
+const COEFFICIENTS: [f64; COEFFICIENT_COUNT] = [
     0.040633460924,
     0.150505129023,
     0.300757055992,
@@ -32,8 +45,8 @@ const COEFFICIENTS: [f64; 8] = [
 /// One direction's two all-pass chains: each stage's last input and output, in the coefficients' order.
 #[derive(Clone, Copy, Debug, Default)]
 struct Chains {
-    inputs: [f64; 8],
-    outputs: [f64; 8],
+    inputs: [f64; COEFFICIENT_COUNT],
+    outputs: [f64; COEFFICIENT_COUNT],
 }
 
 impl Chains {
@@ -41,7 +54,7 @@ impl Chains {
     /// stage a first-order all-pass in the doubled rate's square.
     #[inline]
     fn run(&mut self, mut first: f64, mut second: f64) -> (f64, f64) {
-        for stage in (0..COEFFICIENTS.len()).step_by(2) {
+        for stage in (0..COEFFICIENTS.len()).step_by(CHAINS) {
             let next_first = (first - self.outputs[stage]) * COEFFICIENTS[stage] + self.inputs[stage];
             let next_second = (second - self.outputs[stage + 1]) * COEFFICIENTS[stage + 1] + self.inputs[stage + 1];
             self.inputs[stage] = first;
@@ -74,7 +87,7 @@ impl Halfband {
     #[inline]
     pub fn down(&mut self, first: f64, second: f64) -> f64 {
         let (later, earlier) = self.down_chains.run(second, first);
-        0.5 * (later + earlier)
+        HALF * (later + earlier)
     }
 }
 
@@ -87,10 +100,10 @@ const CENTRE: f64 = 0.5;
 
 /// The odd taps of the halfband, from the centre outward, each the windowed sinc at its distance.
 fn odd_taps() -> [f64; SIDE_TAPS] {
-    let half_length = (2 * SIDE_TAPS) as f64;
+    let half_length = (CHAINS * SIDE_TAPS) as f64;
     std::array::from_fn(|place| {
-        let distance = (2 * place + 1) as f64;
-        let sinc = (PI * distance / 2.0).sin() / (PI * distance / 2.0);
+        let distance = (CHAINS * place + 1) as f64;
+        let sinc = (PI * distance / FACTOR).sin() / (PI * distance / FACTOR);
         let x = distance / half_length;
         let window = bessel_i0(KAISER_BETA * (1.0 - x * x).max(0.0).sqrt()) / bessel_i0(KAISER_BETA);
         CENTRE * sinc * window
@@ -100,8 +113,8 @@ fn odd_taps() -> [f64; SIDE_TAPS] {
 /// The modified Bessel function of the first kind, order zero, by its series, for the Kaiser window.
 fn bessel_i0(x: f64) -> f64 {
     let (mut sum, mut term, mut k) = (1.0, 1.0, 1.0);
-    while term > 1e-12 * sum {
-        term *= (x / (2.0 * k)).powi(2);
+    while term > BESSEL_PRECISION * sum {
+        term *= (x / (FACTOR * k)).powi(SQUARED);
         sum += term;
         k += 1.0;
     }
@@ -110,7 +123,7 @@ fn bessel_i0(x: f64) -> f64 {
 
 /// Twice the taps' reach, the length of each ring of past samples: a sample is written twice, at its place and that
 /// place a ring on, so that a run of taps is always read without wrapping.
-const RING: usize = 2 * SIDE_TAPS;
+const RING: usize = CHAINS * SIDE_TAPS;
 
 /// The linear-phase halfband, a windowed sinc whose every other tap but the centre is zero, run as two phases: about
 /// 80 dB down by a fifth of the rate and some twelve samples of delay, its phase linear so that a curve's jumps keep their
@@ -122,11 +135,11 @@ const RING: usize = 2 * SIDE_TAPS;
 pub struct LinearHalfband {
     taps: [f64; SIDE_TAPS],
     /// The interpolator's last low-rate inputs.
-    up: [f64; 2 * RING],
+    up: [f64; COPIES * RING],
     /// The decimator's last high-rate samples of the phase between the centre's.
-    down_odd: [f64; 2 * RING],
+    down_odd: [f64; COPIES * RING],
     /// The decimator's samples on the centre's phase, waiting the delay that lines them up with the rest.
-    down_even: [f64; 2 * RING],
+    down_even: [f64; COPIES * RING],
     /// Where the newest sample of each ring sits.
     place: usize,
 }
@@ -135,9 +148,9 @@ impl Default for LinearHalfband {
     fn default() -> Self {
         LinearHalfband {
             taps: odd_taps(),
-            up: [0.0; 2 * RING],
-            down_odd: [0.0; 2 * RING],
-            down_even: [0.0; 2 * RING],
+            up: [0.0; COPIES * RING],
+            down_odd: [0.0; COPIES * RING],
+            down_even: [0.0; COPIES * RING],
             place: 0,
         }
     }
@@ -146,7 +159,7 @@ impl Default for LinearHalfband {
 /// A sample written into a ring at a place, and a ring on, so that the ring reads straight from any place; flushed of a
 /// value too small to matter as it goes in, so that a dying tail costs no denormal arithmetic.
 #[inline]
-fn written(ring: &mut [f64; 2 * RING], place: usize, value: f64) {
+fn written(ring: &mut [f64; COPIES * RING], place: usize, value: f64) {
     let value = crate::dsp::flushed(value);
     ring[place] = value;
     ring[place + RING] = value;
@@ -155,13 +168,13 @@ fn written(ring: &mut [f64; 2 * RING], place: usize, value: f64) {
 impl LinearHalfband {
     /// The ring's sample an age back from the newest, 0 the newest.
     #[inline]
-    fn back(&self, ring: &[f64; 2 * RING], age: usize) -> f64 {
+    fn back(&self, ring: &[f64; COPIES * RING], age: usize) -> f64 {
         ring[self.place + RING - age]
     }
 
     /// The odd taps across a ring, each pair of samples around the centre: the samples nearest it first.
     #[inline]
-    fn between(&self, ring: &[f64; 2 * RING]) -> f64 {
+    fn between(&self, ring: &[f64; COPIES * RING]) -> f64 {
         let mut sum = 0.0;
         for (place, tap) in self.taps.iter().enumerate() {
             sum += tap * (self.back(ring, SIDE_TAPS - 1 - place) + self.back(ring, SIDE_TAPS + place));
@@ -176,7 +189,7 @@ impl LinearHalfband {
         self.place = (self.place + 1) % RING;
         written(&mut self.up, self.place, input);
         // At twice the gain, so that the two samples carry the one's level.
-        (self.back(&self.up, SIDE_TAPS), 2.0 * self.between(&self.up))
+        (self.back(&self.up, SIDE_TAPS), FACTOR * self.between(&self.up))
     }
 
     /// Two samples at twice the rate made one at the rate: the centre's phase halved, the other phase through the odd taps.
@@ -191,6 +204,7 @@ impl LinearHalfband {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::{decibels, sine, RATE, TENTH_SECOND};
 
     /// What both halfbands do: make a sample two at twice the rate, and two one again.
     trait Doubling: Default {
@@ -219,29 +233,30 @@ mod tests {
     /// A sine's level through a halfband up and down, by the settled stretch's RMS, since a sine of few samples a cycle
     /// rarely lands one on its peak.
     fn level_through<Doubler: Doubling>(frequency: f64) -> f64 {
-        let rate = 48_000.0;
         let mut halfband = Doubler::default();
-        let samples = 9600;
+        let (samples, settled) = (TENTH_SECOND + TENTH_SECOND, TENTH_SECOND);
         let mut power = 0.0;
         for place in 0..samples {
-            let (first, second) = halfband.up((2.0 * PI * frequency * place as f64 / rate).sin());
+            let (first, second) = halfband.up(sine(frequency, 1.0, place));
             let out = halfband.down(first, second);
-            if place >= samples / 2 {
+            if place >= settled {
                 power += out * out;
             }
         }
-        (2.0 * power / (samples / 2) as f64).sqrt()
+        // A sine's mean square is half its peak's square.
+        (FACTOR * power / settled as f64).sqrt()
     }
 
     /// Both halfbands pass a sine up and down at its level: the all-pass one to near the top of the band, the
     /// linear-phase one across the low and middle band.
     #[test]
     fn every_halfband_passes_a_sine_at_its_level() {
-        for (frequency, near) in [(1_000.0, 0.01), (8_000.0, 0.02), (20_000.0, 0.02)] {
+        let (low, middle, top, nearest, near_enough) = (1_000.0, 8_000.0, 20_000.0, 0.01, 0.02);
+        for (frequency, near) in [(low, nearest), (middle, near_enough), (top, near_enough)] {
             let level = level_through::<Halfband>(frequency);
             assert!((level - 1.0).abs() < near, "all-pass at {frequency}: {level}");
         }
-        for (frequency, near) in [(1_000.0, 0.01), (8_000.0, 0.02)] {
+        for (frequency, near) in [(low, nearest), (middle, near_enough)] {
             let level = level_through::<LinearHalfband>(frequency);
             assert!((level - 1.0).abs() < near, "linear-phase at {frequency}: {level}");
         }
@@ -250,28 +265,28 @@ mod tests {
     /// The interpolator's image of a tone, mirrored into the doubled rate's upper half, is far down.
     #[test]
     fn the_interpolators_image_is_far_down() {
-        let rate = 48_000.0;
         let frequency = 3_000.0;
         let mut halfband = Halfband::default();
         let mut high = Vec::new();
-        for place in 0..4800 {
-            let (first, second) = halfband.up((2.0 * PI * frequency * place as f64 / rate).sin());
+        for place in 0..TENTH_SECOND {
+            let (first, second) = halfband.up(sine(frequency, 1.0, place));
             high.push(first);
             high.push(second);
         }
         // The image sits at the rate less the tone, mirrored about the rate's half, measured over the settled stretch.
-        let image = rate - frequency;
-        let doubled = 2.0 * rate;
+        let image = RATE - frequency;
+        let doubled = FACTOR * RATE;
+        let (settling, far_down) = (1000, -60.0);
         let (mut real, mut imaginary, mut tone_real, mut tone_imaginary) = (0.0, 0.0, 0.0, 0.0);
-        for (place, value) in high.iter().enumerate().skip(1000) {
+        for (place, value) in high.iter().enumerate().skip(settling) {
             let t = place as f64 / doubled;
-            real += value * (2.0 * PI * image * t).cos();
-            imaginary += value * (2.0 * PI * image * t).sin();
-            tone_real += value * (2.0 * PI * frequency * t).cos();
-            tone_imaginary += value * (2.0 * PI * frequency * t).sin();
+            real += value * (TAU * image * t).cos();
+            imaginary += value * (TAU * image * t).sin();
+            tone_real += value * (TAU * frequency * t).cos();
+            tone_imaginary += value * (TAU * frequency * t).sin();
         }
-        let below_db = 20.0 * ((real * real + imaginary * imaginary).sqrt() / (tone_real * tone_real + tone_imaginary * tone_imaginary).sqrt()).log10();
-        assert!(below_db < -60.0, "{below_db}");
+        let below_db = decibels((real * real + imaginary * imaginary).sqrt() / (tone_real * tone_real + tone_imaginary * tone_imaginary).sqrt());
+        assert!(below_db < far_down, "{below_db}");
     }
 }
 
@@ -284,14 +299,14 @@ const STEEP_KAISER_BETA: f64 = 7.9;
 
 /// The steep decimator's taps: a windowed sinc cut midway between its pass and stop bands, scaled to unity gain.
 fn steep_taps() -> [f64; STEEP_TAPS] {
-    let cut = (STEEP_PASS_SHARE + STEEP_STOP_SHARE) / 2.0;
-    let middle = (STEEP_TAPS / 2) as f64;
+    let cut = (STEEP_PASS_SHARE + STEEP_STOP_SHARE) / FACTOR;
+    let middle = (STEEP_TAPS / CHAINS) as f64;
     let mut taps: [f64; STEEP_TAPS] = std::array::from_fn(|place| {
         let distance = place as f64 - middle;
         let sinc = if distance == 0.0 {
-            2.0 * cut
+            FACTOR * cut
         } else {
-            (2.0 * PI * cut * distance).sin() / (PI * distance)
+            (TAU * cut * distance).sin() / (PI * distance)
         };
         let x = distance / middle;
         sinc * bessel_i0(STEEP_KAISER_BETA * (1.0 - x * x).max(0.0).sqrt()) / bessel_i0(STEEP_KAISER_BETA)
@@ -311,7 +326,7 @@ fn steep_taps() -> [f64; STEEP_TAPS] {
 pub struct SteepDecimator {
     taps: [f64; STEEP_TAPS],
     /// The last samples at the doubled rate, written twice over so that reading needs no wrapping.
-    ring: [f64; 2 * STEEP_TAPS],
+    ring: [f64; COPIES * STEEP_TAPS],
     /// Where the newest sample sits.
     place: usize,
 }
@@ -320,7 +335,7 @@ impl Default for SteepDecimator {
     fn default() -> Self {
         SteepDecimator {
             taps: steep_taps(),
-            ring: [0.0; 2 * STEEP_TAPS],
+            ring: [0.0; COPIES * STEEP_TAPS],
             place: 0,
         }
     }
