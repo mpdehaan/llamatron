@@ -14,8 +14,8 @@ built.
 
 - **The rules reviewed by a Claude Code expert**: after the Rust expert's review, a consultant agent, written as a
   PhD-level Claude Code expert from Anthropic, reads every rule in `CLAUDE.md` and `.claude/` and suggests how to make
-  them more concise, less redundant, better organized and less likely to be broken; the suggestions come to the user
-  to decide on, none built first.
+  them more concise, less redundant, better organized and less likely to be broken, told that Claude has a very hard
+  time following its rules; the suggestions come to the user to decide on, none built first.
 
 ## The Model
 
