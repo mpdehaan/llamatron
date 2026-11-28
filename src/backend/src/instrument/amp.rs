@@ -160,7 +160,7 @@ mod tests {
         assert!(warm.process(loud, open, 1.0) < loud * 0.9);
     }
 
-    /// Clean at a linear Response is today's amp: the signal times its opening; an exponential Response opens it later.
+    /// Clean at a linear Response is the signal times its opening; an exponential Response opens it later.
     #[test]
     fn a_clean_amp_is_the_signal_times_its_opening() {
         let (signal, half) = (0.8, 0.5);

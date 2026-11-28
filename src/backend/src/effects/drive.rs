@@ -258,21 +258,6 @@ mod tests {
         input.iter().map(|sample| drive.process(*sample, 1.0) as f32).collect()
     }
 
-    /// At no Mix the sound comes through whole, delayed only by the halfband, and silence stays silent at any Mix.
-    #[test]
-    fn no_mix_passes_the_sound_and_silence_stays_silent() {
-        let mut drive = Drive::new(Curve::Hard, 1.0);
-        let input = sine(200, 0.5);
-        let out: Vec<f64> = input.iter().map(|sample| drive.process(*sample, 0.0)).collect();
-        let loudest = out[RATE..].iter().fold(0.0f64, |most, sample| most.max(sample.abs()));
-        assert!((loudest - 0.5).abs() < 0.01, "{loudest}");
-        for curve in CURVES {
-            let mut drive = Drive::new(curve, 1.0);
-            let quiet = (0..RATE).map(|_| drive.process(0.0, 1.0)).fold(0.0f64, |most, sample| most.max(sample.abs()));
-            assert!(quiet < 1e-9, "curve {:?}: {quiet}", curve as u8);
-        }
-    }
-
     /// Every curve pushed hard on a high note stays clean where it is heard: on a 5 kHz note at full Amount, its stray
     /// tones under 18 kHz lie 40 dB under its harmonics.
     #[test]
@@ -308,13 +293,40 @@ mod tests {
         }
     }
 
-    /// At Amount 0 Drive leaves the sound untouched, whatever its curve.
+    /// Drive steps aside where it should: at Amount 0 it leaves the sound untouched on every curve, at no Mix the sound
+    /// comes through whole, delayed only by the halfband, and silence stays silent at any setting.
     #[test]
-    fn amount_zero_leaves_the_sound_alone() {
+    fn drive_steps_aside_at_no_amount_no_mix_and_in_silence() {
         let input = sine(220, 0.9);
         for curve in CURVES {
-            let mut drive = Drive::new(curve, 0.0);
-            assert!(input.iter().all(|sample| drive.process(*sample, 1.0) == *sample), "curve {:?}", curve as u8);
+            let mut untouched = Drive::new(curve, 0.0);
+            assert!(input.iter().all(|sample| untouched.process(*sample, 1.0) == *sample), "curve {:?}", curve as u8);
+            let mut quiet = Drive::new(curve, 1.0);
+            let loudest_silence = (0..RATE).map(|_| quiet.process(0.0, 1.0)).fold(0.0f64, |most, sample| most.max(sample.abs()));
+            assert!(loudest_silence < 1e-9, "curve {:?}: {loudest_silence}", curve as u8);
+        }
+        let mut dry = Drive::new(Curve::Hard, 1.0);
+        let level = 0.5;
+        let out: Vec<f64> = sine(200, level).iter().map(|sample| dry.process(*sample, 0.0)).collect();
+        let loudest = out[RATE..].iter().fold(0.0f64, |most, sample| most.max(sample.abs()));
+        assert!((loudest - level).abs() < 0.01, "{loudest}");
+    }
+
+    /// No two curves shape a loud sine alike.
+    #[test]
+    fn no_two_curves_shape_alike() {
+        let input = sine(220, 0.9);
+        let shapes: Vec<Vec<f64>> = CURVES
+            .iter()
+            .map(|curve| {
+                let mut drive = Drive::new(*curve, 0.8);
+                input.iter().map(|sample| drive.process(*sample, 1.0)).collect()
+            })
+            .collect();
+        for (place, shape) in shapes.iter().enumerate() {
+            for other in &shapes[place + 1..] {
+                assert_ne!(shape, other);
+            }
         }
     }
 

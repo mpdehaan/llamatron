@@ -156,31 +156,12 @@ mod tests {
         DECIBELS_PER_DECADE / 2.0 * (after / before).log10()
     }
 
-    /// Bax at 0 dB leaves the sound as it is; its Bass lifts a low note by its decibels and leaves a high one nearly
-    /// alone, and its Treble the other way round, cutting as well as lifting.
-    #[test]
-    fn bax_lifts_and_cuts_each_end_by_its_decibels() {
-        let (low_note, middle, high_note) = (30.0, 1000.0, 18_000.0);
-        let (lift, cut, near) = (12.0, -12.0, 1.5);
-        assert!(through_bax(0.0, 0.0, middle).abs() < 0.01);
-        assert!(
-            (through_bax(lift, 0.0, low_note) - lift).abs() < near * 2.0,
-            "{}",
-            through_bax(lift, 0.0, low_note)
-        );
-        assert!(through_bax(lift, 0.0, high_note).abs() < near);
-        assert!(
-            (through_bax(0.0, cut, high_note) - cut).abs() < near * 2.0,
-            "{}",
-            through_bax(0.0, cut, high_note)
-        );
-        assert!(through_bax(0.0, cut, low_note).abs() < near);
-    }
-
-    /// Bax's shelves follow the circuit's own level across the band, to within a third of a decibel at their deepest,
-    /// lifting or cutting either end, even near the top of the band, where a warped design strays by three quarters.
+    /// Bax at 0 dB leaves the sound as it is, and its shelves follow the circuit's own level across the band, to within a
+    /// third of a decibel at their deepest, lifting or cutting either end, even near the top of the band.
     #[test]
     fn bax_follows_the_circuits_level_to_the_top_of_the_band() {
+        let middle = 1_000.0;
+        assert!(through_bax(0.0, 0.0, middle).abs() < 0.01, "Bax at 0 dB leaves the sound alone");
         let near = 0.35;
         for decibels in [15.0, 6.0, -6.0, -15.0] {
             for hertz in [200.0, 2_000.0, 5_000.0, 10_000.0, 15_000.0, 20_000.0] {

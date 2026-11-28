@@ -192,29 +192,59 @@ impl LinearHalfband {
 mod tests {
     use super::*;
 
-    /// Up then down passes a low sine at its level, delayed, and a tone near the top of the band is kept out of the
-    /// doubled rate's upper half.
-    #[test]
-    fn up_then_down_passes_a_low_sine_at_its_level() {
+    /// What both halfbands do: make a sample two at twice the rate, and two one again.
+    trait Doubling: Default {
+        fn up(&mut self, input: f64) -> (f64, f64);
+        fn down(&mut self, first: f64, second: f64) -> f64;
+    }
+
+    impl Doubling for Halfband {
+        fn up(&mut self, input: f64) -> (f64, f64) {
+            Halfband::up(self, input)
+        }
+        fn down(&mut self, first: f64, second: f64) -> f64 {
+            Halfband::down(self, first, second)
+        }
+    }
+
+    impl Doubling for LinearHalfband {
+        fn up(&mut self, input: f64) -> (f64, f64) {
+            LinearHalfband::up(self, input)
+        }
+        fn down(&mut self, first: f64, second: f64) -> f64 {
+            LinearHalfband::down(self, first, second)
+        }
+    }
+
+    /// A sine's level through a halfband up and down, by the settled stretch's RMS, since a sine of few samples a cycle
+    /// rarely lands one on its peak.
+    fn level_through<Doubler: Doubling>(frequency: f64) -> f64 {
         let rate = 48_000.0;
-        // The level by the settled stretch's RMS, since a sine of few samples a cycle rarely lands one on its peak.
-        let level = |frequency: f64| {
-            let mut halfband = Halfband::default();
-            let samples = 9600;
-            let mut power = 0.0;
-            for place in 0..samples {
-                let input = (2.0 * PI * frequency * place as f64 / rate).sin();
-                let (first, second) = halfband.up(input);
-                let out = halfband.down(first, second);
-                if place >= samples / 2 {
-                    power += out * out;
-                }
+        let mut halfband = Doubler::default();
+        let samples = 9600;
+        let mut power = 0.0;
+        for place in 0..samples {
+            let (first, second) = halfband.up((2.0 * PI * frequency * place as f64 / rate).sin());
+            let out = halfband.down(first, second);
+            if place >= samples / 2 {
+                power += out * out;
             }
-            (2.0 * power / (samples / 2) as f64).sqrt()
-        };
-        assert!((level(1_000.0) - 1.0).abs() < 0.01, "{}", level(1_000.0));
-        assert!((level(8_000.0) - 1.0).abs() < 0.02, "{}", level(8_000.0));
-        assert!((level(20_000.0) - 1.0).abs() < 0.02, "{}", level(20_000.0));
+        }
+        (2.0 * power / (samples / 2) as f64).sqrt()
+    }
+
+    /// Both halfbands pass a sine up and down at its level: the all-pass one to near the top of the band, the
+    /// linear-phase one across the low and middle band.
+    #[test]
+    fn every_halfband_passes_a_sine_at_its_level() {
+        for (frequency, near) in [(1_000.0, 0.01), (8_000.0, 0.02), (20_000.0, 0.02)] {
+            let level = level_through::<Halfband>(frequency);
+            assert!((level - 1.0).abs() < near, "all-pass at {frequency}: {level}");
+        }
+        for (frequency, near) in [(1_000.0, 0.01), (8_000.0, 0.02)] {
+            let level = level_through::<LinearHalfband>(frequency);
+            assert!((level - 1.0).abs() < near, "linear-phase at {frequency}: {level}");
+        }
     }
 
     /// The interpolator's image of a tone, mirrored into the doubled rate's upper half, is far down.
@@ -242,24 +272,6 @@ mod tests {
         }
         let below_db = 20.0 * ((real * real + imaginary * imaginary).sqrt() / (tone_real * tone_real + tone_imaginary * tone_imaginary).sqrt()).log10();
         assert!(below_db < -60.0, "{below_db}");
-    }
-
-    /// The linear-phase halfband passes a low sine through up and down at its level.
-    #[test]
-    fn the_linear_phase_halfband_passes_a_low_sine() {
-        let rate = 48_000.0;
-        let mut halfband = LinearHalfband::default();
-        let samples = 9600;
-        let mut power = 0.0;
-        for place in 0..samples {
-            let (first, second) = halfband.up((2.0 * PI * 1_000.0 * place as f64 / rate).sin());
-            let out = halfband.down(first, second);
-            if place >= samples / 2 {
-                power += out * out;
-            }
-        }
-        let level = (2.0 * power / (samples / 2) as f64).sqrt();
-        assert!((level - 1.0).abs() < 0.01, "{level}");
     }
 }
 

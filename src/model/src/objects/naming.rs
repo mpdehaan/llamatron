@@ -109,7 +109,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn names_split_and_count_up_as_the_python_does() {
+    fn names_count_up_keeping_their_joiner() {
         assert_eq!(split_trailing_number("bass-2"), Some(("bass".into(), "-".into(), 2)));
         assert_eq!(split_trailing_number("name1"), Some(("name".into(), "".into(), 1)));
         assert_eq!(split_trailing_number("bass 2"), Some(("bass".into(), " ".into(), 2)));

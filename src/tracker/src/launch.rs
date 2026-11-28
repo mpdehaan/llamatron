@@ -191,35 +191,36 @@ mod tests {
         assert_eq!(running.tick(false, true), Tick::Quit, "its lead-out has passed");
     }
 
-    /// A recording opens on the title, and an interactive one plays nothing by itself.
+    /// What each way of starting does: a recording opens on the title and plays; an interactive recording opens Arrange
+    /// and waits to be played; a visualizer plays; the details view alone opens Arrange without playing.
     #[test]
-    fn a_recording_opens_on_the_title_and_an_interactive_one_waits_to_be_played() {
+    fn each_launch_plays_and_opens_as_its_flags_say() {
         let recording = Launch {
             for_recording: true,
             ..Launch::default()
         };
         assert!(matches!(Running::new(recording.clone()).tick(false, false), Tick::Title { .. }));
-        assert!(recording.plays() && recording.opens_arrange());
         let interactive = Launch {
             for_recording: true,
             interactive: true,
             ..Launch::default()
         };
-        assert!(!interactive.plays() && interactive.opens_arrange());
-    }
-
-    /// A visualizer implies playing, and the details view alone opens Arrange without playing.
-    #[test]
-    fn a_visualizer_plays_and_the_details_alone_only_open_arrange() {
         let visual = Launch {
             visualizer: Some("lava_lamp".to_string()),
             ..Launch::default()
         };
-        assert!(visual.plays() && visual.opens_arrange());
         let details = Launch {
             details: true,
             ..Launch::default()
         };
-        assert!(!details.plays() && details.opens_arrange());
+        // Each launch, whether it plays, and whether it opens Arrange.
+        for (launch, plays, opens_arrange) in [
+            (recording, true, true),
+            (interactive, false, true),
+            (visual, true, true),
+            (details, false, true),
+        ] {
+            assert_eq!((launch.plays(), launch.opens_arrange()), (plays, opens_arrange), "{launch:?}");
+        }
     }
 }

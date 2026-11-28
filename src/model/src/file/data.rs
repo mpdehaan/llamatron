@@ -435,7 +435,7 @@ mod tests {
     }
 
     #[test]
-    fn texts_and_floats_are_written_as_python_writes_them() {
+    fn texts_and_floats_are_written_in_the_files_form() {
         assert_eq!(json_text("é \"x\""), "\"\\u00e9 \\\"x\\\"\"");
         assert_eq!(yaml_float(1e16), "1.0e+16");
         assert_eq!(yaml_float(0.25), "0.25");

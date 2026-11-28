@@ -284,7 +284,7 @@ mod tests {
 
     // Every expected text here is what CPython printed for the same template and values.
     #[test]
-    fn templates_fill_as_python_fills_them() {
+    fn templates_fill_by_their_format_specs() {
         assert_eq!(named("no pattern called ({name})", &[("name", "tune".into())]), "no pattern called (tune)");
         assert_eq!(named("expected a Note, got {value!r}", &[("value", "C#".into())]), "expected a Note, got 'C#'");
         assert_eq!(named("{name:<{width}}|", &[("name", "ab".into()), ("width", 5.into())]), "ab   |");

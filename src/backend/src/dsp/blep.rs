@@ -156,22 +156,17 @@ mod tests {
         (0..2 * RATE).map(|sample| wave((sample as f64 * step).fract(), step) as f32).collect()
     }
 
-    /// On a high note, the four-sample corrections fold far less back than the two-sample one: the saw by some 10 dB,
-    /// and the triangle, whose corners were left sharp before, by over 20 dB; and above a quarter of the rate the
-    /// two-sample correction still holds the saw.
+    /// The band-limited waves stay clean on a high note: at 3 kHz the saw's stray tones lie 35 dB and the triangle's 50 dB
+    /// under their harmonics, and near the top of the band, at 13 kHz, the saw's still lie 10 dB under.
     #[test]
-    fn the_four_sample_corrections_fold_far_less_back() {
+    fn the_band_limited_waves_stay_clean_on_high_notes() {
         use crate::dsp::spectrum::stray_decibels;
-        let hertz = 2_999;
-        let two_sample_saw = stray_decibels(&played(hertz, |place, step| 2.0 * place - 1.0 - blep(place, step)), RATE, hertz);
-        let wide_saw = stray_decibels(&played(hertz, saw), RATE, hertz);
-        assert!(wide_saw < two_sample_saw - 9.0, "{wide_saw} against {two_sample_saw}");
-        let sharp = stray_decibels(&played(hertz, |place, _| naive_triangle(place)), RATE, hertz);
-        let rounded = stray_decibels(&played(hertz, triangle), RATE, hertz);
-        assert!(rounded < sharp - 20.0, "{rounded} against {sharp}");
-        let highest = 13_001;
-        let naive_saw = stray_decibels(&played(highest, |place, _| 2.0 * place - 1.0), RATE, highest);
-        let high_saw = stray_decibels(&played(highest, saw), RATE, highest);
-        assert!(high_saw < naive_saw - 3.0, "{high_saw} against {naive_saw}");
+        let (high, highest) = (2_999, 13_001);
+        let saw_stray = stray_decibels(&played(high, saw), RATE, high);
+        assert!(saw_stray < -35.0, "saw at 3 kHz: {saw_stray:.1} dB");
+        let triangle_stray = stray_decibels(&played(high, triangle), RATE, high);
+        assert!(triangle_stray < -50.0, "triangle at 3 kHz: {triangle_stray:.1} dB");
+        let top_stray = stray_decibels(&played(highest, saw), RATE, highest);
+        assert!(top_stray < -10.0, "saw at 13 kHz: {top_stray:.1} dB");
     }
 }

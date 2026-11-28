@@ -499,39 +499,10 @@ mod tests {
         assert!(done);
     }
 
+    /// A struck cell peaks near full, then falls to a tenth of its peak by its Fall time, whatever its Trigger time: a
+    /// short strike that lights the cell only a little still falls at the speed its heard level gives, as a pluck does.
     #[test]
-    fn a_full_strike_on_a_vactrol_peaks_near_full_and_falls() {
-        let part = compiled(
-            &spec(&[
-                ("type", "vactrol".into()),
-                ("rise", 0.012.into()),
-                ("fall", 0.25.into()),
-                ("strike_width", 0.002.into()),
-                ("memory", 0.0.into()),
-            ]),
-            0.0,
-        );
-        let mut memory = EnvelopeMemory::default();
-        let (mut state, _, _) = part.start(&mut memory, 1.0, 0.0);
-        let peak = (0..50)
-            .map(|step| {
-                part.level(
-                    &mut state,
-                    NoteTime {
-                        age: step as f64 / 10000.0,
-                        released: None,
-                    },
-                    None,
-                )
-            })
-            .fold(0.0_f64, f64::max);
-        assert!((peak - 1.0).abs() < 0.05);
-    }
-
-    /// A struck cell falls to a tenth of its peak by its Fall time, whatever its Trigger time: a short strike that lights
-    /// the cell only a little still falls at the speed its heard level gives, as a pluck does.
-    #[test]
-    fn a_struck_vactrol_falls_to_a_tenth_by_its_fall_time() {
+    fn a_struck_vactrol_peaks_and_falls_to_a_tenth_by_its_fall_time() {
         let fall = 0.25;
         let at_fall = |strike: f64| {
             let part = compiled(
@@ -548,14 +519,16 @@ mod tests {
             let (mut state, _, _) = part.start(&mut memory, 1.0, 0.0);
             let level_at = |state: &mut EnvelopeState, age: f64| part.level(state, NoteTime { age, released: None }, None);
             let peak = level_at(&mut state, strike);
-            level_at(&mut state, strike + fall) / peak
+            (peak, level_at(&mut state, strike + fall) / peak)
         };
         // A tenth by the hyperbola, a little under it by the slow leak beneath its tail.
         let (short_strike, long_strike) = (0.002, 0.02);
         for strike in [short_strike, long_strike] {
-            let share = at_fall(strike);
+            let (_, share) = at_fall(strike);
             assert!(share > 0.07 && share < 0.11, "{strike}: {share}");
         }
+        let (peak, _) = at_fall(short_strike);
+        assert!((peak - 1.0).abs() < 0.05, "a full strike peaks near full: {peak}");
     }
 
     /// A cell played hard tires: after a run of held notes it rises more slowly than when rested, and a minute and more of

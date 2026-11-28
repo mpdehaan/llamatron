@@ -660,26 +660,21 @@ mod tests {
     /// A song whose Preview instrument is a built-in synth, and a pattern to listen to.
     const BUILT_IN_PREVIEW_SET: &str = include_str!("../../tests/data/built_in_preview_set.yml");
 
-    /// Listening to an instrument plays its preview pattern: the copy's one scene holds the preview's clip.
+    /// Listening plays what is listened to: an instrument's preview copy and a pattern's each hold its clip in their one
+    /// scene.
     #[test]
-    fn an_instrument_preview_holds_its_clip() {
+    fn every_preview_holds_its_clip() {
         use crate::preferences::TrackInstrumentDefault;
         let synth = |drum: bool| crate::track_instrument::new_track_instrument(TrackInstrumentDefault::BuiltIn, drum, false, None);
-        let document = Document::new_set(synth(false), synth(true)).expect("a new set");
-        let fish = "main1";
-        let (copy, track, _) = instrument_copy(&document, fish).expect("the instrument is in the set");
-        let scene = &copy.song().scenes()[PREVIEW_SCENE];
-        assert!(scene.get_clip_slot(&track).is_some());
-    }
-
-    /// Listening to a pattern plays it: the copy's one scene holds the pattern's clip.
-    #[test]
-    fn a_pattern_preview_holds_its_clip() {
+        let new_set = Document::new_set(synth(false), synth(true)).expect("a new set");
+        let first_instrument = "main1";
+        let (copy, track, _) = instrument_copy(&new_set, first_instrument).expect("the instrument is in the set");
+        assert!(copy.song().scenes()[PREVIEW_SCENE].get_clip_slot(&track).is_some(), "an instrument's preview");
         let setlist = llamatron_model::objects::setlist::Setlist::read_text(BUILT_IN_PREVIEW_SET).expect("the scenario's set is valid");
-        let document = Document::new(setlist, None);
-        let (copy, track, _) = pattern_copy(&document, "tune").expect("the pattern is in the set");
-        let scene = &copy.song().scenes()[PREVIEW_SCENE];
-        assert!(scene.get_clip_slot(&track).is_some());
+        let with_a_pattern = Document::new(setlist, None);
+        let pattern = "tune";
+        let (copy, track, _) = pattern_copy(&with_a_pattern, pattern).expect("the pattern is in the set");
+        assert!(copy.song().scenes()[PREVIEW_SCENE].get_clip_slot(&track).is_some(), "a pattern's preview");
     }
 
     /// Listening to a pattern through a built-in Preview instrument plays that synth, not a port with no name.

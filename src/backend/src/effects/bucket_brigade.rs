@@ -585,9 +585,9 @@ mod tests {
         assert!(largest_step < steady_step * 1.2, "{largest_step} against {steady_step}");
     }
 
-    /// Hiss is heard while the sound plays and falls away in silence, as a compander makes it breathe.
+    /// The hiss falls away in silence, as a compander makes it: with no sound in, it stays under the quietest it may be.
     #[test]
-    fn the_hiss_breathes_with_the_sound() {
+    fn the_hiss_falls_away_in_silence() {
         let mut noisy = design(0.0);
         noisy.noise = 1.0;
         let mut device = BucketBrigade::new(&noisy, 0.2, RATE);

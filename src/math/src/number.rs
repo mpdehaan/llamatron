@@ -275,7 +275,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn numbers_mix_as_python_mixes_them() {
+    fn numbers_mix_by_their_kinds() {
         let three = Number::Whole(3);
         let quarter = Number::Exact(Rational::new(1, 4));
         assert!(matches!(three / Number::Whole(2), Number::Float(value) if value == 1.5));

@@ -170,31 +170,6 @@ mod tests {
             .collect()
     }
 
-    /// A band-limited curve rings a little past full scale where it clips or jumps, as any band-limited square or saw
-    /// does, by at most about 9% at a jump of the whole range.
-    const BAND_LIMITED_FULL_SCALE: f32 = 1.1;
-
-    /// Every Drive curve keeps a loud sine at full scale, give or take a band-limited clip's ripple, and each curve
-    /// shapes it its own way.
-    #[test]
-    fn every_drive_curve_stays_in_bounds_and_shapes_its_own_way() {
-        let loud = 0.9;
-        let mut shapes = Vec::new();
-        for curve in ["soft", "warm", "hard", "fold", "wrap"] {
-            let mut drive = effect(&[("effect", "drive".into()), ("curve", curve.into()), ("amount", 0.8.into())]);
-            let mut buffer = sine(loud);
-            drive.apply(&mut buffer);
-            let most = buffer.iter().fold(0.0f32, |most, sample| most.max(sample.abs()));
-            assert!(most <= BAND_LIMITED_FULL_SCALE, "{curve}: {most}");
-            shapes.push(buffer);
-        }
-        for (place, shape) in shapes.iter().enumerate() {
-            for other in &shapes[place + 1..] {
-                assert_ne!(shape, other);
-            }
-        }
-    }
-
     /// MultiTap keeps the sound whole and adds its echoes by Mix: a click comes through at full level, and its first echo
     /// at the tap's level times the Mix.
     #[test]

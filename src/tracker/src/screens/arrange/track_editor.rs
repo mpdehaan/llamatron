@@ -492,10 +492,14 @@ mod tests {
         tracker.app.document.song().tracks().iter().map(|(name, _)| name.clone()).collect()
     }
 
-    /// ENTER on the track editor's Name field asks for a new name and renames the track, the page following it.
+    /// The track editor renames its track: F2 refuses a name another track has, and ENTER on the Name field asks for a
+    /// new name and renames the track, the page following it.
     #[test]
-    fn enter_on_the_name_renames_the_track() {
+    fn the_track_editor_renames_its_track() {
         let mut tracker = on_the_bass_track();
+        tracker.press("f2");
+        type_name(&mut tracker, "bass", "lead");
+        assert_eq!(track_names(&tracker), vec!["bass", "lead"], "a taken name is refused");
         assert!(tracker.top().place_kind(&tracker.app).ends_with(labels::MSG_NAME_LABEL), "the cursor on Name");
         tracker.press(first_key(&FieldKeys::ENTER));
         assert_eq!(tracker.top().name(), "PromptDialog");
@@ -505,14 +509,5 @@ mod tests {
             tracker.top().crumbs(&tracker.app).iter().any(|crumb| crumb.contains("groove")),
             "the page follows the rename"
         );
-    }
-
-    /// F2 renames the track wherever the cursor is, and a name another track has is refused.
-    #[test]
-    fn f2_renames_the_track_and_refuses_a_taken_name() {
-        let mut tracker = on_the_bass_track();
-        tracker.press("f2");
-        type_name(&mut tracker, "bass", "lead");
-        assert_eq!(track_names(&tracker), vec!["bass", "lead"]);
     }
 }

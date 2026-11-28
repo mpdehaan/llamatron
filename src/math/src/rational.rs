@@ -289,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn text_and_floats_read_as_pythons_fraction_reads_them() {
+    fn lengths_read_exactly_from_text_and_floats() {
         assert_eq!(Rational::parse("5/16"), Ok(Rational::new(5, 16)));
         assert_eq!(Rational::parse("-0.25"), Ok(Rational::new(-1, 4)));
         assert_eq!(Rational::parse("1e-3"), Ok(Rational::new(1, 1000)));

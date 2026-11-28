@@ -526,8 +526,8 @@ mod tests {
     }
 
     /// Drive's curve runs inside each filter's oversampling and is anti-aliased: a loud 5 kHz sine through a fully driven
-    /// filter comes out with its stray tones well under its harmonics, where before they were 7 to 21 dB under. The
-    /// Sallen-Key, whose Drive pushes its loop, is held by its own rebuild.
+    /// filter comes out with its stray tones well under its harmonics. The Sallen-Key, whose Drive pushes its loop, is
+    /// held by its own rebuild.
     #[test]
     fn a_driven_filter_folds_little_back_on_a_high_note() {
         use crate::dsp::spectrum::stray_decibels;

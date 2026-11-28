@@ -412,7 +412,7 @@ mod tests {
         let pairs = vec![
             ("type", Value::from("sid")),
             ("wave", Value::from("saw")),
-            ("modulation", Value::from("sync")),
+            ("sync", Value::from(true)),
             ("interval", Value::from(7.0)),
         ];
         let out: Vec<f64> = played(pairs, pitch);
