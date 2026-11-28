@@ -36,7 +36,6 @@ const AMP_GATE: usize = 1;
 const AUDIO_RATE_HERTZ: f64 = 20.0;
 /// The most of a cycle a Key LFO moves a sample: just under half, the highest frequency a sample rate can hold.
 const MOST_KEY_STEP: f64 = 0.45;
-const KEY_SPAN: f64 = 60.0;
 const MOST_AMP: f64 = 2.0;
 const RANDOM_SEED: u64 = 101;
 const CUT_FADE_SECONDS: f64 = 0.003;
@@ -427,10 +426,8 @@ impl Patch {
         // The envelopes' levels with velocity, which light a gate, worked out only where a gate stands, so that the
         // many voices with none pay nothing for it.
         let lit_of = |levels: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|place| levels[place] * velocity_of[place]) };
-        let key = (voice.pitch - MIDDLE_C) / KEY_SPAN;
         let mut sources = Sources {
             velocity: voice.level,
-            key,
             random: voice.random,
             ..Sources::default()
         };

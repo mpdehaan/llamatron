@@ -134,6 +134,10 @@ const RANGE_SUFFIX: &str = "_range";
 const ASHEVILLE_PANEL: [&str; 8] = ["model", "character", "noise_level", "ring", "tune_snap", "drift", "feedback_on", "feedback"];
 const CONTINUOUS: &str = "continuous";
 const ASHEVILLE_SOURCES: [&str; 3] = ["osc1", "osc2", "osc3"];
+/// An engine of one oscillator's output as a source, which Asheville names by each oscillator instead.
+const ONE_OSCILLATOR_SOURCE: &str = "osc";
+/// The sources a route may read but never scale another by.
+const SOURCES_ONLY: [&str; 1] = ["random"];
 const WAVE_SUFFIX: &str = "_wave";
 const SHAPE_SUFFIX: &str = "_shape";
 const CIRCUIT: &str = "circuit";
@@ -1653,12 +1657,20 @@ impl InstrumentEditor {
     }
 
     /// A Mod Matrix slot's Source or Via: the usual sources, then MIDI CC, whose number is set in the CC field beside it.
-    fn source_field(id: usize, label: &str, current: &str, asheville: bool) -> Field {
-        // Osc 1 to Osc 3, each of Asheville's oscillators, are sources only on Asheville.
+    /// An engine of one oscillator offers it as Osc 1, and Asheville each of its three by number; Per Note S&H, held for the
+    /// whole note, is a source and never a Via.
+    fn source_field(id: usize, label: &str, current: &str, asheville: bool, via: bool) -> Field {
         let sources: Vec<&str> = MATRIX_SOURCES
             .iter()
             .copied()
-            .filter(|source| asheville || !ASHEVILLE_SOURCES.contains(source))
+            .filter(|source| {
+                if asheville {
+                    *source != ONE_OSCILLATOR_SOURCE
+                } else {
+                    !ASHEVILLE_SOURCES.contains(source)
+                }
+            })
+            .filter(|source| !via || !SOURCES_ONLY.contains(source))
             .collect();
         let mut choices: Vec<&str> = sources.clone();
         let mut names = names_in(labels::MSG_MATRIX_SOURCE_NAMES, &sources);
@@ -1704,6 +1716,7 @@ impl InstrumentEditor {
                     &numbered(labels::MSG_SLOT_SOURCE_LABEL),
                     &text(&slot(number, "source")),
                     asheville,
+                    false,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_SOURCE_LABEL)),
                 Self::source_field(
@@ -1711,6 +1724,7 @@ impl InstrumentEditor {
                     &numbered(labels::MSG_SLOT_VIA_LABEL),
                     &text(&slot(number, "via")),
                     asheville,
+                    true,
                 )
                 .with_shown_label(&shown_label(labels::MSG_SLOT_VIA_LABEL)),
                 chosen(
@@ -2027,7 +2041,7 @@ mod tests {
     fn a_midi_cc_source_shows_its_number_beside() {
         let control = 74;
         let source = format!("{CONTROL_PREFIX}{control}");
-        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source, false);
+        let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, &source, false, false);
         assert_eq!(field.value(), labels::MSG_MIDI_CC_CHOICE);
         let beside = InstrumentEditor::control_beside(0, 2, labels::MSG_SLOT_SOURCE_CC_LABEL, &source);
         assert_eq!(beside.field.map(|field| field.value().to_string()), Some(control.to_string()));
@@ -2360,5 +2374,28 @@ mod tests {
         let headings: Vec<Option<String>> = oscillators.columns.iter().map(|column| column.heading.clone()).collect();
         let first = named(labels::MSG_OSCILLATOR_LABEL, &[("number", 1.into())]);
         assert_eq!(headings, [Some(first)]);
+    }
+
+    /// The Mod Matrix offers each oscillator by its number: Osc 1 alone on an engine of one oscillator, Osc 1 to Osc 3 on
+    /// Asheville, never the two together; Per Note S&H is a source and never a Via.
+    #[test]
+    fn the_matrix_names_its_oscillators_and_keeps_per_note_sh_a_source() {
+        let names_of = |asheville: bool, via: bool| -> Vec<String> {
+            let field = InstrumentEditor::source_field(1, labels::MSG_SLOT_SOURCE_LABEL, "none", asheville, via);
+            match field.kind {
+                FieldKind::Choice { names, .. } => names.unwrap_or_default(),
+                _ => Vec::new(),
+            }
+        };
+        let first = named_in(labels::MSG_MATRIX_SOURCE_NAMES, ONE_OSCILLATOR_SOURCE);
+        let per_note = named_in(labels::MSG_MATRIX_SOURCE_NAMES, SOURCES_ONLY[0]);
+        let one = names_of(false, false);
+        assert_eq!(one.iter().filter(|name| **name == first).count(), 1, "{one:?}");
+        let three = names_of(true, false);
+        for source in ASHEVILLE_SOURCES {
+            assert!(three.contains(&named_in(labels::MSG_MATRIX_SOURCE_NAMES, source)), "{three:?}");
+        }
+        assert_eq!(three.iter().filter(|name| **name == first).count(), 1, "Osc 1 once on Asheville: {three:?}");
+        assert!(one.contains(&per_note) && !names_of(false, true).contains(&per_note));
     }
 }

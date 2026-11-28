@@ -18,7 +18,6 @@ pub enum Source {
     Env3,
     Lfo(usize),
     Velocity,
-    Key,
     Random,
     /// The voice's own oscillator, as it sounded a sample before: an audio-rate source, for FM and AM from the voice itself.
     Oscillator,
@@ -32,7 +31,7 @@ pub enum Source {
 impl Source {
     /// Whether the source swings from -1 to 1, as an LFO does, rather than rising from 0 to 1, as an envelope does.
     pub fn is_bipolar(self) -> bool {
-        matches!(self, Source::Lfo(_) | Source::Key | Source::Random | Source::Oscillator | Source::Osc(_))
+        matches!(self, Source::Lfo(_) | Source::Random | Source::Oscillator | Source::Osc(_))
     }
 }
 
@@ -156,10 +155,6 @@ pub static SOURCES: &[Named<Source>] = &[
         value: Source::Velocity,
     },
     Named {
-        name: "key",
-        value: Source::Key,
-    },
-    Named {
         name: "random",
         value: Source::Random,
     },
@@ -251,7 +246,6 @@ pub struct Sources {
     pub envelopes: [f64; 3],
     pub lfos: [f64; LFO_COUNT],
     pub velocity: f64,
-    pub key: f64,
     pub random: f64,
     /// The voice's oscillator a sample before, from -1 to 1.
     pub oscillator: f64,
@@ -270,7 +264,6 @@ impl Sources {
             Source::Env3 => self.envelopes[2],
             Source::Lfo(place) => self.lfos[place],
             Source::Velocity => self.velocity,
-            Source::Key => self.key,
             Source::Random => self.random,
             Source::Oscillator => self.oscillator,
             Source::Osc(place) => self.oscs[place],

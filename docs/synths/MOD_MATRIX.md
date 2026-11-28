@@ -5,21 +5,24 @@ synthesizer do, laid out as a table. Its six slots are on the Mod Matrix tab.
 
 ![The Mod Matrix tab](../screenshots/synth_matrix.svg)
 
-Each slot has a Source: an envelope, an LFO, the note's Velocity or Key, or a
-Random value drawn for each note; or Osc, the note's own oscillator, which
-moves at audio rate: Osc to Pitch is the bright, clangorous feedback FM of an
-oscillator modulating itself, Osc to Cutoff the growl of audio-rate filter FM,
-and Osc to Amp a ring of AM, on any engine, even one that never had FM. An
+Each slot has a Source: an envelope, an LFO, the note's Velocity, or Per Note
+S&H, a random value drawn as each note starts and held for the whole note, a
+sample and hold built in; or Osc 1, the note's own oscillator (Osc 1 to Osc 3
+on Asheville, one for each), which moves at audio rate: Osc 1 to Pitch is the
+bright, clangorous feedback FM of an oscillator modulating itself, Osc 1 to
+Cutoff the growl of audio-rate filter FM, and Osc 1 to Amp a ring of AM, on
+any engine, even one that never had FM. An
 LFO at Very High speed routed to Pitch is the same analog-style FM from a
 second source ([LFOs](LFOS.md)). A Via scales the source by a second one, so
-that, for instance, an LFO moves the cutoff only as far as the note is loud.
+that, for instance, an LFO moves the cutoff only as far as the note is loud;
+Per Note S&H is a source only, never a Via.
 Moves is what it moves, Pitch, Pulse width, Detune and Fine (every
 oscillator's tuning, by up to a semitone and a tenth of one), SID interval (how far the
 SID's second oscillator stands from the note, for sweeping a sync lead), Cutoff,
 Resonance, Amp or an LFO's rate,
 and Amount how far, either way, as a share of what it moves. LFO 1 to Pitch is
 vibrato, with a Square shape and a large Amount a chip trill; Velocity to
-Cutoff makes harder notes brighter; Random to Detune makes each note a little
+Cutoff makes harder notes brighter; Per Note S&H to Detune makes each note a little
 different.
 
 Polarity says how the route reads a source that swings both ways, as an LFO
@@ -41,7 +44,7 @@ vibrato quicken and relax in waves; an LFO into its own rate bends its shape,
 racing through one half of its cycle and lingering in the other. Unipolar
 only ever speeds the rate up. A Via scales the route as elsewhere, by another
 LFO. The LFOs belong to the whole instrument, not to a note, so only an LFO
-moves a rate: a slot reading an envelope, Velocity, Key, Random, an oscillator
+moves a rate: a slot reading an envelope, Velocity, Per Note S&H, an oscillator
 or a CC into a rate, or scaling it by one of them, moves nothing. An LFO
 following the key keeps its ratio to the note and is not moved.
 
