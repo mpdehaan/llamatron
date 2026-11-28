@@ -15,12 +15,12 @@ changed=$( { git diff --name-only HEAD; git ls-files --others --exclude-standard
 if [ -n "$changed" ]; then
     # The Rust's own checks: its layout, clippy with every warning an error, its tests in the quick dev build, and the
     # release build the comparisons run (.claude/rules/RUST.md).
-    # Every value with a meaning is named: no line the change adds types a number or a name in place
-    # (.claude/rules/STYLE.md).
-    echo 'check before commit: checking that every value is named'
-    .venv/bin/python internal_tools/check_named_values.py
     echo 'check before commit: checking the Rust with cargo'
     PATH="$HOME/.cargo/bin:$PATH"
+    # Every value with a meaning is named: no line the change adds types a number or a name in place, read from each
+    # file's syntax tree (.claude/rules/STYLE.md).
+    cargo build --manifest-path src/Cargo.toml --release --quiet -p llamatron-checks
+    src/target/release/check-named-values
     cargo fmt --manifest-path src/Cargo.toml --all --check
     cargo clippy --manifest-path src/Cargo.toml --workspace --release --all-targets --quiet -- -D warnings
     cargo test --manifest-path src/Cargo.toml --workspace --quiet
@@ -67,6 +67,8 @@ if [ -n "$changed" ]; then
             echo "crash sweep: $(head -1 "$sweep")" ;;
     esac
 fi
+# The Python tools and tests name their values too, until they are replaced.
+.venv/bin/python internal_tools/check_named_values.py
 # The architecture diagram is made from the code, and fails the check where it is out of date.
 .venv/bin/python internal_tools/make_diagrams.py --check || { echo 'the architecture diagram is out of date: run internal_tools/make_diagrams.py'; exit 1; }
 # Every path a document names must still exist.

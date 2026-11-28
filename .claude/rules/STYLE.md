@@ -22,7 +22,8 @@ language, is held to exactly the same standard as the program itself: no rule he
   tracker sends the backend), is a named constant or a named `let`, defined once and imported: `let shown_rows =
   7;`, `const PREVIEW_CHANNEL: i64 = 15;`, `asheville(OSC2_PITCH, amount)`. A list or table of names is built from
   the constants and keyed by them, never retyped. Code nearby that breaks this is no precedent: the line written
-  follows the rule. `internal_tools/check_named_values.py`, run by the commit check, fails any line that breaks it;
+  follows the rule. `check-named-values` (`src/checks`), reading each file's syntax tree, run by the commit check with its Python
+  counterpart for the tools, fails any line that breaks it;
   an exemption needs the user's yes. The empty text needs no name.
 - **A rule about shape is met by naming the thing a person would name**, never by cutting code into pieces or a clever line.
 - **Everything the program offers is registered.** Every component (engine, oscillator, filter, envelope, Amp,

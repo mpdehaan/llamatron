@@ -1,0 +1,18 @@
+# llamatron: a music program
+# Copyright (C) 2026  Michael DeHaan
+# SPDX-License-Identifier: GPL-3.0-or-later
+[package]
+name = "llamatron-checks"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+description = "The commit check's readers of the Rust source: every literal typed in place, found by its syntax tree"
+publish = false
+
+[[bin]]
+name = "check-named-values"
+path = "src/main.rs"
+
+[dependencies]
+syn = { version = "2", features = ["full", "visit"] }
+proc-macro2 = { version = "1", features = ["span-locations"] }

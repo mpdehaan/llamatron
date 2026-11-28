@@ -589,6 +589,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "llamatron-checks"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "llamatron-compare"
 version = "0.1.0"
 dependencies = [

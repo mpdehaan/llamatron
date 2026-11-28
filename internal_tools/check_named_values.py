@@ -1,7 +1,10 @@
 # llamatron: a music program
 # Copyright (C) 2026  Michael DeHaan
 # SPDX-License-Identifier: GPL-3.0-or-later
-"""Fail any Rust or Python line a change adds that types a value with a meaning in place rather than naming it.
+"""Fail any Python line of the tools and tests a change adds that types a value with a meaning in place.
+
+The program's Rust is read by its own check, `src/checks` (`check-named-values`), which reads each file's syntax tree;
+this script reads what is left of the Python, until those tools are replaced.
 
 Two kinds of value are caught, in code and tests alike (.claude/rules/STYLE.md, "Every value with a meaning is
 named"): a number other than 0 and 1, and a string literal that is a name used as a value, such as "osc2_pitch" or
@@ -23,9 +26,9 @@ TOP = pathlib.Path(__file__).resolve().parent.parent
 RUST = "src"
 RUST_SUFFIX = ".rs"
 PYTHON_SUFFIX = ".py"
-# The folders read: the program, and the tools and tests beside it.
-READ_FOLDERS = ("src", "internal_tools", "python")
-SUFFIXES = (RUST_SUFFIX, PYTHON_SUFFIX)
+# The folders read: the tools and tests beside the program, in Python.
+READ_FOLDERS = ("internal_tools", "python")
+SUFFIXES = (PYTHON_SUFFIX,)
 EVERYTHING = "--everything"
 # The git commands the check reads the change by: its diff from the last commit with no lines of context, and the files
 # git does not track yet, leaving out what it ignores.

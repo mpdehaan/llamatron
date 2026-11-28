@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """The check of named values reports exactly the lines of a sample of Rust that type a value in place.
 
-The samples, `data/named_values_sample.rs` and `data/named_values_sample.py`, mark each line the check must report
-with the comment `flagged`.
+The sample, `data/named_values_sample.py`, marks each line the check must report with the comment `flagged`; the
+program's Rust has a check of its own, tested beside it in `src/checks`.
 """
 
 import importlib.util
@@ -13,7 +13,7 @@ import unittest
 
 HERE = pathlib.Path(__file__).resolve().parent
 TOOL = HERE.parent.parent / "internal_tools" / "check_named_values.py"
-SAMPLES = (HERE / "data" / "named_values_sample.rs", HERE / "data" / "named_values_sample.py")
+SAMPLES = (HERE / "data" / "named_values_sample.py",)
 # The comment each sample marks a line the check must report with, in its language.
 FLAGGED_MARKS = {".rs": "// flagged", ".py": "# flagged"}
 SPEC = importlib.util.spec_from_file_location("check_named_values", TOOL)
