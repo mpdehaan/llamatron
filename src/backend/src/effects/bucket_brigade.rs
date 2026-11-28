@@ -10,13 +10,25 @@
 //! expanded coming out, so that the hiss inside breathes with it, and each stage it enters saturates softly.
 
 use crate::dsp::{flushed, Random};
-use std::f64::consts::PI;
+use std::f64::consts::TAU;
 
 /// The most and fewest stages, at Darkness 0% and 100%; and the most clock ticks a host sample may hold at the stages
 /// chosen, so that a short delay never costs more than this.
 const MOST_STAGES: f64 = 8192.0;
 const FEWEST_STAGES: f64 = 512.0;
 const MOST_TICKS_PER_SAMPLE: f64 = 2.0;
+/// The poles of each of the device's filters, its input's and its output's, as the circuit's anti-aliasing filters
+/// have; the phases of its clock, each moving the charge one stage; the shortest chain it is built of; the spare places
+/// of its line; a quarter of the shortest tick the clock may reach, under which a tick never falls; and the share of the
+/// stages' rate under which its filters stay.
+const POLES: usize = 4;
+const CLOCK_PHASES: f64 = 2.0;
+const SHORTEST_CHAIN: f64 = 16.0;
+const LINE_SPARE: usize = 2;
+const TICK_FLOOR_DIVISOR: f64 = 4.0;
+const FILTER_SHARE: f64 = 0.45;
+/// Decibels as an amplitude: ten to the power of a twentieth of them.
+const DECIBEL_BASE: f64 = 10.0;
 /// How often, in samples, the clock's rate, its wow and flutter and the filters' stepping are worked out again.
 const CONTROL_SAMPLES: usize = 32;
 /// How long a change of time takes to slide most of the way, in seconds: the device's clock glides.
@@ -54,15 +66,15 @@ const DC_HERTZ: f64 = 10.0;
 // over its length going in, as the output holds each stage, so that the input's gain is the same wherever a tick falls.
 const INPUT_CUTOFF: f64 = 9900.0;
 const OUTPUT_CUTOFF: f64 = 9500.0;
-const INPUT_RESIDUES: [(f64, f64); 4] = [
+const INPUT_RESIDUES: [(f64, f64); POLES] = [
     (-10329.2715, -329.848),
     (-10329.2715, 329.848),
     (366.990557, -1811.4318),
     (366.990557, 1811.4318),
 ];
-const INPUT_POLES: [(f64, f64); 4] = [(-55482.0, -25082.0), (-55482.0, 25082.0), (-26292.0, -59437.0), (-26292.0, 59437.0)];
-const OUTPUT_RESIDUES: [(f64, f64); 4] = [(-11256.0, -99566.0), (-11256.0, 99566.0), (-13802.0, -24606.0), (-13802.0, 24606.0)];
-const OUTPUT_POLES: [(f64, f64); 4] = [(-51468.0, -21437.0), (-51468.0, 21437.0), (-26276.0, -59699.0), (-26276.0, 59699.0)];
+const INPUT_POLES: [(f64, f64); POLES] = [(-55482.0, -25082.0), (-55482.0, 25082.0), (-26292.0, -59437.0), (-26292.0, 59437.0)];
+const OUTPUT_RESIDUES: [(f64, f64); POLES] = [(-11256.0, -99566.0), (-11256.0, 99566.0), (-13802.0, -24606.0), (-13802.0, 24606.0)];
+const OUTPUT_POLES: [(f64, f64); POLES] = [(-51468.0, -21437.0), (-51468.0, 21437.0), (-26276.0, -59699.0), (-26276.0, 59699.0)];
 
 /// A complex number, as the filters' one-poles need.
 #[derive(Clone, Copy, Default)]
@@ -121,22 +133,22 @@ impl Complex {
 /// One of the device's filters: its poles and residues moved to its cutoff, each pole's step over one host sample, and
 /// each residue over its pole, and the filter's gain at no frequency.
 struct Filter {
-    poles: [Complex; 4],
-    residues: [Complex; 4],
-    sample_step: [Complex; 4],
-    unstep: [Complex; 4],
-    ratios: [Complex; 4],
+    poles: [Complex; POLES],
+    residues: [Complex; POLES],
+    sample_step: [Complex; POLES],
+    unstep: [Complex; POLES],
+    ratios: [Complex; POLES],
     still_gain: f64,
 }
 
 impl Filter {
     /// A filter from its residues and poles, moved from its own cutoff to another, at the host's rate.
-    fn new(residues: [(f64, f64); 4], poles: [(f64, f64); 4], own_cutoff: f64, cutoff: f64, rate: f64) -> Filter {
+    fn new(residues: [(f64, f64); POLES], poles: [(f64, f64); POLES], own_cutoff: f64, cutoff: f64, rate: f64) -> Filter {
         let factor = cutoff / own_cutoff;
         let poles = poles.map(|pole| Complex::of(pole).scaled(factor));
         let residues = residues.map(|residue| Complex::of(residue).scaled(factor));
         let period = 1.0 / rate;
-        let still_gain = -(0..4).map(|place| residues[place].over(poles[place]).re).sum::<f64>();
+        let still_gain = -(0..POLES).map(|place| residues[place].over(poles[place]).re).sum::<f64>();
         Filter {
             sample_step: poles.map(|pole| pole.scaled(period).exp()),
             unstep: poles.map(|pole| pole.scaled(-period).exp()),
@@ -148,7 +160,7 @@ impl Filter {
     }
 
     /// Each pole's e to the pole times some share of a host sample.
-    fn stepped(&self, samples: f64, rate: f64) -> [Complex; 4] {
+    fn stepped(&self, samples: f64, rate: f64) -> [Complex; POLES] {
         self.poles.map(|pole| pole.scaled(samples / rate).exp())
     }
 }
@@ -156,8 +168,8 @@ impl Filter {
 /// A clock tick's weights of a filter's poles: what they are at the next tick, and what one tick multiplies them by.
 #[derive(Clone, Copy, Default)]
 struct Weights {
-    now: [Complex; 4],
-    tick: [Complex; 4],
+    now: [Complex; POLES],
+    tick: [Complex; POLES],
 }
 
 impl Weights {
@@ -169,7 +181,7 @@ impl Weights {
     }
 
     #[inline]
-    fn rescale(&mut self, by: &[Complex; 4]) {
+    fn rescale(&mut self, by: &[Complex; POLES]) {
         for (now, by) in self.now.iter_mut().zip(by) {
             *now = now.times(*by);
         }
@@ -179,15 +191,15 @@ impl Weights {
 /// An output filter's state, the stage's last value it holds, and what the ticks of this sample add to it.
 #[derive(Clone, Copy, Default)]
 struct Output {
-    state: [Complex; 4],
-    added: [Complex; 4],
+    state: [Complex; POLES],
+    added: [Complex; POLES],
     held: f64,
 }
 
 impl Output {
     /// A new value from the chain at a tick: the step from the last one, weighted.
     #[inline]
-    fn take(&mut self, value: f64, weights: &[Complex; 4]) {
+    fn take(&mut self, value: f64, weights: &[Complex; POLES]) {
         let step = value - self.held;
         self.held = value;
         for (added, weight) in self.added.iter_mut().zip(weights) {
@@ -227,8 +239,8 @@ impl Level {
 /// What the Analog mode is made from: its taps' times as shares of the longest and their levels, the tap fed back, and
 /// its own settings.
 pub struct Design {
-    pub shares: [f64; 4],
-    pub levels: [f64; 4],
+    pub shares: [f64; POLES],
+    pub levels: [f64; POLES],
     pub feedback_from: Option<usize>,
     pub darkness: f64,
     pub noise: f64,
@@ -245,8 +257,8 @@ pub struct BucketBrigade {
     mask: usize,
     count: usize,
     write: usize,
-    behind: [usize; 4],
-    levels: [f64; 4],
+    behind: [usize; POLES],
+    levels: [f64; POLES],
     feedback_from: Option<usize>,
     clock: f64,
     tick_samples: f64,
@@ -256,8 +268,8 @@ pub struct BucketBrigade {
     heard_tempo: bool,
     input_filter: Filter,
     output_filter: Filter,
-    input_state: [Complex; 4],
-    input_held: [Complex; 4],
+    input_state: [Complex; POLES],
+    input_held: [Complex; POLES],
     input_now: f64,
     input_weights: Weights,
     output_weights: Weights,
@@ -287,15 +299,15 @@ impl BucketBrigade {
     /// The device for a design whose longest tap lasts some seconds, at the host's rate.
     pub fn new(design: &Design, longest: f64, rate: f64) -> BucketBrigade {
         let wanted = MOST_STAGES * (FEWEST_STAGES / MOST_STAGES).powf(design.darkness.clamp(0.0, 1.0));
-        let affordable = longest * rate * MOST_TICKS_PER_SAMPLE / 2.0;
-        let count = wanted.min(affordable).max(FEWEST_STAGES.min(affordable)).max(16.0) as usize;
-        let length = (count + 2).next_power_of_two();
+        let affordable = longest * rate * MOST_TICKS_PER_SAMPLE / CLOCK_PHASES;
+        let count = wanted.min(affordable).max(FEWEST_STAGES.min(affordable)).max(SHORTEST_CHAIN) as usize;
+        let length = (count + LINE_SPARE).next_power_of_two();
         let behind = design.shares.map(|share| ((share * count as f64).round() as usize).clamp(1, count));
         let hiss = if design.noise <= 0.0 {
             0.0
         } else {
             let decibels = QUIETEST_HISS_DECIBELS + (LOUDEST_HISS_DECIBELS - QUIETEST_HISS_DECIBELS) * design.noise.min(1.0);
-            10f64.powf(decibels / DECIBELS_PER_DECADE)
+            DECIBEL_BASE.powf(decibels / DECIBELS_PER_DECADE)
         };
         let follow = 1.0 - (-1.0 / (COMPANDER_SECONDS * rate)).exp();
         let level = Level {
@@ -322,8 +334,8 @@ impl BucketBrigade {
             heard_tempo: false,
             input_filter,
             output_filter,
-            input_state: [Complex::default(); 4],
-            input_held: [Complex::default(); 4],
+            input_state: [Complex::default(); POLES],
+            input_held: [Complex::default(); POLES],
             input_now: 0.0,
             input_weights: Weights::default(),
             output_weights: Weights::default(),
@@ -337,13 +349,13 @@ impl BucketBrigade {
             lean_offset: lean.tanh(),
             hiss,
             random: Random::new(count as u64),
-            wow_depth: design.wow.clamp(0.0, 1.0) * MOST_WOW_PITCH / (2.0 * PI * WOW_HERTZ),
-            flutter_depth: design.flutter.clamp(0.0, 1.0) * MOST_FLUTTER_PITCH / (2.0 * PI * FLUTTER_HERTZ),
+            wow_depth: design.wow.clamp(0.0, 1.0) * MOST_WOW_PITCH / (TAU * WOW_HERTZ),
+            flutter_depth: design.flutter.clamp(0.0, 1.0) * MOST_FLUTTER_PITCH / (TAU * FLUTTER_HERTZ),
             wow_phase: 0.0,
             flutter_phase: 0.0,
             wander: 0.0,
             countdown: 0,
-            dc_share: 1.0 - (-2.0 * PI * DC_HERTZ / rate).exp(),
+            dc_share: 1.0 - (-TAU * DC_HERTZ / rate).exp(),
             dc_state: 0.0,
             gain,
             rate,
@@ -373,20 +385,20 @@ impl BucketBrigade {
         let period = CONTROL_SAMPLES as f64 / self.rate;
         let glide = 1.0 - (-period / GLIDE_SECONDS).exp();
         self.longest += (self.target - self.longest) * glide;
-        self.wow_phase = (self.wow_phase + 2.0 * PI * WOW_HERTZ * period) % (2.0 * PI);
-        self.flutter_phase = (self.flutter_phase + 2.0 * PI * FLUTTER_HERTZ * period) % (2.0 * PI);
+        self.wow_phase = (self.wow_phase + TAU * WOW_HERTZ * period) % TAU;
+        self.flutter_phase = (self.flutter_phase + TAU * FLUTTER_HERTZ * period) % TAU;
         // A mean-reverting random walk whose spread stays about one half.
-        let revert = 2.0 * PI * WANDER_HERTZ;
+        let revert = TAU * WANDER_HERTZ;
         self.wander += -revert * self.wander * period + revert.sqrt() * period.sqrt() * self.random.normal();
         let swing = (1.0 - WANDER_SHARE) * self.wow_phase.sin() + WANDER_SHARE * self.wander;
         let seconds = self.longest + self.wow_depth * swing + self.flutter_depth * self.flutter_phase.sin();
-        let tick_samples = seconds * self.rate / (2.0 * self.count as f64);
-        self.tick_samples = tick_samples.max(1.0 / (2.0 * MOST_TICKS_PER_SAMPLE * 4.0));
+        let tick_samples = seconds * self.rate / (CLOCK_PHASES * self.count as f64);
+        self.tick_samples = tick_samples.max(1.0 / (CLOCK_PHASES * MOST_TICKS_PER_SAMPLE * TICK_FLOOR_DIVISOR));
         let next = self.clock;
         let rate = self.rate;
         let input_now = self.input_filter.stepped(next, rate);
         let output_now = self.output_filter.stepped(1.0 - next, rate);
-        for place in 0..4 {
+        for place in 0..POLES {
             self.input_weights.now[place] = input_now[place];
             let ratio = self.output_filter.residues[place].over(self.output_filter.poles[place]);
             self.output_weights.now[place] = ratio.times(output_now[place]);
@@ -473,7 +485,7 @@ impl BucketBrigade {
     /// Back to rest: the chain, the filters and the compander silent.
     pub fn reset(&mut self) {
         self.stages.fill(0.0);
-        self.input_state = [Complex::default(); 4];
+        self.input_state = [Complex::default(); POLES];
         self.wet = Output::default();
         self.fed = Output::default();
         for level in [&mut self.compressor, &mut self.wet_expander, &mut self.fed_expander] {
@@ -487,7 +499,7 @@ impl BucketBrigade {
 /// the circuit's filters are sized to its clock, but never above their own cutoffs, so that fewer stages are darker.
 fn filters(count: usize, longest: f64, rate: f64) -> (Filter, Filter) {
     let stage_rate = count as f64 / longest.max(1.0 / rate);
-    let limit = 0.45 * stage_rate;
+    let limit = FILTER_SHARE * stage_rate;
     let input = Filter::new(INPUT_RESIDUES, INPUT_POLES, INPUT_CUTOFF, INPUT_CUTOFF.min(limit), rate);
     let output = Filter::new(OUTPUT_RESIDUES, OUTPUT_POLES, OUTPUT_CUTOFF, OUTPUT_CUTOFF.min(limit), rate);
     (input, output)
@@ -497,12 +509,21 @@ fn filters(count: usize, longest: f64, rate: f64) -> (Filter, Filter) {
 mod tests {
     use super::*;
 
-    const RATE: f64 = 48_000.0;
+    use crate::dsp::testing::{sine, HALF_SECOND, RATE, SECOND};
 
+    /// The taps' shares of the longest time, a quarter apart, the first alone heard; the level of the tones tried; the
+    /// longest time tried, in seconds; and a click's length, a millisecond.
+    const TAP_SHARES: [f64; POLES] = [0.25, 0.5, 0.75, 1.0];
+    const FIRST_TAP_ALONE: [f64; POLES] = [1.0, 0.0, 0.0, 0.0];
+    const TONE_LEVEL: f64 = 0.5;
+    const LONGEST: f64 = 0.4;
+    const CLICK_SAMPLES: usize = 48;
+
+    /// A device's design of a Darkness, its first tap alone heard, with no noise, drive, wow or flutter.
     fn design(darkness: f64) -> Design {
         Design {
-            shares: [0.25, 0.5, 0.75, 1.0],
-            levels: [1.0, 0.0, 0.0, 0.0],
+            shares: TAP_SHARES,
+            levels: FIRST_TAP_ALONE,
             feedback_from: None,
             darkness,
             noise: 0.0,
@@ -514,11 +535,10 @@ mod tests {
 
     /// The level of a steady sine at some hertz through the device, once it has settled, against the sine's own.
     fn through(device: &mut BucketBrigade, hertz: f64, amplitude: f64) -> f64 {
-        let samples = RATE as usize;
         let mut loudest: f64 = 0.0;
-        for place in 0..samples {
-            let (wet, _) = device.process(amplitude * (2.0 * PI * hertz * place as f64 / RATE).sin());
-            if place > samples / 2 {
+        for place in 0..SECOND {
+            let (wet, _) = device.process(sine(hertz, amplitude, place));
+            if place > HALF_SECOND {
                 loudest = loudest.max(wet.abs());
             }
         }
@@ -529,60 +549,62 @@ mod tests {
     /// Darkness: the device's filters follow its clock.
     #[test]
     fn low_tones_pass_and_darkness_darkens() {
-        let longest = 0.4;
-        let mut bright = BucketBrigade::new(&design(0.0), longest, RATE);
-        let low = through(&mut bright, 200.0, 0.5);
-        assert!((low - 1.0).abs() < 0.15, "{low}");
-        let mut bright = BucketBrigade::new(&design(0.0), longest, RATE);
-        let mut dark = BucketBrigade::new(&design(1.0), longest, RATE);
-        let treble = 3000.0;
-        let (open, shut) = (through(&mut bright, treble, 0.5), through(&mut dark, treble, 0.5));
-        assert!(shut < open * 0.5, "{shut} against {open}");
+        let (bass, near_its_level, treble, darker) = (200.0, 0.15, 3000.0, 0.5);
+        let mut bright = BucketBrigade::new(&design(0.0), LONGEST, RATE);
+        let low = through(&mut bright, bass, TONE_LEVEL);
+        assert!((low - 1.0).abs() < near_its_level, "{low}");
+        let mut bright = BucketBrigade::new(&design(0.0), LONGEST, RATE);
+        let mut dark = BucketBrigade::new(&design(1.0), LONGEST, RATE);
+        let (open, shut) = (through(&mut bright, treble, TONE_LEVEL), through(&mut dark, treble, TONE_LEVEL));
+        assert!(shut < open * darker, "{shut} against {open}");
     }
 
     /// A click comes back at the tap's share of the longest time, near its moment.
     #[test]
     fn a_click_comes_back_at_its_taps_time() {
-        let longest = 0.4;
-        let mut device = BucketBrigade::new(&design(0.0), longest, RATE);
-        let heard: Vec<f64> = (0..RATE as usize).map(|place| device.process(if place < 48 { 0.5 } else { 0.0 }).0).collect();
+        let mut device = BucketBrigade::new(&design(0.0), LONGEST, RATE);
+        let heard: Vec<f64> = (0..SECOND)
+            .map(|place| device.process(if place < CLICK_SAMPLES { TONE_LEVEL } else { 0.0 }).0)
+            .collect();
         let loudest = heard
             .iter()
             .enumerate()
             .max_by(|one, other| one.1.abs().total_cmp(&other.1.abs()))
             .map(|(place, _)| place)
             .unwrap_or(0);
-        let expected = 0.25 * longest * RATE;
-        assert!((loudest as f64 - expected).abs() < 0.01 * RATE, "{loudest} against {expected}");
+        let first_share = TAP_SHARES[0];
+        let near_its_moment = 0.01;
+        let expected = first_share * LONGEST * RATE;
+        assert!((loudest as f64 - expected).abs() < near_its_moment * RATE, "{loudest} against {expected}");
     }
 
     /// A tempo change glides the clock: the echo of a steady tone bends in pitch for a while and settles, and the
     /// device's output never jumps between two samples further than it moved before the change.
     #[test]
     fn a_new_time_glides_without_a_jump() {
-        let mut device = BucketBrigade::new(&design(0.0), 0.4, RATE);
-        device.set_longest(0.4);
-        let hertz = 220.0;
-        let tone = |place: usize| 0.5 * (2.0 * PI * hertz * place as f64 / RATE).sin();
-        let settle = RATE as usize;
+        let (hertz, longer, grown) = (220.0, 0.6, 1.2);
+        let mut device = BucketBrigade::new(&design(0.0), LONGEST, RATE);
+        device.set_longest(LONGEST);
+        let tone = |place: usize| sine(hertz, TONE_LEVEL, place);
+        let settle = SECOND;
         let mut last = 0.0;
         let mut steady_step: f64 = 0.0;
         for place in 0..settle {
             let out = device.process(tone(place)).0;
-            if place > settle / 2 {
+            if place > HALF_SECOND {
                 steady_step = steady_step.max((out - last).abs());
             }
             last = out;
         }
-        device.set_longest(0.6);
+        device.set_longest(longer);
         let mut largest_step: f64 = 0.0;
-        for place in settle..settle + RATE as usize {
+        for place in settle..settle + SECOND {
             let out = device.process(tone(place)).0;
             largest_step = largest_step.max((out - last).abs());
             last = out;
         }
         // Gliding a sixth longer lowers the pitch by at most a sixth, so the steps between samples shrink rather than grow.
-        assert!(largest_step < steady_step * 1.2, "{largest_step} against {steady_step}");
+        assert!(largest_step < steady_step * grown, "{largest_step} against {steady_step}");
     }
 
     /// The hiss falls away in silence, as a compander makes it: with no sound in, it stays under the quietest it may be.
@@ -590,12 +612,13 @@ mod tests {
     fn the_hiss_falls_away_in_silence() {
         let mut noisy = design(0.0);
         noisy.noise = 1.0;
-        let mut device = BucketBrigade::new(&noisy, 0.2, RATE);
+        let short = 0.2;
+        let mut device = BucketBrigade::new(&noisy, short, RATE);
         let mut quiet_level: f64 = 0.0;
-        for _ in 0..RATE as usize {
+        for _ in 0..SECOND {
             quiet_level = quiet_level.max(device.process(0.0).0.abs());
         }
-        let loudest_hiss = 10f64.powf(LOUDEST_HISS_DECIBELS / DECIBELS_PER_DECADE);
+        let loudest_hiss = DECIBEL_BASE.powf(LOUDEST_HISS_DECIBELS / DECIBELS_PER_DECADE);
         assert!(quiet_level < loudest_hiss, "{quiet_level}");
     }
 }

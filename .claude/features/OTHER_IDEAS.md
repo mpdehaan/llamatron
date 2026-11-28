@@ -28,7 +28,7 @@ built.
 
 - **Constants of one meaning defined once**: after the expert reviews are discussed, an agent reads every constant in
   the program for those defined twice with one meaning, and plans how to define each once without breaking anything,
-  never joining constants whose values only happen to agree.
+  never joining constants whose values only happen to agree: the texts above all, the numbers too.
 
 ## The Model
 
