@@ -201,13 +201,10 @@ impl LfoBank {
         }
     }
 
-    /// Playback of the instrument started: from silence, every On play LFO starts its cycle from zero and every Snail
-    /// from where it was first heard; while something already plays it, nothing restarts.
+    /// Playback of the instrument started: from silence, every On play LFO starts its cycle from zero; while something
+    /// already plays it, nothing restarts. A Snail never starts again: it goes on from where it stood.
     pub fn play_started(&mut self) {
         if self.players == 0 {
-            for snail in self.snails.iter_mut().flatten() {
-                snail.restart();
-            }
             for lfo in self.lfos.iter_mut().flatten() {
                 if lfo.restart == Restart::OnPlay {
                     lfo.cycles = 0.0;
@@ -267,8 +264,9 @@ impl LfoBank {
         self
     }
 
-    /// Work out what the LFOs give the chunk ahead.
-    pub fn advance(&mut self, frames: usize) {
+    /// Work out what the LFOs and Snails give the chunk ahead, the Snails' weightings moved by the instrument's CCs, as
+    /// their last messages left them from 0 to 1, and by what the newest note's routes move them by.
+    pub fn advance(&mut self, frames: usize, controls: &[f64], noted: &[[f64; WEIGHTED_COUNT]; LFO_COUNT]) {
         let frames = frames.min(MOST_FRAMES);
         if !self.rate_routes.is_empty() {
             self.advance_moving_rates(frames);
@@ -276,7 +274,7 @@ impl LfoBank {
             self.advance_lfos(frames);
         }
         if self.snails.iter().any(Option::is_some) {
-            self.advance_snails(frames);
+            self.advance_snails(frames, controls, noted);
         }
     }
 
@@ -333,7 +331,7 @@ impl LfoBank {
     /// Work out the chunk ahead of the Snails, a sample at a time, every Snail together: each weighting moved by what
     /// its routes read, an LFO's value at the sample or a Snail's output at the sample before, so that the order of the
     /// slots never matters.
-    fn advance_snails(&mut self, frames: usize) {
+    fn advance_snails(&mut self, frames: usize, controls: &[f64], noted: &[[f64; WEIGHTED_COUNT]; LFO_COUNT]) {
         let seconds = 1.0 / self.rate;
         let LfoBank {
             snails,
@@ -346,9 +344,10 @@ impl LfoBank {
         let read = |source: BankSource, sample: usize, last: &[[f64; OUTPUT_COUNT]; LFO_COUNT]| match source {
             BankSource::Lfo(place) => now[place][sample],
             BankSource::Snail(slot, output) => last[slot][output],
+            BankSource::Control(number) => controls.get(number as usize).copied().unwrap_or(0.0),
         };
         for sample in 0..frames {
-            let mut moved = [[0.0; WEIGHTED_COUNT]; LFO_COUNT];
+            let mut moved = *noted;
             for route in weight_routes.iter() {
                 let mut value = read(route.source, sample, snail_last) * route.reach + route.offset;
                 if let Some(via) = route.via {
@@ -479,7 +478,7 @@ mod tests {
             let mut done = 0;
             while done < half_second {
                 let frames = MOST_FRAMES.min(half_second - done);
-                bank.advance(frames);
+                bank.advance(frames, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
                 rises_seen += rises(&bank.now[0][..frames]);
                 done += frames;
             }
@@ -499,7 +498,7 @@ mod tests {
     fn smooth_random_glides_where_sample_and_hold_steps() {
         let most_jump = |shape: &str| {
             let mut lfos = bank(&[("shape", shape.into()), ("rate", 10.0.into())]);
-            lfos.advance(MOST_FRAMES);
+            lfos.advance(MOST_FRAMES, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
             lfos.now[0]
                 .windows(2)
                 .take(MOST_FRAMES - 1)
@@ -519,7 +518,7 @@ mod tests {
         let mut lfos = bank(&[("shape", "saw_up".into()), ("quarters", quarter.into())]);
         let cycles_in = |lfos: &mut LfoBank| {
             let before = lfos.lfos[0].as_ref().expect("an LFO").cycles;
-            lfos.advance(RATE as usize / 8);
+            lfos.advance(RATE as usize / 8, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
             lfos.lfos[0].as_ref().expect("an LFO").cycles - before
         };
         let eighth_second = 1.0 / 8.0;
@@ -543,7 +542,7 @@ mod tests {
         );
         let cycles = |lfos: &LfoBank, place: usize| lfos.lfos[place].as_ref().expect("an LFO").cycles;
         lfos.play_started();
-        lfos.advance(MOST_FRAMES);
+        lfos.advance(MOST_FRAMES, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
         let reached = cycles(&lfos, 1);
         lfos.play_started();
         assert!(cycles(&lfos, 0) > 0.0, "a second start while playing restarts nothing");
@@ -582,7 +581,7 @@ mod tests {
             let mut bank = LfoBank::compiled(&specs, RATE).with_weight_routes(crate::modulation::matrix::weight_routes(slots));
             let mut path = Vec::new();
             for _ in 0..(heard_seconds * RATE / MOST_FRAMES as f64) as usize {
-                bank.advance(MOST_FRAMES);
+                bank.advance(MOST_FRAMES, &[], &[[0.0; WEIGHTED_COUNT]; LFO_COUNT]);
                 path.push(bank.snail_now[0][0][1]);
             }
             path

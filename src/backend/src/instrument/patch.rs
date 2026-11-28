@@ -24,6 +24,7 @@ use crate::filters::{FilterPart, FilterState, ENVELOPE_OCTAVES};
 use crate::instrument::amp::{self, AmpPart};
 use crate::modulation::lfos::{self, LfoBank, LFO_COUNT};
 use crate::modulation::matrix::{self, Destination, ModMatrix, Moved, Source, Sources};
+use crate::modulation::snail::WEIGHTED_COUNT;
 use crate::oscillators::{self, Moves, OscillatorPart, OscillatorState};
 use crate::protocol::values::{field, list, number, truth, word};
 use rmpv::Value;
@@ -162,6 +163,9 @@ pub struct Modular {
     matrix_reads_env2: bool,
     /// The Snail outputs the matrix reads, by slot and place, which each voice copies a sample at a time.
     snail_reads: Vec<(usize, usize)>,
+    /// What the newest note's routes moved each Snail's weightings by at the end of its last chunk, which the Snails
+    /// take for the chunk ahead, a Snail belonging to the whole instrument.
+    noted_weights: [[f64; WEIGHTED_COUNT]; LFO_COUNT],
     /// The oscillators' own tuning in cents, an engine of one oscillator's Detune and Fine together.
     tuning_cents: f64,
     reads_env3: bool,
@@ -299,7 +303,11 @@ impl Patch {
     /// Ready the patch for a chunk: its LFOs moved on and its shared filter's movement held where the newest note left it.
     pub fn ready(&mut self, frames: usize) {
         if self.lfos.is_on() {
-            self.lfos.advance(frames);
+            let noted = match &self.sound {
+                Sound::Modular(modular) => modular.noted_weights,
+                _ => [[0.0; WEIGHTED_COUNT]; LFO_COUNT],
+            };
+            self.lfos.advance(frames, &self.controls, &noted);
         }
         if let Sound::Modular(modular) = &mut self.sound {
             let frames = frames.min(MOST_FRAMES);
@@ -445,6 +453,7 @@ impl Patch {
         let gliding = glide > 0.0 && voice.glide_from != voice.pitch;
         modular.oscillator.choose_band(&mut voice.oscillator, voice.pitch, voice.reach);
         let mut reach: f64 = 0.0;
+        let mut last_weights = [[0.0; WEIGHTED_COUNT]; LFO_COUNT];
         for place in 0..count {
             let sample = first + place as i64;
             let note = NoteTime {
@@ -480,6 +489,7 @@ impl Patch {
             } else {
                 modular.matrix.moved(&sources)
             };
+            last_weights = moved.weights;
             // The Mod Matrix's Detune and Fine and the oscillators' own tuning move the pitch, in cents.
             let mut bend = moved.pitch + (moved.detune + moved.fine + modular.tuning_cents) / CENTS_A_SEMITONE;
             if gliding {
@@ -540,6 +550,9 @@ impl Patch {
         };
         if closed {
             voice.silent = true;
+        }
+        if is_newest && modular.matrix.moves_weights() {
+            modular.noted_weights = last_weights;
         }
         if is_newest && !modular.own_filter && count > 0 {
             modular.last_octaves = modular.shared_octaves[offset + count - 1];
@@ -638,6 +651,7 @@ fn modular(spec: &Value, oscillators: &Value, rate: f64) -> Modular {
         env2_to_filter,
         matrix_reads_env2,
         snail_reads,
+        noted_weights: [[0.0; WEIGHTED_COUNT]; LFO_COUNT],
         reads_env3: matrix.uses(Source::Env3) || gates_read(2),
         tuning_cents,
         filter,

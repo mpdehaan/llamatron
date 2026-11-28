@@ -9,7 +9,8 @@
 //! op-amp integrators and a passive RC node, an inverter and a comparator, with the op-amps' rails modelled, since the
 //! slower two are held by them (`.claude/notes/synthesis/MODULATORS_RESEARCH.md`, section 3). Each is stepped by RK4 on a
 //! clock of its own, never the sample rate's or a chunk's, so that a chaotic path is the same in every render, and read
-//! along a straight line between its steps.
+//! along a straight line between its steps. A Snail starts on its path, as a circuit that has been on for ever, and no
+//! note or playback starts it again.
 
 use crate::dsp::Random;
 
@@ -28,14 +29,15 @@ const LOW_RAIL: f64 = -10.64;
 /// How far a full weighting shifts the comparator's rails, in volts: enough to move the share of time on a lobe from
 /// about a third to about two thirds while every circuit stays chaotic.
 const MOST_BIAS: f64 = 1.5;
-/// The start's spread on the RC node, in volts, and the seed of each slot's circuits.
+/// How far a seed moves a start's RC node from its point on the path, in volts, so that every instrument's and slot's
+/// path parts from every other's within a minute or so.
 const START_SPREAD: f64 = 0.03;
 /// Where a circuit has left its bounds, and so is restarted: its RC node, or a capacitor's charge, in volts.
 const MOST_NODE: f64 = 12.0;
 const MOST_CHARGE: f64 = 30.0;
 
 /// One circuit's parts: its capacitors in farads, its resistors in ohms, its inverter's gain, the time a step of its
-/// clock lasts, how long it runs before it is first heard, and the swing of each output to scale to -1 to 1.
+/// clock lasts, the swing of each output to scale to -1 to 1, and points on its path, where a Snail starts.
 struct Parts {
     cx: f64,
     cw: f64,
@@ -49,11 +51,15 @@ struct Parts {
     rq: f64,
     gain: f64,
     step: f64,
-    warm_up: f64,
     swings: [f64; OUTPUTS_A_CIRCUIT],
+    on_path: [State; START_POINTS],
 }
 
-/// The three circuits' parts, from their schematic: Slow, Slower (its resistors ten times Slow's) and Slowest (a
+/// How many points on its path each circuit keeps to start from, a seed choosing one.
+const START_POINTS: usize = 8;
+
+/// The three circuits' parts, from their schematic, with points on each one's path read from a long run of it at the
+/// centre of its weighting: Slow, Slower (its resistors ten times Slow's) and Slowest (a
 /// hundred times, with no knob, a smaller RC capacitor and an inverter's gain of 1.5).
 const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
     Parts {
@@ -68,8 +74,17 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 4.7e6,
         gain: 1.0,
         step: 0.0025,
-        warm_up: 120.0,
         swings: [2.8, 6.0, 6.0],
+        on_path: [
+            [-1.242177, -0.371047, -1.689325],
+            [0.000358, -0.051473, 1.512818],
+            [1.125370, 0.250402, -2.120033],
+            [-0.188981, -0.117495, 2.921949],
+            [-0.631885, 0.098892, -0.228576],
+            [2.235216, 0.148050, 5.147469],
+            [0.336633, -0.084734, 3.471256],
+            [1.242181, 0.228178, 2.882414],
+        ],
     },
     Parts {
         cx: 2e-6,
@@ -83,8 +98,17 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 14.7e6,
         gain: 1.0,
         step: 0.025,
-        warm_up: 600.0,
         swings: [7.0, 10.0, 10.0],
+        on_path: [
+            [1.534898, 0.945275, -0.604615],
+            [-1.295600, -0.863962, 1.485174],
+            [-1.525860, -0.430134, -3.893539],
+            [0.045007, 0.595299, 0.713837],
+            [2.300526, -0.307875, 8.294381],
+            [-3.321185, -0.073884, 1.033318],
+            [5.132371, 0.596950, 7.361499],
+            [2.678240, -0.098530, 7.898496],
+        ],
     },
     Parts {
         cx: 2e-6,
@@ -98,8 +122,17 @@ const CIRCUITS: [Parts; CIRCUIT_COUNT] = [
         rq: 100e6,
         gain: 1.5,
         step: 0.25,
-        warm_up: 7200.0,
         swings: [6.5, 10.0, 10.0],
+        on_path: [
+            [-0.149621, -0.103403, -4.237310],
+            [-0.513506, -0.107979, -4.581427],
+            [-0.609190, -0.153281, -4.352226],
+            [-3.701842, -0.055305, -10.031194],
+            [-0.507113, 0.655621, -10.529017],
+            [2.046779, 0.818628, -7.797679],
+            [3.970024, 0.797511, -5.217237],
+            [4.989934, 0.911482, -4.738417],
+        ],
     },
 ];
 
@@ -161,11 +194,12 @@ struct Circuit {
 }
 
 impl Circuit {
-    /// A circuit started from a seeded point near rest and run at its weighting until it is on its attractor, so that a
-    /// weighting set is heard from the first note.
-    fn seeded(parts: &'static Parts, seed: u64, weighting: f64) -> Circuit {
+    /// A circuit started on its path, at the point its seed chooses, its RC node moved a little by the seed.
+    fn seeded(parts: &'static Parts, seed: u64) -> Circuit {
         let mut random = Random::new(seed);
-        let start = [0.0, random.between(-START_SPREAD, START_SPREAD), 0.0];
+        let point = (random.next_u64() % START_POINTS as u64) as usize;
+        let mut start = parts.on_path[point];
+        start[1] += random.between(-START_SPREAD, START_SPREAD);
         let mut circuit = Circuit {
             parts,
             state: start,
@@ -174,21 +208,9 @@ impl Circuit {
             after: [0.0; OUTPUTS_A_CIRCUIT],
             into_step: 0.0,
         };
-        let steps = (parts.warm_up / parts.step) as usize;
-        for _ in 0..steps {
-            circuit.step(weighting);
-        }
-        circuit.start = circuit.state;
-        circuit.restart();
+        circuit.after = circuit.outputs();
+        circuit.before = circuit.after;
         circuit
-    }
-
-    /// Back to where it was first heard.
-    fn restart(&mut self) {
-        self.state = self.start;
-        self.after = self.outputs();
-        self.before = self.after;
-        self.into_step = 0.0;
     }
 
     /// Its outputs now, each from -1 to 1.
@@ -256,19 +278,9 @@ impl Snail {
         let circuits = CIRCUITS
             .iter()
             .enumerate()
-            .map(|(place, parts)| {
-                let weighting = weightings.get(place).copied().unwrap_or(0.0);
-                Circuit::seeded(parts, seed.wrapping_mul(CIRCUIT_COUNT as u64).wrapping_add(place as u64), weighting)
-            })
+            .map(|(place, parts)| Circuit::seeded(parts, seed.wrapping_mul(CIRCUIT_COUNT as u64).wrapping_add(place as u64)))
             .collect();
         Snail { circuits, weightings }
-    }
-
-    /// Every circuit back to where it was first heard, as playback starts from silence.
-    pub fn restart(&mut self) {
-        for circuit in &mut self.circuits {
-            circuit.restart();
-        }
     }
 
     /// Move every circuit on by a sample of some seconds, each weighted circuit at its weighting moved by what the Mod
@@ -292,7 +304,7 @@ mod tests {
 
     /// The lobe a circuit is on at each read, by the sign of its Y, over some seconds at a weighting.
     fn lobes(place: usize, seed: u64, weighting: f64, seconds: f64) -> Vec<bool> {
-        let mut circuit = Circuit::seeded(&CIRCUITS[place], seed, weighting);
+        let mut circuit = Circuit::seeded(&CIRCUITS[place], seed);
         let reads = (seconds / READ_EVERY) as usize;
         (0..reads).map(|_| circuit.advance(READ_EVERY, weighting)[1] > 0.0).collect()
     }

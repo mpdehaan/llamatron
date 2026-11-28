@@ -49,6 +49,8 @@ pub enum Destination {
     Fine,
     /// The SID's Interval: how far its second oscillator stands from the note, in semitones.
     Interval,
+    /// A Snail's weighting of a circuit, by the Snail's place and the circuit's, moved through the newest note.
+    Weight(usize, usize),
     Cutoff,
     Resonance,
     Amp,
@@ -68,16 +70,20 @@ pub const WEIGHT_DESTINATIONS: [[&str; WEIGHTED_COUNT]; LFO_COUNT] = [
     ["lfo4_slow", "lfo4_slower"],
 ];
 
-/// A source the modulators themselves can read, since they belong to the instrument rather than to a note: an LFO by its
-/// place, or one of a Snail's outputs by its slot's place and the output's.
+/// A source of the whole instrument rather than of a note, which the modulators read themselves: an LFO by its place,
+/// one of a Snail's outputs by its slot's place and the output's, or a MIDI CC by its number.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum BankSource {
     Lfo(usize),
     Snail(usize, usize),
+    Control(u8),
 }
 
 /// A bank source by its name, or None for a source of a note, such as an envelope.
 fn bank_source(name: &str) -> Option<BankSource> {
+    if let Some(number) = control_named(name) {
+        return Some(BankSource::Control(number));
+    }
     match source_named(name)? {
         Source::Lfo(place) => Some(BankSource::Lfo(place)),
         Source::Snail(slot, output) => Some(BankSource::Snail(slot, output)),
@@ -97,19 +103,32 @@ pub struct WeightRoute {
     pub(crate) offset: f64,
 }
 
-/// The matrix's routes that move a Snail's weighting, from its slots; a route whose source or via is a note's moves none.
+/// Where a slot's destination is a Snail's weighting, the Snail's place and the circuit's.
+fn weight_destination(slot: &Value) -> Option<(usize, usize)> {
+    let destination = word(slot, "destination", "none");
+    WEIGHT_DESTINATIONS
+        .iter()
+        .enumerate()
+        .find_map(|(place, names)| names.iter().position(|name| *name == destination).map(|circuit| (place, circuit)))
+}
+
+/// Whether a slot reads only the whole instrument's sources, as its source and its via, so that the bank moves its
+/// destination itself rather than through a note.
+fn reads_only_bank_sources(slot: &Value) -> bool {
+    let via = word(slot, "via", "none");
+    bank_source(word(slot, "source", "none")).is_some() && (via == "none" || bank_source(via).is_some())
+}
+
+/// The matrix's routes that move a Snail's weighting from the whole instrument's sources; one reading a note's source
+/// moves it through the newest note instead (ModMatrix, Destination::Weight).
 pub fn weight_routes(slots: &[Value]) -> Vec<WeightRoute> {
     let mut routes = Vec::new();
     for slot in slots {
         let amount = number(slot, "amount", 0.0);
-        let destination = word(slot, "destination", "none");
-        let Some((place, circuit)) = WEIGHT_DESTINATIONS
-            .iter()
-            .enumerate()
-            .find_map(|(place, names)| names.iter().position(|name| *name == destination).map(|circuit| (place, circuit)))
-        else {
+        let Some((place, circuit)) = weight_destination(slot) else { continue };
+        if !reads_only_bank_sources(slot) {
             continue;
-        };
+        }
         let Some(source) = bank_source(word(slot, "source", "none")) else { continue };
         let via = match word(slot, "via", "none") {
             "none" => None,
@@ -504,6 +523,8 @@ pub struct Moved {
     pub detune: f64,
     pub fine: f64,
     pub interval: f64,
+    /// What each Snail's weightings are moved by, Slow's and Slower's.
+    pub weights: [[f64; WEIGHTED_COUNT]; LFO_COUNT],
     pub cutoff: f64,
     pub resonance: f64,
     pub amp: f64,
@@ -538,7 +559,13 @@ impl ModMatrix {
                 continue;
             }
             let Some(source) = named(word(slot, "source", "none")) else { continue };
-            let Some((destination, range)) = destination_named(word(slot, "destination", "none")) else {
+            // A Snail's weighting read from a note's source is moved by the newest note; from the instrument's own
+            // sources, by the bank (weight_routes).
+            let weighting = weight_destination(slot).filter(|_| !reads_only_bank_sources(slot));
+            let Some((destination, range)) = weighting
+                .map(|(place, circuit)| (Destination::Weight(place, circuit), 1.0))
+                .or_else(|| destination_named(word(slot, "destination", "none")))
+            else {
                 continue;
             };
             let via = named(word(slot, "via", "none"));
@@ -555,6 +582,11 @@ impl ModMatrix {
             });
         }
         ModMatrix { routes, controls }
+    }
+
+    /// Whether any route moves a Snail's weighting through a note.
+    pub fn moves_weights(&self) -> bool {
+        self.routes.iter().any(|route| matches!(route.destination, Destination::Weight(..)))
     }
 
     /// Whether any route reads a source, so that a voice works out only what is read.
@@ -591,6 +623,7 @@ impl ModMatrix {
                 Destination::Detune => moved.detune += value,
                 Destination::Fine => moved.fine += value,
                 Destination::Interval => moved.interval += value,
+                Destination::Weight(slot, circuit) => moved.weights[slot][circuit] += value,
                 Destination::Cutoff => moved.cutoff += value,
                 Destination::Resonance => moved.resonance += value,
                 Destination::Amp => moved.amp += value,

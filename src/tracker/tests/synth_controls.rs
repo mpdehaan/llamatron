@@ -641,6 +641,56 @@ fn route(source: &str, destination: &str, amount: i64) -> Data {
     ])
 }
 
+/// Slow's Y over a minute, as the instrument the tracker sends plays it: a weighting leans so slow a circuit over many
+/// seconds, longer than a note the other tests play.
+fn slow_path(instrument: &Instrument) -> Vec<f64> {
+    let heard_seconds = 60.0;
+    let (frames, slow_y) = (llamatron_backend::engine::MOST_FRAMES, 1);
+    let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(instrument), DRUMS_FROM);
+    let mut patch = Patch::compiled(&llamatron_tracker::msgpack::value_of(&spec), RATE);
+    let mut path = Vec::new();
+    for _ in 0..(heard_seconds * RATE / frames as f64) as usize {
+        patch.ready(frames);
+        path.push(patch.lfos.snail_now[0][0][slow_y]);
+    }
+    path
+}
+
+/// Slow's Y over a few seconds while one note is held throughout, with a MIDI CC at its highest, so that the routes of
+/// a note's sources and of a CC move it.
+fn slow_path_under_a_note(instrument: &Instrument, control: usize) -> Vec<f64> {
+    let heard_seconds = 5.0;
+    let (frames, slow_y, highest) = (llamatron_backend::engine::MOST_FRAMES, 1, 127.0);
+    let spec = llamatron_tracker::sound_spec::synth_spec(&Sound::of(instrument), DRUMS_FROM);
+    let mut patch = Patch::compiled(&llamatron_tracker::msgpack::value_of(&spec), RATE);
+    patch.set_control(control, highest);
+    let mut voice = Voice::new(1, 0, PITCH, 0, VELOCITY, None);
+    patch.begin(&mut voice);
+    let mut path = Vec::new();
+    for chunk in 0..(heard_seconds * RATE / frames as f64) as usize {
+        patch.ready(frames);
+        patch.buffer[..frames].fill(0.0);
+        patch.play(&mut voice, (chunk * frames) as i64, frames);
+        patch.finish(frames);
+        path.push(patch.lfos.snail_now[0][0][slow_y]);
+    }
+    path
+}
+
+/// Slow and Slower take every Mod Matrix source: a note's, such as its Velocity, through the newest note, and the
+/// instrument's own, such as a MIDI CC, at once.
+#[test]
+fn every_source_moves_a_snails_weighting() {
+    let (control, full) = (74, 100);
+    let heard = route("lfo1_slow_y", "cutoff", full);
+    let unmoved = slow_path_under_a_note(&snail_instrument(0, std::slice::from_ref(&heard)), control);
+    for source in ["velocity".to_string(), "env1".to_string(), format!("cc{control}")] {
+        let routes = [heard.clone(), route(&source, "lfo1_slow", full)];
+        let moved = slow_path_under_a_note(&snail_instrument(0, &routes), control);
+        assert_ne!(unmoved, moved, "{source} moves Slow");
+    }
+}
+
 /// A Snail in a Modulators slot is heard as a person plays it: each of its outputs moves the cutoff through the Mod
 /// Matrix, and its Slow gauge changes the path Slow takes.
 #[test]
@@ -655,6 +705,9 @@ fn a_snail_moves_its_destinations_and_its_slow_gauge_moves_it() {
         }
     }
     let routed = [route("lfo1_slow_y", cutoff, full)];
-    let centred = played(&snail_instrument(centre, &routed));
-    assert!(differs(&centred, &played(&snail_instrument(leaning, &routed))), "the Slow gauge moves Slow");
+    assert_ne!(
+        slow_path(&snail_instrument(centre, &routed)),
+        slow_path(&snail_instrument(leaning, &routed)),
+        "the Slow gauge moves Slow"
+    );
 }
