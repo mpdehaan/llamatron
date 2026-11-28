@@ -22,10 +22,37 @@ use crate::oscillators::{frequency_of, Moves, OscillatorState};
 use crate::protocol::values::{list, number, truth, word};
 use llamatron_names::spec;
 use rmpv::Value;
-use std::f64::consts::PI;
+use std::f64::consts::TAU;
 
 /// What an oscillator takes where its spec names none: its shape and its level in the mix, each a share; and the
 /// lowest of its subs, two octaves under it.
+/// How many oscillators Asheville has, and the slow wanderings of each.
+pub const OSCILLATOR_COUNT: usize = 3;
+const WANDERINGS: usize = 2;
+/// Half, a square's width and an even mix.
+const HALF: f64 = 0.5;
+/// Twice, by which a share from 0 to 1 becomes one from -1 to 1.
+const TWICE: f64 = 2.0;
+/// The smooth step's curve, three times the square less twice the cube.
+const SMOOTH_SQUARE: f64 = 3.0;
+const SMOOTH_CUBE: f64 = 2.0;
+/// The thirds of the continuous Shape: triangle to saw, saw to square, square to narrow pulse.
+const SHAPE_THIRDS: f64 = 3.0;
+/// The xorshift's seed where its state is empty, the golden ratio's bits; its three shifts; and the shift and the
+/// mantissa's bits by which its state becomes a number from -1 to 1.
+const GOLDEN_GAMMA: u64 = 0x9E37_79B9_7F4A_7C15;
+const XORSHIFT_FIRST: u32 = 13;
+const XORSHIFT_SECOND: u32 = 7;
+const XORSHIFT_THIRD: u32 = 17;
+const MANTISSA_SHIFT: u32 = 11;
+const MANTISSA_BITS: u32 = 52;
+/// How a note's random number from -1 to 1 becomes the seed of its noise.
+const NOISE_SEED_SCALE: f64 = 1e9;
+/// The slower wandering's share of Drift, and the faster's.
+const SLOWER_WANDERING: f64 = 0.6;
+const FASTER_WANDERING: f64 = 0.4;
+/// A uniform draw's variance is a third, so the square root of three scales its spread to one.
+const UNIFORM_VARIANCE_DIVISOR: f64 = 3.0;
 const DEFAULT_SHAPE: f64 = 0.33;
 const DEFAULT_MIX: f64 = 0.8;
 const LOWEST_SUB: f64 = 2.0;
@@ -107,7 +134,7 @@ const SUB_LEVEL: f64 = 0.7;
 /// Asheville's oscillators as a patch compiles them.
 #[derive(Clone, Debug)]
 pub struct Asheville {
-    pub oscillators: [Oscillator; 3],
+    pub oscillators: [Oscillator; OSCILLATOR_COUNT],
     pub continuous: bool,
     pub character: Character,
     pub drift: f64,
@@ -120,8 +147,8 @@ pub struct Asheville {
     pub snap: bool,
     /// What makes the instrument's oscillators a set of their own, seeded by the instrument: where each sits off its
     /// tuning, from -1 to 1 of the most, and where each of its two slow wanderings stands, in turns.
-    pub spread: [f64; 3],
-    pub wander_phases: [[f64; 2]; 3],
+    pub spread: [f64; OSCILLATOR_COUNT],
+    pub wander_phases: [[f64; WANDERINGS]; OSCILLATOR_COUNT],
 }
 
 /// The intervals Snap pulls a Tune toward, in cents either way: unison, a fifth, an octave, an octave and a fifth, two
@@ -145,7 +172,7 @@ fn snapped(cents: f64) -> f64 {
     if away.abs() >= 1.0 {
         return cents;
     }
-    let smooth = away.abs() * away.abs() * (3.0 - 2.0 * away.abs());
+    let smooth = away.abs() * away.abs() * (SMOOTH_SQUARE - SMOOTH_CUBE * away.abs());
     sign * (target + away.signum() * smooth * SNAP_REACH)
 }
 
@@ -168,9 +195,9 @@ pub fn compiled(spec: &Value) -> Asheville {
     let defaults = Oscillator {
         range: 0.0,
         wave: Wave::Saw,
-        shape: 0.33,
+        shape: DEFAULT_SHAPE,
         cents: 0.0,
-        mix: 0.8,
+        mix: DEFAULT_MIX,
         on: true,
         sub: 0,
         hertz: None,
@@ -203,8 +230,8 @@ pub fn compiled(spec: &Value) -> Asheville {
         noise: number(spec, spec::NOISE, 0.0).clamp(0.0, 1.0),
         ring: number(spec, spec::RING, 0.0).clamp(0.0, 1.0),
         snap: truth(spec, spec::SNAP, false),
-        spread: [0.0; 3],
-        wander_phases: [[0.0; 2]; 3],
+        spread: [0.0; OSCILLATOR_COUNT],
+        wander_phases: [[0.0; WANDERINGS]; OSCILLATOR_COUNT],
     };
     // The instrument seeds its own set when it is placed; until then, the first set.
     asheville.seed(0);
@@ -215,12 +242,12 @@ pub fn compiled(spec: &Value) -> Asheville {
 #[inline]
 fn white(state: &mut u64) -> f64 {
     if *state == 0 {
-        *state = 0x9E37_79B9_7F4A_7C15;
+        *state = GOLDEN_GAMMA;
     }
-    *state ^= *state << 13;
-    *state ^= *state >> 7;
-    *state ^= *state << 17;
-    (*state >> 11) as f64 / (1u64 << 52) as f64 - 1.0
+    *state ^= *state << XORSHIFT_FIRST;
+    *state ^= *state >> XORSHIFT_SECOND;
+    *state ^= *state << XORSHIFT_THIRD;
+    (*state >> MANTISSA_SHIFT) as f64 / (1u64 << MANTISSA_BITS) as f64 - 1.0
 }
 
 /// One classic wave at a place in its cycle, its pulse widths moved by the Mod Matrix's Pulse width.
@@ -229,10 +256,10 @@ fn classic(wave: Wave, place: f64, step: f64, width_moved: f64) -> f64 {
     let width = |base: f64| (base + width_moved).clamp(NARROWEST, WIDEST);
     match wave {
         Wave::Triangle => triangle(place, step),
-        Wave::SharkTooth => 0.5 * (triangle(place, step) + saw(place, step)),
+        Wave::SharkTooth => HALF * (triangle(place, step) + saw(place, step)),
         Wave::Saw => saw(place, step),
         Wave::ReverseSaw => -saw(place, step),
-        Wave::Square => pulse(place, step, width(0.5)),
+        Wave::Square => pulse(place, step, width(HALF)),
         Wave::WidePulse => pulse(place, step, width(WIDE_WIDTH)),
         Wave::NarrowPulse => pulse(place, step, width(NARROW_WIDTH)),
     }
@@ -242,16 +269,16 @@ fn classic(wave: Wave, place: f64, step: f64, width_moved: f64) -> f64 {
 /// faded between each and the next.
 #[inline]
 fn continuous(shape: f64, place: f64, step: f64, width_moved: f64) -> f64 {
-    let third = 1.0 / 3.0;
+    let third = 1.0 / SHAPE_THIRDS;
     if shape < third {
         let along = shape / third;
         triangle(place, step) * (1.0 - along) + saw(place, step) * along
-    } else if shape < 2.0 * third {
+    } else if shape < TWICE * third {
         let along = (shape - third) / third;
-        saw(place, step) * (1.0 - along) + pulse(place, step, (0.5 + width_moved).clamp(NARROWEST, WIDEST)) * along
+        saw(place, step) * (1.0 - along) + pulse(place, step, (HALF + width_moved).clamp(NARROWEST, WIDEST)) * along
     } else {
-        let along = (shape - 2.0 * third) / third;
-        let width = 0.5 + (NARROW_WIDTH - 0.5) * along + width_moved;
+        let along = (shape - TWICE * third) / third;
+        let width = HALF + (NARROW_WIDTH - HALF) * along + width_moved;
         pulse(place, step, width.clamp(NARROWEST, WIDEST))
     }
 }
@@ -267,18 +294,20 @@ impl Asheville {
             let octaves_down = self.oscillators.get(place).map_or(0, |oscillator| oscillator.sub);
             state.sub_phases[place] = *phase / f64::from(1u32 << octaves_down);
         }
-        state.noise_state = ((random + 1.0) * 1e9) as u64 + 1;
-        state.jitter_noise = state.noise_state.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1;
-        state.jitter = [0.0; 3];
+        state.noise_state = ((random + 1.0) * NOISE_SEED_SCALE) as u64 + 1;
+        state.jitter_noise = state.noise_state.wrapping_mul(GOLDEN_GAMMA) | 1;
+        state.jitter = [0.0; OSCILLATOR_COUNT];
     }
 
     /// Seed what makes the instrument's oscillators their own by a number, such as the instrument's: each one's spread
     /// and where its wanderings stand, each a draw of its own, so that no two oscillators wander together.
     pub fn seed(&mut self, number: u64) {
-        let seed = f64::from_bits(number.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1);
-        for place in 0..3 {
-            self.spread[place] = 2.0 * super::free_phase(seed, place) - 1.0;
-            self.wander_phases[place] = [super::free_phase(seed, place + 3), super::free_phase(seed, place + 6)];
+        let seed = f64::from_bits(number.wrapping_mul(GOLDEN_GAMMA) | 1);
+        for place in 0..OSCILLATOR_COUNT {
+            self.spread[place] = TWICE * super::free_phase(seed, place) - 1.0;
+            // Each wandering's phase a draw past the spreads', the first's past every spread, the second's past those.
+            let (first, second) = (place + OSCILLATOR_COUNT, place + OSCILLATOR_COUNT + OSCILLATOR_COUNT);
+            self.wander_phases[place] = [super::free_phase(seed, first), super::free_phase(seed, second)];
         }
     }
 
@@ -288,9 +317,9 @@ impl Asheville {
     fn wander(&self, place: usize, pitch: f64, clock: f64, began: f64, jitter: f64) -> f64 {
         let slow = |which: usize| {
             let rate = DRIFT_RATES[which] * (1.0 + DRIFT_RATE_SPREAD[which] * place as f64);
-            (2.0 * PI * (rate * clock + self.wander_phases[place][which])).sin()
+            (TAU * (rate * clock + self.wander_phases[place][which])).sin()
         };
-        let wandering = MOST_DRIFT_CENTS * (0.6 * slow(0) + 0.4 * slow(1));
+        let wandering = MOST_DRIFT_CENTS * (SLOWER_WANDERING * slow(0) + FASTER_WANDERING * slow(1));
         let spread = MOST_SPREAD_CENTS * self.spread[place];
         let mut cents = self.drift * (wandering + spread + MOST_JITTER_CENTS * jitter);
         match self.character {
@@ -315,8 +344,8 @@ impl Asheville {
         let clock = began + seconds;
         // The jitter: white noise low-passed near JITTER_HERTZ, scaled so that its spread is one; a uniform draw's
         // spread is 1/sqrt(3), and a one-pole of coefficient p keeps sqrt(p/2) of it.
-        let pull = (2.0 * PI * JITTER_HERTZ / rate).min(1.0);
-        let jitter_scale = 3f64.sqrt() / (pull / 2.0).sqrt();
+        let pull = (TAU * JITTER_HERTZ / rate).min(1.0);
+        let jitter_scale = UNIFORM_VARIANCE_DIVISOR.sqrt() / (pull / TWICE).sqrt();
         if self.drift > 0.0 {
             for jitter in state.jitter.iter_mut() {
                 *jitter += pull * (jitter_scale * white(&mut state.jitter_noise) - *jitter);
@@ -339,7 +368,7 @@ impl Asheville {
                 frequency_of(tuned)
             } else {
                 // Not heard, it may run below hearing, as an LFO; it keeps under half the rate.
-                (440.0 * 2f64.powf((tuned - 69.0) / 12.0)).max(SLOWEST_UNHEARD_HERTZ)
+                super::unclamped_frequency_of(tuned).max(SLOWEST_UNHEARD_HERTZ)
             };
             let step = (frequency / rate).min(MOST_STEP);
             let at = state.phases[place];
@@ -359,7 +388,7 @@ impl Asheville {
                 // The sub runs at a half or a quarter of its oscillator's step, so that it keeps under it, in step.
                 let sub_step = step / f64::from(1 << oscillator.sub);
                 let sub_at = state.sub_phases[place];
-                mix += pulse(sub_at, sub_step, 0.5) * oscillator.mix * MIX_GAIN * SUB_LEVEL;
+                mix += pulse(sub_at, sub_step, HALF) * oscillator.mix * MIX_GAIN * SUB_LEVEL;
                 state.sub_phases[place] = (sub_at + sub_step).fract();
             }
         }
@@ -380,6 +409,12 @@ impl Asheville {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::{HALF_SECOND, RATE, SECOND};
+
+    /// Middle C, the note the tests play; Osc 3's place, the one the tests swing; and a tenth of a second of samples.
+    const MIDDLE_C: f64 = 60.0;
+    const OSC3: usize = 2;
+    const TENTH_SECOND: usize = 4800;
 
     /// An oscillator switched off is silent in the mix but still runs, so the Mod Matrix can read it; noise alone sounds.
     #[test]
@@ -392,12 +427,11 @@ mod tests {
         )]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
-        let rate = 48_000.0;
         let mut sides = Vec::new();
-        for place in 0..48_000 {
-            let out = asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate);
+        for place in 0..SECOND {
+            let out = asheville.sample(&mut state, MIDDLE_C, place as f64 / RATE, Moves::default(), RATE);
             assert_eq!(out, 0.0, "nothing heard");
-            sides.push(state.sides[2]);
+            sides.push(state.sides[OSC3]);
         }
         let (lowest, highest) = sides.iter().fold((f64::MAX, f64::MIN), |(low, high), side| (low.min(*side), high.max(*side)));
         assert!(highest - lowest > 1.0, "Osc 3 swings for the matrix");
@@ -409,10 +443,11 @@ mod tests {
             (spec::NOISE.into(), 1.0.into()),
         ]);
         let asheville = compiled(&noisy);
-        let most = (0..4800)
-            .map(|place| asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate).abs())
+        let most = (0..TENTH_SECOND)
+            .map(|place| asheville.sample(&mut state, MIDDLE_C, place as f64 / RATE, Moves::default(), RATE).abs())
             .fold(0.0, f64::max);
-        assert!(most > 0.1, "{most}");
+        let heard = 0.1;
+        assert!(most > heard, "{most}");
     }
 
     /// Ring alone, Osc 1 times Osc 2 with both out of the mix, still sounds; Snap pulls a Tune near a fifth onto it and
@@ -426,11 +461,11 @@ mod tests {
         ]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
-        let rate = 48_000.0;
-        let most = (0..4800)
-            .map(|place| asheville.sample(&mut state, 60.0, place as f64 / rate, Moves::default(), rate).abs())
+        let most = (0..TENTH_SECOND)
+            .map(|place| asheville.sample(&mut state, MIDDLE_C, place as f64 / RATE, Moves::default(), RATE).abs())
             .fold(0.0, f64::max);
-        assert!(most > 0.05, "{most}");
+        let heard = 0.05;
+        assert!(most > heard, "{most}");
         let (near_fifth, fifth, far) = (690.0, 700.0, 350.0);
         let pulled_within = 3.0;
         assert!((snapped(near_fifth) - fifth).abs() < pulled_within);
@@ -442,16 +477,16 @@ mod tests {
     #[test]
     fn an_oscillator_at_an_lfo_speed_ignores_the_note() {
         let swings = |pitch: f64| {
-            let lfo = Value::Map(vec![(spec::ON.into(), false.into()), (spec::HERTZ.into(), 2.0.into())]);
+            let lfo_hertz = 2.0;
+            let lfo = Value::Map(vec![(spec::ON.into(), false.into()), (spec::HERTZ.into(), lfo_hertz.into())]);
             let off = Value::Map(vec![(spec::ON.into(), false.into())]);
             let spec = Value::Map(vec![(spec::OSCILLATORS.into(), Value::Array(vec![off.clone(), off, lfo]))]);
             let asheville = compiled(&spec);
             let mut state = OscillatorState::default();
-            let rate = 48_000.0;
-            (0..24_000)
+            (0..HALF_SECOND)
                 .map(|place| {
-                    asheville.sample(&mut state, pitch, place as f64 / rate, Moves::default(), rate);
-                    state.sides[2]
+                    asheville.sample(&mut state, pitch, place as f64 / RATE, Moves::default(), RATE);
+                    state.sides[OSC3]
                 })
                 .collect::<Vec<_>>()
         };
@@ -477,11 +512,14 @@ mod tests {
         )]);
         let asheville = compiled(&spec);
         let mut state = OscillatorState::default();
-        asheville.begin(&mut state, 0.3);
-        for place in 0..2 {
+        let random = 0.3;
+        asheville.begin(&mut state, random);
+        let (first, second): (usize, usize) = (0, 1);
+        for place in [first, second] {
             let octaves_down = asheville.oscillators[place].sub;
             let divided = state.sub_phases[place] * f64::from(1u32 << octaves_down);
-            assert!((divided - state.phases[place]).abs() < 1e-12, "oscillator {place}");
+            let tolerance = 1e-12;
+            assert!((divided - state.phases[place]).abs() < tolerance, "oscillator {place}");
         }
     }
 }

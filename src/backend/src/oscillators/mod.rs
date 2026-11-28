@@ -22,6 +22,7 @@ pub mod tables;
 
 use crate::dsp::blep;
 use crate::dsp::one_pole::OnePoleHighpass;
+use crate::dsp::OCTAVE;
 use crate::oscillators::tables::{Tables, Waveform, TABLE_MASK, TABLE_SIZE};
 use crate::protocol::values::{as_number, list, number, numbers, truth, word};
 use crate::registry::{self, Entry};
@@ -30,6 +31,8 @@ use rmpv::Value;
 use std::sync::Arc;
 
 const MIDDLE_A: f64 = 69.0;
+/// The semitones of an octave.
+const SEMITONES_AN_OCTAVE: f64 = 12.0;
 const A_FREQUENCY: f64 = 440.0;
 const NARROWEST: f64 = 0.1;
 /// A pulse's width where nothing moves it: a square.
@@ -47,7 +50,13 @@ const PERIODS: f64 = 2048.0;
 
 /// A MIDI number's frequency in hertz, equal tempered from A 440.
 pub fn frequency_of(pitch: f64) -> f64 {
-    A_FREQUENCY * 2f64.powf((pitch.clamp(LOWEST_PITCH, HIGHEST_PITCH) - MIDDLE_A) / 12.0)
+    unclamped_frequency_of(pitch.clamp(LOWEST_PITCH, HIGHEST_PITCH))
+}
+
+/// A MIDI number's frequency in hertz, equal tempered from A 440, at any pitch, as an oscillator running below hearing
+/// takes it.
+pub fn unclamped_frequency_of(pitch: f64) -> f64 {
+    A_FREQUENCY * OCTAVE.powf((pitch - MIDDLE_A) / SEMITONES_AN_OCTAVE)
 }
 
 /// The lowest and highest pitch any oscillator plays, about 8 Hz and 20 kHz, whatever the pitch envelope, the Mod
@@ -81,7 +90,7 @@ fn wrapped(position: f64) -> f64 {
 /// What one voice's oscillators keep from sample to sample.
 #[derive(Clone, Copy, Default)]
 pub struct OscillatorState {
-    pub phases: [f64; 3],
+    pub phases: [f64; MOST_OSCILLATORS],
     pub second_phase: f64,
     pub period: i64,
     pub ticks: i64,
@@ -89,24 +98,24 @@ pub struct OscillatorState {
     /// The pitch the read speeds were last worked out for, and those speeds, so that a note whose pitch nothing
     /// moves works out its powers of two once, not every sample.
     pub speeds_for: f64,
-    pub speeds: [f64; 3],
+    pub speeds: [f64; MOST_OSCILLATORS],
     /// Oh3's coupling into its filter, a one-pole high-pass, made as its note begins.
     pub coupling: OnePoleHighpass,
     /// Asheville: each oscillator's last value, which the Mod Matrix's Osc 1 to Osc 3 sources read; its noise's state;
     /// the mixer's last output, which Feedback loops back; and when the note began after the instrument started, with
     /// the voice's own random number, from which each oscillator's drift is its own.
-    pub sides: [f64; 3],
+    pub sides: [f64; OWN_OSCILLATORS],
     pub noise_state: u64,
     pub last_out: f64,
     /// Asheville: each oscillator's sub-oscillator's phase.
-    pub sub_phases: [f64; 3],
+    pub sub_phases: [f64; OWN_OSCILLATORS],
     /// The SID's synced wave: its phase in cycles, and the share of a jump's smoothing owed to the next sample.
     pub sync_phase: f64,
     pub sync_next: f64,
     pub began: f64,
     pub random: f64,
     /// Asheville: each oscillator's fast jitter, in cents before Drift scales it, and the seeded noise it is drawn from.
-    pub jitter: [f64; 3],
+    pub jitter: [f64; OWN_OSCILLATORS],
     pub jitter_noise: u64,
 }
 
@@ -230,13 +239,21 @@ const PHASE_MIX: u64 = 0x9E37_79B9_7F4A_7C15;
 /// Where a free-running oscillator is in its cycle as a note starts, from the note's random number, from -1 to 1, and the
 /// oscillator's place: each oscillator its own draw, unrelated to the others', so that no two start near together more
 /// often than chance would have them.
+/// SplitMix64's three shifts and two multipliers, its last shift's place, and the shift and bits by which its top 53
+/// bits become a share from 0 to 1.
+const SPLITMIX_SHIFTS: [u32; 3] = [30, 27, 31];
+const SPLITMIX_MULTIPLIERS: [u64; 2] = [0xBF58_476D_1CE4_E5B9, 0x94D0_49BB_1331_11EB];
+const SPLITMIX_LAST: usize = 2;
+const SHARE_SHIFT: u32 = 11;
+const SHARE_BITS: u32 = 53;
+
 pub fn free_phase(random: f64, place: usize) -> f64 {
     // A SplitMix64 step of the random number's bits and the place, its top 53 bits a share of a cycle.
     let mut bits = random.to_bits() ^ (place as u64 + 1).wrapping_mul(PHASE_MIX);
-    bits = (bits ^ (bits >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
-    bits = (bits ^ (bits >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
-    bits ^= bits >> 31;
-    (bits >> 11) as f64 / (1u64 << 53) as f64
+    bits = (bits ^ (bits >> SPLITMIX_SHIFTS[0])).wrapping_mul(SPLITMIX_MULTIPLIERS[0]);
+    bits = (bits ^ (bits >> SPLITMIX_SHIFTS[1])).wrapping_mul(SPLITMIX_MULTIPLIERS[1]);
+    bits ^= bits >> SPLITMIX_SHIFTS[SPLITMIX_LAST];
+    (bits >> SHARE_SHIFT) as f64 / (1u64 << SHARE_BITS) as f64
 }
 
 /// What moves the oscillators at one sample: semitones of pitch, the Mod Matrix's Detune and Fine among them, a share of
@@ -253,7 +270,9 @@ pub struct Moves {
 }
 
 /// How many oscillators of Asheville's the Mod Matrix moves one by one.
-pub const OWN_OSCILLATORS: usize = 3;
+pub const OWN_OSCILLATORS: usize = asheville::OSCILLATOR_COUNT;
+/// The most oscillators an engine has, each a phase and a speed of a voice's own.
+pub const MOST_OSCILLATORS: usize = asheville::OSCILLATOR_COUNT;
 
 impl OscillatorPart {
     /// Ready a voice's state as its note begins.
@@ -295,7 +314,7 @@ impl OscillatorPart {
             _ => 0.0,
         };
         let frequency = match self {
-            OscillatorPart::Pocket { .. } => CHIP_CLOCK / (PERIODS - state.period as f64) * 2f64.powf(reach / 12.0),
+            OscillatorPart::Pocket { .. } => CHIP_CLOCK / (PERIODS - state.period as f64) * OCTAVE.powf(reach / SEMITONES_AN_OCTAVE),
             _ => frequency_of(pitch + reach + highest_step),
         };
         state.band = tables::band_of(frequency);
@@ -319,6 +338,11 @@ impl OscillatorPart {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::dsp::testing::{RATE, SECOND};
+
+    /// A tenth of a second of samples, and the most a wave's crossings may stray from its pitch's frequency.
+    const TENTH_SECOND: usize = 4800;
+    const CROSSINGS_STRAY: f64 = 2.0;
 
     /// No pitch, however far modulation moves it, plays outside about 8 Hz to 20 kHz: never under MIDI's lowest note.
     #[test]
@@ -326,7 +350,8 @@ mod tests {
         let (far_above, far_below) = (400.0, -300.0);
         assert_eq!(frequency_of(far_above), frequency_of(HIGHEST_PITCH));
         assert_eq!(frequency_of(far_below), frequency_of(LOWEST_PITCH));
-        assert!(frequency_of(HIGHEST_PITCH) < 20_000.0 && frequency_of(LOWEST_PITCH) > 8.0);
+        let (top_of_hearing, bottom_of_hearing) = (20_000.0, 8.0);
+        assert!(frequency_of(HIGHEST_PITCH) < top_of_hearing && frequency_of(LOWEST_PITCH) > bottom_of_hearing);
     }
 
     /// A note bent up by its modulation reads the table of the highest pitch it reaches, cut lower, so that analog-style
@@ -334,7 +359,7 @@ mod tests {
     #[test]
     fn a_note_bent_up_reads_the_table_of_its_highest_pitch() {
         let spec = rmpv::Value::Map(vec![(spec::TYPE.into(), spec::ACID.into())]);
-        let part = compiled(&spec, 48000.0);
+        let part = compiled(&spec, RATE);
         let mut state = OscillatorState::default();
         let (pitch, two_octaves) = (60.0, 24.0);
         part.choose_band(&mut state, pitch, 0.0);
@@ -348,30 +373,33 @@ mod tests {
     #[test]
     fn a_synced_saw_is_smoothed_at_its_jumps() {
         let mut state = OscillatorState::default();
-        let (rate, slave, master) = (48_000.0, 3_100.0, 440.0);
-        let values: Vec<f64> = (0..4800).map(|_| sid::sid_synced(SidWave::Saw, &mut state, slave, master, 0.5, rate)).collect();
-        let most_leap = values.windows(2).map(|pair| (pair[1] - pair[0]).abs()).fold(0.0, f64::max);
-        let naive_leap = 2.0;
-        assert!(most_leap < naive_leap * 0.95, "{most_leap}");
-        assert!(values.iter().all(|value| value.abs() < 1.5));
+        let (slave, master, width) = (3_100.0, 440.0, 0.5);
+        let values: Vec<f64> = (0..TENTH_SECOND)
+            .map(|_| sid::sid_synced(SidWave::Saw, &mut state, slave, master, width, RATE))
+            .collect();
+        let pair = 2;
+        let most_leap = values.windows(pair).map(|pair| (pair[1] - pair[0]).abs()).fold(0.0, f64::max);
+        let (naive_leap, smoothed, bound) = (2.0, 0.95, 1.5);
+        assert!(most_leap < naive_leap * smoothed, "{most_leap}");
+        assert!(values.iter().all(|value| value.abs() < bound));
     }
 
     /// A note of an oscillator part from its spec, a second of it at a pitch.
     fn played(pairs: Vec<(&str, Value)>, pitch: f64) -> Vec<f64> {
-        let rate = 48_000.0;
         let spec = Value::Map(pairs.into_iter().map(|(key, value)| (Value::from(key), value)).collect());
-        let part = compiled(&spec, rate);
+        let part = compiled(&spec, RATE);
         let mut state = OscillatorState::default();
         part.begin(&mut state, pitch);
         part.choose_band(&mut state, pitch, 0.0);
-        (0..48_000)
-            .map(|place| part.sample(&mut state, pitch, place as f64 / rate, Moves::default(), rate).0)
+        (0..SECOND)
+            .map(|place| part.sample(&mut state, pitch, place as f64 / RATE, Moves::default(), RATE).0)
             .collect()
     }
 
     /// How many times a second a wave crosses zero upward, which for a plain wave is its pitch's frequency.
     fn crossings(samples: &[f64]) -> usize {
-        samples.windows(2).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
+        let pair = 2;
+        samples.windows(pair).filter(|pair| pair[0] < 0.0 && pair[1] >= 0.0).count()
     }
 
     /// Each of Basic's waveforms plays at its note's frequency and within full scale.
@@ -384,8 +412,13 @@ mod tests {
                 vec![(spec::TYPE, spec::BASIC.into()), (spec::OSCILLATORS, Value::Array(vec![oscillator]))],
                 pitch,
             );
-            assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{waveform}");
-            assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{waveform} {}", crossings(&samples));
+            let bound = 1.1;
+            assert!(samples.iter().all(|sample| sample.abs() <= bound), "{waveform}");
+            assert!(
+                (crossings(&samples) as f64 - hertz).abs() <= CROSSINGS_STRAY,
+                "{waveform} {}",
+                crossings(&samples)
+            );
         }
     }
 
@@ -396,11 +429,13 @@ mod tests {
         let (pitch, hertz) = (57.0, 220.0);
         for voice in [spec::PULSE, spec::WAVE] {
             let samples = played(vec![(spec::TYPE, spec::POCKET.into()), (spec::CHIP_VOICE, voice.into())], pitch);
-            assert!(samples.iter().all(|sample| sample.abs() <= 1.1), "{voice}");
-            assert!((crossings(&samples) as f64 - hertz).abs() <= 3.0, "{voice} {}", crossings(&samples));
+            let (bound, rounded_stray) = (1.1, 3.0);
+            assert!(samples.iter().all(|sample| sample.abs() <= bound), "{voice}");
+            assert!((crossings(&samples) as f64 - hertz).abs() <= rounded_stray, "{voice} {}", crossings(&samples));
         }
         let noise = played(vec![(spec::TYPE, spec::POCKET.into()), (spec::CHIP_VOICE, spec::NOISE.into())], pitch);
-        assert!(crossings(&noise) > 2 * hertz as usize, "{}", crossings(&noise));
+        let far_more = 2;
+        assert!(crossings(&noise) > far_more * hertz as usize, "{}", crossings(&noise));
     }
 
     /// Oh3's saw and square play at the note's frequency, the saw through its coupling high-pass, within bounds.
@@ -409,8 +444,9 @@ mod tests {
         let (pitch, hertz) = (45.0, 110.0);
         for wave in [spec::SAW, spec::SQUARE] {
             let samples = played(vec![(spec::TYPE, spec::ACID.into()), (spec::ACID_WAVE, wave.into())], pitch);
-            assert!(samples.iter().all(|sample| sample.abs() <= 1.5), "{wave}");
-            assert!((crossings(&samples) as f64 - hertz).abs() <= 2.0, "{wave} {}", crossings(&samples));
+            let bound = 1.5;
+            assert!(samples.iter().all(|sample| sample.abs() <= bound), "{wave}");
+            assert!((crossings(&samples) as f64 - hertz).abs() <= CROSSINGS_STRAY, "{wave} {}", crossings(&samples));
         }
     }
 
@@ -428,10 +464,10 @@ mod tests {
         ];
         let out: Vec<f64> = played(pairs, pitch);
         let mut bins: Vec<rustfft::num_complex::Complex<f64>> = out.iter().map(|sample| rustfft::num_complex::Complex::new(*sample, 0.0)).collect();
-        let rate = 48_000;
-        rustfft::FftPlanner::new().plan_fft_forward(rate).process(&mut bins);
-        let strong = 0.05 * rate as f64 / 2.0;
-        let lowest = (20..2000).find(|bin| bins[*bin].norm() > strong);
-        assert!(lowest.is_some_and(|bin| bin.abs_diff(hertz) <= 2), "lowest strong partial {lowest:?} Hz");
+        rustfft::FftPlanner::new().plan_fft_forward(SECOND).process(&mut bins);
+        let (strong_share, half, lowest_read, highest_read, near) = (0.05, 2.0, 20, 2000, 2);
+        let strong = strong_share * SECOND as f64 / half;
+        let lowest = (lowest_read..highest_read).find(|bin| bins[*bin].norm() > strong);
+        assert!(lowest.is_some_and(|bin| bin.abs_diff(hertz) <= near), "lowest strong partial {lowest:?} Hz");
     }
 }
