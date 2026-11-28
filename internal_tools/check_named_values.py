@@ -52,7 +52,15 @@ NUMBER = re.compile(r"(?<![\w.])(\d[\d_]*(?:\.\d+)?(?:[eE]-?\d+)?)(?:_?(?:f32|f6
 PLAIN_NUMBERS = {"0", "1", "0.0", "1.0"}
 # Lines that give a value its name: a constant or a static, or a `let` binding a plain number or text to a name, or
 # several to a tuple of names.
-NAMING_LINE = re.compile(r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const|static)\s|^\s*let\s+(?:mut\s+)?(?:[a-z_][a-z0-9_]*|\((?:mut\s+)?[a-z_][a-z0-9_]*(?:\s*,\s*(?:mut\s+)?[a-z_][a-z0-9_]*)*\s*,?\))(?:\s*:\s*[\w<>(),&' \[\];]+)?\s*=\s*(?:[-\d\"(\[]|b\")")
+# A plain value: a number, a text, a byte string, a switch, or a constant's path; and a line that binds one, or a
+# tuple or a list of them, to a name or a tuple of names.
+PLAIN_VALUE = r"""(?:-?\d[\d_.]*(?:[eE]-?\d+)?(?:_?[a-z]\w*)?|b?"(?:[^"\\]|\\.)*"|true|false|[A-Z][\w:]*)"""
+PLAIN_VALUES = rf"""(?:{PLAIN_VALUE}|\(\s*{PLAIN_VALUE}(?:\s*,\s*{PLAIN_VALUE})*\s*,?\s*\)|\[\s*{PLAIN_VALUE}(?:\s*,\s*{PLAIN_VALUE})*\s*\]|\[\s*{PLAIN_VALUE}\s*;\s*{PLAIN_VALUE}\s*\])"""
+NAMING_LINE = re.compile(
+    r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const|static)\s|^\s*let\s+(?:mut\s+)?(?:[a-z_][a-z0-9_]*|\((?:mut\s+)?[a-z_][a-z0-9_]*(?:\s*,\s*(?:mut\s+)?[a-z_][a-z0-9_]*)*\s*,?\))(?:\s*:\s*[\w<>(),&' \[\];]+)?\s*=\s*"
+    + PLAIN_VALUES
+    + r"\s*;\s*(?://.*)?$"
+)
 # A comment, from where it starts to the line's end, and an attribute line.
 COMMENT = re.compile(r"//.*$")
 ATTRIBUTE = re.compile(r"^\s*#!?\[")
@@ -62,7 +70,9 @@ ATTRIBUTE = re.compile(r"^\s*#!?\[")
 # module's constant begins, whose every line to its closing bracket gives values their names.
 PYTHON_STRING = re.compile(r"""\"((?:[^\"\\]|\\.)*)\"|'((?:[^'\\]|\\.)*)'""")
 PYTHON_COMMENT = re.compile(r"#.*$")
-PYTHON_NAMING_LINE = re.compile(r"""^\s*[A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*\s*(?::[^=]+)?=\s*(?:[-\d\"'(\[{]|b[\"'])""")
+PYTHON_PLAIN_VALUE = r"""(?:-?\d[\d_.]*(?:[eE]-?\d+)?|b?"(?:[^"\\]|\\.)*"|b?'(?:[^'\\]|\\.)*'|True|False|None|[A-Z][\w.]*)"""
+PYTHON_PLAIN_VALUES = rf"""(?:{PYTHON_PLAIN_VALUE}|\(?\s*{PYTHON_PLAIN_VALUE}(?:\s*,\s*{PYTHON_PLAIN_VALUE})+\s*,?\s*\)?|\[\s*{PYTHON_PLAIN_VALUE}(?:\s*,\s*{PYTHON_PLAIN_VALUE})*\s*\]|\(\s*{PYTHON_PLAIN_VALUE}\s*\))"""
+PYTHON_NAMING_LINE = re.compile(r"^\s*[A-Za-z_]\w*(?:\s*,\s*[A-Za-z_]\w*)*\s*(?::[^=]+)?=\s*" + PYTHON_PLAIN_VALUES + r"\s*(?:#.*)?$")
 PYTHON_DEFINITION_START = re.compile(r"^[A-Z_][A-Z0-9_]*\s*(?::[^=]+)?=")
 
 # Where a constant or a static begins, whose every line, to the semicolon that ends it, gives values their names.

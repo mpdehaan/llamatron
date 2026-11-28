@@ -18,5 +18,7 @@ fn sample(amount: f64, values: &[f64]) {
     let shown_rows = 7;
     let (resonance, drive) = (0.3, 0.5);
     let abc: &[u8] = b"abc";
+    let decay = 0.06 * 50f64.powf(amount); // flagged
+    let level = PREVIEW_CHANNEL as f64 * amount;
     assert!(moved, "the A gauge moves Slow"); // 48 kHz
 }

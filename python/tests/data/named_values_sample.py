@@ -17,4 +17,5 @@ def sample(settings, values):
     first = values[0] + 1
     shown_rows = 7
     resonance, drive = 0.3, 0.5
+    decay = 0.06 * pow(50, drive)  # flagged
     print("the A gauge moves Slow")  # 48 kHz
